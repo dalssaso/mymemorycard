@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-zinc-700;
+  }
+
+  body {
+    @apply bg-bg-primary text-white antialiased;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+
+  h1 {
+    @apply text-4xl;
+  }
+
+  h2 {
+    @apply text-3xl;
+  }
+
+  h3 {
+    @apply text-2xl;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary-purple hover:bg-purple-700 text-white border border-purple-500 hover:shadow-glow-purple;
+  }
+
+  .btn-secondary {
+    @apply bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600;
+  }
+
+  .card {
+    @apply bg-bg-tertiary border border-zinc-700 rounded-lg p-6;
+  }
+
+  .input {
+    @apply bg-bg-secondary border border-zinc-700 text-white px-4 py-2 rounded focus:outline-none focus:border-primary-purple focus:shadow-glow-purple transition-all;
+  }
+
+  .badge {
+    @apply px-2 py-1 text-xs rounded font-medium;
+  }
+
+  .badge-steam {
+    @apply bg-blue-500/20 text-blue-400 border border-blue-500/50;
+  }
+
+  .badge-psn {
+    @apply bg-primary-purple/20 text-purple-400 border border-primary-purple/50;
+  }
+
+  .badge-xbox {
+    @apply bg-green-500/20 text-green-400 border border-green-500/50;
+  }
+
+  .badge-epic {
+    @apply bg-zinc-600/20 text-zinc-400 border border-zinc-600/50;
+  }
+}
