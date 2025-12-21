@@ -1,5 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, Link } from '@tanstack/react-router'
 
 export function Dashboard() {
   const { user, logout } = useAuth()
@@ -49,9 +49,9 @@ export function Dashboard() {
           <p className="text-zinc-400 mb-4">
             Import your games to start tracking your library
           </p>
-          <button className="btn btn-primary">
+          <Link to="/import" className="btn btn-primary inline-block">
             Import Games
-          </button>
+          </Link>
         </div>
       </div>
     </div>

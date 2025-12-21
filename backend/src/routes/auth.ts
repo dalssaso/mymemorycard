@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { router } from '@/lib/router';
 import { query, queryOne } from '@/services/db';
 import { generateToken, requireAuth } from '@/middleware/auth';

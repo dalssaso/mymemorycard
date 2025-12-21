@@ -12,8 +12,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/init.sql:/docker-entrypoint-initdb.d/01-init.sql
       - ./docs/schema.sql:/docker-entrypoint-initdb.d/02-schema.sql
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gamelist"]
       interval: 10s
@@ -25,8 +23,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: gamelist-redis
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -55,6 +51,24 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - gamelist-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: gamelist-frontend
+    environment:
+      DOCKER: "true"
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
       - /app/node_modules
     restart: unless-stopped
     networks:

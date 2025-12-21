@@ -2,12 +2,16 @@ FROM oven/bun:1 AS base
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json bun.lockb* ./
-RUN bun install --frozen-lockfile
+# Copy package files and lockfile
+COPY package.json ./
+COPY bun.lock ./
 
-# Copy source
-COPY . .
+# Install dependencies fresh in container
+RUN bun install
+
+# Copy source code
+COPY src ./src
+COPY tsconfig.json ./
 
 EXPOSE 3000
 

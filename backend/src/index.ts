@@ -3,6 +3,10 @@ import { handleCors, corsHeaders } from '@/middleware/cors';
 
 // Import routes
 import '@/routes/auth';
+import '@/routes/import';
+import '@/routes/platforms';
+import '@/routes/games';
+import '@/routes/api-stats';
 
 const PORT = process.env.PORT || 3000;
 

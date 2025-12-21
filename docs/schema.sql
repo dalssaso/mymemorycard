@@ -1,15 +1,15 @@
 -- Game Library Management System - Database Schema
--- PostgreSQL 16+ with UUIDv7 support
+-- PostgreSQL 16+ with UUIDv4
 
--- Enable UUID v7 extension
-CREATE EXTENSION IF NOT EXISTS pg_uuidv7;
+-- Enable pgcrypto extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ============================================================================
 -- USERS & AUTHENTICATION
 -- ============================================================================
 
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE webauthn_credentials (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     credential_id TEXT UNIQUE NOT NULL,
     public_key TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE INDEX idx_users_username ON users(username);
 -- ============================================================================
 
 CREATE TABLE games (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     rawg_id INTEGER UNIQUE,
     igdb_id INTEGER,
     name TEXT NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE games (
     background_image_url TEXT,
     metacritic_score INTEGER,
     opencritic_score REAL,
-    esrb_rating VARCHAR(10),
+    esrb_rating VARCHAR(50),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -58,13 +58,13 @@ CREATE INDEX idx_games_rawg ON games(rawg_id);
 CREATE INDEX idx_games_slug ON games(slug);
 
 CREATE TABLE genres (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) UNIQUE NOT NULL,
     rawg_id INTEGER UNIQUE
 );
 
 CREATE TABLE game_genres (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     genre_id UUID NOT NULL REFERENCES genres(id) ON DELETE CASCADE,
     UNIQUE(game_id, genre_id)
@@ -78,7 +78,7 @@ CREATE INDEX idx_game_genres_genre ON game_genres(genre_id);
 -- ============================================================================
 
 CREATE TABLE platforms (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) UNIQUE NOT NULL,
     display_name VARCHAR(100) NOT NULL,
     platform_type VARCHAR(20)
@@ -97,7 +97,7 @@ ON CONFLICT (name) DO NOTHING;
 -- ============================================================================
 
 CREATE TABLE user_games (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     platform_id UUID NOT NULL REFERENCES platforms(id),
@@ -118,7 +118,7 @@ CREATE INDEX idx_user_games_platform ON user_games(platform_id);
 -- ============================================================================
 
 CREATE TABLE user_playtime (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     platform_id UUID NOT NULL REFERENCES platforms(id),
@@ -130,7 +130,7 @@ CREATE TABLE user_playtime (
 CREATE INDEX idx_user_playtime_user ON user_playtime(user_id);
 
 CREATE TABLE user_game_progress (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     platform_id UUID NOT NULL REFERENCES platforms(id),
@@ -151,7 +151,7 @@ CREATE INDEX idx_user_progress_status ON user_game_progress(status);
 -- ============================================================================
 
 CREATE TABLE achievements (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     platform_id UUID NOT NULL REFERENCES platforms(id),
     achievement_id TEXT NOT NULL,
@@ -166,7 +166,7 @@ CREATE TABLE achievements (
 CREATE INDEX idx_achievements_game_platform ON achievements(game_id, platform_id);
 
 CREATE TABLE user_achievements (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     achievement_id UUID NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
     unlocked BOOLEAN DEFAULT FALSE,
@@ -182,7 +182,7 @@ CREATE INDEX idx_user_achievements_unlocked ON user_achievements(unlocked);
 -- ============================================================================
 
 CREATE TABLE game_completion_times (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     game_id UUID UNIQUE NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     main_story_hours REAL,
     main_extras_hours REAL,
@@ -192,7 +192,7 @@ CREATE TABLE game_completion_times (
 );
 
 CREATE TABLE psnprofiles_data (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     game_id UUID UNIQUE NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     difficulty_rating REAL,
     trophy_count_bronze INTEGER,
@@ -209,7 +209,7 @@ CREATE TABLE psnprofiles_data (
 -- ============================================================================
 
 CREATE TABLE collections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -217,7 +217,7 @@ CREATE TABLE collections (
 );
 
 CREATE TABLE collection_games (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     collection_id UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     UNIQUE(collection_id, game_id)
@@ -231,7 +231,7 @@ CREATE INDEX idx_collection_games_collection ON collection_games(collection_id);
 -- ============================================================================
 
 CREATE TABLE sync_history (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     platform_id UUID NOT NULL REFERENCES platforms(id),
     sync_started TIMESTAMPTZ NOT NULL,

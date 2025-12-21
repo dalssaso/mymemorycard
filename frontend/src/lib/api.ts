@@ -52,6 +52,11 @@ export const gamesAPI = {
 
 // Import API
 export const importAPI = {
-  bulk: (gameNames: string[]) =>
-    api.post('/import/bulk', { gameNames }),
+  bulk: (gameNames: string[], platformId?: string) =>
+    api.post('/import/bulk', { gameNames, platformId }),
+}
+
+// Platforms API
+export const platformsAPI = {
+  getAll: () => api.get('/platforms'),
 };
