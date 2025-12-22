@@ -7,6 +7,7 @@ import '@/routes/import';
 import '@/routes/platforms';
 import '@/routes/games';
 import '@/routes/api-stats';
+import '@/routes/admin';
 
 const PORT = process.env.PORT || 3000;
 

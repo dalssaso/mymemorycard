@@ -12,6 +12,7 @@ interface GameDetails {
   cover_art_url: string | null
   background_image_url: string | null
   metacritic_score: number | null
+  esrb_rating: string | null
   platform_id: string
   platform_name: string
   platform_display_name: string
@@ -40,7 +41,7 @@ export function GameDetail() {
     queryKey: ['game', id],
     queryFn: async () => {
       const response = await gamesAPI.getOne(id)
-      return response.data as { game: GameDetails; platforms: GameDetails[] }
+      return response.data as { game: GameDetails; platforms: GameDetails[]; genres: string[] }
     },
   })
 
@@ -106,10 +107,23 @@ export function GameDetail() {
     setIsEditingNotes(true)
   }
 
+  const genres = data?.genres || []
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-      <div className="max-w-6xl mx-auto">
-        <Link to="/library" className="text-blue-400 hover:text-blue-300 mb-4 inline-block">
+    <div className="min-h-screen bg-gray-950 text-white">
+      {/* Background Image Header */}
+      {game.background_image_url && (
+        <div className="relative h-96 w-full">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${game.background_image_url})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950" />
+        </div>
+      )}
+      
+      <div className="max-w-6xl mx-auto px-6 -mt-64 relative z-10">
+        <Link to="/library" className="text-primary-cyan hover:text-primary-purple mb-4 inline-block">
           ← Back to Library
         </Link>
 
@@ -134,7 +148,7 @@ export function GameDetail() {
               <select
                 value={game.status || 'backlog'}
                 onChange={(e) => handleStatusChange(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -152,10 +166,10 @@ export function GameDetail() {
                   <button
                     key={rating}
                     onClick={() => handleRatingChange(rating)}
-                    className={`flex-1 py-2 rounded ${
+                    className={`flex-1 py-2 rounded transition-all ${
                       game.user_rating === rating
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                        ? 'bg-primary-purple text-white shadow-lg shadow-primary-purple/50'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
                     }`}
                   >
                     {rating}
@@ -168,29 +182,58 @@ export function GameDetail() {
           {/* Game Details */}
           <div className="lg:col-span-2">
             <h1 className="text-4xl font-bold mb-2">{game.name}</h1>
-            <div className="flex gap-4 text-sm text-gray-400 mb-6">
-              <span>{game.platform_display_name}</span>
-              {game.release_date && <span>{new Date(game.release_date).getFullYear()}</span>}
+            
+            {/* Metadata Row */}
+            <div className="flex flex-wrap gap-3 text-sm mb-4">
+              <span className="px-3 py-1 bg-primary-purple/20 border border-primary-purple rounded-lg text-primary-purple">
+                {game.platform_display_name}
+              </span>
+              {game.release_date && (
+                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400">
+                  {new Date(game.release_date).getFullYear()}
+                </span>
+              )}
               {game.metacritic_score && (
-                <span className="text-green-400">Metacritic: {game.metacritic_score}</span>
+                <span className="px-3 py-1 bg-primary-green/20 border border-primary-green rounded-lg text-primary-green">
+                  Metacritic: {game.metacritic_score}
+                </span>
+              )}
+              {game.esrb_rating && (
+                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400">
+                  {game.esrb_rating.toUpperCase()}
+                </span>
               )}
             </div>
+            
+            {/* Genres */}
+            {genres.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {genres.map((genre) => (
+                  <span
+                    key={genre}
+                    className="px-2 py-1 bg-primary-cyan/10 border border-primary-cyan/30 rounded text-primary-cyan text-xs"
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {game.description && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2">About</h2>
+              <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+                <h2 className="text-xl font-semibold mb-3 text-primary-purple">About</h2>
                 <p className="text-gray-300 leading-relaxed">{game.description}</p>
               </div>
             )}
 
             {/* Notes Section */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-semibold">Notes</h2>
+            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xl font-semibold text-primary-purple">Notes</h2>
                 {!isEditingNotes && (
                   <button
                     onClick={startEditingNotes}
-                    className="text-sm text-blue-400 hover:text-blue-300"
+                    className="text-sm text-primary-cyan hover:text-primary-purple"
                   >
                     {game.notes ? 'Edit' : 'Add Notes'}
                   </button>
@@ -202,14 +245,14 @@ export function GameDetail() {
                   <textarea
                     value={notesValue}
                     onChange={(e) => setNotesValue(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 min-h-32"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple min-h-32"
                     placeholder="Add your notes about this game..."
                   />
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={handleSaveNotes}
                       disabled={updateNotesMutation.isPending}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
+                      className="px-4 py-2 bg-primary-purple hover:bg-primary-purple/80 rounded-lg disabled:opacity-50"
                     >
                       {updateNotesMutation.isPending ? 'Saving...' : 'Save'}
                     </button>
@@ -222,7 +265,7 @@ export function GameDetail() {
                   </div>
                 </div>
               ) : (
-                <div className="text-gray-300 bg-gray-800/50 rounded-lg p-4">
+                <div className="text-gray-300 bg-gray-900/50 rounded-lg p-4">
                   {game.notes || 'No notes yet'}
                 </div>
               )}
@@ -230,16 +273,16 @@ export function GameDetail() {
 
             {/* Play Stats */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="text-sm text-gray-400">Playtime</div>
-                <div className="text-2xl font-semibold">
+              <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-4">
+                <div className="text-sm text-primary-cyan">Playtime</div>
+                <div className="text-2xl font-semibold text-white">
                   {Math.floor(game.total_minutes / 60)}h {game.total_minutes % 60}m
                 </div>
               </div>
               {game.last_played && (
-                <div className="bg-gray-800/50 rounded-lg p-4">
-                  <div className="text-sm text-gray-400">Last Played</div>
-                  <div className="text-2xl font-semibold">
+                <div className="bg-primary-purple/10 border border-primary-purple/30 rounded-lg p-4">
+                  <div className="text-sm text-primary-purple">Last Played</div>
+                  <div className="text-lg font-semibold text-white">
                     {new Date(game.last_played).toLocaleDateString()}
                   </div>
                 </div>

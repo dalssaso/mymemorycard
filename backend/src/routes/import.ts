@@ -1,7 +1,7 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
 import { query, queryOne, withTransaction } from '@/services/db'
-import { searchGames, type RAWGGame } from '@/services/rawg'
+import { searchGames, getGameDetails, type RAWGGame } from '@/services/rawg'
 import { corsHeaders } from '@/middleware/cors'
 import type { User, Game, Platform } from '@/types'
 
@@ -110,8 +110,12 @@ router.post(
               : null)
 
           if (bestMatch) {
+            // Fetch full game details (including description)
+            const fullGameDetails = await getGameDetails(bestMatch.id)
+            const gameToImport = fullGameDetails || bestMatch
+            
             // We have a confident match, import it
-            const game = await importGame(bestMatch, user, platformId)
+            const game = await importGame(gameToImport, user, platformId)
             results.imported.push({
               game,
               source: exactMatch ? 'exact' : 'best_match',

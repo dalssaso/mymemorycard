@@ -93,8 +93,22 @@ router.get(
         )
       }
 
+      // Fetch genres for this game
+      const genres = await queryMany<{ name: string }>(
+        `SELECT g.name
+         FROM genres g
+         INNER JOIN game_genres gg ON g.id = gg.genre_id
+         WHERE gg.game_id = $1
+         ORDER BY g.name`,
+        [gameId]
+      )
+
       return new Response(
-        JSON.stringify({ game: game[0], platforms: game }),
+        JSON.stringify({ 
+          game: game[0], 
+          platforms: game,
+          genres: genres.map(g => g.name)
+        }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
     } catch (error) {
