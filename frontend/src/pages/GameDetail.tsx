@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams, Link } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
+import { PageLayout } from '@/components/layout'
+import { useToast } from '@/components/ui/Toast'
 
 interface GameDetails {
   id: string
@@ -23,6 +25,17 @@ interface GameDetails {
   last_played: Date | null
 }
 
+interface PSNProfilesData {
+  difficulty_rating: number | null
+  trophy_count_bronze: number | null
+  trophy_count_silver: number | null
+  trophy_count_gold: number | null
+  trophy_count_platinum: number | null
+  average_completion_time_hours: number | null
+  psnprofiles_url: string | null
+  updated_at: string
+}
+
 const STATUS_OPTIONS = [
   { value: 'backlog', label: 'Backlog' },
   { value: 'playing', label: 'Playing' },
@@ -34,6 +47,7 @@ const STATUS_OPTIONS = [
 export function GameDetail() {
   const { id } = useParams({ from: '/library/$id' })
   const queryClient = useQueryClient()
+  const { showToast } = useToast()
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [notesValue, setNotesValue] = useState('')
 
@@ -41,7 +55,12 @@ export function GameDetail() {
     queryKey: ['game', id],
     queryFn: async () => {
       const response = await gamesAPI.getOne(id)
-      return response.data as { game: GameDetails; platforms: GameDetails[]; genres: string[] }
+      return response.data as { 
+        game: GameDetails
+        platforms: GameDetails[]
+        genres: string[]
+        psnprofiles: PSNProfilesData | null
+      }
     },
   })
 
@@ -51,7 +70,11 @@ export function GameDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game', id] })
       queryClient.invalidateQueries({ queryKey: ['games'] })
+      showToast('Status updated successfully', 'success')
     },
+    onError: () => {
+      showToast('Failed to update status', 'error')
+    }
   })
 
   const updateRatingMutation = useMutation({
@@ -60,7 +83,11 @@ export function GameDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game', id] })
       queryClient.invalidateQueries({ queryKey: ['games'] })
+      showToast('Rating updated successfully', 'success')
     },
+    onError: () => {
+      showToast('Failed to update rating', 'error')
+    }
   })
 
   const updateNotesMutation = useMutation({
@@ -69,22 +96,41 @@ export function GameDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['game', id] })
       setIsEditingNotes(false)
+      showToast('Notes saved successfully', 'success')
     },
+    onError: () => {
+      showToast('Failed to save notes', 'error')
+    }
+  })
+
+  const refreshMetadataMutation = useMutation({
+    mutationFn: () => gamesAPI.refreshMetadata(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['game', id] })
+      showToast('Metadata refreshed', 'success')
+    },
+    onError: () => {
+      showToast('Failed to refresh metadata', 'error')
+    }
   })
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-400">Loading...</div>
-      </div>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-gray-400">Loading...</div>
+        </div>
+      </PageLayout>
     )
   }
 
   if (error || !data?.game) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-400">Game not found</div>
-      </div>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-red-400">Game not found</div>
+        </div>
+      </PageLayout>
     )
   }
 
@@ -110,10 +156,10 @@ export function GameDetail() {
   const genres = data?.genres || []
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <PageLayout>
       {/* Background Image Header */}
       {game.background_image_url && (
-        <div className="relative h-96 w-full">
+        <div className="relative h-96 w-full -mx-6 -mt-6 mb-6">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${game.background_image_url})` }}
@@ -122,10 +168,7 @@ export function GameDetail() {
         </div>
       )}
       
-      <div className="max-w-6xl mx-auto px-6 -mt-64 relative z-10">
-        <Link to="/library" className="text-primary-cyan hover:text-primary-purple mb-4 inline-block">
-          ← Back to Library
-        </Link>
+      <div className="max-w-6xl mx-auto">{game.background_image_url && <div className="-mt-64 relative z-10"></div>}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           {/* Cover Art */}
@@ -226,6 +269,98 @@ export function GameDetail() {
               </div>
             )}
 
+            {/* PSNProfiles Data */}
+            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xl font-semibold text-primary-purple">PlayStation Stats</h2>
+                <button
+                  onClick={() => refreshMetadataMutation.mutate()}
+                  disabled={refreshMetadataMutation.isPending}
+                  className="text-sm px-3 py-1 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded-lg disabled:opacity-50 transition-all"
+                >
+                  {refreshMetadataMutation.isPending ? 'Refreshing...' : 'Refresh Metadata'}
+                </button>
+              </div>
+
+              {data?.psnprofiles ? (
+                <div className="space-y-4">
+                  {/* Difficulty and Completion Time */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {data.psnprofiles.difficulty_rating && (
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <div className="text-sm text-gray-400">Difficulty</div>
+                        <div className="text-2xl font-semibold text-primary-purple">
+                          {data.psnprofiles.difficulty_rating}/10
+                        </div>
+                      </div>
+                    )}
+                    {data.psnprofiles.average_completion_time_hours && (
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <div className="text-sm text-gray-400">Avg. Completion Time</div>
+                        <div className="text-2xl font-semibold text-primary-cyan">
+                          {Math.round(data.psnprofiles.average_completion_time_hours)}h
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Trophy Counts */}
+                  {(data.psnprofiles.trophy_count_bronze || 
+                    data.psnprofiles.trophy_count_silver || 
+                    data.psnprofiles.trophy_count_gold || 
+                    data.psnprofiles.trophy_count_platinum) && (
+                    <div>
+                      <div className="text-sm text-gray-400 mb-2">Trophy Breakdown</div>
+                      <div className="flex gap-4">
+                        {data.psnprofiles.trophy_count_platinum !== null && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600"></div>
+                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_platinum}</span>
+                          </div>
+                        )}
+                        {data.psnprofiles.trophy_count_gold !== null && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600"></div>
+                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_gold}</span>
+                          </div>
+                        )}
+                        {data.psnprofiles.trophy_count_silver !== null && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-300 to-gray-500"></div>
+                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_silver}</span>
+                          </div>
+                        )}
+                        {data.psnprofiles.trophy_count_bronze !== null && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-700 to-orange-900"></div>
+                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_bronze}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PSNProfiles Link */}
+                  {data.psnprofiles.psnprofiles_url && (
+                    <div className="text-sm">
+                      <a
+                        href={data.psnprofiles.psnprofiles_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-cyan hover:text-primary-purple transition-colors"
+                      >
+                        View on PSNProfiles →
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-gray-400 text-sm">
+                  No PlayStation data available. Click "Refresh Metadata" to fetch trophy and difficulty information.
+                </div>
+              )}
+            </div>
+
             {/* Notes Section */}
             <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
@@ -291,6 +426,6 @@ export function GameDetail() {
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

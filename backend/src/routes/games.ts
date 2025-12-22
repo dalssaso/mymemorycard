@@ -1,8 +1,9 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
-import { queryMany, query } from '@/services/db'
+import { queryMany, query, queryOne } from '@/services/db'
 import { corsHeaders } from '@/middleware/cors'
 import type { Game } from '@/types'
+import { fetchAndSavePSNProfilesData } from '@/services/scraper/psnprofiles'
 
 interface UserGameWithDetails extends Game {
   platform_id: string
@@ -103,11 +104,28 @@ router.get(
         [gameId]
       )
 
+      // Fetch PSNProfiles data if available
+      const psnData = await queryOne(
+        `SELECT 
+          difficulty_rating,
+          trophy_count_bronze,
+          trophy_count_silver,
+          trophy_count_gold,
+          trophy_count_platinum,
+          average_completion_time_hours,
+          psnprofiles_url,
+          updated_at
+         FROM psnprofiles_data
+         WHERE game_id = $1`,
+        [gameId]
+      )
+
       return new Response(
         JSON.stringify({ 
           game: game[0], 
           platforms: game,
-          genres: genres.map(g => g.name)
+          genres: genres.map(g => g.name),
+          psnprofiles: psnData || null
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
@@ -127,7 +145,7 @@ router.patch(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json()
+      const body = await req.json() as { platform_id?: string; status?: string }
       const { platform_id, status } = body
 
       if (!gameId || !platform_id || !status) {
@@ -194,7 +212,7 @@ router.put(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json()
+      const body = await req.json() as { platform_id?: string; rating?: number }
       const { platform_id, rating } = body
 
       if (!gameId || !platform_id || rating === undefined) {
@@ -253,7 +271,7 @@ router.post(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json()
+      const body = await req.json() as { platform_id?: string; notes?: string }
       const { platform_id, notes } = body
 
       if (!gameId || !platform_id || notes === undefined) {
@@ -290,6 +308,76 @@ router.post(
       )
     } catch (error) {
       console.error('Update notes error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Refresh game metadata (PSNProfiles data)
+router.post(
+  '/api/games/:id/refresh',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      if (!gameId) {
+        return new Response(
+          JSON.stringify({ error: 'Game ID is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game
+      const ownership = await query(
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2',
+        [user.id, gameId]
+      )
+      
+      if (ownership.rowCount === 0) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Get game name
+      const game = await queryOne<{ name: string }>(
+        'SELECT name FROM games WHERE id = $1',
+        [gameId]
+      )
+
+      if (!game) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Fetch and save PSNProfiles data
+      const psnData = await fetchAndSavePSNProfilesData(gameId, game.name)
+
+      if (!psnData) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'No PSNProfiles data found for this game' 
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Metadata refreshed successfully',
+          data: psnData
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Refresh metadata error:', error)
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }

@@ -50,6 +50,8 @@ export const gamesAPI = {
     api.put(`/games/${id}/rating`, { platform_id: platformId, rating }),
   updateNotes: (id: string, platformId: string, notes: string) =>
     api.post(`/games/${id}/notes`, { platform_id: platformId, notes }),
+  refreshMetadata: (id: string) =>
+    api.post(`/games/${id}/refresh`),
 };
 
 // Import API

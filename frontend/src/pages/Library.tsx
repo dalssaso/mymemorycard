@@ -15,6 +15,8 @@ import {
 import { Link } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
+import { PageLayout } from '@/components/layout'
+import { GameCardSkeleton } from '@/components/ui/Skeleton'
 
 interface Game {
   id: string
@@ -141,28 +143,34 @@ export function Library() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-bg-primary p-8 flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 border-2 border-primary-purple border-t-transparent rounded-full animate-spin" />
-          <span className="text-zinc-400">Loading your library...</span>
+      <PageLayout>
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-8">Library</h1>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <GameCardSkeleton key={i} />
+            ))}
+          </div>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-primary p-8 flex items-center justify-center">
-        <div className="card max-w-md">
-          <h2 className="text-2xl font-bold text-primary-red mb-4">Error</h2>
-          <p className="text-zinc-400">Failed to load your library. Please try again.</p>
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="card max-w-md">
+            <h2 className="text-2xl font-bold text-primary-red mb-4">Error</h2>
+            <p className="text-zinc-400">Failed to load your library. Please try again.</p>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary p-8">
+    <PageLayout>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-primary-purple">Library</h1>
@@ -375,6 +383,6 @@ export function Library() {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

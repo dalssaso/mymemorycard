@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { importAPI } from '@/lib/api'
 import axios from 'axios'
+import { PageLayout } from '@/components/layout'
+import { useToast } from '@/components/ui/Toast'
 
 interface Platform {
   id: string
@@ -42,6 +44,7 @@ export function Import() {
   const [results, setResults] = useState<ImportResult | null>(null)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const { showToast } = useToast()
 
   // Fetch platforms
   const { data: platformsData } = useQuery({
@@ -71,14 +74,28 @@ export function Import() {
       // Invalidate games cache so library refreshes
       queryClient.invalidateQueries({ queryKey: ['games'] })
       
-      // If all games were imported successfully (no review needed), navigate to library
       const result = response.data as ImportResult
+      
+      // Show success toast
+      if (result.imported.length > 0) {
+        showToast(`Successfully imported ${result.imported.length} game(s)`, 'success')
+      }
+      
+      // Show warning if there are items needing review
+      if (result.needsReview.length > 0) {
+        showToast(`${result.needsReview.length} game(s) need review`, 'warning')
+      }
+      
+      // If all games were imported successfully (no review needed), navigate to library
       if (result.needsReview.length === 0 && result.imported.length > 0) {
         setTimeout(() => {
           navigate({ to: '/library' })
         }, 2000)
       }
     },
+    onError: () => {
+      showToast('Failed to import games', 'error')
+    }
   })
 
   const handleImport = () => {
@@ -103,16 +120,12 @@ export function Import() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary p-8">
+    <PageLayout>
       <div className="max-w-4xl mx-auto">
-        <Link to="/library" className="text-primary-cyan hover:text-primary-purple mb-4 inline-block">
-          ← Back to Library
-        </Link>
-        
-        <h1 className="text-4xl font-bold text-primary-purple mb-2">
+        <h1 className="text-4xl font-bold text-white mb-2">
           Import Games
         </h1>
-        <p className="text-zinc-400 mb-8">
+        <p className="text-gray-400 mb-8">
           Paste game names (one per line) and we'll automatically enrich them with metadata
         </p>
 
@@ -301,6 +314,6 @@ export function Import() {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

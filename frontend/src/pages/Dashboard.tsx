@@ -1,12 +1,10 @@
-import { useAuth } from '@/contexts/AuthContext'
-import { useNavigate, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
+import { PageLayout } from '@/components/layout'
+import { Card } from '@/components/ui'
 
 export function Dashboard() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
   const { data } = useQuery({
     queryKey: ['games'],
     queryFn: async () => {
@@ -19,76 +17,109 @@ export function Dashboard() {
   const totalGames = games.length
   const inProgressGames = games.filter((g) => g.status === 'playing').length
   const completedGames = games.filter((g) => g.status === 'completed' || g.status === 'finished').length
-
-  const handleLogout = () => {
-    logout()
-    navigate({ to: '/login' })
-  }
+  const backlogGames = games.filter((g) => g.status === 'backlog').length
 
   return (
-    <div className="min-h-screen bg-bg-primary p-8">
+    <PageLayout>
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-purple">
-            Dashboard
-          </h1>
-          <div className="flex items-center gap-4">
-            <Link to="/library" className="btn btn-secondary">
-              Library
-            </Link>
-            <Link to="/import" className="btn btn-secondary">
-              Import
-            </Link>
-            <span className="text-zinc-400">
-              Welcome, <span className="text-white font-medium">{user?.username}</span>
-            </span>
-            <button onClick={handleLogout} className="btn btn-secondary">
-              Logout
-            </button>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold text-white mb-8">
+          Dashboard
+        </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="card">
-            <h3 className="text-zinc-400 text-sm mb-2">Total Games</h3>
-            <p className="text-3xl font-bold text-primary-cyan">{totalGames}</p>
-          </div>
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-primary-purple/10 border-primary-purple/30">
+            <h3 className="text-gray-400 text-sm mb-2">Total Games</h3>
+            <p className="text-3xl font-bold text-white">{totalGames}</p>
+          </Card>
           
-          <div className="card">
-            <h3 className="text-zinc-400 text-sm mb-2">In Progress</h3>
-            <p className="text-3xl font-bold text-primary-yellow">{inProgressGames}</p>
-          </div>
+          <Card className="bg-primary-cyan/10 border-primary-cyan/30">
+            <h3 className="text-gray-400 text-sm mb-2">Currently Playing</h3>
+            <p className="text-3xl font-bold text-primary-cyan">{inProgressGames}</p>
+          </Card>
           
-          <div className="card">
-            <h3 className="text-zinc-400 text-sm mb-2">Completed</h3>
+          <Card className="bg-primary-green/10 border-primary-green/30">
+            <h3 className="text-gray-400 text-sm mb-2">Completed</h3>
             <p className="text-3xl font-bold text-primary-green">{completedGames}</p>
-          </div>
+          </Card>
+
+          <Card className="bg-gray-700/30 border-gray-600/30">
+            <h3 className="text-gray-400 text-sm mb-2">Backlog</h3>
+            <p className="text-3xl font-bold text-gray-300">{backlogGames}</p>
+          </Card>
         </div>
 
+        {/* Currently Playing Section */}
+        {inProgressGames > 0 && (
+          <Card className="mb-6">
+            <h2 className="text-2xl font-bold text-primary-purple mb-4">Currently Playing</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {games
+                .filter((g) => g.status === 'playing')
+                .slice(0, 6)
+                .map((game) => (
+                  <Link
+                    key={game.id}
+                    to="/library/$id"
+                    params={{ id: game.id }}
+                    className="group"
+                  >
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
+                      {game.cover_art_url ? (
+                        <img
+                          src={game.cover_art_url}
+                          alt={game.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                          No Cover
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm text-gray-300 truncate group-hover:text-white">
+                      {game.name}
+                    </p>
+                  </Link>
+                ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Quick Actions */}
         {totalGames === 0 ? (
-          <div className="card">
+          <Card>
             <h2 className="text-2xl font-bold mb-4">Get Started</h2>
-            <p className="text-zinc-400 mb-4">
+            <p className="text-gray-400 mb-4">
               Import your games to start tracking your library
             </p>
-            <Link to="/import" className="btn btn-primary inline-block">
+            <Link
+              to="/import"
+              className="inline-block px-6 py-3 bg-primary-purple text-white rounded-lg hover:bg-primary-purple/80 transition-colors"
+            >
               Import Games
             </Link>
-          </div>
+          </Card>
         ) : (
-          <div className="card">
-            <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-            <div className="flex gap-4">
-              <Link to="/library" className="btn btn-primary">
+          <Card>
+            <h2 className="text-2xl font-bold text-primary-purple mb-4">Quick Actions</h2>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                to="/library"
+                className="px-6 py-3 bg-primary-purple text-white rounded-lg hover:bg-primary-purple/80 transition-colors"
+              >
                 View Library
               </Link>
-              <Link to="/import" className="btn btn-secondary">
+              <Link
+                to="/import"
+                className="px-6 py-3 bg-primary-cyan text-white rounded-lg hover:bg-primary-cyan/80 transition-colors"
+              >
                 Import More Games
               </Link>
             </div>
-          </div>
+          </Card>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }
