@@ -1,6 +1,6 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
-import { queryMany } from '@/services/db'
+import { queryMany, query } from '@/services/db'
 import { corsHeaders } from '@/middleware/cors'
 import type { Game } from '@/types'
 
@@ -99,6 +99,183 @@ router.get(
       )
     } catch (error) {
       console.error('Get game error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Update game status
+router.patch(
+  '/api/games/:id/status',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = await req.json()
+      const { platform_id, status } = body
+
+      if (!gameId || !platform_id || !status) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      const validStatuses = ['backlog', 'playing', 'finished', 'dropped', 'completed']
+      if (!validStatuses.includes(status)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid status' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game on this platform
+      const ownership = await query(
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platform_id]
+      )
+      
+      if (ownership.rowCount === 0) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Automatically set started_at and completed_at based on status changes
+      let dateUpdate = ''
+      if (status === 'playing') {
+        dateUpdate = ', started_at = COALESCE(user_game_progress.started_at, NOW())'
+      } else if (status === 'finished' || status === 'completed') {
+        dateUpdate = ', completed_at = COALESCE(user_game_progress.completed_at, NOW())'
+      }
+
+      await query(
+        `INSERT INTO user_game_progress (user_id, game_id, platform_id, status${status === 'playing' ? ', started_at' : ''}${['finished', 'completed'].includes(status) ? ', completed_at' : ''})
+         VALUES ($1, $2, $3, $4${status === 'playing' ? ', NOW()' : ''}${['finished', 'completed'].includes(status) ? ', NOW()' : ''})
+         ON CONFLICT (user_id, game_id, platform_id)
+         DO UPDATE SET status = $4${dateUpdate}`,
+        [user.id, gameId, platform_id, status]
+      )
+
+      return new Response(
+        JSON.stringify({ success: true, status }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Update status error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Update game rating
+router.put(
+  '/api/games/:id/rating',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = await req.json()
+      const { platform_id, rating } = body
+
+      if (!gameId || !platform_id || rating === undefined) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      const numRating = Number(rating)
+      if (isNaN(numRating) || numRating < 1 || numRating > 10) {
+        return new Response(
+          JSON.stringify({ error: 'Rating must be between 1 and 10' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game on this platform
+      const ownership = await query(
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platform_id]
+      )
+      
+      if (ownership.rowCount === 0) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      await query(
+        `INSERT INTO user_game_progress (user_id, game_id, platform_id, user_rating)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (user_id, game_id, platform_id)
+         DO UPDATE SET user_rating = $4`,
+        [user.id, gameId, platform_id, numRating]
+      )
+
+      return new Response(
+        JSON.stringify({ success: true, rating: numRating }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Update rating error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Update game notes
+router.post(
+  '/api/games/:id/notes',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = await req.json()
+      const { platform_id, notes } = body
+
+      if (!gameId || !platform_id || notes === undefined) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game on this platform
+      const ownership = await query(
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platform_id]
+      )
+      
+      if (ownership.rowCount === 0) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      await query(
+        `INSERT INTO user_game_progress (user_id, game_id, platform_id, notes)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (user_id, game_id, platform_id)
+         DO UPDATE SET notes = $4`,
+        [user.id, gameId, platform_id, notes]
+      )
+
+      return new Response(
+        JSON.stringify({ success: true, notes }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Update notes error:', error)
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }

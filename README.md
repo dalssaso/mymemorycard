@@ -4,13 +4,22 @@ A self-hosted, multi-platform game library aggregator with PostgreSQL, Bun runti
 
 ## Features
 
-- 🎯 **Bulk Game Import** - Paste game names and auto-enrich with metadata
+### ✅ Implemented (Phase 1-3)
+- 🎯 **Bulk Game Import** - Paste game names and auto-enrich with RAWG metadata
 - 🌐 **Multi-Platform Support** - Steam, PlayStation, Xbox, Epic Games Store
+- 📚 **Game Library** - Grid and table views with sorting, filtering, and search
+- 🎮 **Game Details** - Track status (backlog/playing/finished/dropped), ratings, and notes
+- 📊 **Dashboard** - View your gaming stats and recent activity
+- 🔒 **Secure Auth** - JWT authentication with protected routes
+- 🐳 **Docker Deployment** - Easy self-hosting with Docker Compose
+- ⚡ **Redis Caching** - Fast metadata retrieval with multi-layer caching
+- 🧪 **Comprehensive Testing** - 31 backend tests, 90%+ coverage
+
+### 🚧 Planned (Phase 4+)
 - 🏆 **Achievement Tracking** - Track trophies and achievements across platforms
 - ⏱️ **Completion Times** - Get estimates from PSNProfiles and HowLongToBeat
-- 📊 **Progress Dashboard** - Visualize your gaming stats
-- 🔒 **Secure Auth** - Password + WebAuthn support
-- 🐳 **Docker Deployment** - Easy self-hosting with Docker Compose
+- 📈 **Enhanced Analytics** - Charts, visualizations, and recommendations
+- 🤖 **AI Features** - Ollama integration for smart recommendations
 
 ## Tech Stack
 
@@ -111,13 +120,18 @@ gamelist/
 - `POST /api/auth/login` - Login
 - `GET /api/auth/me` - Get current user
 
-### Games (Coming Soon)
+### Games
 - `GET /api/games` - Get user's library
-- `GET /api/games/:id` - Get game details
-- `PATCH /api/games/:id/status` - Update game status
+- `GET /api/games/:id` - Get game details with platform info
+- `PATCH /api/games/:id/status` - Update game status (backlog/playing/finished/dropped/completed)
+- `PUT /api/games/:id/rating` - Update game rating (1-10)
+- `POST /api/games/:id/notes` - Update game notes
 
-### Import (Coming Soon)
-- `POST /api/import/bulk` - Bulk import games
+### Import
+- `POST /api/import/bulk` - Bulk import games with RAWG metadata enrichment
+
+### Platforms
+- `GET /api/platforms` - Get all available platforms
 
 ## Design System
 

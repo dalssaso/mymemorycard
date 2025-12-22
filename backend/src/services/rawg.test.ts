@@ -68,12 +68,14 @@ describe('RAWG Service', () => {
         return
       }
 
+      // Use unique queries to avoid cache hits
+      const uniqueId = Date.now()
       const start = Date.now()
       
-      // Make 3 requests
-      await searchGames('Game 1')
-      await searchGames('Game 2')
-      await searchGames('Game 3')
+      // Make 3 requests with unique queries
+      await searchGames(`RateLimitTest${uniqueId}A`)
+      await searchGames(`RateLimitTest${uniqueId}B`)
+      await searchGames(`RateLimitTest${uniqueId}C`)
       
       const duration = Date.now() - start
       

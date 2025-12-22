@@ -18,10 +18,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      gamelist-network:
-        aliases:
-          - postgres
-
+      - gamelist-network
 
   redis:
     image: redis:7-alpine
@@ -29,9 +26,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      gamelist-network:
-        aliases:
-          - redis
+      - gamelist-network
 
   backend:
     build:

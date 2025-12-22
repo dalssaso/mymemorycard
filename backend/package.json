@@ -26,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/pg": "^8.11.0",
     "bun-types": "latest",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-language-server": "^5.1.3"
   }
 }

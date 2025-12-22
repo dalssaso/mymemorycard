@@ -44,10 +44,12 @@ export const authAPI = {
 export const gamesAPI = {
   getAll: () => api.get('/games'),
   getOne: (id: string) => api.get(`/games/${id}`),
-  updateStatus: (id: string, status: string) =>
-    api.patch(`/games/${id}/status`, { status }),
-  updateRating: (id: string, rating: number) =>
-    api.put(`/games/${id}/rating`, { rating }),
+  updateStatus: (id: string, platformId: string, status: string) =>
+    api.patch(`/games/${id}/status`, { platform_id: platformId, status }),
+  updateRating: (id: string, platformId: string, rating: number) =>
+    api.put(`/games/${id}/rating`, { platform_id: platformId, rating }),
+  updateNotes: (id: string, platformId: string, notes: string) =>
+    api.post(`/games/${id}/notes`, { platform_id: platformId, notes }),
 };
 
 // Import API

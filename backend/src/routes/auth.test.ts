@@ -2,25 +2,44 @@ import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
 import { pool } from '@/services/db'
 
 describe('Auth Routes', () => {
+  const testEmail = 'authtest@test.com'
+  const testPassword = 'password123'
+  let authToken: string
+
   beforeAll(async () => {
-    // Clean up test data
-    await pool.query('DELETE FROM users WHERE email LIKE $1', ['%@test.com'])
+    // Clean up and create a test user for login tests
+    await pool.query('DELETE FROM users WHERE email = $1', [testEmail])
+    
+    const registerRes = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'authtest',
+        email: testEmail,
+        password: testPassword,
+      }),
+    })
+    
+    const data = await registerRes.json() as { token: string }
+    authToken = data.token
   })
 
   afterAll(async () => {
     // Clean up test data
-    await pool.query('DELETE FROM users WHERE email LIKE $1', ['%@test.com'])
+    await pool.query('DELETE FROM users WHERE email = $1', [testEmail])
   })
 
   describe('POST /api/auth/register', () => {
     it('should register a new user successfully', async () => {
+      const uniqueEmail = `newuser${Date.now()}@test.com`
+      
       const response = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: 'testuser',
-          email: 'testuser@test.com',
-          password: 'password123',
+          username: 'newuser',
+          email: uniqueEmail,
+          password: testPassword,
         }),
       })
 
@@ -28,8 +47,11 @@ describe('Auth Routes', () => {
 
       expect(response.status).toBe(201)
       expect(data.user).toBeDefined()
-      expect(data.user.email).toBe('testuser@test.com')
+      expect(data.user.email).toBe(uniqueEmail)
       expect(data.token).toBeDefined()
+      
+      // Cleanup
+      await pool.query('DELETE FROM users WHERE email = $1', [uniqueEmail])
     })
 
     it('should reject registration with existing email', async () => {
@@ -37,9 +59,9 @@ describe('Auth Routes', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: 'testuser2',
-          email: 'testuser@test.com',
-          password: 'password123',
+          username: 'duplicate',
+          email: testEmail,
+          password: testPassword,
         }),
       })
 
@@ -67,8 +89,8 @@ describe('Auth Routes', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: 'testuser@test.com',
-          password: 'password123',
+          email: testEmail,
+          password: testPassword,
         }),
       })
 
@@ -84,7 +106,7 @@ describe('Auth Routes', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: 'testuser@test.com',
+          email: testEmail,
           password: 'wrongpassword',
         }),
       })
@@ -98,7 +120,7 @@ describe('Auth Routes', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'nonexistent@test.com',
-          password: 'password123',
+          password: testPassword,
         }),
       })
 
@@ -108,27 +130,14 @@ describe('Auth Routes', () => {
 
   describe('GET /api/auth/me', () => {
     it('should return user data with valid token', async () => {
-      // First login to get token
-      const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'testuser@test.com',
-          password: 'password123',
-        }),
-      })
-
-      const { token } = await loginResponse.json() as { token: string }
-
-      // Then test /me endpoint
       const response = await fetch('http://localhost:3000/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       })
 
       const data = await response.json() as { user: { email: string } }
 
       expect(response.status).toBe(200)
-      expect(data.user.email).toBe('testuser@test.com')
+      expect(data.user.email).toBe(testEmail)
     })
 
     it('should reject request without token', async () => {

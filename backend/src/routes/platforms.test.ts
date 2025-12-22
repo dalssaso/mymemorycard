@@ -1,22 +1,31 @@
-import { describe, it, expect, beforeAll } from 'bun:test'
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
+import { pool } from '@/services/db'
 
 describe('Platforms Routes', () => {
   let authToken: string
+  const testEmail = 'platform@test.com'
 
   beforeAll(async () => {
-    // Create test user
+    // Clean up and create test user
+    await pool.query('DELETE FROM users WHERE email = $1', [testEmail])
+    
     const registerResponse = await fetch('http://localhost:3000/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: 'platformtester',
-        email: 'platform@test.com',
+        email: testEmail,
         password: 'password123',
       }),
     })
 
     const data = (await registerResponse.json()) as { token: string }
     authToken = data.token
+  })
+
+  afterAll(async () => {
+    // Cleanup
+    await pool.query('DELETE FROM users WHERE email = $1', [testEmail])
   })
 
   describe('GET /api/platforms', () => {

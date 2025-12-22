@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { importAPI } from '@/lib/api'
 import axios from 'axios'
 
@@ -39,6 +40,8 @@ export function Import() {
   const [gameNames, setGameNames] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState<string>('')
   const [results, setResults] = useState<ImportResult | null>(null)
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   // Fetch platforms
   const { data: platformsData } = useQuery({
@@ -53,12 +56,28 @@ export function Import() {
   })
 
   const platforms = platformsData?.platforms || []
+  
+  // Set default platform to steam (first PC platform) when platforms load
+  if (platforms.length > 0 && !selectedPlatform) {
+    const steamPlatform = platforms.find(p => p.name === 'steam')
+    setSelectedPlatform(steamPlatform?.id || platforms[0].id)
+  }
 
   const importMutation = useMutation({
     mutationFn: ({ names, platformId }: { names: string[]; platformId?: string }) =>
       importAPI.bulk(names, platformId),
     onSuccess: (response) => {
       setResults(response.data)
+      // Invalidate games cache so library refreshes
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      
+      // If all games were imported successfully (no review needed), navigate to library
+      const result = response.data as ImportResult
+      if (result.needsReview.length === 0 && result.imported.length > 0) {
+        setTimeout(() => {
+          navigate({ to: '/library' })
+        }, 2000)
+      }
     },
   })
 
@@ -72,16 +91,24 @@ export function Import() {
       return
     }
 
+    if (!selectedPlatform) {
+      return
+    }
+
     setResults(null)
     importMutation.mutate({
       names,
-      platformId: selectedPlatform || undefined,
+      platformId: selectedPlatform,
     })
   }
 
   return (
     <div className="min-h-screen bg-bg-primary p-8">
       <div className="max-w-4xl mx-auto">
+        <Link to="/library" className="text-primary-cyan hover:text-primary-purple mb-4 inline-block">
+          ← Back to Library
+        </Link>
+        
         <h1 className="text-4xl font-bold text-primary-purple mb-2">
           Import Games
         </h1>
@@ -91,20 +118,8 @@ export function Import() {
 
         <div className="card mb-8">
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-3">Platform</label>
+            <label className="block text-sm font-medium mb-3">Platform (Required)</label>
             <div className="flex gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setSelectedPlatform('')}
-                disabled={importMutation.isPending}
-                className={`px-4 py-2 rounded border transition-all ${
-                  selectedPlatform === ''
-                    ? 'bg-primary-purple border-purple-500 text-white shadow-glow-purple'
-                    : 'bg-bg-secondary border-zinc-700 text-zinc-400 hover:border-zinc-500'
-                }`}
-              >
-                Generic
-              </button>
               {platforms.map((platform) => (
                 <button
                   key={platform.id}
@@ -121,11 +136,7 @@ export function Import() {
                 </button>
               ))}
             </div>
-            {selectedPlatform === '' ? (
-              <p className="text-xs text-zinc-500 mt-2">
-                Platform will be assigned during review process
-              </p>
-            ) : (
+            {selectedPlatform && (
               <p className="text-xs text-primary-cyan mt-2">
                 Games will be imported to {platforms.find((p) => p.id === selectedPlatform)?.display_name}
               </p>
@@ -144,12 +155,18 @@ export function Import() {
           <div className="mt-4 flex gap-4">
             <button
               onClick={handleImport}
-              disabled={importMutation.isPending || !gameNames.trim()}
+              disabled={importMutation.isPending || !gameNames.trim() || !selectedPlatform}
               className="btn btn-primary"
             >
               {importMutation.isPending ? 'Importing...' : 'Import Games'}
             </button>
 
+            {results && results.imported.length > 0 && results.needsReview.length === 0 && (
+              <Link to="/library" className="btn btn-primary">
+                View Library
+              </Link>
+            )}
+            
             {results && (
               <button
                 onClick={() => {
