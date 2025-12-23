@@ -55,6 +55,37 @@ router.get(
   })
 )
 
+// Get genre statistics for user's library
+router.get(
+  '/api/games/stats/genres',
+  requireAuth(async (req, user) => {
+    try {
+      const genreStats = await queryMany<{ name: string; count: number }>(
+        `SELECT g.name, COUNT(DISTINCT ug.game_id) as count
+         FROM genres g
+         INNER JOIN game_genres gg ON g.id = gg.genre_id
+         INNER JOIN user_games ug ON gg.game_id = ug.game_id
+         WHERE ug.user_id = $1
+         GROUP BY g.id, g.name
+         ORDER BY count DESC
+         LIMIT 10`,
+        [user.id]
+      )
+
+      return new Response(
+        JSON.stringify({ genres: genreStats }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Get genre stats error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
 // Get single game details
 router.get(
   '/api/games/:id',

@@ -43,6 +43,7 @@ export const authAPI = {
 // Games API
 export const gamesAPI = {
   getAll: () => api.get('/games'),
+  getGenreStats: () => api.get('/games/stats/genres'),
   getOne: (id: string) => api.get(`/games/${id}`),
   updateStatus: (id: string, platformId: string, status: string) =>
     api.patch(`/games/${id}/status`, { platform_id: platformId, status }),
