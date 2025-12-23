@@ -31,6 +31,7 @@ interface Game {
   last_played: Date | null
   metacritic_score: number | null
   release_date: string | null
+  is_favorite: boolean
 }
 
 const columnHelper = createColumnHelper<Game>()
@@ -43,6 +44,7 @@ export function Library() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [platformFilter, setPlatformFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
+  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['games'],
@@ -65,14 +67,15 @@ export function Library() {
     return Array.from(statuses).sort()
   }, [games])
   
-  // Filter games based on platform and status
+  // Filter games based on platform, status, and favorites
   const filteredGames = useMemo(() => {
     return games.filter(game => {
       if (platformFilter && game.platform_display_name !== platformFilter) return false
       if (statusFilter && game.status !== statusFilter) return false
+      if (favoritesOnly && !game.is_favorite) return false
       return true
     })
-  }, [games, platformFilter, statusFilter])
+  }, [games, platformFilter, statusFilter, favoritesOnly])
 
   const columns = useMemo(
     () => [
@@ -238,13 +241,25 @@ export function Library() {
               ))}
             </select>
             
+            {/* Favorites Filter */}
+            <label className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary border border-zinc-700 rounded-lg cursor-pointer hover:border-red-500 transition-colors">
+              <input
+                type="checkbox"
+                checked={favoritesOnly}
+                onChange={(e) => setFavoritesOnly(e.target.checked)}
+                className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-red-500 focus:ring-2 focus:ring-red-500"
+              />
+              <span className="text-sm text-zinc-300">Favorites Only</span>
+            </label>
+            
             {/* Clear Filters */}
-            {(platformFilter || statusFilter || globalFilter) && (
+            {(platformFilter || statusFilter || globalFilter || favoritesOnly) && (
               <button
                 onClick={() => {
                   setPlatformFilter('')
                   setStatusFilter('')
                   setGlobalFilter('')
+                  setFavoritesOnly(false)
                 }}
                 className="btn btn-secondary"
               >
@@ -275,7 +290,7 @@ export function Library() {
         {/* Results count */}
         <div className="mb-4 text-sm text-zinc-400">
           Showing {table.getRowModel().rows.length} of {filteredGames.length} games
-          {(platformFilter || statusFilter) && ` (filtered from ${games.length} total)`}
+          {(platformFilter || statusFilter || favoritesOnly) && ` (filtered from ${games.length} total)`}
         </div>
 
         {games.length === 0 ? (

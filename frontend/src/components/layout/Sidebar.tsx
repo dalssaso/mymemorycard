@@ -23,6 +23,7 @@ export function Sidebar({ children }: SidebarProps) {
   const totalGames = games.length
   const playingGames = games.filter((g) => g.status === 'playing').length
   const completedGames = games.filter((g) => g.status === 'completed' || g.status === 'finished').length
+  const favoriteGames = games.filter((g) => g.is_favorite === true).length
 
   return (
     <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-60 bg-gray-900 border-r border-gray-800 overflow-y-auto">
@@ -63,6 +64,10 @@ export function Sidebar({ children }: SidebarProps) {
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-400">Completed</span>
               <span className="text-primary-green font-medium">{completedGames}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">Favorites</span>
+              <span className="text-red-400 font-medium">{favoriteGames}</span>
             </div>
           </div>
         </div>

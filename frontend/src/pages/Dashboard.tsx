@@ -18,6 +18,7 @@ export function Dashboard() {
   const inProgressGames = games.filter((g) => g.status === 'playing').length
   const completedGames = games.filter((g) => g.status === 'completed' || g.status === 'finished').length
   const backlogGames = games.filter((g) => g.status === 'backlog').length
+  const favoriteGames = games.filter((g) => g.is_favorite === true)
 
   return (
     <PageLayout>
@@ -48,6 +49,43 @@ export function Dashboard() {
             <p className="text-3xl font-bold text-gray-300">{backlogGames}</p>
           </Card>
         </div>
+
+        {/* Favorites Section */}
+        {favoriteGames.length > 0 && (
+          <Card className="mb-6 bg-red-950/20 border-red-500/30">
+            <h2 className="text-2xl font-bold text-red-400 mb-4">Favorites</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {favoriteGames
+                .slice(0, 6)
+                .map((game) => (
+                  <Link
+                    key={game.id}
+                    to="/library/$id"
+                    params={{ id: game.id }}
+                    className="group relative"
+                  >
+                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 relative">
+                      {game.cover_art_url ? (
+                        <img
+                          src={game.cover_art_url}
+                          alt={game.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                          No Cover
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 text-xl">❤️</div>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-300 truncate group-hover:text-white">
+                      {game.name}
+                    </p>
+                  </Link>
+                ))}
+            </div>
+          </Card>
+        )}
 
         {/* Currently Playing Section */}
         {inProgressGames > 0 && (

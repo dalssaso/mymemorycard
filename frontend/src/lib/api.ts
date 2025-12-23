@@ -50,8 +50,20 @@ export const gamesAPI = {
     api.put(`/games/${id}/rating`, { platform_id: platformId, rating }),
   updateNotes: (id: string, platformId: string, notes: string) =>
     api.post(`/games/${id}/notes`, { platform_id: platformId, notes }),
-  refreshMetadata: (id: string) =>
-    api.post(`/games/${id}/refresh`),
+  toggleFavorite: (id: string, platformId: string, isFavorite: boolean) =>
+    api.put(`/games/${id}/favorite`, { platform_id: platformId, is_favorite: isFavorite }),
+  getCustomFields: (id: string) =>
+    api.get(`/games/${id}/custom-fields`),
+  updateCustomFields: (id: string, platformId: string, fields: {
+    estimated_completion_hours?: number | null
+    actual_playtime_hours?: number | null
+    completion_percentage?: number | null
+    difficulty_rating?: number | null
+    achievements_total?: number | null
+    achievements_earned?: number | null
+    replay_value?: number | null
+  }) =>
+    api.put(`/games/${id}/custom-fields`, { platform_id: platformId, ...fields }),
 };
 
 // Import API

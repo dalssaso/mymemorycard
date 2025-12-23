@@ -1,14 +1,19 @@
 import { Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { gamesAPI } from '@/lib/api'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 interface GameCardProps {
   id: string
   name: string
   cover_art_url: string | null
   platform_display_name: string
+  platform_id: string
   status: string
   metacritic_score: number | null
   user_rating: number | null
   total_minutes: number
+  is_favorite: boolean
 }
 
 const STATUS_COLORS = {
@@ -24,20 +29,51 @@ export function GameCard({
   name,
   cover_art_url,
   platform_display_name,
+  platform_id,
   status,
   metacritic_score,
   user_rating,
   total_minutes,
+  is_favorite,
 }: GameCardProps) {
   const hours = Math.floor(total_minutes / 60)
   const minutes = total_minutes % 60
+  const queryClient = useQueryClient()
+  const [isFavorite, setIsFavorite] = useState(is_favorite)
+
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: (newFavorite: boolean) => 
+      gamesAPI.toggleFavorite(id, platform_id, newFavorite),
+    onMutate: async (newFavorite) => {
+      setIsFavorite(newFavorite)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+    },
+    onError: () => {
+      setIsFavorite(!isFavorite)
+    }
+  })
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    toggleFavoriteMutation.mutate(!isFavorite)
+  }
 
   return (
     <Link
       to="/library/$id"
       params={{ id }}
-      className="card hover:border-primary-purple transition-all cursor-pointer group"
+      className="card hover:border-primary-purple transition-all cursor-pointer group relative"
     >
+      <button
+        onClick={handleFavoriteClick}
+        className="absolute top-4 right-4 z-10 text-2xl hover:scale-110 transition-transform"
+        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        {isFavorite ? '❤️' : '🤍'}
+      </button>
       <div className="flex gap-4">
         {cover_art_url ? (
           <img

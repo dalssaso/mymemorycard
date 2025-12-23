@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
 import { useToast } from '@/components/ui/Toast'
+import { CustomFieldsEditor } from '@/components/CustomFieldsEditor'
 
 interface GameDetails {
   id: string
@@ -23,18 +24,10 @@ interface GameDetails {
   notes: string | null
   total_minutes: number
   last_played: Date | null
+  is_favorite: boolean
 }
 
-interface PSNProfilesData {
-  difficulty_rating: number | null
-  trophy_count_bronze: number | null
-  trophy_count_silver: number | null
-  trophy_count_gold: number | null
-  trophy_count_platinum: number | null
-  average_completion_time_hours: number | null
-  psnprofiles_url: string | null
-  updated_at: string
-}
+
 
 const STATUS_OPTIONS = [
   { value: 'backlog', label: 'Backlog' },
@@ -59,7 +52,6 @@ export function GameDetail() {
         game: GameDetails
         platforms: GameDetails[]
         genres: string[]
-        psnprofiles: PSNProfilesData | null
       }
     },
   })
@@ -103,14 +95,16 @@ export function GameDetail() {
     }
   })
 
-  const refreshMetadataMutation = useMutation({
-    mutationFn: () => gamesAPI.refreshMetadata(id),
-    onSuccess: () => {
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: ({ platformId, isFavorite }: { platformId: string; isFavorite: boolean }) =>
+      gamesAPI.toggleFavorite(id, platformId, isFavorite),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['game', id] })
-      showToast('Metadata refreshed', 'success')
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      showToast(variables.isFavorite ? 'Added to favorites' : 'Removed from favorites', 'success')
     },
     onError: () => {
-      showToast('Failed to refresh metadata', 'error')
+      showToast('Failed to update favorite status', 'error')
     }
   })
 
@@ -220,6 +214,24 @@ export function GameDetail() {
                 ))}
               </div>
             </div>
+
+            {/* Favorite Toggle */}
+            <div className="mt-4">
+              <button
+                onClick={() => toggleFavoriteMutation.mutate({ 
+                  platformId: game.platform_id, 
+                  isFavorite: !game.is_favorite 
+                })}
+                disabled={toggleFavoriteMutation.isPending}
+                className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                  game.is_favorite
+                    ? 'bg-red-600/20 border-2 border-red-500 text-red-400 hover:bg-red-600/30'
+                    : 'bg-gray-800 border-2 border-gray-700 text-gray-400 hover:bg-gray-700 hover:border-red-500 hover:text-red-400'
+                }`}
+              >
+                {game.is_favorite ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+              </button>
+            </div>
           </div>
 
           {/* Game Details */}
@@ -269,98 +281,6 @@ export function GameDetail() {
               </div>
             )}
 
-            {/* PSNProfiles Data */}
-            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-semibold text-primary-purple">PlayStation Stats</h2>
-                <button
-                  onClick={() => refreshMetadataMutation.mutate()}
-                  disabled={refreshMetadataMutation.isPending}
-                  className="text-sm px-3 py-1 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded-lg disabled:opacity-50 transition-all"
-                >
-                  {refreshMetadataMutation.isPending ? 'Refreshing...' : 'Refresh Metadata'}
-                </button>
-              </div>
-
-              {data?.psnprofiles ? (
-                <div className="space-y-4">
-                  {/* Difficulty and Completion Time */}
-                  <div className="grid grid-cols-2 gap-4">
-                    {data.psnprofiles.difficulty_rating && (
-                      <div className="bg-gray-900/50 rounded-lg p-3">
-                        <div className="text-sm text-gray-400">Difficulty</div>
-                        <div className="text-2xl font-semibold text-primary-purple">
-                          {data.psnprofiles.difficulty_rating}/10
-                        </div>
-                      </div>
-                    )}
-                    {data.psnprofiles.average_completion_time_hours && (
-                      <div className="bg-gray-900/50 rounded-lg p-3">
-                        <div className="text-sm text-gray-400">Avg. Completion Time</div>
-                        <div className="text-2xl font-semibold text-primary-cyan">
-                          {Math.round(data.psnprofiles.average_completion_time_hours)}h
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Trophy Counts */}
-                  {(data.psnprofiles.trophy_count_bronze || 
-                    data.psnprofiles.trophy_count_silver || 
-                    data.psnprofiles.trophy_count_gold || 
-                    data.psnprofiles.trophy_count_platinum) && (
-                    <div>
-                      <div className="text-sm text-gray-400 mb-2">Trophy Breakdown</div>
-                      <div className="flex gap-4">
-                        {data.psnprofiles.trophy_count_platinum !== null && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600"></div>
-                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_platinum}</span>
-                          </div>
-                        )}
-                        {data.psnprofiles.trophy_count_gold !== null && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600"></div>
-                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_gold}</span>
-                          </div>
-                        )}
-                        {data.psnprofiles.trophy_count_silver !== null && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-300 to-gray-500"></div>
-                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_silver}</span>
-                          </div>
-                        )}
-                        {data.psnprofiles.trophy_count_bronze !== null && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-700 to-orange-900"></div>
-                            <span className="text-white font-semibold">{data.psnprofiles.trophy_count_bronze}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* PSNProfiles Link */}
-                  {data.psnprofiles.psnprofiles_url && (
-                    <div className="text-sm">
-                      <a
-                        href={data.psnprofiles.psnprofiles_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-cyan hover:text-primary-purple transition-colors"
-                      >
-                        View on PSNProfiles →
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-gray-400 text-sm">
-                  No PlayStation data available. Click "Refresh Metadata" to fetch trophy and difficulty information.
-                </div>
-              )}
-            </div>
-
             {/* Notes Section */}
             <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
@@ -404,6 +324,37 @@ export function GameDetail() {
                   {game.notes || 'No notes yet'}
                 </div>
               )}
+            </div>
+
+            {/* My Stats Section */}
+            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-primary-purple mb-4">My Stats</h2>
+              <CustomFieldsEditor gameId={game.id} platformId={game.platform_id} />
+            </div>
+
+            {/* External Resources */}
+            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-primary-purple mb-4">External Resources</h2>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`https://howlongtobeat.com/?q=${encodeURIComponent(game.name)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 min-w-[200px] px-4 py-3 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded-lg transition-all text-center"
+                >
+                  HowLongToBeat →
+                </a>
+                {game.slug && (
+                  <a
+                    href={`https://rawg.io/games/${game.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 min-w-[200px] px-4 py-3 bg-primary-purple/20 border border-primary-purple/30 text-primary-purple hover:bg-primary-purple/30 rounded-lg transition-all text-center"
+                  >
+                    View on RAWG →
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Play Stats */}

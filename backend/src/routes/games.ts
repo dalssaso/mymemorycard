@@ -3,7 +3,6 @@ import { requireAuth } from '@/middleware/auth'
 import { queryMany, query, queryOne } from '@/services/db'
 import { corsHeaders } from '@/middleware/cors'
 import type { Game } from '@/types'
-import { fetchAndSavePSNProfilesData } from '@/services/scraper/psnprofiles'
 
 interface UserGameWithDetails extends Game {
   platform_id: string
@@ -13,6 +12,7 @@ interface UserGameWithDetails extends Game {
   user_rating: number | null
   total_minutes: number
   last_played: Date | null
+  is_favorite: boolean
 }
 
 // Get user's game library
@@ -29,7 +29,8 @@ router.get(
           COALESCE(ugp.status, 'backlog') as status,
           ugp.user_rating,
           COALESCE(upt.total_minutes, 0) as total_minutes,
-          upt.last_played
+          upt.last_played,
+          COALESCE(ugp.is_favorite, FALSE) as is_favorite
         FROM games g
         INNER JOIN user_games ug ON g.id = ug.game_id
         INNER JOIN platforms p ON ug.platform_id = p.id
@@ -77,7 +78,8 @@ router.get(
           ugp.user_rating,
           ugp.notes,
           upt.total_minutes,
-          upt.last_played
+          upt.last_played,
+          COALESCE(ugp.is_favorite, FALSE) as is_favorite
         FROM games g
         LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $1
         LEFT JOIN platforms p ON ug.platform_id = p.id
@@ -104,28 +106,11 @@ router.get(
         [gameId]
       )
 
-      // Fetch PSNProfiles data if available
-      const psnData = await queryOne(
-        `SELECT 
-          difficulty_rating,
-          trophy_count_bronze,
-          trophy_count_silver,
-          trophy_count_gold,
-          trophy_count_platinum,
-          average_completion_time_hours,
-          psnprofiles_url,
-          updated_at
-         FROM psnprofiles_data
-         WHERE game_id = $1`,
-        [gameId]
-      )
-
       return new Response(
         JSON.stringify({ 
           game: game[0], 
           platforms: game,
-          genres: genres.map(g => g.name),
-          psnprofiles: psnData || null
+          genres: genres.map(g => g.name)
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
@@ -316,9 +301,60 @@ router.post(
   })
 )
 
-// Refresh game metadata (PSNProfiles data)
-router.post(
-  '/api/games/:id/refresh',
+// Toggle favorite status
+router.put(
+  '/api/games/:id/favorite',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = await req.json() as { platform_id?: string; is_favorite?: boolean }
+      const { platform_id, is_favorite } = body
+
+      if (!gameId || !platform_id || is_favorite === undefined) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game on this platform
+      const ownership = await query(
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platform_id]
+      )
+      
+      if (ownership.rowCount === 0) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      await query(
+        `INSERT INTO user_game_progress (user_id, game_id, platform_id, is_favorite)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (user_id, game_id, platform_id)
+         DO UPDATE SET is_favorite = $4`,
+        [user.id, gameId, platform_id, is_favorite]
+      )
+
+      return new Response(
+        JSON.stringify({ success: true, is_favorite }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Toggle favorite error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Get custom fields for a game
+router.get(
+  '/api/games/:id/custom-fields',
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
@@ -329,10 +365,74 @@ router.post(
         )
       }
 
-      // Verify user owns this game
-      const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2',
+      const customFields = await queryOne(
+        `SELECT 
+          estimated_completion_hours,
+          actual_playtime_hours,
+          completion_percentage,
+          difficulty_rating,
+          achievements_total,
+          achievements_earned,
+          replay_value,
+          updated_at
+         FROM user_game_custom_fields
+         WHERE user_id = $1 AND game_id = $2`,
         [user.id, gameId]
+      )
+
+      return new Response(
+        JSON.stringify({ customFields: customFields || {} }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Get custom fields error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Update custom fields for a game
+router.put(
+  '/api/games/:id/custom-fields',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = await req.json() as {
+        platform_id?: string
+        estimated_completion_hours?: number | null
+        actual_playtime_hours?: number | null
+        completion_percentage?: number | null
+        difficulty_rating?: number | null
+        achievements_total?: number | null
+        achievements_earned?: number | null
+        replay_value?: number | null
+      }
+
+      const { 
+        platform_id,
+        estimated_completion_hours,
+        actual_playtime_hours,
+        completion_percentage,
+        difficulty_rating,
+        achievements_total,
+        achievements_earned,
+        replay_value
+      } = body
+
+      if (!gameId || !platform_id) {
+        return new Response(
+          JSON.stringify({ error: 'Game ID and platform ID are required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game on this platform
+      const ownership = await query(
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platform_id]
       )
       
       if (ownership.rowCount === 0) {
@@ -342,42 +442,77 @@ router.post(
         )
       }
 
-      // Get game name
-      const game = await queryOne<{ name: string }>(
-        'SELECT name FROM games WHERE id = $1',
-        [gameId]
+      // Validate ranges
+      if (completion_percentage !== null && completion_percentage !== undefined) {
+        if (completion_percentage < 0 || completion_percentage > 100) {
+          return new Response(
+            JSON.stringify({ error: 'Completion percentage must be between 0 and 100' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+          )
+        }
+      }
+
+      if (difficulty_rating !== null && difficulty_rating !== undefined) {
+        if (difficulty_rating < 1 || difficulty_rating > 10) {
+          return new Response(
+            JSON.stringify({ error: 'Difficulty rating must be between 1 and 10' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+          )
+        }
+      }
+
+      if (replay_value !== null && replay_value !== undefined) {
+        if (replay_value < 1 || replay_value > 5) {
+          return new Response(
+            JSON.stringify({ error: 'Replay value must be between 1 and 5' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+          )
+        }
+      }
+
+      await query(
+        `INSERT INTO user_game_custom_fields (
+          user_id, game_id, platform_id,
+          estimated_completion_hours,
+          actual_playtime_hours,
+          completion_percentage,
+          difficulty_rating,
+          achievements_total,
+          achievements_earned,
+          replay_value,
+          updated_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+         ON CONFLICT (user_id, game_id, platform_id)
+         DO UPDATE SET
+           estimated_completion_hours = COALESCE($4, user_game_custom_fields.estimated_completion_hours),
+           actual_playtime_hours = COALESCE($5, user_game_custom_fields.actual_playtime_hours),
+           completion_percentage = COALESCE($6, user_game_custom_fields.completion_percentage),
+           difficulty_rating = COALESCE($7, user_game_custom_fields.difficulty_rating),
+           achievements_total = COALESCE($8, user_game_custom_fields.achievements_total),
+           achievements_earned = COALESCE($9, user_game_custom_fields.achievements_earned),
+           replay_value = COALESCE($10, user_game_custom_fields.replay_value),
+           updated_at = NOW()`,
+        [
+          user.id,
+          gameId,
+          platform_id,
+          estimated_completion_hours,
+          actual_playtime_hours,
+          completion_percentage,
+          difficulty_rating,
+          achievements_total,
+          achievements_earned,
+          replay_value
+        ]
       )
 
-      if (!game) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
-      }
-
-      // Fetch and save PSNProfiles data
-      const psnData = await fetchAndSavePSNProfilesData(gameId, game.name)
-
-      if (!psnData) {
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: 'No PSNProfiles data found for this game' 
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
-      }
-
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Metadata refreshed successfully',
-          data: psnData
-        }),
+        JSON.stringify({ success: true }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
     } catch (error) {
-      console.error('Refresh metadata error:', error)
+      console.error('Update custom fields error:', error)
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
