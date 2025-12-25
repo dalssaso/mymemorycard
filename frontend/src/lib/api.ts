@@ -44,6 +44,7 @@ export const authAPI = {
 export const gamesAPI = {
   getAll: () => api.get('/games'),
   getGenreStats: () => api.get('/games/stats/genres'),
+  export: (format: 'json' | 'csv') => api.get(`/games/export?format=${format}`, { responseType: 'blob' }),
   getOne: (id: string) => api.get(`/games/${id}`),
   updateStatus: (id: string, platformId: string, status: string) =>
     api.patch(`/games/${id}/status`, { platform_id: platformId, status }),

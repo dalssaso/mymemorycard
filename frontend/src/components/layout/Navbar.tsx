@@ -1,13 +1,16 @@
 import { Link } from '@tanstack/react-router'
 import { useAuth } from '@/contexts/AuthContext'
 import { useState } from 'react'
+import { GlobalSearch } from '@/components/GlobalSearch'
 
 export function Navbar() {
   const { user, logout } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-gray-900 border-b border-gray-800 z-50">
+    <>
+      <GlobalSearch />
+      <nav className="fixed top-0 left-0 right-0 h-16 bg-gray-900 border-b border-gray-800 z-50">
       <div className="h-full px-6 flex items-center justify-between">
         {/* Logo and Brand */}
         <div className="flex items-center space-x-8">
@@ -109,5 +112,6 @@ export function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   )
 }

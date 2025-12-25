@@ -55,6 +55,127 @@ router.get(
   })
 )
 
+// Export user's library to JSON/CSV
+router.get(
+  '/api/games/export',
+  requireAuth(async (req, user) => {
+    try {
+      const url = new URL(req.url)
+      const format = url.searchParams.get('format') || 'json'
+
+      // Fetch all user's games with full details
+      const games = await queryMany(
+        `SELECT 
+          g.name,
+          g.release_date,
+          g.description,
+          g.metacritic_score,
+          g.esrb_rating,
+          g.series_name,
+          p.display_name as platform,
+          ugp.status,
+          ugp.user_rating,
+          ugp.notes,
+          ugp.is_favorite,
+          upt.total_minutes as playtime_minutes,
+          ucf.difficulty_rating,
+          ucf.completion_percentage,
+          ucf.achievements_total,
+          ucf.achievements_earned,
+          ucf.replay_value,
+          ucf.estimated_completion_hours,
+          ucf.actual_playtime_hours
+         FROM games g
+         INNER JOIN user_games ug ON g.id = ug.game_id
+         INNER JOIN platforms p ON ug.platform_id = p.id
+         LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
+         LEFT JOIN user_playtime upt ON g.id = upt.game_id AND ug.platform_id = upt.platform_id AND upt.user_id = $1
+         LEFT JOIN user_game_custom_fields ucf ON g.id = ucf.game_id AND ug.platform_id = ucf.platform_id AND ucf.user_id = $1
+         WHERE ug.user_id = $1
+         ORDER BY g.name ASC`,
+        [user.id]
+      )
+
+      if (format === 'csv') {
+        // Generate CSV
+        const headers = [
+          'Name',
+          'Platform',
+          'Status',
+          'Rating',
+          'Favorite',
+          'Release Date',
+          'Metacritic Score',
+          'ESRB Rating',
+          'Series',
+          'Playtime (hours)',
+          'Difficulty',
+          'Completion %',
+          'Achievements',
+          'Replay Value',
+          'Notes'
+        ]
+
+        const csvRows = [
+          headers.join(','),
+          ...games.map((game: any) => [
+            `"${game.name.replace(/"/g, '""')}"`,
+            game.platform,
+            game.status || 'backlog',
+            game.user_rating || '',
+            game.is_favorite ? 'Yes' : 'No',
+            game.release_date || '',
+            game.metacritic_score || '',
+            game.esrb_rating || '',
+            game.series_name || '',
+            game.playtime_minutes ? Math.round(game.playtime_minutes / 60) : '',
+            game.difficulty_rating || '',
+            game.completion_percentage || '',
+            game.achievements_earned && game.achievements_total
+              ? `${game.achievements_earned}/${game.achievements_total}`
+              : '',
+            game.replay_value || '',
+            `"${(game.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+          ].join(','))
+        ]
+
+        const csv = csvRows.join('\n')
+
+        return new Response(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': `attachment; filename="gamelist-export-${new Date().toISOString().split('T')[0]}.csv"`,
+            ...corsHeaders()
+          }
+        })
+      } else {
+        // JSON format
+        const jsonData = {
+          exported_at: new Date().toISOString(),
+          total_games: games.length,
+          games: games
+        }
+
+        return new Response(JSON.stringify(jsonData, null, 2), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Disposition': `attachment; filename="gamelist-export-${new Date().toISOString().split('T')[0]}.json"`,
+            ...corsHeaders()
+          }
+        })
+      }
+    } catch (error) {
+      console.error('Export error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
 // Get genre statistics for user's library
 router.get(
   '/api/games/stats/genres',

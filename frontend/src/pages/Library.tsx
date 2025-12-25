@@ -17,6 +17,7 @@ import { gamesAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
 import { PageLayout } from '@/components/layout'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
+import { useToast } from '@/components/ui/Toast'
 
 interface Game {
   id: string
@@ -37,6 +38,7 @@ interface Game {
 const columnHelper = createColumnHelper<Game>()
 
 export function Library() {
+  const { showToast } = useToast()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -45,6 +47,26 @@ export function Library() {
   const [platformFilter, setPlatformFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false)
+
+  const handleExport = async (format: 'json' | 'csv') => {
+    try {
+      const response = await gamesAPI.export(format)
+      const blob = new Blob([response.data], {
+        type: format === 'json' ? 'application/json' : 'text/csv'
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `gamelist-export-${new Date().toISOString().split('T')[0]}.${format}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      showToast(`Library exported as ${format.toUpperCase()}`, 'success')
+    } catch (error) {
+      showToast('Failed to export library', 'error')
+    }
+  }
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['games'],
@@ -199,6 +221,22 @@ export function Library() {
                 }`}
               >
                 Table
+              </button>
+            </div>
+
+            {/* Export Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleExport('json')}
+                className="px-4 py-2 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded transition-all text-sm"
+              >
+                Export JSON
+              </button>
+              <button
+                onClick={() => handleExport('csv')}
+                className="px-4 py-2 bg-primary-green/20 border border-primary-green/30 text-primary-green hover:bg-primary-green/30 rounded transition-all text-sm"
+              >
+                Export CSV
               </button>
             </div>
           </div>
