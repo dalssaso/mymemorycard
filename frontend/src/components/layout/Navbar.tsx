@@ -39,6 +39,15 @@ export function Navbar() {
               Library
             </Link>
             <Link
+              to="/collections"
+              className="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+              activeProps={{
+                className: 'text-primary-purple bg-primary-purple/10'
+              }}
+            >
+              Collections
+            </Link>
+            <Link
               to="/import"
               className="px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
               activeProps={{

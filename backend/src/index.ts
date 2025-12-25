@@ -6,6 +6,7 @@ import '@/routes/auth';
 import '@/routes/import';
 import '@/routes/platforms';
 import '@/routes/games';
+import '@/routes/collections';
 import '@/routes/api-stats';
 import '@/routes/admin';
 

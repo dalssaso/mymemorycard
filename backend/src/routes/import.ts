@@ -1,7 +1,7 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
 import { query, queryOne, withTransaction } from '@/services/db'
-import { searchGames, getGameDetails, type RAWGGame } from '@/services/rawg'
+import { searchGames, getGameDetails, getGameSeries, type RAWGGame } from '@/services/rawg'
 import { corsHeaders } from '@/middleware/cors'
 import type { User, Game, Platform } from '@/types'
 
@@ -164,13 +164,21 @@ async function importGame(
     )
 
     if (!game) {
+      // Fetch game series in the background (optional, don't block import)
+      let seriesName: string | null = null
+      try {
+        seriesName = await getGameSeries(rawgGame.id)
+      } catch (error) {
+        console.warn(`Failed to fetch series for ${rawgGame.name}:`, error)
+      }
+
       // Create new game
       const result = await client.query<Game>(
         `INSERT INTO games (
           rawg_id, name, slug, release_date, description,
           cover_art_url, background_image_url, metacritic_score,
-          esrb_rating
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          esrb_rating, series_name
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *`,
         [
           rawgGame.id,
@@ -182,6 +190,7 @@ async function importGame(
           rawgGame.background_image || null,
           rawgGame.metacritic || null,
           rawgGame.esrb_rating?.slug || null,
+          seriesName,
         ]
       )
       game = result.rows[0]

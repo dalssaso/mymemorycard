@@ -77,3 +77,21 @@ export const importAPI = {
 export const platformsAPI = {
   getAll: () => api.get('/platforms'),
 };
+
+// Collections API
+export const collectionsAPI = {
+  getAll: () => api.get('/collections'),
+  getOne: (id: string) => api.get(`/collections/${id}/games`),
+  create: (name: string, description?: string) =>
+    api.post('/collections', { name, description }),
+  update: (id: string, name: string, description?: string) =>
+    api.put(`/collections/${id}`, { name, description }),
+  delete: (id: string) => api.delete(`/collections/${id}`),
+  addGame: (collectionId: string, gameId: string) =>
+    api.post(`/collections/${collectionId}/games`, { game_id: gameId }),
+  removeGame: (collectionId: string, gameId: string) =>
+    api.delete(`/collections/${collectionId}/games/${gameId}`),
+  getSeries: () => api.get('/collections/series'),
+  getSeriesGames: (seriesName: string) =>
+    api.get(`/collections/series/${encodeURIComponent(seriesName)}/games`),
+};

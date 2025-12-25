@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useQuery } from '@tanstack/react-query'
-import { gamesAPI } from '@/lib/api'
+import { Link } from '@tanstack/react-router'
+import { gamesAPI, collectionsAPI } from '@/lib/api'
 
 export interface SidebarProps {
   children?: ReactNode
@@ -19,11 +20,21 @@ export function Sidebar({ children }: SidebarProps) {
     },
   })
 
+  // Fetch collections
+  const { data: collectionsData } = useQuery({
+    queryKey: ['collections'],
+    queryFn: async () => {
+      const response = await collectionsAPI.getAll()
+      return response.data as { collections: Array<{ id: string; name: string; game_count: number }> }
+    },
+  })
+
   const games = data?.games || []
   const totalGames = games.length
   const playingGames = games.filter((g) => g.status === 'playing').length
   const completedGames = games.filter((g) => g.status === 'completed' || g.status === 'finished').length
   const favoriteGames = games.filter((g) => g.is_favorite === true).length
+  const collections = collectionsData?.collections || []
 
   return (
     <aside className="hidden md:block fixed left-0 top-16 bottom-0 w-60 bg-gray-900 border-r border-gray-800 overflow-y-auto">
@@ -71,6 +82,36 @@ export function Sidebar({ children }: SidebarProps) {
             </div>
           </div>
         </div>
+
+        {/* Collections */}
+        {collections.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              My Collections
+            </h3>
+            <div className="space-y-1">
+              {collections.slice(0, 5).map((collection) => (
+                <Link
+                  key={collection.id}
+                  to="/collections/$id"
+                  params={{ id: collection.id }}
+                  className="flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-gray-800 transition-colors"
+                >
+                  <span className="text-gray-300 truncate">{collection.name}</span>
+                  <span className="text-gray-500 text-xs">{collection.game_count}</span>
+                </Link>
+              ))}
+              {collections.length > 5 && (
+                <Link
+                  to="/collections"
+                  className="text-xs text-primary-cyan hover:text-primary-purple transition-colors block px-2 py-1"
+                >
+                  View all ({collections.length})
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Context-Sensitive Content */}
         {children && (

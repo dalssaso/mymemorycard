@@ -14,6 +14,15 @@ interface RAWGGame {
   description_raw?: string
 }
 
+interface RAWGGameSeries {
+  count: number
+  results: Array<{
+    id: number
+    name: string
+    slug: string
+  }>
+}
+
 interface RAWGSearchResponse {
   count: number
   results: RAWGGame[]
@@ -156,6 +165,70 @@ export async function getGameDetails(gameId: number, useCache = true): Promise<R
   })
 }
 
+export async function getGameSeries(gameId: number, useCache = true): Promise<string | null> {
+  if (!RAWG_API_KEY) {
+    console.warn('RAWG API key not configured')
+    return null
+  }
+
+  // Check cache first
+  if (useCache) {
+    const cached = await getCachedGameSeries(gameId)
+    if (cached !== undefined) {
+      console.log(`Cache hit for game series: ${gameId}`)
+      return cached
+    }
+  }
+
+  return rateLimiter.schedule(async () => {
+    const url = new URL(`${RAWG_BASE_URL}/games/${gameId}/game-series`)
+    url.searchParams.set('key', RAWG_API_KEY!)
+
+    console.log(`RAWG API request: game series ${gameId}`)
+    await incrementRAWGRequestCount() // Track API usage
+    const response = await fetch(url.toString())
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        await cacheGameSeries(gameId, null)
+        return null
+      }
+      throw new Error(`RAWG API error: ${response.status}`)
+    }
+
+    const data = (await response.json()) as RAWGGameSeries
+    
+    // If game is part of a series, extract the series name
+    // Usually the series name is a common prefix in the game names
+    let seriesName: string | null = null
+    if (data.count > 1 && data.results.length > 0) {
+      // Use the most common words in the game names as series name
+      const firstGame = data.results[0].name
+      const words = firstGame.split(/[\s:-]+/)
+      
+      // Try to find common prefix (series name is usually 1-3 words)
+      for (let i = Math.min(3, words.length); i >= 1; i--) {
+        const potentialSeries = words.slice(0, i).join(' ')
+        const matchCount = data.results.filter(g => 
+          g.name.toLowerCase().startsWith(potentialSeries.toLowerCase())
+        ).length
+        
+        if (matchCount >= Math.min(3, data.count)) {
+          seriesName = potentialSeries
+          break
+        }
+      }
+    }
+    
+    // Cache the results
+    if (useCache) {
+      await cacheGameSeries(gameId, seriesName)
+    }
+    
+    return seriesName
+  })
+}
+
 // Redis caching functions
 import redisClient from './redis'
 import { incrementRAWGRequestCount } from './api-monitor'
@@ -203,4 +276,25 @@ async function cacheGameDetails(gameId: number, game: RAWGGame): Promise<void> {
   }
 }
 
-export type { RAWGGame, RAWGSearchResponse }
+async function getCachedGameSeries(gameId: number): Promise<string | null | undefined> {
+  try {
+    const key = `rawg:series:${gameId}`
+    const cached = await redisClient.get(key)
+    if (cached === 'null') return null
+    return cached ? cached : undefined
+  } catch (error) {
+    console.error('Redis cache get error:', error)
+    return undefined
+  }
+}
+
+async function cacheGameSeries(gameId: number, seriesName: string | null): Promise<void> {
+  try {
+    const key = `rawg:series:${gameId}`
+    await redisClient.setEx(key, CACHE_TTL_DETAILS, seriesName || 'null')
+  } catch (error) {
+    console.error('Redis cache set error:', error)
+  }
+}
+
+export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries }

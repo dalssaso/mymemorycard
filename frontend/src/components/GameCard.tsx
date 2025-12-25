@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AddToCollection } from './AddToCollection'
 
 interface GameCardProps {
   id: string
@@ -123,6 +124,11 @@ export function GameCard({
                 </span>
               </div>
             )}
+          </div>
+
+          {/* Add to Collection Button */}
+          <div className="mt-3" onClick={(e) => e.preventDefault()}>
+            <AddToCollection gameId={id} />
           </div>
         </div>
       </div>

@@ -49,6 +49,7 @@ CREATE TABLE games (
     metacritic_score INTEGER,
     opencritic_score REAL,
     esrb_rating VARCHAR(50),
+    series_name TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -56,6 +57,7 @@ CREATE TABLE games (
 CREATE INDEX idx_games_name ON games(name);
 CREATE INDEX idx_games_rawg ON games(rawg_id);
 CREATE INDEX idx_games_slug ON games(slug);
+CREATE INDEX idx_games_series ON games(series_name) WHERE series_name IS NOT NULL;
 
 CREATE TABLE genres (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

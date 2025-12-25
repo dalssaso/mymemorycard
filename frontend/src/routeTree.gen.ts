@@ -14,9 +14,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LibraryIndexRouteImport } from './routes/library.index'
+import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as LibraryIdRouteImport } from './routes/library.$id'
+import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
+import { Route as CollectionsSeriesSeriesNameRouteImport } from './routes/collections.series.$seriesName'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -43,6 +47,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -53,21 +62,41 @@ const LibraryIndexRoute = LibraryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LibraryRoute,
 } as any)
+const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CollectionsRoute,
+} as any)
 const LibraryIdRoute = LibraryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => LibraryRoute,
 } as any)
+const CollectionsIdRoute = CollectionsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CollectionsRoute,
+} as any)
+const CollectionsSeriesSeriesNameRoute =
+  CollectionsSeriesSeriesNameRouteImport.update({
+    id: '/series/$seriesName',
+    path: '/series/$seriesName',
+    getParentRoute: () => CollectionsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/import': typeof ImportRoute
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/collections/$id': typeof CollectionsIdRoute
   '/library/$id': typeof LibraryIdRoute
+  '/collections/': typeof CollectionsIndexRoute
   '/library/': typeof LibraryIndexRoute
+  '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,31 +104,42 @@ export interface FileRoutesByTo {
   '/import': typeof ImportRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/collections/$id': typeof CollectionsIdRoute
   '/library/$id': typeof LibraryIdRoute
+  '/collections': typeof CollectionsIndexRoute
   '/library': typeof LibraryIndexRoute
+  '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/import': typeof ImportRoute
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/collections/$id': typeof CollectionsIdRoute
   '/library/$id': typeof LibraryIdRoute
+  '/collections/': typeof CollectionsIndexRoute
   '/library/': typeof LibraryIndexRoute
+  '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/collections'
     | '/dashboard'
     | '/import'
     | '/library'
     | '/login'
     | '/register'
+    | '/collections/$id'
     | '/library/$id'
+    | '/collections/'
     | '/library/'
+    | '/collections/series/$seriesName'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -107,22 +147,30 @@ export interface FileRouteTypes {
     | '/import'
     | '/login'
     | '/register'
+    | '/collections/$id'
     | '/library/$id'
+    | '/collections'
     | '/library'
+    | '/collections/series/$seriesName'
   id:
     | '__root__'
     | '/'
+    | '/collections'
     | '/dashboard'
     | '/import'
     | '/library'
     | '/login'
     | '/register'
+    | '/collections/$id'
     | '/library/$id'
+    | '/collections/'
     | '/library/'
+    | '/collections/series/$seriesName'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CollectionsRoute: typeof CollectionsRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   ImportRoute: typeof ImportRoute
   LibraryRoute: typeof LibraryRouteWithChildren
@@ -167,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -181,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryIndexRouteImport
       parentRoute: typeof LibraryRoute
     }
+    '/collections/': {
+      id: '/collections/'
+      path: '/'
+      fullPath: '/collections/'
+      preLoaderRoute: typeof CollectionsIndexRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
     '/library/$id': {
       id: '/library/$id'
       path: '/$id'
@@ -188,8 +250,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryIdRouteImport
       parentRoute: typeof LibraryRoute
     }
+    '/collections/$id': {
+      id: '/collections/$id'
+      path: '/$id'
+      fullPath: '/collections/$id'
+      preLoaderRoute: typeof CollectionsIdRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
+    '/collections/series/$seriesName': {
+      id: '/collections/series/$seriesName'
+      path: '/series/$seriesName'
+      fullPath: '/collections/series/$seriesName'
+      preLoaderRoute: typeof CollectionsSeriesSeriesNameRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
   }
 }
+
+interface CollectionsRouteChildren {
+  CollectionsIdRoute: typeof CollectionsIdRoute
+  CollectionsIndexRoute: typeof CollectionsIndexRoute
+  CollectionsSeriesSeriesNameRoute: typeof CollectionsSeriesSeriesNameRoute
+}
+
+const CollectionsRouteChildren: CollectionsRouteChildren = {
+  CollectionsIdRoute: CollectionsIdRoute,
+  CollectionsIndexRoute: CollectionsIndexRoute,
+  CollectionsSeriesSeriesNameRoute: CollectionsSeriesSeriesNameRoute,
+}
+
+const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
+  CollectionsRouteChildren,
+)
 
 interface LibraryRouteChildren {
   LibraryIdRoute: typeof LibraryIdRoute
@@ -206,6 +298,7 @@ const LibraryRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CollectionsRoute: CollectionsRouteWithChildren,
   DashboardRoute: DashboardRoute,
   ImportRoute: ImportRoute,
   LibraryRoute: LibraryRouteWithChildren,
