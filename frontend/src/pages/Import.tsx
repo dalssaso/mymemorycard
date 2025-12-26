@@ -72,10 +72,16 @@ export function Import() {
       importAPI.bulk(names, platformId),
     onSuccess: (response) => {
       setResults(response.data)
-      // Invalidate games cache so library refreshes
+      const result = response.data as ImportResult
+      
+      // Invalidate games list cache so library refreshes
       queryClient.invalidateQueries({ queryKey: ['games'] })
       
-      const result = response.data as ImportResult
+      // Invalidate individual game caches for imported games
+      // This ensures game detail pages show updated platform info
+      result.imported.forEach((item) => {
+        queryClient.invalidateQueries({ queryKey: ['game', item.game.id] })
+      })
       
       // Show success toast
       if (result.imported.length > 0) {

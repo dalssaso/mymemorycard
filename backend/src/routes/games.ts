@@ -30,11 +30,6 @@ interface ExportedGame {
   playtime_minutes: number | null
   difficulty_rating: number | null
   completion_percentage: number | null
-  achievements_total: number | null
-  achievements_earned: number | null
-  replay_value: number | null
-  estimated_completion_hours: number | null
-  actual_playtime_hours: number | null
 }
 
 // Get user's game library
@@ -101,12 +96,7 @@ router.get(
           ugp.is_favorite,
           upt.total_minutes as playtime_minutes,
           ucf.difficulty_rating,
-          ucf.completion_percentage,
-          ucf.achievements_total,
-          ucf.achievements_earned,
-          ucf.replay_value,
-          ucf.estimated_completion_hours,
-          ucf.actual_playtime_hours
+          ucf.completion_percentage
          FROM games g
          INNER JOIN user_games ug ON g.id = ug.game_id
          INNER JOIN platforms p ON ug.platform_id = p.id
@@ -133,32 +123,28 @@ router.get(
           'Playtime (hours)',
           'Difficulty',
           'Completion %',
-          'Achievements',
-          'Replay Value',
-          'Notes'
+          'Notes',
         ]
 
         const csvRows = [
           headers.join(','),
-          ...games.map((game) => [
-            `"${game.name.replace(/"/g, '""')}"`,
-            game.platform,
-            game.status || 'backlog',
-            game.user_rating || '',
-            game.is_favorite ? 'Yes' : 'No',
-            game.release_date || '',
-            game.metacritic_score || '',
-            game.esrb_rating || '',
-            game.series_name || '',
-            game.playtime_minutes ? Math.round(game.playtime_minutes / 60) : '',
-            game.difficulty_rating || '',
-            game.completion_percentage || '',
-            game.achievements_earned && game.achievements_total
-              ? `${game.achievements_earned}/${game.achievements_total}`
-              : '',
-            game.replay_value || '',
-            `"${(game.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
-          ].join(','))
+          ...games.map((game) =>
+            [
+              `"${game.name.replace(/"/g, '""')}"`,
+              game.platform,
+              game.status || 'backlog',
+              game.user_rating || '',
+              game.is_favorite ? 'Yes' : 'No',
+              game.release_date || '',
+              game.metacritic_score || '',
+              game.esrb_rating || '',
+              game.series_name || '',
+              game.playtime_minutes ? Math.round(game.playtime_minutes / 60) : '',
+              game.difficulty_rating || '',
+              game.completion_percentage || '',
+              `"${(game.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+            ].join(',')
+          ),
         ]
 
         const csv = csvRows.join('\n')
@@ -551,13 +537,8 @@ router.get(
 
       const customFields = await queryOne(
         `SELECT 
-          estimated_completion_hours,
-          actual_playtime_hours,
           completion_percentage,
           difficulty_rating,
-          achievements_total,
-          achievements_earned,
-          replay_value,
           updated_at
          FROM user_game_custom_fields
          WHERE user_id = $1 AND game_id = $2 AND platform_id = $3`,
@@ -584,27 +565,13 @@ router.put(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json() as {
+      const body = (await req.json()) as {
         platform_id?: string
-        estimated_completion_hours?: number | null
-        actual_playtime_hours?: number | null
         completion_percentage?: number | null
         difficulty_rating?: number | null
-        achievements_total?: number | null
-        achievements_earned?: number | null
-        replay_value?: number | null
       }
 
-      const { 
-        platform_id,
-        estimated_completion_hours,
-        actual_playtime_hours,
-        completion_percentage,
-        difficulty_rating,
-        achievements_total,
-        achievements_earned,
-        replay_value
-      } = body
+      const { platform_id, completion_percentage, difficulty_rating } = body
 
       if (!gameId || !platform_id) {
         return new Response(
@@ -618,7 +585,7 @@ router.put(
         'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
         [user.id, gameId, platform_id]
       )
-      
+
       if (ownership.rowCount === 0) {
         return new Response(
           JSON.stringify({ error: 'Game not found in your library' }),
@@ -645,50 +612,20 @@ router.put(
         }
       }
 
-      if (replay_value !== null && replay_value !== undefined) {
-        if (replay_value < 1 || replay_value > 5) {
-          return new Response(
-            JSON.stringify({ error: 'Replay value must be between 1 and 5' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-          )
-        }
-      }
-
       await query(
         `INSERT INTO user_game_custom_fields (
           user_id, game_id, platform_id,
-          estimated_completion_hours,
-          actual_playtime_hours,
           completion_percentage,
           difficulty_rating,
-          achievements_total,
-          achievements_earned,
-          replay_value,
           updated_at
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+         VALUES ($1, $2, $3, $4, $5, NOW())
          ON CONFLICT (user_id, game_id, platform_id)
          DO UPDATE SET
-           estimated_completion_hours = COALESCE($4, user_game_custom_fields.estimated_completion_hours),
-           actual_playtime_hours = COALESCE($5, user_game_custom_fields.actual_playtime_hours),
-           completion_percentage = COALESCE($6, user_game_custom_fields.completion_percentage),
-           difficulty_rating = COALESCE($7, user_game_custom_fields.difficulty_rating),
-           achievements_total = COALESCE($8, user_game_custom_fields.achievements_total),
-           achievements_earned = COALESCE($9, user_game_custom_fields.achievements_earned),
-           replay_value = COALESCE($10, user_game_custom_fields.replay_value),
+           completion_percentage = COALESCE($4, user_game_custom_fields.completion_percentage),
+           difficulty_rating = COALESCE($5, user_game_custom_fields.difficulty_rating),
            updated_at = NOW()`,
-        [
-          user.id,
-          gameId,
-          platform_id,
-          estimated_completion_hours,
-          actual_playtime_hours,
-          completion_percentage,
-          difficulty_rating,
-          achievements_total,
-          achievements_earned,
-          replay_value
-        ]
+        [user.id, gameId, platform_id, completion_percentage, difficulty_rating]
       )
 
       return new Response(

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { gamesAPI } from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
+import { PlaySessionTracker } from '@/components/PlaySessionTracker'
+import { CompletionProgressTracker } from '@/components/CompletionProgressTracker'
 
 interface CustomFieldsEditorProps {
   gameId: string
@@ -9,13 +11,8 @@ interface CustomFieldsEditorProps {
 }
 
 interface CustomFields {
-  estimated_completion_hours?: number | null
-  actual_playtime_hours?: number | null
   completion_percentage?: number | null
   difficulty_rating?: number | null
-  achievements_total?: number | null
-  achievements_earned?: number | null
-  replay_value?: number | null
 }
 
 export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorProps) {
@@ -57,73 +54,15 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
   }
 
   return (
-    <div className="space-y-6">
-      {/* Time Tracking */}
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-3">Time Tracking</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="estimated-completion" className="block text-sm font-medium text-gray-400 mb-2">
-              Estimated Completion (hours)
-            </label>
-            <input
-              id="estimated-completion"
-              type="number"
-              min="0"
-              step="0.5"
-              value={fields.estimated_completion_hours || ''}
-              onChange={(e) =>
-                handleFieldChange(
-                  'estimated_completion_hours',
-                  e.target.value ? parseFloat(e.target.value) : null
-                )
-              }
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
-              placeholder="20"
-            />
-          </div>
-          <div>
-            <label htmlFor="actual-playtime" className="block text-sm font-medium text-gray-400 mb-2">
-              Actual Playtime (hours)
-            </label>
-            <input
-              id="actual-playtime"
-              type="number"
-              min="0"
-              step="0.5"
-              value={fields.actual_playtime_hours || ''}
-              onChange={(e) =>
-                handleFieldChange(
-                  'actual_playtime_hours',
-                  e.target.value ? parseFloat(e.target.value) : null
-                )
-              }
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
-              placeholder="15"
-            />
-          </div>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <PlaySessionTracker gameId={gameId} platformId={platformId} />
 
-      {/* Completion Percentage */}
-      <div>
-        <label htmlFor="completion-percentage" className="block text-sm font-medium text-gray-400 mb-2">
-          Completion Percentage: {fields.completion_percentage || 0}%
-        </label>
-        <input
-          id="completion-percentage"
-          type="range"
-          min="0"
-          max="100"
-          value={fields.completion_percentage || 0}
-          onChange={(e) =>
-            handleFieldChange('completion_percentage', parseInt(e.target.value))
-          }
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-purple"
-        />
-      </div>
+      <div className="border-t border-gray-700" />
 
-      {/* Difficulty Rating */}
+      <CompletionProgressTracker gameId={gameId} platformId={platformId} />
+
+      <div className="border-t border-gray-700" />
+
       <div>
         <span className="block text-sm font-medium text-gray-400 mb-2" id="difficulty-rating-label">
           Difficulty Rating (1-10)
@@ -144,97 +83,14 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Achievements */}
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-3">Achievements</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="achievements-total" className="block text-sm font-medium text-gray-400 mb-2">
-              Total Achievements
-            </label>
-            <input
-              id="achievements-total"
-              type="number"
-              min="0"
-              value={fields.achievements_total || ''}
-              onChange={(e) =>
-                handleFieldChange(
-                  'achievements_total',
-                  e.target.value ? parseInt(e.target.value) : null
-                )
-              }
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
-              placeholder="50"
-            />
-          </div>
-          <div>
-            <label htmlFor="achievements-earned" className="block text-sm font-medium text-gray-400 mb-2">
-              Achievements Earned
-            </label>
-            <input
-              id="achievements-earned"
-              type="number"
-              min="0"
-              value={fields.achievements_earned || ''}
-              onChange={(e) =>
-                handleFieldChange(
-                  'achievements_earned',
-                  e.target.value ? parseInt(e.target.value) : null
-                )
-              }
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
-              placeholder="35"
-            />
-          </div>
-        </div>
-        {fields.achievements_total && fields.achievements_earned && (
-          <div className="mt-3">
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-primary-green h-2 rounded-full transition-all"
-                style={{
-                  width: `${Math.min(
-                    100,
-                    (fields.achievements_earned / fields.achievements_total) * 100
-                  )}%`,
-                }}
-              />
-            </div>
-            <p className="text-sm text-gray-400 mt-1">
-              {fields.achievements_earned} / {fields.achievements_total} (
-              {Math.round(
-                (fields.achievements_earned / fields.achievements_total) * 100
-              )}
-              %)
-            </p>
-          </div>
+        {fields.difficulty_rating && (
+          <button
+            onClick={() => handleFieldChange('difficulty_rating', null)}
+            className="mt-2 text-sm text-gray-500 hover:text-gray-300"
+          >
+            Clear rating
+          </button>
         )}
-      </div>
-
-      {/* Replay Value */}
-      <div>
-        <span className="block text-sm font-medium text-gray-400 mb-2" id="replay-value-label">
-          Replay Value (1-5 stars)
-        </span>
-        <div className="flex gap-2" role="group" aria-labelledby="replay-value-label">
-          {[1, 2, 3, 4, 5].map((value) => (
-            <button
-              key={value}
-              onClick={() => handleFieldChange('replay_value', value)}
-              aria-label={`${value} star${value === 1 ? '' : 's'}`}
-              aria-pressed={fields.replay_value === value}
-              className={`flex-1 py-3 rounded-lg transition-all ${
-                fields.replay_value && fields.replay_value >= value
-                  ? 'bg-primary-yellow/20 border-2 border-primary-yellow text-primary-yellow'
-                  : 'bg-gray-800 border-2 border-gray-700 text-gray-400 hover:border-primary-yellow hover:text-primary-yellow'
-              }`}
-            >
-              <span className="text-2xl" aria-hidden="true">★</span>
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   )

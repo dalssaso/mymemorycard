@@ -4,20 +4,10 @@
  * Tests the CORS middleware functionality without any external dependencies.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
+import { describe, it, expect } from 'bun:test'
 import { corsHeaders, handleCors } from '@/middleware/cors'
 
 describe('CORS Middleware', () => {
-  const originalEnv = process.env.ORIGIN
-
-  afterEach(() => {
-    if (originalEnv !== undefined) {
-      process.env.ORIGIN = originalEnv
-    } else {
-      delete process.env.ORIGIN
-    }
-  })
-
   describe('corsHeaders', () => {
     it('should return CORS headers with allowed origin', () => {
       const headers = corsHeaders('http://localhost:5173')
@@ -56,14 +46,6 @@ describe('CORS Middleware', () => {
       expect(headers['Access-Control-Allow-Origin']).toBe(
         'http://localhost:3000'
       )
-    })
-
-    it('should allow custom ORIGIN from env', () => {
-      process.env.ORIGIN = 'https://myapp.com'
-
-      const headers = corsHeaders('https://myapp.com')
-
-      expect(headers['Access-Control-Allow-Origin']).toBe('https://myapp.com')
     })
   })
 

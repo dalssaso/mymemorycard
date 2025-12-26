@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
+import { useParams, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
@@ -7,6 +7,7 @@ import { GameDetailSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor'
 import { GameAchievements } from '@/components/GameAchievements'
+import { PlatformIcon } from '@/components/PlatformIcon'
 
 interface GameDetails {
   id: string
@@ -45,6 +46,7 @@ export function GameDetail() {
   const { showToast } = useToast()
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [notesValue, setNotesValue] = useState('')
+  const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['game', id],
@@ -131,31 +133,35 @@ export function GameDetail() {
   }
 
   const game = data.game
+  const genres = data?.genres || []
+  const platforms = data?.platforms || []
+  const hasMultiplePlatforms = platforms.length > 1
+
+  const activePlatformId = selectedPlatformId || game.platform_id
+  const activePlatform = platforms.find(p => p.platform_id === activePlatformId) || game
 
   const handleStatusChange = (status: string) => {
-    updateStatusMutation.mutate({ platformId: game.platform_id, status })
+    updateStatusMutation.mutate({ platformId: activePlatformId, status })
   }
 
   const handleRatingChange = (rating: number) => {
-    updateRatingMutation.mutate({ platformId: game.platform_id, rating })
+    updateRatingMutation.mutate({ platformId: activePlatformId, rating })
   }
 
   const handleSaveNotes = () => {
-    updateNotesMutation.mutate({ platformId: game.platform_id, notes: notesValue })
+    updateNotesMutation.mutate({ platformId: activePlatformId, notes: notesValue })
   }
 
   const startEditingNotes = () => {
-    setNotesValue(game.notes || '')
+    setNotesValue(activePlatform.notes || '')
     setIsEditingNotes(true)
   }
-
-  const genres = data?.genres || []
 
   const sidebarContent = (
     <GameDetailSidebar
       gameId={game.id}
-      platformId={game.platform_id}
-      status={game.status}
+      platformId={activePlatformId}
+      status={activePlatform.status}
       onStatusChange={handleStatusChange}
       isUpdating={updateStatusMutation.isPending}
     />
@@ -163,9 +169,22 @@ export function GameDetail() {
 
   return (
     <PageLayout sidebar={sidebarContent}>
+      {/* Mobile Back Button - visible only on mobile */}
+      <div className="lg:hidden mb-4">
+        <Link
+          to="/library"
+          className="inline-flex items-center gap-2 text-primary-cyan hover:text-primary-purple transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Back to Library
+        </Link>
+      </div>
+
       {/* Background Image Header */}
       {game.background_image_url && (
-        <div className="relative h-96 w-full -mx-6 -mt-6 mb-6">
+        <div className="relative h-48 sm:h-64 lg:h-96 w-full -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-4 sm:mb-6">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${game.background_image_url})` }}
@@ -174,8 +193,7 @@ export function GameDetail() {
         </div>
       )}
       
-      <div className="max-w-6xl mx-auto">{game.background_image_url && <div className="-mt-64 relative z-10"></div>}
-
+      <div className={`max-w-6xl mx-auto ${game.background_image_url ? '-mt-32 sm:-mt-48 lg:-mt-64 relative z-10' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           {/* Cover Art */}
           <div className="lg:col-span-1">
@@ -191,6 +209,30 @@ export function GameDetail() {
               </div>
             )}
 
+            {/* Platform Selector (for multi-platform games) */}
+            {hasMultiplePlatforms && (
+              <div className="mt-4">
+                <label htmlFor="platform-select" className="block text-sm font-medium text-gray-400 mb-2">
+                  Tracking Platform
+                </label>
+                <select
+                  id="platform-select"
+                  value={activePlatformId}
+                  onChange={(e) => setSelectedPlatformId(e.target.value)}
+                  className="w-full bg-gray-900 border border-primary-purple rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-cyan"
+                >
+                  {platforms.map((platform) => (
+                    <option key={platform.platform_id} value={platform.platform_id}>
+                      {platform.platform_display_name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Stats and progress are tracked per platform
+                </p>
+              </div>
+            )}
+
             {/* Status Selector */}
             <div className="mt-4">
               <label htmlFor="game-status" className="block text-sm font-medium text-gray-400 mb-2">
@@ -198,7 +240,7 @@ export function GameDetail() {
               </label>
               <select
                 id="game-status"
-                value={game.status || 'backlog'}
+                value={activePlatform.status || 'backlog'}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 aria-describedby="status-description"
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
@@ -214,20 +256,38 @@ export function GameDetail() {
               </span>
             </div>
 
+            {/* Play Stats */}
+            <div className="mt-4 grid grid-cols-1 gap-3">
+              <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-3">
+                <div className="text-xs text-primary-cyan">Playtime</div>
+                <div className="text-lg font-semibold text-white">
+                  {Math.floor(activePlatform.total_minutes / 60)}h {activePlatform.total_minutes % 60}m
+                </div>
+              </div>
+              {activePlatform.last_played && (
+                <div className="bg-primary-purple/10 border border-primary-purple/30 rounded-lg p-3">
+                  <div className="text-xs text-primary-purple">Last Played</div>
+                  <div className="text-sm font-semibold text-white">
+                    {new Date(activePlatform.last_played).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Rating Selector */}
             <div className="mt-4">
               <span className="block text-sm font-medium text-gray-400 mb-2" id="user-rating-label">
                 Your Rating
               </span>
-              <div className="flex gap-1" role="group" aria-labelledby="user-rating-label">
+              <div className="grid grid-cols-10 gap-1" role="group" aria-labelledby="user-rating-label">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
                   <button
                     key={rating}
                     onClick={() => handleRatingChange(rating)}
                     aria-label={`Rate ${rating} out of 10`}
-                    aria-pressed={game.user_rating === rating}
-                    className={`flex-1 py-2 rounded transition-all ${
-                      game.user_rating === rating
+                    aria-pressed={activePlatform.user_rating === rating}
+                    className={`py-2 text-sm rounded transition-all ${
+                      activePlatform.user_rating === rating
                         ? 'bg-primary-purple text-white shadow-lg shadow-primary-purple/50'
                         : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
                     }`}
@@ -242,50 +302,60 @@ export function GameDetail() {
             <div className="mt-4">
               <button
                 onClick={() => toggleFavoriteMutation.mutate({ 
-                  platformId: game.platform_id, 
-                  isFavorite: !game.is_favorite 
+                  platformId: activePlatformId, 
+                  isFavorite: !activePlatform.is_favorite 
                 })}
                 disabled={toggleFavoriteMutation.isPending}
                 className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                  game.is_favorite
+                  activePlatform.is_favorite
                     ? 'bg-red-600/20 border-2 border-red-500 text-red-400 hover:bg-red-600/30'
                     : 'bg-gray-800 border-2 border-gray-700 text-gray-400 hover:bg-gray-700 hover:border-red-500 hover:text-red-400'
                 }`}
               >
-                {game.is_favorite ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+                {activePlatform.is_favorite ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
               </button>
             </div>
-          </div>
 
-          {/* Game Details */}
-          <div className="lg:col-span-2">
-            <h1 className="text-4xl font-bold mb-2">{game.name}</h1>
-            
-            {/* Metadata Row */}
-            <div className="flex flex-wrap gap-3 text-sm mb-4">
-              <span className="px-3 py-1 bg-primary-purple/20 border border-primary-purple rounded-lg text-primary-purple">
-                {game.platform_display_name}
-              </span>
+            {/* Owned Platforms */}
+            {platforms.length > 0 && (
+              <div className="mt-4">
+                <span className="block text-sm font-medium text-gray-400 mb-2">Owned on</span>
+                <div className="flex flex-wrap gap-2">
+                  {platforms.map((platform) => (
+                    <div
+                      key={platform.platform_id}
+                      className="px-3 py-1.5 bg-primary-purple/20 border border-primary-purple/50 rounded-lg flex items-center gap-2"
+                    >
+                      <PlatformIcon platform={platform.platform_display_name} size="sm" />
+                      <span className="text-sm text-primary-purple">{platform.platform_display_name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Metadata */}
+            <div className="mt-4 flex flex-wrap gap-2">
               {game.release_date && (
-                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400">
+                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400 text-sm">
                   {new Date(game.release_date).getFullYear()}
                 </span>
               )}
               {game.metacritic_score && (
-                <span className="px-3 py-1 bg-primary-green/20 border border-primary-green rounded-lg text-primary-green">
+                <span className="px-3 py-1 bg-primary-green/20 border border-primary-green rounded-lg text-primary-green text-sm">
                   Metacritic: {game.metacritic_score}
                 </span>
               )}
               {game.esrb_rating && (
-                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400">
+                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400 text-sm">
                   {game.esrb_rating.toUpperCase()}
                 </span>
               )}
             </div>
-            
+
             {/* Genres */}
             {genres.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {genres.map((genre) => (
                   <span
                     key={genre}
@@ -296,6 +366,11 @@ export function GameDetail() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Game Details */}
+          <div className="lg:col-span-2">
+            <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
 
             {game.description && (
               <div id="about" className="mb-6 bg-gray-800/30 rounded-lg p-4">
@@ -313,7 +388,7 @@ export function GameDetail() {
                     onClick={startEditingNotes}
                     className="text-sm text-primary-cyan hover:text-primary-purple"
                   >
-                    {game.notes ? 'Edit' : 'Add Notes'}
+                    {activePlatform.notes ? 'Edit' : 'Add Notes'}
                   </button>
                 )}
               </div>
@@ -344,7 +419,7 @@ export function GameDetail() {
                 </div>
               ) : (
                 <div className="text-gray-300 bg-gray-900/50 rounded-lg p-4">
-                  {game.notes || 'No notes yet'}
+                  {activePlatform.notes || 'No notes yet'}
                 </div>
               )}
             </div>
@@ -357,8 +432,15 @@ export function GameDetail() {
 
             {/* My Stats Section */}
             <div id="stats" className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-primary-purple mb-4">My Stats</h2>
-              <CustomFieldsEditor gameId={game.id} platformId={game.platform_id} />
+              <h2 className="text-xl font-semibold text-primary-purple mb-4">
+                My Stats
+                {hasMultiplePlatforms && (
+                  <span className="text-sm font-normal text-gray-400 ml-2">
+                    ({activePlatform.platform_display_name})
+                  </span>
+                )}
+              </h2>
+              <CustomFieldsEditor gameId={game.id} platformId={activePlatformId} />
             </div>
 
             {/* External Resources */}
@@ -386,23 +468,6 @@ export function GameDetail() {
               </div>
             </div>
 
-            {/* Play Stats */}
-            <div id="playtime" className="grid grid-cols-2 gap-4">
-              <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-4">
-                <div className="text-sm text-primary-cyan">Playtime</div>
-                <div className="text-2xl font-semibold text-white">
-                  {Math.floor(game.total_minutes / 60)}h {game.total_minutes % 60}m
-                </div>
-              </div>
-              {game.last_played && (
-                <div className="bg-primary-purple/10 border border-primary-purple/30 rounded-lg p-4">
-                  <div className="text-sm text-primary-purple">Last Played</div>
-                  <div className="text-lg font-semibold text-white">
-                    {new Date(game.last_played).toLocaleDateString()}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

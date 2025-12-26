@@ -19,6 +19,7 @@ import { PageLayout } from '@/components/layout'
 import { LibrarySidebar } from '@/components/sidebar'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
+import { PlatformIcons } from '@/components/PlatformIcon'
 
 interface Game {
   id: string
@@ -36,11 +37,25 @@ interface Game {
   is_favorite: boolean
 }
 
-const columnHelper = createColumnHelper<Game>()
+interface AggregatedGame {
+  id: string
+  name: string
+  cover_art_url: string | null
+  platforms: { id: string; name: string; displayName: string }[]
+  status: string
+  user_rating: number | null
+  total_minutes: number
+  last_played: string | null
+  metacritic_score: number | null
+  release_date: string | null
+  is_favorite: boolean
+}
+
+const columnHelper = createColumnHelper<AggregatedGame>()
 
 const COLUMN_LABELS: Record<string, string> = {
   name: 'Name',
-  platform_display_name: 'Platform',
+  platforms: 'Platforms',
   status: 'Status',
   metacritic_score: 'Critic Score',
   user_rating: 'Your Rating',
@@ -102,15 +117,56 @@ export function Library() {
     return Array.from(statuses).sort()
   }, [games])
   
+  // Aggregate games by ID to show one entry per game with multiple platforms
+  const aggregatedGames = useMemo(() => {
+    const gameMap = new Map<string, AggregatedGame>()
+    
+    for (const game of games) {
+      const existing = gameMap.get(game.id)
+      if (existing) {
+        existing.platforms.push({
+          id: game.platform_id,
+          name: game.platform_name,
+          displayName: game.platform_display_name,
+        })
+        existing.total_minutes += game.total_minutes
+        if (game.is_favorite) existing.is_favorite = true
+        if (game.user_rating && (!existing.user_rating || game.user_rating > existing.user_rating)) {
+          existing.user_rating = game.user_rating
+        }
+      } else {
+        gameMap.set(game.id, {
+          id: game.id,
+          name: game.name,
+          cover_art_url: game.cover_art_url,
+          platforms: [{
+            id: game.platform_id,
+            name: game.platform_name,
+            displayName: game.platform_display_name,
+          }],
+          status: game.status,
+          user_rating: game.user_rating,
+          total_minutes: game.total_minutes,
+          last_played: game.last_played,
+          metacritic_score: game.metacritic_score,
+          release_date: game.release_date,
+          is_favorite: game.is_favorite,
+        })
+      }
+    }
+    
+    return Array.from(gameMap.values())
+  }, [games])
+  
   // Filter games based on platform, status, and favorites
   const filteredGames = useMemo(() => {
-    return games.filter(game => {
-      if (platformFilter && game.platform_display_name !== platformFilter) return false
+    return aggregatedGames.filter(game => {
+      if (platformFilter && !game.platforms.some(p => p.displayName === platformFilter)) return false
       if (statusFilter && game.status !== statusFilter) return false
       if (favoritesOnly && !game.is_favorite) return false
       return true
     })
-  }, [games, platformFilter, statusFilter, favoritesOnly])
+  }, [aggregatedGames, platformFilter, statusFilter, favoritesOnly])
 
   const columns = useMemo(
     () => [
@@ -126,9 +182,11 @@ export function Library() {
           </Link>
         ),
       }),
-      columnHelper.accessor('platform_display_name', {
-        header: 'Platform',
-        cell: (info) => info.getValue(),
+      columnHelper.accessor('platforms', {
+        header: 'Platforms',
+        cell: (info) => (
+          <PlatformIcons platforms={info.getValue().map(p => p.displayName)} size="sm" />
+        ),
       }),
       columnHelper.accessor('status', {
         header: 'Status',

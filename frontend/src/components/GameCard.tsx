@@ -3,13 +3,13 @@ import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AddToCollection } from './AddToCollection'
+import { PlatformIcons } from './PlatformIcon'
 
 interface GameCardProps {
   id: string
   name: string
   cover_art_url: string | null
-  platform_display_name: string
-  platform_id: string
+  platforms: { id: string; name: string; displayName: string }[]
   status: string
   metacritic_score: number | null
   user_rating: number | null
@@ -29,8 +29,7 @@ export function GameCard({
   id,
   name,
   cover_art_url,
-  platform_display_name,
-  platform_id,
+  platforms,
   status,
   metacritic_score,
   user_rating,
@@ -44,7 +43,7 @@ export function GameCard({
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: (newFavorite: boolean) => 
-      gamesAPI.toggleFavorite(id, platform_id, newFavorite),
+      gamesAPI.toggleFavorite(id, platforms[0]?.id || '', newFavorite),
     onMutate: async (newFavorite) => {
       setIsFavorite(newFavorite)
     },
@@ -94,7 +93,7 @@ export function GameCard({
           </h3>
 
           <div className="flex items-center gap-2 mb-2">
-            <span className="badge badge-steam">{platform_display_name}</span>
+            <PlatformIcons platforms={platforms.map(p => p.displayName)} size="sm" />
             <span className={`badge ${STATUS_COLORS[status as keyof typeof STATUS_COLORS]}`}>
               {status}
             </span>

@@ -13,6 +13,9 @@ import '@/routes/api-stats'
 import '@/routes/admin'
 import '@/routes/preferences'
 import '@/routes/achievements'
+import '@/routes/sessions'
+import '@/routes/completion-logs'
+import '@/routes/stats'
 
 async function startServer() {
   await runMigrations()

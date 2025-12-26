@@ -4,8 +4,10 @@ import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
 import { Card } from '@/components/ui'
 import { DashboardSidebar } from '@/components/sidebar'
+import { ActivityHeatmap } from '@/components/ActivityHeatmap'
+import { ActivityFeed } from '@/components/ActivityFeed'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 const STATUS_COLORS = {
   backlog: '#71717A',
@@ -19,6 +21,8 @@ const PLATFORM_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', 
 const GENRE_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#F472B6', '#A78BFA', '#34D399', '#FBBF24']
 
 export function Dashboard() {
+  const [heatmapType, setHeatmapType] = useState<'activity' | 'completion'>('activity')
+
   const { data } = useQuery({
     queryKey: ['games'],
     queryFn: async () => {
@@ -112,6 +116,46 @@ export function Dashboard() {
           </Card>
         </div>
 
+        {/* Activity Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2">
+            <Card>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-primary-purple">Your Activity</h2>
+                <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
+                  <button
+                    onClick={() => setHeatmapType('activity')}
+                    className={`px-3 py-1 rounded text-sm transition-colors ${
+                      heatmapType === 'activity'
+                        ? 'bg-primary-cyan text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Play Sessions
+                  </button>
+                  <button
+                    onClick={() => setHeatmapType('completion')}
+                    className={`px-3 py-1 rounded text-sm transition-colors ${
+                      heatmapType === 'completion'
+                        ? 'bg-primary-purple text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Completion
+                  </button>
+                </div>
+              </div>
+              <ActivityHeatmap type={heatmapType} />
+            </Card>
+          </div>
+          <div>
+            <Card className="h-full">
+              <h2 className="text-xl font-bold text-primary-purple mb-4">Recent Activity</h2>
+              <ActivityFeed limit={5} />
+            </Card>
+          </div>
+        </div>
+
         {/* Data Visualizations */}
         {totalGames > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -138,8 +182,9 @@ export function Dashboard() {
                       backgroundColor: '#1a1a1a',
                       border: '1px solid #3f3f46',
                       borderRadius: '8px',
-                      color: '#fff',
                     }}
+                    itemStyle={{ color: '#fff' }}
+                    labelStyle={{ color: '#a1a1aa' }}
                   />
                   <Legend
                     wrapperStyle={{ color: '#a1a1aa' }}
@@ -171,8 +216,9 @@ export function Dashboard() {
                       backgroundColor: '#1a1a1a',
                       border: '1px solid #3f3f46',
                       borderRadius: '8px',
-                      color: '#fff',
                     }}
+                    itemStyle={{ color: '#fff' }}
+                    labelStyle={{ color: '#a1a1aa' }}
                   />
                   <Legend
                     wrapperStyle={{ color: '#a1a1aa' }}
@@ -205,8 +251,9 @@ export function Dashboard() {
                         backgroundColor: '#1a1a1a',
                         border: '1px solid #3f3f46',
                         borderRadius: '8px',
-                        color: '#fff',
                       }}
+                      itemStyle={{ color: '#fff' }}
+                      labelStyle={{ color: '#a1a1aa' }}
                     />
                     <Legend
                       wrapperStyle={{ color: '#a1a1aa' }}

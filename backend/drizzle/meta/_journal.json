@@ -15,6 +15,13 @@
       "when": 1767021632339,
       "tag": "0001_parched_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767030137659,
+      "tag": "0002_colorful_swarm",
+      "breakpoints": true
     }
   ]
 }

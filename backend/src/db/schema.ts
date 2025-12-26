@@ -150,6 +150,57 @@ export const userGames = pgTable(
 // PLAYTIME & PROGRESS
 // ============================================================================
 
+export const playSessions = pgTable(
+  'play_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    durationMinutes: integer('duration_minutes'),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index('idx_play_sessions_user').on(table.userId),
+    index('idx_play_sessions_game').on(table.gameId),
+    index('idx_play_sessions_date').on(table.startedAt),
+  ]
+)
+
+export const completionLogs = pgTable(
+  'completion_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id),
+    percentage: integer('percentage').notNull(),
+    loggedAt: timestamp('logged_at', { withTimezone: true }).defaultNow(),
+    notes: text('notes'),
+  },
+  (table) => [
+    index('idx_completion_logs_user').on(table.userId),
+    index('idx_completion_logs_game').on(table.gameId),
+    index('idx_completion_logs_date').on(table.loggedAt),
+    check('percentage_check', sql`percentage >= 0 AND percentage <= 100`),
+  ]
+)
+
 export const userPlaytime = pgTable(
   'user_playtime',
   {
@@ -373,13 +424,8 @@ export const userGameCustomFields = pgTable(
     platformId: uuid('platform_id')
       .notNull()
       .references(() => platforms.id),
-    estimatedCompletionHours: real('estimated_completion_hours'),
-    actualPlaytimeHours: real('actual_playtime_hours'),
     completionPercentage: integer('completion_percentage'),
     difficultyRating: integer('difficulty_rating'),
-    achievementsTotal: integer('achievements_total'),
-    achievementsEarned: integer('achievements_earned'),
-    replayValue: integer('replay_value'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
@@ -388,7 +434,6 @@ export const userGameCustomFields = pgTable(
     index('idx_custom_fields_user_game').on(table.userId, table.gameId),
     check('completion_percentage_check', sql`completion_percentage >= 0 AND completion_percentage <= 100`),
     check('difficulty_rating_check', sql`difficulty_rating >= 1 AND difficulty_rating <= 10`),
-    check('replay_value_check', sql`replay_value >= 1 AND replay_value <= 5`),
   ]
 )
 

@@ -93,6 +93,50 @@ export const preferencesAPI = {
   }) => api.put('/preferences', prefs),
 }
 
+// Sessions API
+export const sessionsAPI = {
+  getAll: (gameId: string, params?: { limit?: number; offset?: number; startDate?: string; endDate?: string }) =>
+    api.get(`/games/${gameId}/sessions`, { params }),
+  create: (gameId: string, data: {
+    platformId: string
+    startedAt: string
+    endedAt?: string | null
+    durationMinutes?: number | null
+    notes?: string | null
+  }) => api.post(`/games/${gameId}/sessions`, data),
+  update: (gameId: string, sessionId: string, data: {
+    endedAt?: string | null
+    durationMinutes?: number | null
+    notes?: string | null
+  }) => api.patch(`/games/${gameId}/sessions/${sessionId}`, data),
+  delete: (gameId: string, sessionId: string) =>
+    api.delete(`/games/${gameId}/sessions/${sessionId}`),
+  getActive: () => api.get('/sessions/active'),
+}
+
+// Completion Logs API
+export const completionLogsAPI = {
+  getAll: (gameId: string, params?: { limit?: number; offset?: number }) =>
+    api.get(`/games/${gameId}/completion-logs`, { params }),
+  create: (gameId: string, data: {
+    platformId: string
+    percentage: number
+    notes?: string | null
+  }) => api.post(`/games/${gameId}/completion-logs`, data),
+  delete: (gameId: string, logId: string) =>
+    api.delete(`/games/${gameId}/completion-logs/${logId}`),
+}
+
+// Stats API
+export const statsAPI = {
+  getActivityHeatmap: (year?: number) =>
+    api.get('/stats/activity-heatmap', { params: { year } }),
+  getCompletionHeatmap: (year?: number) =>
+    api.get('/stats/completion-heatmap', { params: { year } }),
+  getActivityFeed: (limit?: number) =>
+    api.get('/stats/activity-feed', { params: { limit } }),
+}
+
 // Collections API
 export const collectionsAPI = {
   getAll: () => api.get('/collections'),
