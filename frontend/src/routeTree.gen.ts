@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
@@ -22,6 +23,11 @@ import { Route as LibraryIdRouteImport } from './routes/library.$id'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
 import { Route as CollectionsSeriesSeriesNameRouteImport } from './routes/collections.series.$seriesName'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/library/$id': typeof LibraryIdRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/import': typeof ImportRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/library/$id': typeof LibraryIdRoute
   '/collections': typeof CollectionsIndexRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/library/$id': typeof LibraryIdRoute
   '/collections/': typeof CollectionsIndexRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/login'
     | '/register'
+    | '/settings'
     | '/collections/$id'
     | '/library/$id'
     | '/collections/'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/import'
     | '/login'
     | '/register'
+    | '/settings'
     | '/collections/$id'
     | '/library/$id'
     | '/collections'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/login'
     | '/register'
+    | '/settings'
     | '/collections/$id'
     | '/library/$id'
     | '/collections/'
@@ -176,10 +188,18 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

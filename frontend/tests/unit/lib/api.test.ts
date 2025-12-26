@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { authAPI, gamesAPI, importAPI } from './api'
+import { authAPI, gamesAPI, importAPI } from '@/lib/api'
 
 describe('API Client', () => {
   describe('authAPI', () => {

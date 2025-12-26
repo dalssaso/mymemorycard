@@ -4,6 +4,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { importAPI } from '@/lib/api'
 import axios from 'axios'
 import { PageLayout } from '@/components/layout'
+import { ImportSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
 
 interface Platform {
@@ -119,8 +120,17 @@ export function Import() {
     })
   }
 
+  const sidebarContent = (
+    <ImportSidebar
+      platforms={platforms}
+      selectedPlatform={selectedPlatform}
+      onPlatformSelect={setSelectedPlatform}
+      isImporting={importMutation.isPending}
+    />
+  )
+
   return (
-    <PageLayout>
+    <PageLayout sidebar={sidebarContent}>
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-2">
           Import Games

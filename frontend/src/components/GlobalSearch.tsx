@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
@@ -14,8 +14,20 @@ interface Game {
 export function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<Element | null>(null)
   const navigate = useNavigate()
+
+  const closeModal = useCallback(() => {
+    setIsOpen(false)
+    setSearchQuery('')
+    // Return focus to the element that triggered the modal
+    if (triggerRef.current instanceof HTMLElement) {
+      triggerRef.current.focus()
+    }
+  }, [])
 
   const { data } = useQuery({
     queryKey: ['games'],
@@ -37,24 +49,45 @@ export function GlobalSearch() {
       }).slice(0, 10)
     : []
 
+  // Reset selected index when search results change
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [searchQuery])
+
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Cmd+K (Mac) or Ctrl+K (Windows/Linux)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
+        // Store the currently focused element before opening
+        triggerRef.current = document.activeElement
         setIsOpen(true)
       }
       // Escape to close
-      if (e.key === 'Escape') {
-        setIsOpen(false)
-        setSearchQuery('')
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault()
+        closeModal()
+      }
+
+      // Arrow navigation and Enter selection when modal is open
+      if (isOpen && searchResults.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          setSelectedIndex((prev) => (prev + 1) % searchResults.length)
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          setSelectedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
+        } else if (e.key === 'Enter' && searchResults[selectedIndex]) {
+          e.preventDefault()
+          handleSelectGame(searchResults[selectedIndex].id)
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [isOpen, searchResults, selectedIndex, closeModal])
 
   // Focus input when modal opens
   useEffect(() => {
@@ -63,9 +96,41 @@ export function GlobalSearch() {
     }
   }, [isOpen])
 
+  // Focus trap - keep focus within modal when open
+  useEffect(() => {
+    if (!isOpen || !modalRef.current) return
+
+    const modal = modalRef.current
+    const focusableElements = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const firstElement = focusableElements[0]
+    const lastElement = focusableElements[focusableElements.length - 1]
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement?.focus()
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement?.focus()
+        }
+      }
+    }
+
+    modal.addEventListener('keydown', handleTabKey)
+    return () => modal.removeEventListener('keydown', handleTabKey)
+  }, [isOpen])
+
   const handleSelectGame = (gameId: string) => {
-    setIsOpen(false)
-    setSearchQuery('')
+    closeModal()
     navigate({ to: '/library/$id', params: { id: gameId } })
   }
 
@@ -74,18 +139,24 @@ export function GlobalSearch() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-start justify-center z-50 p-4 pt-24">
+    <div
+      className="fixed inset-0 bg-black/80 flex items-start justify-center z-50 p-4 pt-24"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search games"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0"
-        onClick={() => {
-          setIsOpen(false)
-          setSearchQuery('')
-        }}
+        onClick={closeModal}
+        aria-hidden="true"
       />
 
       {/* Search Modal */}
-      <div className="relative w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-lg shadow-2xl">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-lg shadow-2xl"
+      >
         {/* Search Input */}
         <div className="flex items-center gap-3 p-4 border-b border-gray-700">
           <svg
@@ -107,11 +178,23 @@ export function GlobalSearch() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search games by name or notes..."
+            aria-label="Search games by name or notes"
+            aria-controls="search-results"
+            aria-autocomplete="list"
             className="flex-1 bg-transparent text-white text-lg focus:outline-none"
           />
           <kbd className="px-2 py-1 text-xs text-gray-400 bg-gray-800 border border-gray-700 rounded">
             ESC
           </kbd>
+        </div>
+
+        {/* Screen reader announcement for search results */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {searchQuery.trim() !== '' && (
+            searchResults.length === 0
+              ? `No games found matching ${searchQuery}`
+              : `${searchResults.length} game${searchResults.length === 1 ? '' : 's'} found`
+          )}
         </div>
 
         {/* Search Results */}
@@ -128,12 +211,19 @@ export function GlobalSearch() {
               No games found matching "{searchQuery}"
             </div>
           ) : (
-            <div className="py-2">
-              {searchResults.map((game) => (
+            <div id="search-results" className="py-2" role="listbox" aria-label="Search results">
+              {searchResults.map((game, index) => (
                 <button
                   key={game.id}
                   onClick={() => handleSelectGame(game.id)}
-                  className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-800 transition-colors text-left"
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  className={`w-full flex items-center gap-4 px-4 py-3 transition-colors text-left ${
+                    index === selectedIndex
+                      ? 'bg-primary-purple/20 border-l-2 border-primary-purple'
+                      : 'hover:bg-gray-800'
+                  }`}
+                  role="option"
+                  aria-selected={index === selectedIndex}
                 >
                   {game.cover_art_url ? (
                     <img

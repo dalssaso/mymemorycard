@@ -65,7 +65,7 @@ If you have an existing database and need to apply new migrations:
 
 ```bash
 # Connect to the database
-docker exec -it gamelist-db psql -U gamelist -d gamelist
+docker exec -it mymemorycard-db psql -U mymemorycard -d mymemorycard
 
 # Run the migration SQL from the appropriate section above
 ```
@@ -74,7 +74,7 @@ Or use the migration script:
 
 ```bash
 # Apply all missing migrations
-docker exec -i gamelist-db psql -U gamelist -d gamelist < backend/migrations/YYYYMMDD_description.sql
+docker exec -i mymemorycard-db psql -U mymemorycard -d mymemorycard < backend/migrations/YYYYMMDD_description.sql
 ```
 
 ## Rollback
@@ -86,7 +86,7 @@ To start fresh (⚠️ WARNING: This deletes all data):
 docker-compose down
 
 # Remove the database volume
-docker volume rm gamelist_postgres_data
+docker volume rm mymemorycard_postgres_data
 
 # Start fresh
 docker-compose up -d

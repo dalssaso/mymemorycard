@@ -1,0 +1,48 @@
+# Development docker-compose
+# Builds code inside containers, uses .env from project root
+# Run with: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# This extends the base docker-compose.yml which provides postgres and redis services
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mymemorycard-backend
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://mymemorycard:${DB_PASSWORD:-devpassword}@postgres:5432/mymemorycard
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/src:/app/src:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - mymemorycard-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: mymemorycard-frontend
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: development
+      VITE_BACKEND_ORIGIN: http://backend:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src:ro
+    depends_on:
+      - backend
+    networks:
+      - mymemorycard-network

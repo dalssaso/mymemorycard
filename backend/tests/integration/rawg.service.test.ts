@@ -1,7 +1,14 @@
-import { describe, it, expect, beforeAll } from 'bun:test'
-import { searchGames, getGameDetails } from './rawg'
+/**
+ * Integration Tests: RAWG Service
+ *
+ * These tests require the RAWG_API_KEY environment variable
+ * to be set to make real API calls.
+ */
 
-describe('RAWG Service', () => {
+import { describe, it, expect, beforeAll } from 'bun:test'
+import { searchGames, getGameDetails } from '@/services/rawg'
+
+describe('RAWG Service (integration)', () => {
   beforeAll(() => {
     if (!process.env.RAWG_API_KEY) {
       console.warn('RAWG_API_KEY not set, tests will return empty results')
@@ -21,7 +28,7 @@ describe('RAWG Service', () => {
 
     it('should return game objects with expected properties', async () => {
       const results = await searchGames('Witcher 3')
-      
+
       if (results.length > 0) {
         const game = results[0]
         expect(game).toHaveProperty('id')
@@ -49,9 +56,8 @@ describe('RAWG Service', () => {
         return
       }
 
-      // Use a known game ID (The Witcher 3)
       const result = await getGameDetails(3328)
-      
+
       if (result) {
         expect(result).toHaveProperty('id')
         expect(result).toHaveProperty('name')
@@ -62,25 +68,25 @@ describe('RAWG Service', () => {
   })
 
   describe('Rate Limiting', () => {
-    it('should rate limit requests when API key is configured', async () => {
-      if (!process.env.RAWG_API_KEY) {
-        // Skip test if no API key
-        return
-      }
+    it(
+      'should rate limit requests when API key is configured',
+      async () => {
+        if (!process.env.RAWG_API_KEY) {
+          return
+        }
 
-      // Use unique queries to avoid cache hits
-      const uniqueId = Date.now()
-      const start = Date.now()
-      
-      // Make 3 requests with unique queries
-      await searchGames(`RateLimitTest${uniqueId}A`)
-      await searchGames(`RateLimitTest${uniqueId}B`)
-      await searchGames(`RateLimitTest${uniqueId}C`)
-      
-      const duration = Date.now() - start
-      
-      // Should take at least 420ms (2 * 210ms between requests)
-      expect(duration).toBeGreaterThanOrEqual(400)
-    }, { timeout: 10000 })
+        const uniqueId = Date.now()
+        const start = Date.now()
+
+        await searchGames(`RateLimitTest${uniqueId}A`)
+        await searchGames(`RateLimitTest${uniqueId}B`)
+        await searchGames(`RateLimitTest${uniqueId}C`)
+
+        const duration = Date.now() - start
+
+        expect(duration).toBeGreaterThanOrEqual(400)
+      },
+      { timeout: 10000 }
+    )
   })
 })

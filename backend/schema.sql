@@ -281,3 +281,15 @@ CREATE TABLE sync_history (
 
 CREATE INDEX idx_sync_history_user ON sync_history(user_id);
 CREATE INDEX idx_sync_history_platform ON sync_history(platform_id);
+
+-- ============================================================================
+-- USER PREFERENCES (Phase 6)
+-- ============================================================================
+
+CREATE TABLE user_preferences (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    default_view VARCHAR(10) DEFAULT 'grid' CHECK(default_view IN ('grid', 'table')),
+    items_per_page INTEGER DEFAULT 25 CHECK(items_per_page IN (10, 25, 50, 100)),
+    theme VARCHAR(20) DEFAULT 'dark',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);

@@ -1,0 +1,27 @@
+{
+  "name": "mymemorycard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A self-hosted game library aggregator",
+  "scripts": {
+    "prepare": "husky install",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && bun test",
+    "test:frontend": "cd frontend && npm test",
+    "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
+    "typecheck:backend": "cd backend && bun run typecheck",
+    "typecheck:frontend": "cd frontend && npm run typecheck",
+    "lint": "cd frontend && npm run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "bun": ">=1.0.0"
+  }
+}

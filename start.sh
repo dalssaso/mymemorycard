@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "GameList - Starting Development Environment"
+echo "MyMemoryCard - Starting Development Environment"
 echo ""
 
 # Check if Docker is running

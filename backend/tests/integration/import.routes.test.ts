@@ -1,16 +1,25 @@
+/**
+ * Integration Tests: Import Routes
+ *
+ * Prerequisites:
+ * - docker compose up -d (postgres and redis running)
+ * - Backend server running on localhost:3000
+ */
+
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
 import { pool } from '@/services/db'
+import { API_BASE_URL } from '../setup/integration.setup'
 
-describe('Import Routes', () => {
+describe('Import Routes (integration)', () => {
   let authToken: string
   let userId: string
 
   beforeAll(async () => {
-    // Clean up test data
-    await pool.query('DELETE FROM users WHERE email LIKE $1', ['%@import-test.com'])
+    await pool.query('DELETE FROM users WHERE email LIKE $1', [
+      '%@import-test.com',
+    ])
 
-    // Create test user
-    const registerResponse = await fetch('http://localhost:3000/api/auth/register', {
+    const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -20,19 +29,21 @@ describe('Import Routes', () => {
       }),
     })
 
-    const data = (await registerResponse.json()) as { user: { id: string }; token: string }
+    const data = (await registerResponse.json()) as {
+      user: { id: string }
+      token: string
+    }
     authToken = data.token
     userId = data.user.id
   })
 
   afterAll(async () => {
-    // Clean up test data
     await pool.query('DELETE FROM users WHERE id = $1', [userId])
   })
 
   describe('POST /api/import/bulk', () => {
     it('should require authentication', async () => {
-      const response = await fetch('http://localhost:3000/api/import/bulk', {
+      const response = await fetch(`${API_BASE_URL}/api/import/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameNames: ['Test Game'] }),
@@ -42,7 +53,7 @@ describe('Import Routes', () => {
     })
 
     it('should validate gameNames parameter', async () => {
-      const response = await fetch('http://localhost:3000/api/import/bulk', {
+      const response = await fetch(`${API_BASE_URL}/api/import/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +68,7 @@ describe('Import Routes', () => {
     })
 
     it('should accept gameNames array', async () => {
-      const response = await fetch('http://localhost:3000/api/import/bulk', {
+      const response = await fetch(`${API_BASE_URL}/api/import/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,14 +78,16 @@ describe('Import Routes', () => {
       })
 
       expect(response.status).toBe(200)
-      const data = (await response.json()) as { imported: any[]; needsReview: any[] }
+      const data = (await response.json()) as {
+        imported: unknown[]
+        needsReview: unknown[]
+      }
       expect(data).toHaveProperty('imported')
       expect(data).toHaveProperty('needsReview')
     })
 
     it('should accept optional platformId', async () => {
-      // Get a platform
-      const platformsResponse = await fetch('http://localhost:3000/api/platforms', {
+      const platformsResponse = await fetch(`${API_BASE_URL}/api/platforms`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })
       const platformsData = (await platformsResponse.json()) as {
@@ -82,7 +95,7 @@ describe('Import Routes', () => {
       }
       const platformId = platformsData.platforms[0].id
 
-      const response = await fetch('http://localhost:3000/api/import/bulk', {
+      const response = await fetch(`${API_BASE_URL}/api/import/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

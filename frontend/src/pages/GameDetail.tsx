@@ -3,6 +3,7 @@ import { useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
+import { GameDetailSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor'
 
@@ -23,7 +24,7 @@ interface GameDetails {
   user_rating: number | null
   notes: string | null
   total_minutes: number
-  last_played: Date | null
+  last_played: string | null
   is_favorite: boolean
 }
 
@@ -149,8 +150,18 @@ export function GameDetail() {
 
   const genres = data?.genres || []
 
+  const sidebarContent = (
+    <GameDetailSidebar
+      gameId={game.id}
+      platformId={game.platform_id}
+      status={game.status}
+      onStatusChange={handleStatusChange}
+      isUpdating={updateStatusMutation.isPending}
+    />
+  )
+
   return (
-    <PageLayout>
+    <PageLayout sidebar={sidebarContent}>
       {/* Background Image Header */}
       {game.background_image_url && (
         <div className="relative h-96 w-full -mx-6 -mt-6 mb-6">
@@ -181,10 +192,14 @@ export function GameDetail() {
 
             {/* Status Selector */}
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-400 mb-2">Status</label>
+              <label htmlFor="game-status" className="block text-sm font-medium text-gray-400 mb-2">
+                Status
+              </label>
               <select
+                id="game-status"
                 value={game.status || 'backlog'}
                 onChange={(e) => handleStatusChange(e.target.value)}
+                aria-describedby="status-description"
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -193,16 +208,23 @@ export function GameDetail() {
                   </option>
                 ))}
               </select>
+              <span id="status-description" className="sr-only">
+                Track your progress with this game
+              </span>
             </div>
 
             {/* Rating Selector */}
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-400 mb-2">Your Rating</label>
-              <div className="flex gap-1">
+              <span className="block text-sm font-medium text-gray-400 mb-2" id="user-rating-label">
+                Your Rating
+              </span>
+              <div className="flex gap-1" role="group" aria-labelledby="user-rating-label">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
                   <button
                     key={rating}
                     onClick={() => handleRatingChange(rating)}
+                    aria-label={`Rate ${rating} out of 10`}
+                    aria-pressed={game.user_rating === rating}
                     className={`flex-1 py-2 rounded transition-all ${
                       game.user_rating === rating
                         ? 'bg-primary-purple text-white shadow-lg shadow-primary-purple/50'
@@ -275,14 +297,14 @@ export function GameDetail() {
             )}
 
             {game.description && (
-              <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <div id="about" className="mb-6 bg-gray-800/30 rounded-lg p-4">
                 <h2 className="text-xl font-semibold mb-3 text-primary-purple">About</h2>
                 <p className="text-gray-300 leading-relaxed">{game.description}</p>
               </div>
             )}
 
             {/* Notes Section */}
-            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+            <div id="notes" className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-semibold text-primary-purple">Notes</h2>
                 {!isEditingNotes && (
@@ -327,13 +349,13 @@ export function GameDetail() {
             </div>
 
             {/* My Stats Section */}
-            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+            <div id="stats" className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <h2 className="text-xl font-semibold text-primary-purple mb-4">My Stats</h2>
               <CustomFieldsEditor gameId={game.id} platformId={game.platform_id} />
             </div>
 
             {/* External Resources */}
-            <div className="mb-6 bg-gray-800/30 rounded-lg p-4">
+            <div id="resources" className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <h2 className="text-xl font-semibold text-primary-purple mb-4">External Resources</h2>
               <div className="flex flex-wrap gap-3">
                 <a
@@ -358,7 +380,7 @@ export function GameDetail() {
             </div>
 
             {/* Play Stats */}
-            <div className="grid grid-cols-2 gap-4">
+            <div id="playtime" className="grid grid-cols-2 gap-4">
               <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-4">
                 <div className="text-sm text-primary-cyan">Playtime</div>
                 <div className="text-2xl font-semibold text-white">

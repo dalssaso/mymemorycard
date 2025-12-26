@@ -15,10 +15,8 @@ export function Navbar() {
         {/* Logo and Brand */}
         <div className="flex items-center space-x-8">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-purple to-primary-cyan rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">G</span>
-            </div>
-            <span className="text-white font-bold text-xl">GameList</span>
+            <img src="/favicon.svg" alt="MyMemoryCard" className="w-8 h-8" />
+            <span className="text-white font-bold text-xl">MyMemoryCard</span>
           </Link>
 
           {/* Navigation Links - Hidden on mobile */}
@@ -96,6 +94,13 @@ export function Navbar() {
               {/* Menu */}
               <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
                 <div className="py-1">
+                  <Link
+                    to="/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Settings
+                  </Link>
                   <button
                     onClick={() => {
                       setShowUserMenu(false)

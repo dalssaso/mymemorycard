@@ -11,8 +11,30 @@ interface UserGameWithDetails extends Game {
   status: string
   user_rating: number | null
   total_minutes: number
-  last_played: Date | null
+  last_played: string | null
   is_favorite: boolean
+}
+
+interface ExportedGame {
+  name: string
+  release_date: string | null
+  description: string | null
+  metacritic_score: number | null
+  esrb_rating: string | null
+  series_name: string | null
+  platform: string
+  status: string | null
+  user_rating: number | null
+  notes: string | null
+  is_favorite: boolean
+  playtime_minutes: number | null
+  difficulty_rating: number | null
+  completion_percentage: number | null
+  achievements_total: number | null
+  achievements_earned: number | null
+  replay_value: number | null
+  estimated_completion_hours: number | null
+  actual_playtime_hours: number | null
 }
 
 // Get user's game library
@@ -64,7 +86,7 @@ router.get(
       const format = url.searchParams.get('format') || 'json'
 
       // Fetch all user's games with full details
-      const games = await queryMany(
+      const games = await queryMany<ExportedGame>(
         `SELECT 
           g.name,
           g.release_date,
@@ -118,7 +140,7 @@ router.get(
 
         const csvRows = [
           headers.join(','),
-          ...games.map((game: any) => [
+          ...games.map((game) => [
             `"${game.name.replace(/"/g, '""')}"`,
             game.platform,
             game.status || 'backlog',
@@ -145,7 +167,7 @@ router.get(
           status: 200,
           headers: {
             'Content-Type': 'text/csv',
-            'Content-Disposition': `attachment; filename="gamelist-export-${new Date().toISOString().split('T')[0]}.csv"`,
+            'Content-Disposition': `attachment; filename="mymemorycard-export-${new Date().toISOString().split('T')[0]}.csv"`,
             ...corsHeaders()
           }
         })
@@ -161,7 +183,7 @@ router.get(
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'Content-Disposition': `attachment; filename="gamelist-export-${new Date().toISOString().split('T')[0]}.json"`,
+            'Content-Disposition': `attachment; filename="mymemorycard-export-${new Date().toISOString().split('T')[0]}.json"`,
             ...corsHeaders()
           }
         })
@@ -510,9 +532,19 @@ router.get(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
+      const url = new URL(req.url)
+      const platformId = url.searchParams.get('platform_id')
+
       if (!gameId) {
         return new Response(
           JSON.stringify({ error: 'Game ID is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (!platformId) {
+        return new Response(
+          JSON.stringify({ error: 'platform_id query parameter is required' }),
           { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
       }
@@ -528,8 +560,8 @@ router.get(
           replay_value,
           updated_at
          FROM user_game_custom_fields
-         WHERE user_id = $1 AND game_id = $2`,
-        [user.id, gameId]
+         WHERE user_id = $1 AND game_id = $2 AND platform_id = $3`,
+        [user.id, gameId, platformId]
       )
 
       return new Response(

@@ -1,0 +1,3 @@
+# Load .env from project root (parent directory)
+[run]
+preload = ["./src/env.ts"]

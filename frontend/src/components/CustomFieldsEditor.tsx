@@ -25,9 +25,9 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
   const [fields, setFields] = useState<CustomFields>({})
 
   const { data } = useQuery({
-    queryKey: ['customFields', gameId],
+    queryKey: ['customFields', gameId, platformId],
     queryFn: async () => {
-      const response = await gamesAPI.getCustomFields(gameId)
+      const response = await gamesAPI.getCustomFields(gameId, platformId)
       return response.data as { customFields: CustomFields }
     },
   })
@@ -42,7 +42,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
     mutationFn: (updatedFields: CustomFields) =>
       gamesAPI.updateCustomFields(gameId, platformId, updatedFields),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customFields', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] })
       showToast('Custom fields updated successfully', 'success')
     },
     onError: () => {
@@ -63,10 +63,11 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
         <h3 className="text-lg font-semibold text-white mb-3">Time Tracking</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="estimated-completion" className="block text-sm font-medium text-gray-400 mb-2">
               Estimated Completion (hours)
             </label>
             <input
+              id="estimated-completion"
               type="number"
               min="0"
               step="0.5"
@@ -82,10 +83,11 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="actual-playtime" className="block text-sm font-medium text-gray-400 mb-2">
               Actual Playtime (hours)
             </label>
             <input
+              id="actual-playtime"
               type="number"
               min="0"
               step="0.5"
@@ -105,10 +107,11 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
 
       {/* Completion Percentage */}
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
+        <label htmlFor="completion-percentage" className="block text-sm font-medium text-gray-400 mb-2">
           Completion Percentage: {fields.completion_percentage || 0}%
         </label>
         <input
+          id="completion-percentage"
           type="range"
           min="0"
           max="100"
@@ -122,14 +125,15 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
 
       {/* Difficulty Rating */}
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
+        <span className="block text-sm font-medium text-gray-400 mb-2" id="difficulty-rating-label">
           Difficulty Rating (1-10)
-        </label>
-        <div className="flex gap-1">
+        </span>
+        <div className="flex gap-1" role="group" aria-labelledby="difficulty-rating-label">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
             <button
               key={rating}
               onClick={() => handleFieldChange('difficulty_rating', rating)}
+              aria-pressed={fields.difficulty_rating === rating}
               className={`flex-1 py-2 rounded transition-all text-sm ${
                 fields.difficulty_rating === rating
                   ? 'bg-primary-red text-white shadow-lg shadow-primary-red/50'
@@ -147,10 +151,11 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
         <h3 className="text-lg font-semibold text-white mb-3">Achievements</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="achievements-total" className="block text-sm font-medium text-gray-400 mb-2">
               Total Achievements
             </label>
             <input
+              id="achievements-total"
               type="number"
               min="0"
               value={fields.achievements_total || ''}
@@ -165,10 +170,11 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+            <label htmlFor="achievements-earned" className="block text-sm font-medium text-gray-400 mb-2">
               Achievements Earned
             </label>
             <input
+              id="achievements-earned"
               type="number"
               min="0"
               value={fields.achievements_earned || ''}
@@ -209,21 +215,23 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
 
       {/* Replay Value */}
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
+        <span className="block text-sm font-medium text-gray-400 mb-2" id="replay-value-label">
           Replay Value (1-5 stars)
-        </label>
-        <div className="flex gap-2">
+        </span>
+        <div className="flex gap-2" role="group" aria-labelledby="replay-value-label">
           {[1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
               onClick={() => handleFieldChange('replay_value', value)}
+              aria-label={`${value} star${value === 1 ? '' : 's'}`}
+              aria-pressed={fields.replay_value === value}
               className={`flex-1 py-3 rounded-lg transition-all ${
                 fields.replay_value && fields.replay_value >= value
                   ? 'bg-primary-yellow/20 border-2 border-primary-yellow text-primary-yellow'
                   : 'bg-gray-800 border-2 border-gray-700 text-gray-400 hover:border-primary-yellow hover:text-primary-yellow'
               }`}
             >
-              <span className="text-2xl">★</span>
+              <span className="text-2xl" aria-hidden="true">★</span>
             </button>
           ))}
         </div>

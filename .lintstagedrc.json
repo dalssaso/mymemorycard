@@ -1,0 +1,13 @@
+{
+  "backend/**/*.{ts,js}": [
+    "prettier --write",
+    "bun run typecheck"
+  ],
+  "frontend/**/*.{ts,tsx,js,jsx}": [
+    "prettier --write",
+    "eslint --fix"
+  ],
+  "*.{json,md}": [
+    "prettier --write"
+  ]
+}

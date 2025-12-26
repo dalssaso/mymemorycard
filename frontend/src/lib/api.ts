@@ -54,8 +54,8 @@ export const gamesAPI = {
     api.post(`/games/${id}/notes`, { platform_id: platformId, notes }),
   toggleFavorite: (id: string, platformId: string, isFavorite: boolean) =>
     api.put(`/games/${id}/favorite`, { platform_id: platformId, is_favorite: isFavorite }),
-  getCustomFields: (id: string) =>
-    api.get(`/games/${id}/custom-fields`),
+  getCustomFields: (id: string, platformId: string) =>
+    api.get(`/games/${id}/custom-fields`, { params: { platform_id: platformId } }),
   updateCustomFields: (id: string, platformId: string, fields: {
     estimated_completion_hours?: number | null
     actual_playtime_hours?: number | null
@@ -78,6 +78,16 @@ export const importAPI = {
 export const platformsAPI = {
   getAll: () => api.get('/platforms'),
 };
+
+// Preferences API
+export const preferencesAPI = {
+  get: () => api.get('/preferences'),
+  update: (prefs: {
+    default_view?: 'grid' | 'table'
+    items_per_page?: number
+    theme?: string
+  }) => api.put('/preferences', prefs),
+}
 
 // Collections API
 export const collectionsAPI = {

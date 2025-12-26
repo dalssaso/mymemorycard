@@ -16,6 +16,7 @@ import { Link } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
 import { PageLayout } from '@/components/layout'
+import { LibrarySidebar } from '@/components/sidebar'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 
@@ -29,13 +30,24 @@ interface Game {
   status: string
   user_rating: number | null
   total_minutes: number
-  last_played: Date | null
+  last_played: string | null
   metacritic_score: number | null
   release_date: string | null
   is_favorite: boolean
 }
 
 const columnHelper = createColumnHelper<Game>()
+
+const COLUMN_LABELS: Record<string, string> = {
+  name: 'Name',
+  platform_display_name: 'Platform',
+  status: 'Status',
+  metacritic_score: 'Critic Score',
+  user_rating: 'Your Rating',
+  total_minutes: 'Playtime',
+}
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
 export function Library() {
   const { showToast } = useToast()
@@ -47,6 +59,7 @@ export function Library() {
   const [platformFilter, setPlatformFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false)
+  const [showColumnSettings, setShowColumnSettings] = useState<boolean>(false)
 
   const handleExport = async (format: 'json' | 'csv') => {
     try {
@@ -57,7 +70,7 @@ export function Library() {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `gamelist-export-${new Date().toISOString().split('T')[0]}.${format}`
+      link.download = `mymemorycard-export-${new Date().toISOString().split('T')[0]}.${format}`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -194,141 +207,153 @@ export function Library() {
     )
   }
 
+  const hasActiveFilters = Boolean(platformFilter || statusFilter || globalFilter || favoritesOnly)
+
+  const handleClearFilters = () => {
+    setPlatformFilter('')
+    setStatusFilter('')
+    setGlobalFilter('')
+    setFavoritesOnly(false)
+  }
+
+  const sidebarContent = (
+    <LibrarySidebar
+      platformFilter={platformFilter}
+      setPlatformFilter={setPlatformFilter}
+      statusFilter={statusFilter}
+      setStatusFilter={setStatusFilter}
+      favoritesOnly={favoritesOnly}
+      setFavoritesOnly={setFavoritesOnly}
+      viewMode={viewMode}
+      setViewMode={setViewMode}
+      uniquePlatforms={uniquePlatforms}
+      uniqueStatuses={uniqueStatuses}
+      onClearFilters={handleClearFilters}
+      hasActiveFilters={hasActiveFilters}
+    />
+  )
+
   return (
-    <PageLayout>
+    <PageLayout sidebar={sidebarContent}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-primary-purple">Library</h1>
 
-          <div className="flex items-center gap-4">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`px-4 py-2 rounded border transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-primary-purple border-purple-500 text-white'
-                    : 'bg-bg-secondary border-zinc-700 text-zinc-400'
-                }`}
-              >
-                Grid
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-4 py-2 rounded border transition-all ${
-                  viewMode === 'table'
-                    ? 'bg-primary-purple border-purple-500 text-white'
-                    : 'bg-bg-secondary border-zinc-700 text-zinc-400'
-                }`}
-              >
-                Table
-              </button>
-            </div>
-
-            {/* Export Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleExport('json')}
-                className="px-4 py-2 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded transition-all text-sm"
-              >
-                Export JSON
-              </button>
-              <button
-                onClick={() => handleExport('csv')}
-                className="px-4 py-2 bg-primary-green/20 border border-primary-green/30 text-primary-green hover:bg-primary-green/30 rounded transition-all text-sm"
-              >
-                Export CSV
-              </button>
-            </div>
+          {/* Export Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleExport('json')}
+              className="px-4 py-2 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded transition-all text-sm"
+            >
+              Export JSON
+            </button>
+            <button
+              onClick={() => handleExport('csv')}
+              className="px-4 py-2 bg-primary-green/20 border border-primary-green/30 text-primary-green hover:bg-primary-green/30 rounded transition-all text-sm"
+            >
+              Export CSV
+            </button>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="mb-6 space-y-4">
-          <div className="flex flex-wrap gap-4">
-            <input
-              type="text"
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search games..."
-              className="input flex-1 min-w-[200px]"
-            />
-            
-            {/* Platform Filter */}
-            <select
-              value={platformFilter}
-              onChange={(e) => setPlatformFilter(e.target.value)}
-              className="input min-w-[150px]"
-            >
-              <option value="">All Platforms</option>
-              {uniquePlatforms.map(platform => (
-                <option key={platform} value={platform}>{platform}</option>
-              ))}
-            </select>
-            
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="input min-w-[150px]"
-            >
-              <option value="">All Statuses</option>
-              {uniqueStatuses.map(status => (
-                <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
-            </select>
-            
-            {/* Favorites Filter */}
-            <label className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary border border-zinc-700 rounded-lg cursor-pointer hover:border-red-500 transition-colors">
-              <input
-                type="checkbox"
-                checked={favoritesOnly}
-                onChange={(e) => setFavoritesOnly(e.target.checked)}
-                className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-red-500 focus:ring-2 focus:ring-red-500"
-              />
-              <span className="text-sm text-zinc-300">Favorites Only</span>
-            </label>
-            
-            {/* Clear Filters */}
-            {(platformFilter || statusFilter || globalFilter || favoritesOnly) && (
-              <button
-                onClick={() => {
-                  setPlatformFilter('')
-                  setStatusFilter('')
-                  setGlobalFilter('')
-                  setFavoritesOnly(false)
-                }}
-                className="btn btn-secondary"
-              >
-                Clear Filters
-              </button>
-            )}
-          </div>
+        {/* Search and Column Settings */}
+        <div className="mb-6 flex flex-wrap gap-4 items-center">
+          <input
+            type="text"
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder="Search games..."
+            aria-label="Search games in your library"
+            className="input flex-1 min-w-[200px]"
+          />
           
           {/* Column Visibility (Table View Only) */}
           {viewMode === 'table' && (
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-sm text-zinc-400">Show columns:</span>
-              {table.getAllLeafColumns().map(column => (
-                <label key={column.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={column.getIsVisible()}
-                    onChange={column.getToggleVisibilityHandler()}
-                    className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple"
+            <div className="relative">
+              <button
+                onClick={() => setShowColumnSettings(!showColumnSettings)}
+                className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary border border-zinc-700 rounded-lg hover:border-primary-purple transition-colors text-sm text-zinc-300"
+                aria-expanded={showColumnSettings}
+                aria-controls="column-settings"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
                   />
-                  <span className="text-zinc-300">{column.id}</span>
-                </label>
-              ))}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+                Columns
+              </button>
+              {showColumnSettings && (
+                <div
+                  id="column-settings"
+                  className="absolute top-full left-0 mt-2 p-3 bg-bg-secondary border border-zinc-700 rounded-lg shadow-lg z-10 min-w-[200px]"
+                >
+                  <div className="flex flex-col gap-2">
+                    {table.getAllLeafColumns().map((column) => (
+                      <label
+                        key={column.id}
+                        className="flex items-center gap-2 text-sm cursor-pointer hover:text-white"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={column.getIsVisible()}
+                          onChange={column.getToggleVisibilityHandler()}
+                          className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple"
+                        />
+                        <span className="text-zinc-300">
+                          {COLUMN_LABELS[column.id] ?? column.id}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
         
-        {/* Results count */}
-        <div className="mb-4 text-sm text-zinc-400">
-          Showing {table.getRowModel().rows.length} of {filteredGames.length} games
-          {(platformFilter || statusFilter || favoritesOnly) && ` (filtered from ${games.length} total)`}
+        {/* Results count and page size */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="text-sm text-zinc-400">
+            {(() => {
+              const { pageIndex, pageSize } = table.getState().pagination
+              const start = pageIndex * pageSize + 1
+              const end = Math.min((pageIndex + 1) * pageSize, filteredGames.length)
+              return `Showing ${start}-${end} of ${filteredGames.length} games`
+            })()}
+            {(platformFilter || statusFilter || favoritesOnly) && ` (filtered from ${games.length} total)`}
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="pageSize" className="text-sm text-zinc-400">
+              Items per page:
+            </label>
+            <select
+              id="pageSize"
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+              className="input py-1 px-2 text-sm min-w-[70px]"
+            >
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {games.length === 0 ? (

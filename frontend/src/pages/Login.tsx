@@ -30,7 +30,7 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="card max-w-md w-full">
         <h1 className="text-primary-purple mb-6 text-center">
-          GameList
+          MyMemoryCard
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">

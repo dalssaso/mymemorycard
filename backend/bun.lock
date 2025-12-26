@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "gamelist-backend",
+      "name": "mymemorycard-backend",
       "dependencies": {
         "@simplewebauthn/server": "^9.0.3",
         "bcryptjs": "^3.0.3",

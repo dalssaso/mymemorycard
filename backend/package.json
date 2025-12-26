@@ -1,5 +1,5 @@
 {
-  "name": "gamelist-backend",
+  "name": "mymemorycard-backend",
   "version": "1.0.0",
   "description": "Game library management backend with Bun",
   "type": "module",
@@ -7,9 +7,12 @@
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "db:migrate": "bun src/db/migrate.ts",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
-    "test:coverage": "bun test --coverage",
+    "test": "bun run test:unit && bun run test:integration",
+    "test:unit": "SKIP_REDIS_CONNECT=1 bun test --preload ./tests/setup/unit.setup.ts ./tests/unit",
+    "test:integration": "bun test ./tests/integration",
+    "test:watch": "bun test --watch ./tests/unit",
+    "test:coverage": "SKIP_REDIS_CONNECT=1 bun test --coverage --preload ./tests/setup/unit.setup.ts ./tests/unit",
+    "test:coverage:integration": "bun test --coverage ./tests/integration",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,209 +1,125 @@
-# 🎮 GameList
+# MyMemoryCard
 
-A self-hosted, multi-platform game library aggregator with PostgreSQL, Bun runtime, and modern React frontend.
+[![CI](https://github.com/dalssaso/MyMemoryCard/actions/workflows/ci.yml/badge.svg)](https://github.com/dalssaso/MyMemoryCard/actions/workflows/ci.yml)
+[![Docker Build](https://github.com/dalssaso/MyMemoryCard/actions/workflows/docker.yml/badge.svg)](https://github.com/dalssaso/MyMemoryCard/actions/workflows/docker.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-1.x-orange)](https://bun.sh)
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev)
+
+A self-hosted, privacy-focused game library aggregator that helps you track and manage your gaming collection across multiple platforms.
 
 ## Features
 
-### ✅ Implemented (Phase 1-3)
-- 🎯 **Bulk Game Import** - Paste game names and auto-enrich with RAWG metadata
-- 🌐 **Multi-Platform Support** - Steam, PlayStation, Xbox, Epic Games Store
-- 📚 **Game Library** - Grid and table views with sorting, filtering, and search
-- 🎮 **Game Details** - Track status (backlog/playing/finished/dropped), ratings, and notes
-- 📊 **Dashboard** - View your gaming stats and recent activity
-- 🔒 **Secure Auth** - JWT authentication with protected routes
-- 🐳 **Docker Deployment** - Easy self-hosting with Docker Compose
-- ⚡ **Redis Caching** - Fast metadata retrieval with multi-layer caching
-- 🧪 **Comprehensive Testing** - 31 backend tests, 90%+ coverage
-
-### 🚧 Planned (Phase 4+)
-- 🏆 **Achievement Tracking** - Track trophies and achievements across platforms
-- ⏱️ **Completion Times** - Get estimates from PSNProfiles and HowLongToBeat
-- 📈 **Enhanced Analytics** - Charts, visualizations, and recommendations
-- 🤖 **AI Features** - Ollama integration for smart recommendations
+- **Bulk Import** - Paste game names and automatically enrich with RAWG metadata
+- **Multi-Platform Support** - Steam, PlayStation, Xbox, Epic, Nintendo Switch, and more
+- **Game Tracking** - Status (backlog/playing/finished), ratings, notes, favorites
+- **Custom Statistics** - Playtime, completion %, difficulty, achievements
+- **Collections** - Custom collections and auto-detected game series
+- **Dashboard** - Real-time stats and visualizations
+- **Data Export** - JSON and CSV formats
 
 ## Tech Stack
 
-### Backend
-- **Bun** - Fast JavaScript runtime
-- **PostgreSQL 16+** with UUIDv7
-- **Redis** - Session storage and caching
-- TypeScript
+- **Backend**: Bun, PostgreSQL 16+, Redis, TypeScript
+- **Frontend**: React 19, TanStack (Router, Query, Table), Tailwind CSS, Recharts
 
-### Frontend
-- **React 19** + TypeScript
-- **TanStack** Router, Query, and Table
-- **shadcn/ui** + Tailwind CSS
-- **Recharts** for visualizations
-
-## Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh) installed
-- [Docker](https://www.docker.com/) and Docker Compose
-- Node.js 20+ (for frontend)
+## Quick Start
 
 ### Development Setup
 
-1. Clone the repository:
 ```bash
-git clone <repo-url>
-cd gamelist
+# Clone and install
+git clone https://github.com/dalssaso/MyMemoryCard.git
+cd mymemorycard
+make install
+
+# Configure environment
+cp .env.example backend/.env.local
+
+# Start PostgreSQL and Redis
+make dev
+
+# In separate terminals:
+make dev-backend    # Backend on :3000
+make dev-frontend   # Frontend on :5173
 ```
-
-2. Copy environment variables:
-```bash
-cp .env.example .env
-```
-
-3. Update `.env` with your credentials:
-- Set a strong `DB_PASSWORD`
-- Set a strong `JWT_SECRET` (min 32 characters)
-- Add API keys for RAWG, IGDB (optional)
-
-4. Start Docker services:
-```bash
-docker-compose up -d postgres redis
-```
-
-5. Start backend:
-```bash
-cd backend
-bun install
-bun run dev
-```
-
-6. Start frontend (in new terminal):
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-7. Open http://localhost:5173
 
 ### Production Deployment
 
 ```bash
-docker-compose up -d
+cp .env.example .env
+# Edit .env with production values
+make prod
 ```
 
-This will start all services (PostgreSQL, Redis, Backend, Frontend, Nginx).
+See [docs/local-setup.md](docs/local-setup.md) for detailed setup instructions.
+
+## Development
+
+Run `make help` to see all available commands.
+
+### Common Commands
+
+```bash
+make dev              # Start Docker services (postgres, redis)
+make dev-backend      # Run backend locally
+make dev-frontend     # Run frontend locally
+make test             # Run all tests
+make test-unit        # Unit tests only (no Docker needed)
+make test-integration # Integration tests (requires Docker + backend)
+make typecheck        # TypeScript checking
+make lint             # ESLint
+make format           # Prettier formatting
+```
+
+### Testing
+
+Two-tier testing strategy:
+
+- **Unit tests**: No external dependencies, fast, mocked services
+- **Integration tests**: Real PostgreSQL/Redis via Docker
+
+```bash
+make test-unit        # Run unit tests
+make test-integration # Run integration tests (start Docker + backend first)
+make test-coverage    # Unit tests with coverage (90% threshold)
+```
 
 ## Project Structure
 
 ```
-gamelist/
-├── backend/           # Bun backend with TypeScript
+mymemorycard/
+├── backend/           # Bun backend
 │   ├── src/
 │   │   ├── routes/    # API routes
 │   │   ├── services/  # Database, Redis, external APIs
-│   │   ├── middleware/# Auth, CORS
-│   │   └── types/     # TypeScript types
-│   └── init.sql       # Database initialization
+│   │   └── middleware/# Auth, CORS
+│   └── tests/
+│       ├── unit/      # Unit tests (mocked)
+│       └── integration/ # Integration tests
 ├── frontend/          # React frontend
 │   └── src/
 │       ├── pages/     # Route components
-│       ├── components/# Reusable components
-│       ├── hooks/     # Custom hooks
-│       └── lib/       # API client, utilities
+│       ├── components/# UI components
+│       └── hooks/     # Custom hooks
 ├── docs/
-│   ├── PLAN.org       # Implementation plan
-│   └── schema.sql     # Complete database schema
-└── docker-compose.yml
+└── docker-compose.yml # PostgreSQL + Redis
 ```
 
-## API Endpoints
+## Docker Compose Files
 
-### Authentication
-- `POST /api/auth/register` - Create account
-- `POST /api/auth/login` - Login
-- `GET /api/auth/me` - Get current user
-
-### Games
-- `GET /api/games` - Get user's library
-- `GET /api/games/:id` - Get game details with platform info
-- `PATCH /api/games/:id/status` - Update game status (backlog/playing/finished/dropped/completed)
-- `PUT /api/games/:id/rating` - Update game rating (1-10)
-- `POST /api/games/:id/notes` - Update game notes
-
-### Import
-- `POST /api/import/bulk` - Bulk import games with RAWG metadata enrichment
-
-### Platforms
-- `GET /api/platforms` - Get all available platforms
-
-## Design System
-
-### Colors
-
-The app uses a **vibrant gaming theme** on a pure black base:
-
-- **Primary Purple** (#8B5CF6) - PlayStation-inspired
-- **Electric Cyan** (#06B6D4) - Accent color
-- **Achievement Green** (#10B981) - Success states
-- **Alert Red** (#EF4444) - Errors
-- **Trophy Gold** (#F59E0B) - Completed games
-
-### Design Rules
-- ❌ NO gradients
-- ✅ Solid colors with opacity
-- ✅ Neon accents on interactive elements
-- ✅ Glowing effects on hover
-- ✅ High contrast for readability
-
-## Roadmap
-
-### Phase 1: Foundation ✅ (In Progress)
-- [x] Project structure
-- [x] Docker Compose setup
-- [x] Database schema
-- [x] User authentication (password)
-- [ ] WebAuthn support
-- [x] Basic frontend setup
-
-### Phase 2: Bulk Import
-- [ ] Bulk import UI
-- [ ] RAWG API integration
-- [ ] Auto-enrichment service
-
-### Phase 3: Library View
-- [ ] TanStack Table implementation
-- [ ] Game cards
-- [ ] Filtering and sorting
-
-### Phase 4: Game Details & Metadata
-- [ ] Game detail page
-- [ ] IGDB integration
-- [ ] PSNProfiles scraper
-- [ ] HowLongToBeat fallback
-
-### Phase 5: Dashboard
-- [ ] Stats widgets
-- [ ] Charts and visualizations
-- [ ] Recent activity
-
-### Phase 6: Polish
-- [ ] Error handling
-- [ ] Loading states
-- [ ] Responsive design
-
-### Phase 7 (v2): LLM Features
-- [ ] Ollama integration
-- [ ] Game recommendations
-- [ ] Natural language search
+- `docker-compose.yml` - Infrastructure only (PostgreSQL, Redis)
+- `docker-compose.prod.yml` - Production with pre-built images
 
 ## Contributing
 
-This is a personal project, but suggestions are welcome! Please open an issue first to discuss changes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT
+MIT - See [LICENSE](LICENSE)
 
-## Acknowledgments
+---
 
-- [RAWG.io](https://rawg.io) - Game metadata API
-- [IGDB](https://www.igdb.com) - Additional game data
-- [PSNProfiles](https://psnprofiles.com) - Trophy data
-- [HowLongToBeat](https://howlongtobeat.com) - Completion times
+

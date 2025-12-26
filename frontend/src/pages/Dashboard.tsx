@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
 import { Card } from '@/components/ui'
+import { DashboardSidebar } from '@/components/sidebar'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { useMemo } from 'react'
 
@@ -82,7 +83,7 @@ export function Dashboard() {
   }, [genreData])
 
   return (
-    <PageLayout>
+    <PageLayout sidebar={<DashboardSidebar games={games} />}>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">
           Dashboard
