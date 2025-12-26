@@ -1,18 +1,17 @@
-import jwt from 'jsonwebtoken';
-import type { JWTPayload, User } from '@/types';
-import { queryOne } from '@/services/db';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import jwt from 'jsonwebtoken'
+import type { JWTPayload, User } from '@/types'
+import { queryOne } from '@/services/db'
+import { config } from '@/config'
 
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign(payload, config.jwt.secret, { expiresIn: '7d' })
 }
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return jwt.verify(token, config.jwt.secret) as JWTPayload
   } catch {
-    return null;
+    return null
   }
 }
 

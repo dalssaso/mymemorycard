@@ -21,7 +21,7 @@ A self-hosted, privacy-focused game library aggregator that helps you track and 
 
 ## Tech Stack
 
-- **Backend**: Bun, PostgreSQL 16+, Redis, TypeScript
+- **Backend**: Bun, PostgreSQL 16+, Redis, Drizzle ORM, TypeScript
 - **Frontend**: React 19, TanStack (Router, Query, Table), Tailwind CSS, Recharts
 
 ## Quick Start
@@ -34,9 +34,6 @@ git clone https://github.com/dalssaso/MyMemoryCard.git
 cd mymemorycard
 make install
 
-# Configure environment
-cp .env.example backend/.env.local
-
 # Start PostgreSQL and Redis
 make dev
 
@@ -45,11 +42,12 @@ make dev-backend    # Backend on :3000
 make dev-frontend   # Frontend on :5173
 ```
 
+No `.env` file needed for local development - sensible defaults are built-in.
+
 ### Production Deployment
 
 ```bash
-cp .env.example .env
-# Edit .env with production values
+# Set required env vars: DB_PASSWORD, JWT_SECRET
 make prod
 ```
 
@@ -92,9 +90,11 @@ make test-coverage    # Unit tests with coverage (90% threshold)
 mymemorycard/
 ├── backend/           # Bun backend
 │   ├── src/
+│   │   ├── db/        # Drizzle schema and migrations
 │   │   ├── routes/    # API routes
 │   │   ├── services/  # Database, Redis, external APIs
 │   │   └── middleware/# Auth, CORS
+│   ├── drizzle/       # Generated SQL migrations
 │   └── tests/
 │       ├── unit/      # Unit tests (mocked)
 │       └── integration/ # Integration tests
@@ -105,6 +105,15 @@ mymemorycard/
 │       └── hooks/     # Custom hooks
 ├── docs/
 └── docker-compose.yml # PostgreSQL + Redis
+```
+
+### Database Migrations
+
+Migrations run automatically on backend startup via Drizzle ORM. To create new migrations:
+
+```bash
+make db-generate      # Generate migration from schema changes
+make db-studio        # Open Drizzle Studio GUI
 ```
 
 ## Docker Compose Files

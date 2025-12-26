@@ -6,6 +6,7 @@ import { PageLayout } from '@/components/layout'
 import { GameDetailSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor'
+import { GameAchievements } from '@/components/GameAchievements'
 
 interface GameDetails {
   id: string
@@ -346,6 +347,12 @@ export function GameDetail() {
                   {game.notes || 'No notes yet'}
                 </div>
               )}
+            </div>
+
+            {/* Achievements Section */}
+            <div id="achievements" className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-primary-purple mb-4">Achievements</h2>
+              <GameAchievements gameId={game.id} />
             </div>
 
             {/* My Stats Section */}

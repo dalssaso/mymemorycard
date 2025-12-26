@@ -51,13 +51,7 @@ cd ../frontend
 npm install
 ```
 
-5. Set up environment:
-```bash
-cp .env.example .env
-# Edit .env with your local configuration
-```
-
-6. Start development services:
+5. Start development services:
 ```bash
 # Terminal 1 - Start PostgreSQL and Redis
 docker-compose up -d postgres redis
@@ -71,7 +65,7 @@ cd frontend
 npm run dev
 ```
 
-7. Install pre-commit hooks:
+6. Install pre-commit hooks:
 ```bash
 # From project root
 npm install -g husky
@@ -380,14 +374,28 @@ Describe how you tested your changes
 
 ## Development Tips
 
-### Database Migrations
+### Database Migrations (Drizzle ORM)
+
+We use Drizzle ORM for database schema management. Migrations run automatically on backend startup.
 
 When adding database changes:
 
-1. Update `backend/schema.sql`
-2. Update `docs/schema.sql`
-3. Document in `backend/MIGRATIONS.md`
-4. Include migration SQL in PR description
+1. Update the schema in `backend/src/db/schema.ts`
+2. Generate a new migration: `make db-generate`
+3. Review the generated SQL in `backend/drizzle/`
+4. Test the migration by restarting the backend
+5. Include migration details in PR description
+
+```bash
+# Generate migration from schema changes
+make db-generate
+
+# Push schema directly during development (no migration file)
+make db-push
+
+# Open Drizzle Studio to browse data
+make db-studio
+```
 
 ### Adding New Dependencies
 

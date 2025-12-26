@@ -66,6 +66,10 @@ export const gamesAPI = {
     replay_value?: number | null
   }) =>
     api.put(`/games/${id}/custom-fields`, { platform_id: platformId, ...fields }),
+  getAchievements: (id: string) =>
+    api.get(`/games/${id}/achievements`),
+  updateAchievement: (id: string, achievementId: number, completed: boolean) =>
+    api.put(`/games/${id}/achievements/${achievementId}`, { completed }),
 };
 
 // Import API

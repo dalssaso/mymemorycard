@@ -16,29 +16,7 @@ cd mymemorycard
 make install
 ```
 
-### 2. Configure Environment
-
-```bash
-cp .env.example backend/.env.local
-```
-
-Edit `backend/.env.local`:
-
-```bash
-# Database (Docker PostgreSQL on port 5433)
-DATABASE_URL=postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard
-
-# Redis (Docker Redis on port 6380)
-REDIS_URL=redis://localhost:6380
-
-# JWT Secret (minimum 32 characters)
-JWT_SECRET=your-dev-jwt-secret-change-in-production
-
-# RAWG API (optional, get from https://rawg.io/apidocs)
-RAWG_API_KEY=
-```
-
-### 3. Start Services
+### 2. Start Services
 
 ```bash
 make dev
@@ -46,7 +24,7 @@ make dev
 
 This starts PostgreSQL (port 5433) and Redis (port 6380) in Docker.
 
-### 4. Start Development Servers
+### 3. Start Development Servers
 
 In separate terminals:
 
@@ -70,11 +48,16 @@ Open http://localhost:5173 in your browser.
 
 ## Common Tasks
 
-### Database
+### Database (Drizzle ORM)
+
+Migrations run automatically on backend startup. For manual control:
 
 ```bash
 make db-shell       # Open PostgreSQL shell
-make db-migrate     # Run migrations
+make db-generate    # Generate migration from schema changes
+make db-migrate     # Apply pending migrations via drizzle-kit
+make db-push        # Push schema directly (dev only)
+make db-studio      # Open Drizzle Studio GUI
 ```
 
 ### Testing
@@ -122,11 +105,17 @@ make clean
 make dev
 ```
 
-## Environment Variables
+## Configuration
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | - | PostgreSQL connection (port 5433) |
-| `REDIS_URL` | Yes | - | Redis connection (port 6380) |
-| `JWT_SECRET` | Yes | - | JWT signing key (min 32 chars) |
-| `RAWG_API_KEY` | No | - | RAWG API for game metadata |
+The backend uses sensible defaults for local development. No `.env` file is needed.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard` | PostgreSQL connection |
+| `REDIS_URL` | `redis://localhost:6380` | Redis connection |
+| `JWT_SECRET` | `dev-jwt-secret-change-in-production` | JWT signing key |
+| `RAWG_API_KEY` | - | RAWG API for game metadata (optional) |
+| `PORT` | `3000` | Backend server port |
+| `ORIGIN` | - | Additional allowed CORS origin (optional) |
+
+For production, set these via environment variables in `docker-compose.prod.yml`.

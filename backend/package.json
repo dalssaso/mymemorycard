@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
-    "db:migrate": "bun src/db/migrate.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
     "test": "bun run test:unit && bun run test:integration",
     "test:unit": "SKIP_REDIS_CONNECT=1 bun test --preload ./tests/setup/unit.setup.ts ./tests/unit",
     "test:integration": "bun test ./tests/integration",
@@ -19,8 +22,10 @@
     "@simplewebauthn/server": "^9.0.3",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.0.0-rc.12",
+    "drizzle-orm": "^0.45.1",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.3",
+    "postgres": "^3.4.7",
     "redis": "^4.6.12"
   },
   "devDependencies": {
@@ -29,6 +34,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/pg": "^8.11.0",
     "bun-types": "latest",
+    "drizzle-kit": "^0.31.8",
     "typescript": "^5.9.3",
     "typescript-language-server": "^5.1.3"
   }

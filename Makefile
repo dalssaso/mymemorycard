@@ -27,9 +27,12 @@ help:
 	@echo "  make format           Format all code with Prettier"
 	@echo "  make format-check     Check formatting without changes"
 	@echo ""
-	@echo "Database:"
+	@echo "Database (Drizzle ORM):"
 	@echo "  make db-shell         Open PostgreSQL shell"
-	@echo "  make db-migrate       Run database migrations"
+	@echo "  make db-generate      Generate new migration from schema changes"
+	@echo "  make db-migrate       Apply pending migrations"
+	@echo "  make db-push          Push schema directly (dev only)"
+	@echo "  make db-studio        Open Drizzle Studio GUI"
 	@echo ""
 	@echo "Production:"
 	@echo "  make prod             Start production stack (uses ghcr images)"
@@ -140,14 +143,23 @@ format-check:
 	npm run format:check
 
 # =============================================================================
-# Database
+# Database (Drizzle ORM)
 # =============================================================================
 
 db-shell:
 	docker exec -it mymemorycard-db psql -U mymemorycard -d mymemorycard
 
+db-generate:
+	cd backend && bun run db:generate
+
 db-migrate:
 	cd backend && bun run db:migrate
+
+db-push:
+	cd backend && bun run db:push
+
+db-studio:
+	cd backend && bun run db:studio
 
 # =============================================================================
 # Logs

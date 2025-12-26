@@ -1,9 +1,7 @@
+import { config } from '@/config'
+
 export function corsHeaders(origin?: string): Record<string, string> {
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    process.env.ORIGIN,
-  ].filter(Boolean);
+  const allowedOrigins = config.cors.allowedOrigins
 
   const requestOrigin = origin || '';
   const allowOrigin = allowedOrigins.includes(requestOrigin) 

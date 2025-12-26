@@ -23,12 +23,29 @@ interface RAWGGameSeries {
   }>
 }
 
+interface RAWGAchievement {
+  id: number
+  name: string
+  description: string
+  image: string
+  percent: string
+}
+
+interface RAWGAchievementsResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: RAWGAchievement[]
+}
+
 interface RAWGSearchResponse {
   count: number
   results: RAWGGame[]
 }
 
-const RAWG_API_KEY = process.env.RAWG_API_KEY
+import { config } from '@/config'
+
+const RAWG_API_KEY = config.rawg.apiKey
 const RAWG_BASE_URL = 'https://api.rawg.io/api'
 
 // Rate limiter to stay under RAWG's 5 req/sec limit
@@ -165,6 +182,55 @@ export async function getGameDetails(gameId: number, useCache = true): Promise<R
   })
 }
 
+export async function getGameAchievements(gameId: number, useCache = true): Promise<RAWGAchievement[]> {
+  if (!RAWG_API_KEY) {
+    console.warn('RAWG API key not configured')
+    return []
+  }
+
+  if (useCache) {
+    const cached = await getCachedAchievements(gameId)
+    if (cached) {
+      console.log(`Cache hit for achievements: ${gameId}`)
+      return cached
+    }
+  }
+
+  return rateLimiter.schedule(async () => {
+    const allAchievements: RAWGAchievement[] = []
+    let nextUrl: string | null = `${RAWG_BASE_URL}/games/${gameId}/achievements?key=${RAWG_API_KEY}&page_size=40`
+
+    while (nextUrl) {
+      console.log(`RAWG API request: achievements for game ${gameId}`)
+      await incrementRAWGRequestCount()
+      const response = await fetch(nextUrl)
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          await cacheAchievements(gameId, [])
+          return []
+        }
+        throw new Error(`RAWG API error: ${response.status}`)
+      }
+
+      const data = (await response.json()) as RAWGAchievementsResponse
+      allAchievements.push(...data.results)
+
+      if (data.next && allAchievements.length < 200) {
+        nextUrl = data.next
+      } else {
+        nextUrl = null
+      }
+    }
+
+    if (useCache) {
+      await cacheAchievements(gameId, allAchievements)
+    }
+
+    return allAchievements
+  })
+}
+
 export async function getGameSeries(gameId: number, useCache = true): Promise<string | null> {
   if (!RAWG_API_KEY) {
     console.warn('RAWG API key not configured')
@@ -297,4 +363,24 @@ async function cacheGameSeries(gameId: number, seriesName: string | null): Promi
   }
 }
 
-export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries }
+async function getCachedAchievements(gameId: number): Promise<RAWGAchievement[] | null> {
+  try {
+    const key = `rawg:achievements:${gameId}`
+    const cached = await redisClient.get(key)
+    return cached ? JSON.parse(cached) : null
+  } catch (error) {
+    console.error('Redis cache get error:', error)
+    return null
+  }
+}
+
+async function cacheAchievements(gameId: number, achievements: RAWGAchievement[]): Promise<void> {
+  try {
+    const key = `rawg:achievements:${gameId}`
+    await redisClient.setEx(key, CACHE_TTL_DETAILS, JSON.stringify(achievements))
+  } catch (error) {
+    console.error('Redis cache set error:', error)
+  }
+}
+
+export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries, RAWGAchievement }
