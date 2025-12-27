@@ -46,6 +46,20 @@ export function Dashboard() {
   const backlogGames = games.filter((g) => g.status === 'backlog').length
   const favoriteGames = games.filter((g) => g.is_favorite === true)
 
+  const currentlyPlayingRecent = useMemo(() => {
+    return games
+      .filter((g) => g.status === 'playing')
+      .sort((a, b) => {
+        if (a.last_played && b.last_played) {
+          return new Date(b.last_played).getTime() - new Date(a.last_played).getTime()
+        }
+        if (a.last_played) return -1
+        if (b.last_played) return 1
+        return 0
+      })
+      .slice(0, 10)
+  }, [games])
+
   // Status distribution data
   const statusData = useMemo(() => {
     const statusCounts = games.reduce((acc, game) => {
@@ -115,6 +129,48 @@ export function Dashboard() {
             <p className="text-3xl font-bold text-gray-300">{backlogGames}</p>
           </Card>
         </div>
+
+        {/* Currently Playing Carousel */}
+        {currentlyPlayingRecent.length > 0 && (
+          <Card className="mb-8 bg-primary-cyan/5 border-primary-cyan/20">
+            <h2 className="text-2xl font-bold text-primary-cyan mb-4">Currently Playing</h2>
+            <div className="relative">
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                {currentlyPlayingRecent.map((game) => (
+                  <Link
+                    key={game.id}
+                    to="/library/$id"
+                    params={{ id: game.id }}
+                    className="group flex-shrink-0"
+                  >
+                    <div className="w-32 aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 relative">
+                      {game.cover_art_url ? (
+                        <img
+                          src={game.cover_art_url}
+                          alt={game.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                          No Cover
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-300 truncate w-32 group-hover:text-white">
+                      {game.name}
+                    </p>
+                    {game.last_played && (
+                      <p className="text-xs text-gray-500">
+                        {new Date(game.last_played).toLocaleDateString()}
+                      </p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Activity Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -293,43 +349,6 @@ export function Dashboard() {
                         </div>
                       )}
                       <div className="absolute top-2 right-2 text-xl">❤️</div>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-300 truncate group-hover:text-white">
-                      {game.name}
-                    </p>
-                  </Link>
-                ))}
-            </div>
-          </Card>
-        )}
-
-        {/* Currently Playing Section */}
-        {inProgressGames > 0 && (
-          <Card className="mb-6">
-            <h2 className="text-2xl font-bold text-primary-purple mb-4">Currently Playing</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {games
-                .filter((g) => g.status === 'playing')
-                .slice(0, 6)
-                .map((game) => (
-                  <Link
-                    key={game.id}
-                    to="/library/$id"
-                    params={{ id: game.id }}
-                    className="group"
-                  >
-                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
-                      {game.cover_art_url ? (
-                        <img
-                          src={game.cover_art_url}
-                          alt={game.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-500">
-                          No Cover
-                        </div>
-                      )}
                     </div>
                     <p className="mt-2 text-sm text-gray-300 truncate group-hover:text-white">
                       {game.name}

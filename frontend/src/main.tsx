@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { SidebarProvider } from '@/contexts/SidebarContext'
 import { ToastProvider } from '@/components/ui/Toast'
 import './index.css'
 
@@ -44,9 +45,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ToastProvider>
-          <InnerApp />
-        </ToastProvider>
+        <SidebarProvider>
+          <ToastProvider>
+            <InnerApp />
+          </ToastProvider>
+        </SidebarProvider>
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

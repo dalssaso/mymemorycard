@@ -209,9 +209,9 @@ export function GameDetail() {
         </Link>
       </div>
 
-      {/* Background Image Header */}
+      {/* Background Image Header - hidden on mobile to avoid overlap with cover */}
       {activePlatform.background_image_url && (
-        <div className="relative h-48 sm:h-64 lg:h-96 w-full -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-4 sm:mb-6">
+        <div className="hidden sm:block relative h-64 lg:h-96 w-full -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-4 sm:mb-6">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${activePlatform.background_image_url})` }}
@@ -220,7 +220,7 @@ export function GameDetail() {
         </div>
       )}
       
-      <div className={`max-w-6xl mx-auto ${activePlatform.background_image_url ? '-mt-32 sm:-mt-48 lg:-mt-64 relative z-10' : ''}`}>
+      <div className={`max-w-6xl mx-auto ${activePlatform.background_image_url ? 'sm:-mt-48 lg:-mt-64 relative z-10' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           {/* Cover Art */}
           <div className="lg:col-span-1">

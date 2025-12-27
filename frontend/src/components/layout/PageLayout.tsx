@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 import { Navbar } from './Navbar'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
+import { useSidebar } from '@/contexts/SidebarContext'
 
 export interface PageLayoutProps {
   children: ReactNode
@@ -9,6 +10,8 @@ export interface PageLayoutProps {
 }
 
 export function PageLayout({ children, sidebar }: PageLayoutProps) {
+  const { isCollapsed } = useSidebar()
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Navbar */}
@@ -20,10 +23,12 @@ export function PageLayout({ children, sidebar }: PageLayoutProps) {
         <Sidebar>{sidebar}</Sidebar>
 
         {/* Main Content */}
-        <main className="md:ml-60 min-h-[calc(100vh-4rem)]">
-          <div className="p-6">
-            {children}
-          </div>
+        <main
+          className={`min-h-[calc(100vh-4rem)] overflow-x-hidden transition-all duration-300 ${
+            isCollapsed ? 'md:ml-16' : 'md:ml-60'
+          }`}
+        >
+          <div className="p-4 sm:p-6">{children}</div>
         </main>
       </div>
 

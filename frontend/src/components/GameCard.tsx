@@ -65,41 +65,72 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="card hover:border-primary-purple transition-all cursor-pointer group relative"
+      className="card hover:border-primary-purple transition-all cursor-pointer group relative p-0 sm:p-4"
     >
-      <button
-        onClick={handleFavoriteClick}
-        className="absolute top-4 right-4 z-10 text-2xl hover:scale-110 transition-transform"
-        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-      >
-        {isFavorite ? '❤️' : '🤍'}
-      </button>
-      <div className="flex gap-4">
+      {/* Mobile: Poster-only layout with overlay */}
+      <div className="sm:hidden relative aspect-[3/4] overflow-hidden rounded-lg">
         {cover_art_url ? (
           <img
             src={cover_art_url}
             alt={name}
-            className="w-24 h-32 object-cover rounded"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-24 h-32 bg-zinc-800 rounded flex items-center justify-center">
-            <span className="text-zinc-600 text-xs">No image</span>
+          <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+            <span className="text-zinc-600 text-sm">No image</span>
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <h3 className="text-sm font-bold text-white line-clamp-2 group-hover:text-primary-purple transition-colors">
+            {name}
+          </h3>
+        </div>
+        <button
+          onClick={handleFavoriteClick}
+          className="absolute top-2 right-2 z-10 text-xl hover:scale-110 transition-transform"
+          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          {isFavorite ? '❤️' : '🤍'}
+        </button>
+      </div>
 
-        <div className="flex-1">
-          <h3 className="text-lg font-bold mb-2 group-hover:text-primary-purple transition-colors">
+      {/* Desktop: Full card layout */}
+      <div className="hidden sm:flex gap-4">
+        <div className="relative shrink-0">
+          {cover_art_url ? (
+            <img
+              src={cover_art_url}
+              alt={name}
+              className="w-24 h-32 object-cover rounded"
+            />
+          ) : (
+            <div className="w-24 h-32 bg-zinc-800 rounded flex items-center justify-center">
+              <span className="text-zinc-600 text-xs">No image</span>
+            </div>
+          )}
+          <button
+            onClick={handleFavoriteClick}
+            className="absolute -top-2 -right-2 z-10 text-xl hover:scale-110 transition-transform"
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorite ? '❤️' : '🤍'}
+          </button>
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-bold mb-2 group-hover:text-primary-purple transition-colors break-words">
             {name}
           </h3>
 
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <PlatformIcons platforms={platforms.map(p => p.displayName)} size="sm" />
             <span className={`badge ${STATUS_COLORS[status as keyof typeof STATUS_COLORS]}`}>
               {status}
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-zinc-400">
+          <div className="flex items-center gap-4 text-sm text-zinc-400 flex-wrap">
             {metacritic_score && (
               <div className="flex items-center gap-1">
                 <span className="text-primary-yellow">★</span>
@@ -125,7 +156,6 @@ export function GameCard({
             )}
           </div>
 
-          {/* Add to Collection Button */}
           <div className="mt-3" onClick={(e) => e.preventDefault()}>
             <AddToCollection gameId={id} />
           </div>

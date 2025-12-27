@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { statsAPI } from '@/lib/api'
 
@@ -42,6 +42,8 @@ function formatMinutes(minutes: number): string {
 export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
+  const [maxWeeks, setMaxWeeks] = useState(13)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredDay, setHoveredDay] = useState<{
     date: string
     count: number
@@ -49,6 +51,22 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
     x: number
     y: number
   } | null>(null)
+
+  useEffect(() => {
+    const calculateMaxWeeks = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth
+        const dayLabelWidth = 35
+        const cellSize = 12
+        const availableWidth = containerWidth - dayLabelWidth
+        const weeks = Math.floor(availableWidth / cellSize)
+        setMaxWeeks(Math.max(13, Math.min(53, weeks)))
+      }
+    }
+    calculateMaxWeeks()
+    window.addEventListener('resize', calculateMaxWeeks)
+    return () => window.removeEventListener('resize', calculateMaxWeeks)
+  }, [])
 
   const { data, isLoading } = useQuery({
     queryKey: [type === 'activity' ? 'activityHeatmap' : 'completionHeatmap', year],
@@ -123,6 +141,21 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
     return { calendar: weeks, maxValue: maxVal || 1, monthLabels: labels }
   }, [year, data])
 
+  const { displayCalendar, displayMonthLabels } = useMemo(() => {
+    if (maxWeeks >= calendar.length) {
+      return { displayCalendar: calendar, displayMonthLabels: monthLabels }
+    }
+    
+    const startIndex = Math.max(0, calendar.length - maxWeeks)
+    const trimmedCalendar = calendar.slice(startIndex)
+    
+    const trimmedLabels = monthLabels
+      .filter(({ weekIndex }) => weekIndex >= startIndex)
+      .map(({ month, weekIndex }) => ({ month, weekIndex: weekIndex - startIndex }))
+    
+    return { displayCalendar: trimmedCalendar, displayMonthLabels: trimmedLabels }
+  }, [calendar, monthLabels, maxWeeks])
+
   const summary = data?.summary
 
   const levelColors = {
@@ -133,7 +166,7 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   const colors = levelColors[type]
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={containerRef}>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">
           {type === 'activity' ? 'Play Activity' : 'Completion Activity'}
@@ -207,9 +240,9 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
           Loading activity data...
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative overflow-hidden">
           <div className="relative h-4 ml-7 text-xs text-gray-500">
-            {monthLabels.map(({ month, weekIndex }) => (
+            {displayMonthLabels.map(({ month, weekIndex }) => (
               <div
                 key={`${month}-${weekIndex}`}
                 className="absolute"
@@ -231,18 +264,18 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
                 </div>
               ))}
             </div>
-            <div className="flex gap-[2px] flex-1 min-w-0">
-              {calendar.map((week, weekIndex) => (
-                <div key={weekIndex} className="flex flex-col gap-[2px] flex-1 min-w-0">
+            <div className="flex gap-[2px] overflow-hidden">
+              {displayCalendar.map((week, weekIndex) => (
+                <div key={weekIndex} className="flex flex-col gap-[2px] shrink-0">
                   {week.map((day, dayIndex) => {
                     if (!day) {
-                      return <div key={dayIndex} className="aspect-square w-full max-w-[10px]" />
+                      return <div key={dayIndex} className="w-[10px] h-[10px]" />
                     }
                     const level = day.data ? getLevel(day.data.value, maxValue) : 0
                     return (
                       <div
                         key={dayIndex}
-                        className="aspect-square w-full max-w-[10px] rounded-sm cursor-pointer transition-all hover:ring-1 hover:ring-white"
+                        className="w-[10px] h-[10px] rounded-sm cursor-pointer transition-all hover:ring-1 hover:ring-white"
                         style={{ backgroundColor: colors[level] }}
                         onMouseEnter={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect()

@@ -196,7 +196,8 @@ router.post(
       )
 
       // If this is a completed session (has endedAt), update user_playtime
-      if (endedAt && calculatedDuration) {
+      if (endedAt) {
+        const duration = calculatedDuration || 0
         await query(
           `INSERT INTO user_playtime (user_id, game_id, platform_id, total_minutes, last_played)
            VALUES ($1, $2, $3, $4, $5)
@@ -204,7 +205,7 @@ router.post(
            DO UPDATE SET 
              total_minutes = user_playtime.total_minutes + $4,
              last_played = $5`,
-          [user.id, gameId, platformId, calculatedDuration, endedAt]
+          [user.id, gameId, platformId, duration, endedAt]
         )
       }
 
@@ -278,7 +279,8 @@ router.patch(
       )
 
       // If we just ended the session, update user_playtime
-      if (endedAt && calculatedDuration && !existingSession.ended_at) {
+      if (endedAt && !existingSession.ended_at) {
+        const duration = calculatedDuration || 0
         await query(
           `INSERT INTO user_playtime (user_id, game_id, platform_id, total_minutes, last_played)
            VALUES ($1, $2, $3, $4, $5)
@@ -286,7 +288,7 @@ router.patch(
            DO UPDATE SET 
              total_minutes = user_playtime.total_minutes + $4,
              last_played = $5`,
-          [user.id, gameId, existingSession.platform_id, calculatedDuration, endedAt]
+          [user.id, gameId, existingSession.platform_id, duration, endedAt]
         )
       }
 

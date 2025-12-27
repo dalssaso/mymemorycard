@@ -1,3 +1,5 @@
+import { useSidebar } from '@/contexts/SidebarContext'
+
 interface LibrarySidebarProps {
   platformFilter: string
   setPlatformFilter: (value: string) => void
@@ -35,6 +37,76 @@ export function LibrarySidebar({
   onClearFilters,
   hasActiveFilters,
 }: LibrarySidebarProps) {
+  const { isCollapsed } = useSidebar()
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-3 pt-3 border-t border-gray-800">
+        {/* View Mode Icons */}
+        <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 rounded-lg transition-all ${
+              viewMode === 'grid'
+                ? 'bg-primary-purple text-white'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+            }`}
+            title="Grid View"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={`p-2 rounded-lg transition-all ${
+              viewMode === 'table'
+                ? 'bg-primary-purple text-white'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+            }`}
+            title="Table View"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Favorites Toggle */}
+        <div className="flex justify-center pt-2 border-t border-gray-800">
+          <button
+            onClick={() => setFavoritesOnly(!favoritesOnly)}
+            className={`p-2 rounded-lg transition-all ${
+              favoritesOnly
+                ? 'bg-red-500/20 text-red-400'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+            }`}
+            title={favoritesOnly ? 'Showing Favorites Only' : 'Show Favorites Only'}
+          >
+            <svg className="w-5 h-5" fill={favoritesOnly ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Clear Filters */}
+        {hasActiveFilters && (
+          <div className="flex justify-center pt-2 border-t border-gray-800">
+            <button
+              onClick={onClearFilters}
+              className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              title="Clear All Filters"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -44,22 +116,28 @@ export function LibrarySidebar({
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode('grid')}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
               viewMode === 'grid'
                 ? 'bg-primary-purple border border-purple-500 text-white'
                 : 'bg-gray-800 border border-gray-700 text-gray-400 hover:text-white'
             }`}
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
             Grid
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
               viewMode === 'table'
                 ? 'bg-primary-purple border border-purple-500 text-white'
                 : 'bg-gray-800 border border-gray-700 text-gray-400 hover:text-white'
             }`}
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
             Table
           </button>
         </div>

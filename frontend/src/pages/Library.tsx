@@ -609,7 +609,7 @@ export function Library() {
           </div>
         ) : viewMode === 'grid' ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
               {table.getRowModel().rows.map((row) => {
                 const isSelected = row.getIsSelected()
                 if (selectionMode) {
@@ -617,13 +617,40 @@ export function Library() {
                     <div
                       key={row.original.id}
                       onClick={() => row.toggleSelected()}
-                      className={`card cursor-pointer transition-all relative ${
+                      className={`card cursor-pointer transition-all relative p-0 sm:p-4 ${
                         isSelected 
                           ? 'bg-primary-purple/20 border-primary-purple' 
                           : 'hover:border-zinc-500'
                       }`}
                     >
-                      <div className="flex gap-4">
+                      {/* Mobile: Poster-only layout */}
+                      <div className="sm:hidden relative aspect-[3/4] overflow-hidden rounded-lg">
+                        {row.original.cover_art_url ? (
+                          <img
+                            src={row.original.cover_art_url}
+                            alt={row.original.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                            <span className="text-zinc-600 text-sm">No image</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <h3 className="text-sm font-bold text-white line-clamp-2">{row.original.name}</h3>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Desktop: Full card layout */}
+                      <div className="hidden sm:flex gap-4">
                         {row.original.cover_art_url ? (
                           <img
                             src={row.original.cover_art_url}
@@ -637,7 +664,7 @@ export function Library() {
                         )}
                         <div className="flex-1">
                           <h3 className="text-lg font-bold mb-2">{row.original.name}</h3>
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <PlatformIcons platforms={row.original.platforms.map(p => p.displayName)} size="sm" />
                             <span className="badge text-zinc-400 border-zinc-600">
                               {row.original.status}
@@ -650,14 +677,14 @@ export function Library() {
                             </div>
                           )}
                         </div>
+                        {isSelected && (
+                          <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
-                      {isSelected && (
-                        <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                          </svg>
-                        </div>
-                      )}
                     </div>
                   )
                 }
