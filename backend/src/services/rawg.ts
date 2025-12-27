@@ -31,6 +31,87 @@ interface RAWGAchievement {
   percent: string
 }
 
+interface RAWGAddition {
+  id: number
+  name: string
+  slug: string
+  released: string | null
+  background_image: string | null
+}
+
+export type AdditionType = 'dlc' | 'edition' | 'other'
+
+export interface ClassifiedAddition extends RAWGAddition {
+  addition_type: AdditionType
+  is_complete_edition: boolean
+}
+
+const EDITION_PATTERNS = [
+  /complete\s*edition/i,
+  /game\s*of\s*the\s*year/i,
+  /goty/i,
+  /definitive\s*edition/i,
+  /deluxe\s*edition/i,
+  /ultimate\s*edition/i,
+  /gold\s*edition/i,
+  /bundle/i,
+  /collection/i,
+  /premium\s*edition/i,
+  /enhanced\s*edition/i,
+  /legendary\s*edition/i,
+  /special\s*edition/i,
+  /anniversary\s*edition/i,
+]
+
+const COMPLETE_EDITION_PATTERNS = [
+  /complete\s*edition/i,
+  /game\s*of\s*the\s*year/i,
+  /goty/i,
+  /definitive\s*edition/i,
+  /ultimate\s*edition/i,
+  /legendary\s*edition/i,
+  /all\s*dlc/i,
+]
+
+const OTHER_PATTERNS = [
+  /soundtrack/i,
+  /ost/i,
+  /theme/i,
+  /avatar/i,
+  /artbook/i,
+  /art\s*book/i,
+  /wallpaper/i,
+  /digital\s*art/i,
+  /making\s*of/i,
+  /behind\s*the\s*scenes/i,
+]
+
+export function classifyAddition(name: string): { type: AdditionType; isComplete: boolean } {
+  const lowerName = name.toLowerCase()
+
+  for (const pattern of OTHER_PATTERNS) {
+    if (pattern.test(lowerName)) {
+      return { type: 'other', isComplete: false }
+    }
+  }
+
+  for (const pattern of EDITION_PATTERNS) {
+    if (pattern.test(lowerName)) {
+      const isComplete = COMPLETE_EDITION_PATTERNS.some((p) => p.test(lowerName))
+      return { type: 'edition', isComplete }
+    }
+  }
+
+  return { type: 'dlc', isComplete: false }
+}
+
+interface RAWGAdditionsResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: RAWGAddition[]
+}
+
 interface RAWGAchievementsResponse {
   count: number
   next: string | null
@@ -383,4 +464,73 @@ async function cacheAchievements(gameId: number, achievements: RAWGAchievement[]
   }
 }
 
-export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries, RAWGAchievement }
+export async function getGameAdditions(gameId: number, useCache = true): Promise<RAWGAddition[]> {
+  if (!RAWG_API_KEY) {
+    console.warn('RAWG API key not configured')
+    return []
+  }
+
+  if (useCache) {
+    const cached = await getCachedAdditions(gameId)
+    if (cached) {
+      console.log(`Cache hit for additions: ${gameId}`)
+      return cached
+    }
+  }
+
+  return rateLimiter.schedule(async () => {
+    const allAdditions: RAWGAddition[] = []
+    let nextUrl: string | null = `${RAWG_BASE_URL}/games/${gameId}/additions?key=${RAWG_API_KEY}&page_size=40`
+
+    while (nextUrl) {
+      console.log(`RAWG API request: additions for game ${gameId}`)
+      await incrementRAWGRequestCount()
+      const response = await fetch(nextUrl)
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          await cacheAdditions(gameId, [])
+          return []
+        }
+        throw new Error(`RAWG API error: ${response.status}`)
+      }
+
+      const data = (await response.json()) as RAWGAdditionsResponse
+      allAdditions.push(...data.results)
+
+      if (data.next && allAdditions.length < 100) {
+        nextUrl = data.next
+      } else {
+        nextUrl = null
+      }
+    }
+
+    if (useCache) {
+      await cacheAdditions(gameId, allAdditions)
+    }
+
+    return allAdditions
+  })
+}
+
+async function getCachedAdditions(gameId: number): Promise<RAWGAddition[] | null> {
+  try {
+    const key = `rawg:additions:${gameId}`
+    const cached = await redisClient.get(key)
+    return cached ? JSON.parse(cached) : null
+  } catch (error) {
+    console.error('Redis cache get error:', error)
+    return null
+  }
+}
+
+async function cacheAdditions(gameId: number, additions: RAWGAddition[]): Promise<void> {
+  try {
+    const key = `rawg:additions:${gameId}`
+    await redisClient.setEx(key, CACHE_TTL_DETAILS, JSON.stringify(additions))
+  } catch (error) {
+    console.error('Redis cache set error:', error)
+  }
+}
+
+export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries, RAWGAchievement, RAWGAddition }

@@ -15,17 +15,18 @@ interface Achievement {
 
 interface GameAchievementsProps {
   gameId: string
+  platformId: string
 }
 
-export function GameAchievements({ gameId }: GameAchievementsProps) {
+export function GameAchievements({ gameId, platformId }: GameAchievementsProps) {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
   const [filter, setFilter] = useState<'all' | 'completed' | 'incomplete'>('all')
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['achievements', gameId],
+    queryKey: ['achievements', gameId, platformId],
     queryFn: async () => {
-      const response = await gamesAPI.getAchievements(gameId)
+      const response = await gamesAPI.getAchievements(gameId, platformId)
       return response.data as { achievements: Achievement[]; message?: string }
     },
   })
@@ -37,13 +38,13 @@ export function GameAchievements({ gameId }: GameAchievementsProps) {
     }: {
       achievementId: number
       completed: boolean
-    }) => gamesAPI.updateAchievement(gameId, achievementId, completed),
+    }) => gamesAPI.updateAchievement(gameId, platformId, achievementId, completed),
     onMutate: async ({ achievementId, completed }) => {
-      await queryClient.cancelQueries({ queryKey: ['achievements', gameId] })
-      const previousData = queryClient.getQueryData(['achievements', gameId])
+      await queryClient.cancelQueries({ queryKey: ['achievements', gameId, platformId] })
+      const previousData = queryClient.getQueryData(['achievements', gameId, platformId])
 
       queryClient.setQueryData(
-        ['achievements', gameId],
+        ['achievements', gameId, platformId],
         (old: { achievements: Achievement[] } | undefined) => {
           if (!old) return old
           return {
@@ -65,12 +66,12 @@ export function GameAchievements({ gameId }: GameAchievementsProps) {
     },
     onError: (_err, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(['achievements', gameId], context.previousData)
+        queryClient.setQueryData(['achievements', gameId, platformId], context.previousData)
       }
       showToast('Failed to update achievement', 'error')
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['achievements', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['achievements', gameId, platformId] })
     },
   })
 

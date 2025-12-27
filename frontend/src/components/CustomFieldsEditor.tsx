@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { gamesAPI } from '@/lib/api'
 import { useToast } from '@/components/ui/Toast'
 import { PlaySessionTracker } from '@/components/PlaySessionTracker'
-import { CompletionProgressTracker } from '@/components/CompletionProgressTracker'
+import { ProgressHistory } from '@/components/ProgressHistory'
 
 interface CustomFieldsEditorProps {
   gameId: string
@@ -59,7 +59,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
 
       <div className="border-t border-gray-700" />
 
-      <CompletionProgressTracker gameId={gameId} platformId={platformId} />
+      <ProgressHistory gameId={gameId} platformId={platformId} />
 
       <div className="border-t border-gray-700" />
 

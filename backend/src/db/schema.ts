@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgEnum,
   uuid,
   varchar,
   text,
@@ -147,6 +148,118 @@ export const userGames = pgTable(
 )
 
 // ============================================================================
+// GAME ADDITIONS (DLC/Expansions/Editions)
+// ============================================================================
+
+export const additionTypeEnum = pgEnum('addition_type', ['dlc', 'edition', 'other'])
+
+export const gameAdditions = pgTable(
+  'game_additions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    rawgAdditionId: integer('rawg_addition_id').notNull(),
+    name: text('name').notNull(),
+    slug: text('slug'),
+    released: date('released'),
+    coverImageUrl: text('cover_image_url'),
+    additionType: additionTypeEnum('addition_type').notNull().default('dlc'),
+    isCompleteEdition: boolean('is_complete_edition').default(false),
+    weight: real('weight').default(1),
+    requiredForFull: boolean('required_for_full').default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.gameId, table.rawgAdditionId),
+    index('idx_game_additions_game').on(table.gameId),
+    index('idx_game_additions_type').on(table.additionType),
+  ]
+)
+
+// User's display edition preference (which RAWG edition metadata to show)
+export const userGameDisplayEditions = pgTable(
+  'user_game_display_editions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id),
+    rawgEditionId: integer('rawg_edition_id'),
+    editionName: text('edition_name').notNull(),
+    coverArtUrl: text('cover_art_url'),
+    backgroundImageUrl: text('background_image_url'),
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.gameId, table.platformId),
+    index('idx_user_game_display_editions_user').on(table.userId),
+    index('idx_user_game_display_editions_game').on(table.gameId),
+  ]
+)
+
+// User's owned edition per game/platform
+export const userGameEditions = pgTable(
+  'user_game_editions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id),
+    editionId: uuid('edition_id').references(() => gameAdditions.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.gameId, table.platformId),
+    index('idx_user_game_editions_user').on(table.userId),
+    index('idx_user_game_editions_game').on(table.gameId),
+  ]
+)
+
+// User's owned DLCs per game/platform (for standard edition owners)
+export const userGameAdditions = pgTable(
+  'user_game_additions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id),
+    additionId: uuid('addition_id')
+      .notNull()
+      .references(() => gameAdditions.id, { onDelete: 'cascade' }),
+    owned: boolean('owned').default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.gameId, table.platformId, table.additionId),
+    index('idx_user_game_additions_user').on(table.userId),
+    index('idx_user_game_additions_game').on(table.gameId),
+  ]
+)
+
+// ============================================================================
 // PLAYTIME & PROGRESS
 // ============================================================================
 
@@ -176,6 +289,13 @@ export const playSessions = pgTable(
   ]
 )
 
+export const completionTypeEnum = pgEnum('completion_type', [
+  'main',
+  'dlc',
+  'full',
+  'completionist',
+])
+
 export const completionLogs = pgTable(
   'completion_logs',
   {
@@ -189,6 +309,8 @@ export const completionLogs = pgTable(
     platformId: uuid('platform_id')
       .notNull()
       .references(() => platforms.id),
+    completionType: completionTypeEnum('completion_type').notNull().default('main'),
+    dlcId: uuid('dlc_id').references(() => gameAdditions.id, { onDelete: 'cascade' }),
     percentage: integer('percentage').notNull(),
     loggedAt: timestamp('logged_at', { withTimezone: true }).defaultNow(),
     notes: text('notes'),
@@ -197,6 +319,8 @@ export const completionLogs = pgTable(
     index('idx_completion_logs_user').on(table.userId),
     index('idx_completion_logs_game').on(table.gameId),
     index('idx_completion_logs_date').on(table.loggedAt),
+    index('idx_completion_logs_type').on(table.completionType),
+    index('idx_completion_logs_dlc').on(table.dlcId),
     check('percentage_check', sql`percentage >= 0 AND percentage <= 100`),
   ]
 )
@@ -364,14 +488,18 @@ export const userRawgAchievements = pgTable(
     gameId: uuid('game_id')
       .notNull()
       .references(() => games.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id, { onDelete: 'cascade' }),
     rawgAchievementId: integer('rawg_achievement_id').notNull(),
     completed: boolean('completed').default(false),
     completedAt: timestamp('completed_at', { withTimezone: true }),
   },
   (table) => [
-    unique().on(table.userId, table.gameId, table.rawgAchievementId),
+    unique().on(table.userId, table.gameId, table.platformId, table.rawgAchievementId),
     index('idx_user_rawg_achievements_user').on(table.userId),
     index('idx_user_rawg_achievements_game').on(table.gameId),
+    index('idx_user_rawg_achievements_platform').on(table.platformId),
   ]
 )
 

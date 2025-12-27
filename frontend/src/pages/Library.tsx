@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useMemo } from 'react'
 import {
   useReactTable,
@@ -11,15 +11,23 @@ import {
   type SortingState,
   type ColumnFiltersState,
   type VisibilityState,
+  type RowSelectionState,
 } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
-import { gamesAPI } from '@/lib/api'
+import { gamesAPI, collectionsAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
 import { PageLayout } from '@/components/layout'
 import { LibrarySidebar } from '@/components/sidebar'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { PlatformIcons } from '@/components/PlatformIcon'
+
+interface Collection {
+  id: string
+  name: string
+  description: string | null
+  game_count: number
+}
 
 interface Game {
   id: string
@@ -66,6 +74,7 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
 export function Library() {
   const { showToast } = useToast()
+  const queryClient = useQueryClient()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -75,6 +84,16 @@ export function Library() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false)
   const [showColumnSettings, setShowColumnSettings] = useState<boolean>(false)
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [showCollectionDropdown, setShowCollectionDropdown] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [selectionMode, setSelectionMode] = useState(false)
+
+  const handleExitSelectionMode = () => {
+    setSelectionMode(false)
+    setRowSelection({})
+    setShowCollectionDropdown(false)
+  }
 
   const handleExport = async (format: 'json' | 'csv') => {
     try {
@@ -101,6 +120,42 @@ export function Library() {
     queryFn: async () => {
       const response = await gamesAPI.getAll()
       return response.data as { games: Game[] }
+    },
+  })
+
+  const { data: collectionsData } = useQuery({
+    queryKey: ['collections'],
+    queryFn: async () => {
+      const response = await collectionsAPI.getAll()
+      return response.data as { collections: Collection[] }
+    },
+  })
+
+  const collections = collectionsData?.collections || []
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (gameIds: string[]) => gamesAPI.bulkDelete(gameIds),
+    onSuccess: (_, gameIds) => {
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      handleExitSelectionMode()
+      showToast(`Deleted ${gameIds.length} game(s)`, 'success')
+      setShowDeleteConfirm(false)
+    },
+    onError: () => {
+      showToast('Failed to delete games', 'error')
+    },
+  })
+
+  const bulkAddToCollectionMutation = useMutation({
+    mutationFn: ({ collectionId, gameIds }: { collectionId: string; gameIds: string[] }) =>
+      collectionsAPI.bulkAddGames(collectionId, gameIds),
+    onSuccess: (_, { gameIds }) => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] })
+      handleExitSelectionMode()
+      showToast(`Added ${gameIds.length} game(s) to collection`, 'success')
+    },
+    onError: () => {
+      showToast('Failed to add games to collection', 'error')
     },
   })
 
@@ -168,6 +223,13 @@ export function Library() {
     })
   }, [aggregatedGames, platformFilter, statusFilter, favoritesOnly])
 
+  const selectedGameIds = useMemo(() => {
+    return Object.keys(rowSelection)
+      .filter((key) => rowSelection[key])
+      .map((index) => filteredGames[parseInt(index)]?.id)
+      .filter(Boolean) as string[]
+  }, [rowSelection, filteredGames])
+
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
@@ -221,11 +283,14 @@ export function Library() {
       columnFilters,
       globalFilter,
       columnVisibility,
+      rowSelection,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -384,16 +449,29 @@ export function Library() {
           )}
         </div>
         
-        {/* Results count and page size */}
+        {/* Results count, page size, and selection toggle */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="text-sm text-zinc-400">
-            {(() => {
-              const { pageIndex, pageSize } = table.getState().pagination
-              const start = pageIndex * pageSize + 1
-              const end = Math.min((pageIndex + 1) * pageSize, filteredGames.length)
-              return `Showing ${start}-${end} of ${filteredGames.length} games`
-            })()}
-            {(platformFilter || statusFilter || favoritesOnly) && ` (filtered from ${games.length} total)`}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-zinc-400">
+              {(() => {
+                const { pageIndex, pageSize } = table.getState().pagination
+                const start = pageIndex * pageSize + 1
+                const end = Math.min((pageIndex + 1) * pageSize, filteredGames.length)
+                return `Showing ${start}-${end} of ${filteredGames.length} games`
+              })()}
+              {(platformFilter || statusFilter || favoritesOnly) && ` (filtered from ${games.length} total)`}
+            </span>
+            {!selectionMode && games.length > 0 && (
+              <button
+                onClick={() => setSelectionMode(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                Select
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="pageSize" className="text-sm text-zinc-400">
@@ -414,6 +492,111 @@ export function Library() {
           </div>
         </div>
 
+        {/* Selection Mode Bar */}
+        {selectionMode && (
+          <div className="mb-4 p-3 bg-bg-tertiary border border-zinc-700 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-white">
+                {selectedGameIds.length > 0 
+                  ? `${selectedGameIds.length} game(s) selected`
+                  : 'Select games to manage'}
+              </span>
+              {selectedGameIds.length > 0 && (
+                <button
+                  onClick={() => setRowSelection({})}
+                  className="text-sm text-zinc-400 hover:text-white"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedGameIds.length > 0 && (
+                <>
+                  {/* Add to Collection */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
+                      className="px-3 py-1.5 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded text-sm transition-all"
+                    >
+                      Add to Collection
+                    </button>
+                    {showCollectionDropdown && (
+                      <div className="absolute top-full right-0 mt-2 p-2 bg-bg-secondary border border-zinc-700 rounded-lg shadow-lg z-20 min-w-[200px]">
+                        {collections.length === 0 ? (
+                          <p className="text-sm text-zinc-400 px-2 py-1">No collections yet</p>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            {collections.map((collection) => (
+                              <button
+                                key={collection.id}
+                                onClick={() =>
+                                  bulkAddToCollectionMutation.mutate({
+                                    collectionId: collection.id,
+                                    gameIds: selectedGameIds,
+                                  })
+                                }
+                                disabled={bulkAddToCollectionMutation.isPending}
+                                className="text-left px-3 py-2 text-sm text-zinc-300 hover:bg-bg-hover hover:text-white rounded transition-colors"
+                              >
+                                {collection.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Delete */}
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-3 py-1.5 bg-primary-red/20 border border-primary-red/30 text-primary-red hover:bg-primary-red/30 rounded text-sm transition-all"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+
+              {/* Cancel/Done */}
+              <button
+                onClick={handleExitSelectionMode}
+                className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded text-sm transition-all"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-bg-secondary border border-zinc-700 rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-xl font-bold mb-4">Delete Games</h3>
+              <p className="text-zinc-400 mb-6">
+                Are you sure you want to delete {selectedGameIds.length} game(s) from your library?
+                This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => bulkDeleteMutation.mutate(selectedGameIds)}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="px-4 py-2 bg-primary-red text-white hover:bg-primary-red/80 rounded transition-all"
+                >
+                  {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {games.length === 0 ? (
           <div className="card text-center py-12">
             <h2 className="text-2xl font-bold mb-4">No Games Yet</h2>
@@ -427,9 +610,59 @@ export function Library() {
         ) : viewMode === 'grid' ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {table.getRowModel().rows.map((row) => (
-                <GameCard key={row.original.id} {...row.original} />
-              ))}
+              {table.getRowModel().rows.map((row) => {
+                const isSelected = row.getIsSelected()
+                if (selectionMode) {
+                  return (
+                    <div
+                      key={row.original.id}
+                      onClick={() => row.toggleSelected()}
+                      className={`card cursor-pointer transition-all relative ${
+                        isSelected 
+                          ? 'bg-primary-purple/20 border-primary-purple' 
+                          : 'hover:border-zinc-500'
+                      }`}
+                    >
+                      <div className="flex gap-4">
+                        {row.original.cover_art_url ? (
+                          <img
+                            src={row.original.cover_art_url}
+                            alt={row.original.name}
+                            className="w-24 h-32 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-24 h-32 bg-zinc-800 rounded flex items-center justify-center">
+                            <span className="text-zinc-600 text-xs">No image</span>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold mb-2">{row.original.name}</h3>
+                          <div className="flex items-center gap-2 mb-2">
+                            <PlatformIcons platforms={row.original.platforms.map(p => p.displayName)} size="sm" />
+                            <span className="badge text-zinc-400 border-zinc-600">
+                              {row.original.status}
+                            </span>
+                          </div>
+                          {row.original.metacritic_score && (
+                            <div className="flex items-center gap-1 text-sm text-zinc-400">
+                              <span className="text-primary-yellow">★</span>
+                              <span>{row.original.metacritic_score}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+                return <GameCard key={row.original.id} {...row.original} />
+              })}
             </div>
 
             {table.getPageCount() > 1 && (
@@ -461,6 +694,16 @@ export function Library() {
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id} className="border-b border-zinc-700">
+                      {selectionMode && (
+                        <th className="w-12 p-4">
+                          <input
+                            type="checkbox"
+                            checked={table.getIsAllPageRowsSelected()}
+                            onChange={table.getToggleAllPageRowsSelectedHandler()}
+                            className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple cursor-pointer"
+                          />
+                        </th>
+                      )}
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
@@ -482,8 +725,18 @@ export function Library() {
                   {table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
-                      className="border-b border-zinc-800 hover:bg-bg-hover transition-colors"
+                      className={`border-b border-zinc-800 hover:bg-bg-hover transition-colors ${selectionMode && row.getIsSelected() ? 'bg-primary-purple/10' : ''}`}
                     >
+                      {selectionMode && (
+                        <td className="w-12 p-4">
+                          <input
+                            type="checkbox"
+                            checked={row.getIsSelected()}
+                            onChange={row.getToggleSelectedHandler()}
+                            className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple cursor-pointer"
+                          />
+                        </td>
+                      )}
                       {row.getVisibleCells().map((cell) => (
                         <td key={cell.id} className="p-4">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}

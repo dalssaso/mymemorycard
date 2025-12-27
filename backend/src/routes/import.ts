@@ -1,9 +1,46 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
-import { query, queryOne, withTransaction } from '@/services/db'
+import { query, queryOne, queryMany, withTransaction } from '@/services/db'
 import { searchGames, getGameDetails, getGameSeries, type RAWGGame } from '@/services/rawg'
 import { corsHeaders } from '@/middleware/cors'
 import type { User, Game, Platform } from '@/types'
+
+const EDITION_PATTERNS = [
+  /\s*[-–—:]\s*complete\s*edition/i,
+  /\s*[-–—:]\s*game\s*of\s*the\s*year\s*(edition)?/i,
+  /\s*[-–—:]\s*goty\s*(edition)?/i,
+  /\s*[-–—:]\s*definitive\s*edition/i,
+  /\s*[-–—:]\s*deluxe\s*edition/i,
+  /\s*[-–—:]\s*ultimate\s*edition/i,
+  /\s*[-–—:]\s*gold\s*edition/i,
+  /\s*[-–—:]\s*premium\s*edition/i,
+  /\s*[-–—:]\s*enhanced\s*edition/i,
+  /\s*[-–—:]\s*legendary\s*edition/i,
+  /\s*[-–—:]\s*special\s*edition/i,
+  /\s*[-–—:]\s*anniversary\s*edition/i,
+]
+
+function extractBaseGameName(gameName: string): { baseName: string; isEdition: boolean; editionSuffix: string | null } {
+  for (const pattern of EDITION_PATTERNS) {
+    const match = gameName.match(pattern)
+    if (match) {
+      return {
+        baseName: gameName.replace(pattern, '').trim(),
+        isEdition: true,
+        editionSuffix: match[0].trim(),
+      }
+    }
+  }
+  return { baseName: gameName, isEdition: false, editionSuffix: null }
+}
+
+function normalizeForComparison(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[:\-–—]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 interface BulkImportRequest {
   gameNames: string[]
@@ -47,10 +84,37 @@ router.post(
 
         try {
           // First, check if we already have this game in our database by name
-          const existingGame = await queryOne<Game>(
+          let existingGame = await queryOne<Game>(
             'SELECT * FROM games WHERE LOWER(name) = LOWER($1)',
             [trimmedName]
           )
+
+          // Also check if this is an edition and user already owns the base game
+          const { baseName, isEdition } = extractBaseGameName(trimmedName)
+          let matchedToBaseGame = false
+
+          if (!existingGame && isEdition && platformId) {
+            // Check if user owns the base game (by similar name matching)
+            const userOwnedGames = await queryMany<Game>(
+              `SELECT g.* FROM games g
+               INNER JOIN user_games ug ON ug.game_id = g.id
+               WHERE ug.user_id = $1`,
+              [user.id]
+            )
+
+            // Find a base game match (normalize names for comparison to handle punctuation differences)
+            const normalizedBaseName = normalizeForComparison(baseName)
+            const baseGameMatch = userOwnedGames.find((g) => {
+              const { baseName: existingBaseName } = extractBaseGameName(g.name)
+              return normalizeForComparison(existingBaseName) === normalizedBaseName
+            })
+
+            if (baseGameMatch) {
+              existingGame = baseGameMatch
+              matchedToBaseGame = true
+              console.log(`Edition detected in bulk import: "${trimmedName}" mapped to existing game "${existingGame.name}"`)
+            }
+          }
 
           if (existingGame) {
             // Game already exists, just associate with user
@@ -74,6 +138,18 @@ router.post(
                    ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
                   [user.id, existingGame.id, platform.id]
                 )
+
+                // If matched to base game, set the display edition for this platform
+                if (matchedToBaseGame && isEdition) {
+                  await query(
+                    `INSERT INTO user_game_display_editions 
+                     (user_id, game_id, platform_id, edition_name)
+                     VALUES ($1, $2, $3, $4)
+                     ON CONFLICT (user_id, game_id, platform_id) DO UPDATE SET
+                       edition_name = EXCLUDED.edition_name`,
+                    [user.id, existingGame.id, platform.id, trimmedName]
+                  )
+                }
               }
             }
 
@@ -163,7 +239,32 @@ async function importGame(
       [rawgGame.id]
     )
 
-    if (!game) {
+    // Check if this is an edition and user already owns the base game
+    const { baseName, isEdition } = extractBaseGameName(rawgGame.name)
+    let existingBaseGame: Game | null = null
+
+    if (!game && isEdition && platformId) {
+      // Check if user owns the base game (by similar name matching)
+      const userOwnedGames = await queryMany<Game & { user_game_id: string }>(
+        `SELECT g.*, ug.id as user_game_id FROM games g
+         INNER JOIN user_games ug ON ug.game_id = g.id
+         WHERE ug.user_id = $1`,
+        [user.id]
+      )
+
+      // Find a base game match (normalize names for comparison to handle punctuation differences)
+      const normalizedBaseName = normalizeForComparison(baseName)
+      existingBaseGame = userOwnedGames.find((g) => {
+        const { baseName: existingBaseName } = extractBaseGameName(g.name)
+        return normalizeForComparison(existingBaseName) === normalizedBaseName
+      }) || null
+    }
+
+    if (existingBaseGame) {
+      // User already owns the base game, add new platform to existing game
+      game = existingBaseGame
+      console.log(`Edition detected: "${rawgGame.name}" mapped to existing game "${game.name}"`)
+    } else if (!game) {
       // Fetch game series in the background (optional, don't block import)
       let seriesName: string | null = null
       try {
@@ -245,6 +346,32 @@ async function importGame(
          ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
         [user.id, game!.id, platform.id]
       )
+
+      // If we matched to an existing base game and this is an edition,
+      // set the display edition for this platform
+      if (existingBaseGame && isEdition) {
+        await client.query(
+          `INSERT INTO user_game_display_editions 
+           (user_id, game_id, platform_id, rawg_edition_id, edition_name, cover_art_url, background_image_url, description)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (user_id, game_id, platform_id) DO UPDATE SET
+             rawg_edition_id = EXCLUDED.rawg_edition_id,
+             edition_name = EXCLUDED.edition_name,
+             cover_art_url = EXCLUDED.cover_art_url,
+             background_image_url = EXCLUDED.background_image_url,
+             description = EXCLUDED.description`,
+          [
+            user.id,
+            game!.id,
+            platform.id,
+            rawgGame.id,
+            rawgGame.name,
+            rawgGame.background_image || null,
+            rawgGame.background_image || null,
+            rawgGame.description_raw || null,
+          ]
+        )
+      }
     }
 
     return game!

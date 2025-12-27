@@ -134,15 +134,33 @@ router.post(
       }
 
       // Verify user owns this game on this platform
-      const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+      const ownership = await queryOne<{ id: string }>(
+        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
         [user.id, gameId, platformId]
       )
 
-      if (ownership.rowCount === 0) {
+      if (!ownership) {
         return new Response(
           JSON.stringify({ error: 'Game not found in your library' }),
           { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Get progress status from user_game_progress table
+      const progress = await queryOne<{ status: string }>(
+        'SELECT status FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Auto-move game from backlog to playing when starting a session
+      const currentStatus = progress?.status || 'backlog'
+      if (currentStatus === 'backlog' && !endedAt) {
+        await query(
+          `INSERT INTO user_game_progress (user_id, game_id, platform_id, status, started_at)
+           VALUES ($1, $2, $3, 'playing', NOW())
+           ON CONFLICT (user_id, game_id, platform_id)
+           DO UPDATE SET status = 'playing', started_at = COALESCE(user_game_progress.started_at, NOW())`,
+          [user.id, gameId, platformId]
         )
       }
 

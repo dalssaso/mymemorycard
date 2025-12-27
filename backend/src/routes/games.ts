@@ -37,7 +37,10 @@ router.get(
   '/api/games',
   requireAuth(async (req, user) => {
     try {
-      const games = await queryMany<UserGameWithDetails>(
+      const games = await queryMany<UserGameWithDetails & {
+        display_edition_name: string | null
+        display_cover_art_url: string | null
+      }>(
         `SELECT 
           g.*,
           p.id as platform_id,
@@ -47,19 +50,34 @@ router.get(
           ugp.user_rating,
           COALESCE(upt.total_minutes, 0) as total_minutes,
           upt.last_played,
-          COALESCE(ugp.is_favorite, FALSE) as is_favorite
+          COALESCE(ugp.is_favorite, FALSE) as is_favorite,
+          ugde.edition_name as display_edition_name,
+          ugde.cover_art_url as display_cover_art_url
         FROM games g
         INNER JOIN user_games ug ON g.id = ug.game_id
         INNER JOIN platforms p ON ug.platform_id = p.id
         LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
         LEFT JOIN user_playtime upt ON g.id = upt.game_id AND ug.platform_id = upt.platform_id AND upt.user_id = $1
+        LEFT JOIN user_game_display_editions ugde ON g.id = ugde.game_id AND ug.platform_id = ugde.platform_id AND ugde.user_id = $1
         WHERE ug.user_id = $1
-        ORDER BY g.name ASC`,
+        ORDER BY COALESCE(ugde.edition_name, g.name) ASC`,
         [user.id]
       )
 
+      // Apply display edition overlay
+      const gamesWithOverlay = games.map(g => {
+        if (g.display_edition_name) {
+          return {
+            ...g,
+            name: g.display_edition_name,
+            cover_art_url: g.display_cover_art_url || g.cover_art_url,
+          }
+        }
+        return g
+      })
+
       return new Response(
-        JSON.stringify({ games }),
+        JSON.stringify({ games: gamesWithOverlay }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
     } catch (error) {
@@ -228,7 +246,12 @@ router.get(
         )
       }
 
-      const game = await queryMany<UserGameWithDetails>(
+      const game = await queryMany<UserGameWithDetails & { 
+        display_edition_name: string | null
+        display_cover_art_url: string | null
+        display_background_image_url: string | null
+        display_description: string | null
+      }>(
         `SELECT 
           g.*,
           p.id as platform_id,
@@ -239,12 +262,17 @@ router.get(
           ugp.notes,
           upt.total_minutes,
           upt.last_played,
-          COALESCE(ugp.is_favorite, FALSE) as is_favorite
+          COALESCE(ugp.is_favorite, FALSE) as is_favorite,
+          ugde.edition_name as display_edition_name,
+          ugde.cover_art_url as display_cover_art_url,
+          ugde.background_image_url as display_background_image_url,
+          ugde.description as display_description
         FROM games g
         LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $1
         LEFT JOIN platforms p ON ug.platform_id = p.id
         LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
         LEFT JOIN user_playtime upt ON g.id = upt.game_id AND ug.platform_id = upt.platform_id AND upt.user_id = $1
+        LEFT JOIN user_game_display_editions ugde ON g.id = ugde.game_id AND ug.platform_id = ugde.platform_id AND ugde.user_id = $1
         WHERE g.id = $2`,
         [user.id, gameId]
       )
@@ -255,6 +283,21 @@ router.get(
           { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
       }
+
+      // Apply display edition overlay if set
+      const platforms = game.map(g => {
+        if (g.display_edition_name) {
+          return {
+            ...g,
+            name: g.display_edition_name,
+            cover_art_url: g.display_cover_art_url || g.cover_art_url,
+            background_image_url: g.display_background_image_url || g.background_image_url,
+            description: g.display_description || g.description,
+            is_using_display_edition: true,
+          }
+        }
+        return { ...g, is_using_display_edition: false }
+      })
 
       // Fetch genres for this game
       const genres = await queryMany<{ name: string }>(
@@ -268,8 +311,8 @@ router.get(
 
       return new Response(
         JSON.stringify({ 
-          game: game[0], 
-          platforms: game,
+          game: platforms[0], 
+          platforms,
           genres: genres.map(g => g.name)
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
@@ -634,6 +677,191 @@ router.put(
       )
     } catch (error) {
       console.error('Update custom fields error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Delete game from user's library (for a specific platform)
+router.delete(
+  '/api/games/:id',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const url = new URL(req.url)
+      const platformId = url.searchParams.get('platform_id')
+
+      if (!gameId || !platformId) {
+        return new Response(
+          JSON.stringify({ error: 'Game ID and platform_id are required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game on this platform
+      const ownership = await queryOne<{ id: string }>(
+        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      if (!ownership) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Delete related user data (cascading from user_games deletion handles most)
+      // But some tables reference game_id + platform_id directly, not user_games
+
+      // Delete play sessions
+      await query(
+        'DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete completion logs
+      await query(
+        'DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete user playtime
+      await query(
+        'DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete user game progress
+      await query(
+        'DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete custom fields
+      await query(
+        'DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete display edition preference
+      await query(
+        'DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete edition ownership
+      await query(
+        'DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Delete DLC ownership
+      await query(
+        'DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      // Finally delete the user_games entry
+      await query(
+        'DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Delete game error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Bulk delete games
+router.post(
+  '/api/games/bulk-delete',
+  requireAuth(async (req, user) => {
+    try {
+      const body = (await req.json()) as { gameIds?: string[] }
+      const { gameIds } = body
+
+      if (!gameIds || !Array.isArray(gameIds) || gameIds.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'gameIds array is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (gameIds.length > 100) {
+        return new Response(
+          JSON.stringify({ error: 'Cannot delete more than 100 games at once' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      let deletedCount = 0
+
+      for (const gameId of gameIds) {
+        const userGames = await queryMany<{ platform_id: string }>(
+          'SELECT platform_id FROM user_games WHERE user_id = $1 AND game_id = $2',
+          [user.id, gameId]
+        )
+
+        for (const { platform_id: platformId } of userGames) {
+          await query(
+            'DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          await query(
+            'DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, platformId]
+          )
+          deletedCount++
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, deletedCount }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Bulk delete games error:', error)
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }

@@ -1,13 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams, Link } from '@tanstack/react-router'
+import { useParams, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
 import { GameDetailSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
-import { CustomFieldsEditor } from '@/components/CustomFieldsEditor'
 import { GameAchievements } from '@/components/GameAchievements'
 import { PlatformIcon } from '@/components/PlatformIcon'
+import { StartSessionButton } from '@/components/StartSessionButton'
+import { ProgressDisplay } from '@/components/ProgressDisplay'
+import { SessionsHistory } from '@/components/SessionsHistory'
+import { ProgressHistory } from '@/components/ProgressHistory'
+import { EditionOwnership } from '@/components/EditionOwnership'
+import { EditionSwitcher } from '@/components/EditionSwitcher'
 
 interface GameDetails {
   id: string
@@ -47,6 +52,8 @@ export function GameDetail() {
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [notesValue, setNotesValue] = useState('')
   const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const navigate = useNavigate()
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['game', id],
@@ -109,6 +116,26 @@ export function GameDetail() {
     },
     onError: () => {
       showToast('Failed to update favorite status', 'error')
+    }
+  })
+
+  const deleteGameMutation = useMutation({
+    mutationFn: ({ platformId }: { platformId: string }) =>
+      gamesAPI.delete(id, platformId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      queryClient.invalidateQueries({ queryKey: ['game', id] })
+      showToast('Game removed from library', 'success')
+      
+      const remainingPlatforms = platforms.filter(p => p.platform_id !== variables.platformId)
+      if (remainingPlatforms.length === 0) {
+        navigate({ to: '/library' })
+      } else {
+        setSelectedPlatformId(remainingPlatforms[0].platform_id)
+      }
+    },
+    onError: () => {
+      showToast('Failed to remove game', 'error')
     }
   })
 
@@ -183,24 +210,24 @@ export function GameDetail() {
       </div>
 
       {/* Background Image Header */}
-      {game.background_image_url && (
+      {activePlatform.background_image_url && (
         <div className="relative h-48 sm:h-64 lg:h-96 w-full -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-4 sm:mb-6">
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${game.background_image_url})` }}
+            style={{ backgroundImage: `url(${activePlatform.background_image_url})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950" />
         </div>
       )}
       
-      <div className={`max-w-6xl mx-auto ${game.background_image_url ? '-mt-32 sm:-mt-48 lg:-mt-64 relative z-10' : ''}`}>
+      <div className={`max-w-6xl mx-auto ${activePlatform.background_image_url ? '-mt-32 sm:-mt-48 lg:-mt-64 relative z-10' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           {/* Cover Art */}
           <div className="lg:col-span-1">
-            {game.cover_art_url ? (
+            {activePlatform.cover_art_url ? (
               <img
-                src={game.cover_art_url}
-                alt={game.name}
+                src={activePlatform.cover_art_url}
+                alt={activePlatform.name}
                 className="w-full rounded-lg shadow-lg"
               />
             ) : (
@@ -208,6 +235,14 @@ export function GameDetail() {
                 <span className="text-gray-500">No cover art</span>
               </div>
             )}
+
+            {/* Edition Switcher */}
+            <div className="mt-4">
+              <EditionSwitcher
+                gameId={game.id}
+                platformId={activePlatformId}
+              />
+            </div>
 
             {/* Platform Selector (for multi-platform games) */}
             {hasMultiplePlatforms && (
@@ -232,6 +267,16 @@ export function GameDetail() {
                 </p>
               </div>
             )}
+
+            {/* Start Session Button */}
+            <div className="mt-4">
+              <StartSessionButton gameId={game.id} platformId={activePlatformId} />
+            </div>
+
+            {/* Progress Display */}
+            <div className="mt-3">
+              <ProgressDisplay gameId={game.id} />
+            </div>
 
             {/* Status Selector */}
             <div className="mt-4">
@@ -316,6 +361,42 @@ export function GameDetail() {
               </button>
             </div>
 
+            {/* Remove from Library */}
+            <div className="mt-4">
+              {showDeleteConfirm ? (
+                <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
+                  <p className="text-sm text-gray-300 mb-3">
+                    Remove <strong>{activePlatform.platform_display_name}</strong> version from your library? This will delete all progress, sessions, and notes for this platform.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        deleteGameMutation.mutate({ platformId: activePlatformId })
+                        setShowDeleteConfirm(false)
+                      }}
+                      disabled={deleteGameMutation.isPending}
+                      className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50"
+                    >
+                      {deleteGameMutation.isPending ? 'Removing...' : 'Confirm Remove'}
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full py-3 rounded-lg font-semibold transition-all bg-gray-800 border-2 border-gray-700 text-gray-400 hover:bg-red-900/20 hover:border-red-500/50 hover:text-red-400"
+                >
+                  Remove from Library
+                </button>
+              )}
+            </div>
+
             {/* Owned Platforms */}
             {platforms.length > 0 && (
               <div className="mt-4">
@@ -370,12 +451,12 @@ export function GameDetail() {
 
           {/* Game Details */}
           <div className="lg:col-span-2">
-            <h1 className="text-4xl font-bold mb-4">{game.name}</h1>
+            <h1 className="text-4xl font-bold mb-4">{activePlatform.name}</h1>
 
-            {game.description && (
+            {activePlatform.description && (
               <div id="about" className="mb-6 bg-gray-800/30 rounded-lg p-4">
                 <h2 className="text-xl font-semibold mb-3 text-primary-purple">About</h2>
-                <p className="text-gray-300 leading-relaxed">{game.description}</p>
+                <p className="text-gray-300 leading-relaxed">{activePlatform.description}</p>
               </div>
             )}
 
@@ -424,23 +505,26 @@ export function GameDetail() {
               )}
             </div>
 
+            {/* Edition & DLC Ownership Section */}
+            <div id="ownership" className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-primary-purple mb-4">Edition & DLC Ownership</h2>
+              <EditionOwnership gameId={game.id} platformId={activePlatformId} />
+            </div>
+
             {/* Achievements Section */}
             <div id="achievements" className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <h2 className="text-xl font-semibold text-primary-purple mb-4">Achievements</h2>
-              <GameAchievements gameId={game.id} />
+              <GameAchievements gameId={game.id} platformId={activePlatformId} />
             </div>
 
-            {/* My Stats Section */}
+            {/* Sessions History Section */}
+            <div id="sessions" className="mb-6 bg-gray-800/30 rounded-lg p-4">
+              <SessionsHistory gameId={game.id} platformId={activePlatformId} />
+            </div>
+
+            {/* Progress History Section */}
             <div id="stats" className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-primary-purple mb-4">
-                My Stats
-                {hasMultiplePlatforms && (
-                  <span className="text-sm font-normal text-gray-400 ml-2">
-                    ({activePlatform.platform_display_name})
-                  </span>
-                )}
-              </h2>
-              <CustomFieldsEditor gameId={game.id} platformId={activePlatformId} />
+              <ProgressHistory gameId={game.id} platformId={activePlatformId} />
             </div>
 
             {/* External Resources */}
@@ -448,7 +532,7 @@ export function GameDetail() {
               <h2 className="text-xl font-semibold text-primary-purple mb-4">External Resources</h2>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href={`https://howlongtobeat.com/?q=${encodeURIComponent(game.name)}`}
+                  href={`https://howlongtobeat.com/?q=${encodeURIComponent(activePlatform.name)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 min-w-[200px] px-4 py-3 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded-lg transition-all text-center"

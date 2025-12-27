@@ -15,7 +15,10 @@ import '@/routes/preferences'
 import '@/routes/achievements'
 import '@/routes/sessions'
 import '@/routes/completion-logs'
+import '@/routes/additions'
+import '@/routes/ownership'
 import '@/routes/stats'
+import '@/routes/editions'
 
 async function startServer() {
   await runMigrations()

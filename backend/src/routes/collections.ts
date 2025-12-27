@@ -81,16 +81,26 @@ router.get(
       const games = await queryMany(
         `SELECT 
           g.*,
-          p.id as platform_id,
-          p.display_name as platform_display_name,
-          ugp.status,
-          ugp.user_rating,
-          ugp.is_favorite
+          first_ug.platform_id,
+          first_ug.platform_display_name,
+          first_ug.status,
+          first_ug.user_rating,
+          first_ug.is_favorite
          FROM games g
          INNER JOIN collection_games cg ON g.id = cg.game_id
-         LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $1
-         LEFT JOIN platforms p ON ug.platform_id = p.id
-         LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
+         LEFT JOIN LATERAL (
+           SELECT 
+             ug.platform_id,
+             p.display_name as platform_display_name,
+             ugp.status,
+             ugp.user_rating,
+             ugp.is_favorite
+           FROM user_games ug
+           LEFT JOIN platforms p ON ug.platform_id = p.id
+           LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
+           WHERE ug.game_id = g.id AND ug.user_id = $1
+           LIMIT 1
+         ) first_ug ON true
          WHERE cg.collection_id = $2
          ORDER BY g.name ASC`,
         [user.id, collectionId]
@@ -413,6 +423,75 @@ router.get(
       )
     } catch (error) {
       console.error('Get series games error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Bulk add games to collection
+router.post(
+  '/api/collections/:id/games/bulk',
+  requireAuth(async (req, user, params) => {
+    try {
+      const collectionId = params?.id
+      const body = (await req.json()) as { gameIds?: string[] }
+      const { gameIds } = body
+
+      if (!collectionId) {
+        return new Response(
+          JSON.stringify({ error: 'Collection ID is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (!gameIds || !Array.isArray(gameIds) || gameIds.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'gameIds array is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (gameIds.length > 100) {
+        return new Response(
+          JSON.stringify({ error: 'Cannot add more than 100 games at once' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      const collection = await queryOne(
+        'SELECT 1 FROM collections WHERE id = $1 AND user_id = $2',
+        [collectionId, user.id]
+      )
+
+      if (!collection) {
+        return new Response(
+          JSON.stringify({ error: 'Collection not found' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      let addedCount = 0
+      for (const gameId of gameIds) {
+        const result = await query(
+          `INSERT INTO collection_games (collection_id, game_id)
+           VALUES ($1, $2)
+           ON CONFLICT (collection_id, game_id) DO NOTHING`,
+          [collectionId, gameId]
+        )
+        if (result.rowCount && result.rowCount > 0) {
+          addedCount++
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, addedCount }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Bulk add games to collection error:', error)
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }

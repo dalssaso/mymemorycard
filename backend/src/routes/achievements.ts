@@ -19,9 +19,19 @@ router.get(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
+      const url = new URL(req.url)
+      const platformId = url.searchParams.get('platform_id')
+
       if (!gameId) {
         return new Response(
           JSON.stringify({ error: 'Game ID is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (!platformId) {
+        return new Response(
+          JSON.stringify({ error: 'Platform ID is required' }),
           { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
       }
@@ -77,8 +87,8 @@ router.get(
           completed: boolean
           completed_at: string | null
         }>(
-          'SELECT rawg_achievement_id, completed, completed_at FROM user_rawg_achievements WHERE user_id = $1 AND game_id = $2',
-          [user.id, gameId]
+          'SELECT rawg_achievement_id, completed, completed_at FROM user_rawg_achievements WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+          [user.id, gameId, platformId]
         )
 
         const progressMap = new Map(
@@ -103,8 +113,8 @@ router.get(
           completed: boolean
           completed_at: string | null
         }>(
-          'SELECT rawg_achievement_id, completed, completed_at FROM user_rawg_achievements WHERE user_id = $1 AND game_id = $2',
-          [user.id, gameId]
+          'SELECT rawg_achievement_id, completed, completed_at FROM user_rawg_achievements WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+          [user.id, gameId, platformId]
         )
 
         const progressMap = new Map(
@@ -141,12 +151,19 @@ router.put(
     try {
       const gameId = params?.id
       const achievementId = params?.achievementId
-      const body = (await req.json()) as { completed?: boolean }
-      const { completed } = body
+      const body = (await req.json()) as { completed?: boolean; platform_id?: string }
+      const { completed, platform_id: platformId } = body
 
       if (!gameId || !achievementId) {
         return new Response(
           JSON.stringify({ error: 'Game ID and achievement ID are required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (!platformId) {
+        return new Response(
+          JSON.stringify({ error: 'Platform ID is required' }),
           { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
       }
@@ -159,13 +176,13 @@ router.put(
       }
 
       const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2',
-        [user.id, gameId]
+        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
       )
 
       if (ownership.rowCount === 0) {
         return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
+          JSON.stringify({ error: 'Game not found in your library for this platform' }),
           { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
       }
@@ -174,11 +191,11 @@ router.put(
       const completedAt = completed ? new Date().toISOString() : null
 
       await query(
-        `INSERT INTO user_rawg_achievements (user_id, game_id, rawg_achievement_id, completed, completed_at)
-         VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (user_id, game_id, rawg_achievement_id)
-         DO UPDATE SET completed = $4, completed_at = CASE WHEN $4 = true AND user_rawg_achievements.completed_at IS NULL THEN $5 ELSE CASE WHEN $4 = false THEN NULL ELSE user_rawg_achievements.completed_at END END`,
-        [user.id, gameId, rawgAchievementId, completed, completedAt]
+        `INSERT INTO user_rawg_achievements (user_id, game_id, platform_id, rawg_achievement_id, completed, completed_at)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (user_id, game_id, platform_id, rawg_achievement_id)
+         DO UPDATE SET completed = $5, completed_at = CASE WHEN $5 = true AND user_rawg_achievements.completed_at IS NULL THEN $6 ELSE CASE WHEN $5 = false THEN NULL ELSE user_rawg_achievements.completed_at END END`,
+        [user.id, gameId, platformId, rawgAchievementId, completed, completedAt]
       )
 
       return new Response(

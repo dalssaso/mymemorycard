@@ -1,0 +1,545 @@
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { completionLogsAPI, additionsAPI, CompletionType, GameAddition } from '@/lib/api'
+import { useToast } from '@/components/ui/Toast'
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
+
+interface CompletionLog {
+  id: string
+  user_id: string
+  game_id: string
+  platform_id: string
+  completion_type: CompletionType
+  dlc_id: string | null
+  percentage: number
+  logged_at: string
+  notes: string | null
+  game_name?: string
+  platform_name?: string
+  dlc_name?: string
+}
+
+interface DLCSummary {
+  dlcId: string
+  name: string
+  percentage: number
+  weight: number
+  requiredForFull: boolean
+  owned?: boolean
+}
+
+interface CompletionSummary {
+  main: number
+  full: number
+  completionist: number
+  dlcs: DLCSummary[]
+  achievementPercentage: number
+  hasDlcs: boolean
+}
+
+interface ProgressHistoryProps {
+  gameId: string
+  platformId: string
+  onProgressChange?: () => void
+}
+
+type TabType = 'main' | 'dlc' | 'full' | 'completionist'
+
+const TAB_COLORS: Record<TabType, string> = {
+  main: '#10B981',
+  dlc: '#8B5CF6',
+  full: '#06B6D4',
+  completionist: '#F59E0B',
+}
+
+const QUICK_PRESETS = [25, 50, 75, 100]
+
+export function ProgressHistory({ gameId, platformId, onProgressChange }: ProgressHistoryProps) {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  const [activeTab, setActiveTab] = useState<TabType>('main')
+  const [selectedDlcId, setSelectedDlcId] = useState<string | null>(null)
+  const [sliderValue, setSliderValue] = useState<number | null>(null)
+  const [notes, setNotes] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
+
+  const { data: logsData, isLoading } = useQuery({
+    queryKey: ['completionLogs', gameId, platformId],
+    queryFn: async () => {
+      const response = await completionLogsAPI.getAll(gameId, { limit: 100, platform_id: platformId })
+      return response.data as {
+        logs: CompletionLog[]
+        total: number
+        currentPercentage: number
+        summary: CompletionSummary
+      }
+    },
+  })
+
+  const { data: additionsData } = useQuery({
+    queryKey: ['additions', gameId, platformId],
+    queryFn: async () => {
+      const response = await additionsAPI.getAll(gameId, platformId)
+      return response.data as {
+        additions: GameAddition[]
+        total: number
+        hasDlcs: boolean
+      }
+    },
+  })
+
+  const summary = logsData?.summary || { main: 0, full: 0, completionist: 0, dlcs: [], achievementPercentage: 100, hasDlcs: false }
+  const hasDlcs = additionsData?.hasDlcs || summary.hasDlcs
+  const additions = additionsData?.additions || []
+
+  const getCurrentPercentage = (): number => {
+    if (activeTab === 'main') return summary.main
+    if (activeTab === 'full') return summary.full
+    if (activeTab === 'completionist') return summary.completionist
+    if (activeTab === 'dlc' && selectedDlcId) {
+      const dlc = summary.dlcs.find((d) => d.dlcId === selectedDlcId)
+      return dlc?.percentage || 0
+    }
+    return 0
+  }
+
+  const currentPercentage = getCurrentPercentage()
+  const displayValue = sliderValue ?? currentPercentage
+  const activeColor = TAB_COLORS[activeTab]
+
+  const logs = (logsData?.logs || []).filter((log) => {
+    if (activeTab === 'main') return log.completion_type === 'main'
+    if (activeTab === 'full') return log.completion_type === 'full'
+    if (activeTab === 'completionist') return log.completion_type === 'completionist'
+    if (activeTab === 'dlc') return log.completion_type === 'dlc' && log.dlc_id === selectedDlcId
+    return false
+  })
+
+  const logProgressMutation = useMutation({
+    mutationFn: () =>
+      completionLogsAPI.create(gameId, {
+        platformId,
+        percentage: displayValue,
+        completionType: activeTab === 'dlc' ? 'dlc' : 'main',
+        dlcId: activeTab === 'dlc' ? selectedDlcId : null,
+        notes: notes || null,
+      }),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['additions', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] })
+      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      setSliderValue(null)
+      setNotes('')
+
+      const data = response.data as { statusChanged?: boolean; newStatus?: string }
+      if (data.statusChanged && data.newStatus) {
+        const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1)
+        showToast(`Progress logged - Game moved to "${statusLabel}"`, 'success')
+      } else {
+        showToast('Progress logged', 'success')
+      }
+      onProgressChange?.()
+    },
+    onError: () => {
+      showToast('Failed to log progress', 'error')
+    },
+  })
+
+  const deleteLogMutation = useMutation({
+    mutationFn: (logId: string) => completionLogsAPI.delete(gameId, logId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['additions', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] })
+      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+      showToast('Log entry deleted', 'success')
+      onProgressChange?.()
+    },
+    onError: () => {
+      showToast('Failed to delete log entry', 'error')
+    },
+  })
+
+  const hasChanged = sliderValue !== null && sliderValue !== currentPercentage
+  const canEdit = activeTab === 'main' || (activeTab === 'dlc' && selectedDlcId)
+
+  const chartData = [...logs]
+    .reverse()
+    .map((log) => ({
+      date: new Date(log.logged_at).toLocaleDateString(),
+      percentage: log.percentage,
+    }))
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    setSliderValue(null)
+    setNotes('')
+    if (tab === 'dlc' && additions.length > 0 && !selectedDlcId) {
+      setSelectedDlcId(additions[0].id)
+    }
+  }
+
+  const getTabLabel = (tab: TabType): string => {
+    if (tab === 'main') return 'Main'
+    if (tab === 'dlc') return 'DLCs'
+    if (tab === 'full') return 'Full'
+    return '100%'
+  }
+
+  const getTabPercentage = (tab: TabType): number => {
+    if (tab === 'main') return summary.main
+    if (tab === 'full') return summary.full
+    if (tab === 'completionist') return summary.completionist
+    if (tab === 'dlc') {
+      const dlcs = summary.dlcs
+      if (dlcs.length === 0) return 0
+      const avg = dlcs.reduce((acc, d) => acc + d.percentage, 0) / dlcs.length
+      return Math.floor(avg)
+    }
+    return 0
+  }
+
+  const visibleTabs: TabType[] = hasDlcs
+    ? ['main', 'dlc', 'full', 'completionist']
+    : ['main', 'full', 'completionist']
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-white">Progress Over Time</h3>
+
+      <div className="flex gap-1 p-1 bg-gray-800/50 rounded-lg">
+        {visibleTabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => handleTabChange(tab)}
+            className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
+              activeTab === tab
+                ? 'text-white shadow-sm'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+            }`}
+            style={activeTab === tab ? { backgroundColor: TAB_COLORS[tab] + '30', color: TAB_COLORS[tab] } : {}}
+          >
+            <div>{getTabLabel(tab)}</div>
+            <div className="text-[10px] opacity-70">{getTabPercentage(tab)}%</div>
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'dlc' && additions.length > 0 && (
+        <div className="space-y-2">
+          <label className="text-xs text-gray-400">Select DLC (only owned DLCs affect progress)</label>
+          <div className="grid gap-2">
+            {additions.map((dlc) => {
+              const dlcSummary = summary.dlcs.find((d) => d.dlcId === dlc.id)
+              const pct = dlcSummary?.percentage || 0
+              const isOwned = dlcSummary?.owned ?? dlc.owned
+              return (
+                <button
+                  key={dlc.id}
+                  onClick={() => {
+                    setSelectedDlcId(dlc.id)
+                    setSliderValue(null)
+                    setNotes('')
+                  }}
+                  className={`text-left p-3 rounded-lg border transition-all ${
+                    selectedDlcId === dlc.id
+                      ? 'border-purple-500 bg-purple-500/10'
+                      : isOwned
+                        ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                        : 'border-gray-800 bg-gray-900/30 opacity-60 hover:opacity-80'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="text-sm font-medium text-white truncate">{dlc.name}</span>
+                      {!isOwned && (
+                        <span className="text-[10px] text-gray-500 px-1.5 py-0.5 bg-gray-800 rounded">
+                          Not Owned
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm font-bold" style={{ color: TAB_COLORS.dlc }}>{pct}%</span>
+                  </div>
+                  <div className="mt-1 w-full bg-gray-700 rounded-full h-1.5">
+                    <div
+                      className="h-1.5 rounded-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: TAB_COLORS.dlc }}
+                    />
+                  </div>
+                  {dlc.released && (
+                    <span className="text-[10px] text-gray-500 mt-1 block">
+                      Released: {new Date(dlc.released).toLocaleDateString()}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'dlc' && additions.length === 0 && (
+        <div className="text-sm text-gray-400 bg-gray-800/50 rounded-lg p-4">
+          No DLCs found for this game.
+        </div>
+      )}
+
+      {(activeTab === 'full' || activeTab === 'completionist') && (
+        <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-400">
+              {activeTab === 'full' ? 'Full Game Progress' : 'Completionist Progress'}
+            </span>
+            <span className="text-2xl font-bold" style={{ color: activeColor }}>
+              {currentPercentage}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div
+              className="h-2 rounded-full transition-all"
+              style={{ width: `${currentPercentage}%`, backgroundColor: activeColor }}
+            />
+          </div>
+          <p className="text-xs text-gray-500">
+            {activeTab === 'full'
+              ? 'Auto-calculated from Main + all DLCs completion'
+              : 'Auto-calculated from Full game + Achievements completion'}
+          </p>
+          {activeTab === 'completionist' && (
+            <div className="flex gap-4 text-xs text-gray-400 mt-2">
+              <span>Full: {summary.full}%</span>
+              <span>Achievements: {summary.achievementPercentage}%</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {canEdit && (
+        <div className="bg-gray-900/70 rounded-xl p-4 space-y-4 border border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-white">
+                {activeTab === 'main' ? 'Main Story' : additions.find((d) => d.id === selectedDlcId)?.name || 'DLC'} Progress
+              </h4>
+              <p className="text-xs text-gray-500">
+                {activeTab === 'main' ? 'Main story completion' : 'DLC/Expansion content'}
+              </p>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold" style={{ color: activeColor }}>
+                {displayValue}
+              </span>
+              <span className="text-sm text-gray-400">%</span>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="w-full bg-gray-800 rounded-full h-2">
+              <div
+                className="h-2 rounded-full transition-all duration-200"
+                style={{ width: `${displayValue}%`, backgroundColor: activeColor }}
+              />
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={displayValue}
+            onChange={(e) => setSliderValue(parseInt(e.target.value))}
+            className="progress-slider w-full"
+            style={{ accentColor: activeColor }}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            {QUICK_PRESETS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSliderValue(value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border bg-gray-900/80 ${
+                  displayValue === value ? 'bg-opacity-20' : 'border-gray-700/80 text-gray-400 hover:text-white'
+                }`}
+                style={
+                  displayValue === value
+                    ? { borderColor: activeColor, color: activeColor, backgroundColor: activeColor + '15' }
+                    : {}
+                }
+              >
+                {value}%
+              </button>
+            ))}
+          </div>
+
+          {displayValue === 100 && (
+            <div className="text-xs text-gray-400 bg-gray-800/50 rounded-lg px-3 py-2">
+              Logging 100% will update the Full and Completionist progress automatically
+            </div>
+          )}
+
+          {hasChanged && (
+            <div className="pt-3 mt-1 border-t border-gray-800/80 space-y-3">
+              <input
+                type="text"
+                placeholder="Add a note about this update (optional)"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-gray-950/80 border border-gray-700 rounded-lg px-3 py-2 
+                           text-sm text-white placeholder:text-gray-500
+                           focus:outline-none focus:ring-1 focus:ring-primary-purple focus:border-primary-purple"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSliderValue(null)
+                    setNotes('')
+                  }}
+                  className="px-3 py-1.5 text-sm text-gray-300 rounded-lg border border-gray-700 
+                             bg-gray-900/60 hover:bg-gray-800/80 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => logProgressMutation.mutate()}
+                  disabled={logProgressMutation.isPending}
+                  className="px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: activeColor, color: '#111' }}
+                >
+                  {logProgressMutation.isPending ? 'Saving...' : 'Log Progress'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {chartData.length >= 2 && (
+        <div className="bg-gray-900/60 rounded-xl p-4 border border-gray-800/80">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-xs font-semibold tracking-wide text-gray-400 uppercase">
+              {getTabLabel(activeTab)} Trend
+            </h4>
+            {logs[0] && (
+              <span className="text-xs text-gray-500">
+                Last: {new Date(logs[0].logged_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+          <ResponsiveContainer width="100%" height={120}>
+            <LineChart data={chartData}>
+              <XAxis
+                dataKey="date"
+                tick={{ fill: '#71717A', fontSize: 10 }}
+                axisLine={{ stroke: '#3f3f46' }}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fill: '#71717A', fontSize: 10 }}
+                axisLine={{ stroke: '#3f3f46' }}
+                tickLine={false}
+                width={25}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1a1a1a',
+                  border: '1px solid #3f3f46',
+                  borderRadius: '8px',
+                }}
+                itemStyle={{ color: '#fff' }}
+                formatter={(value: number) => [`${value}%`, 'Completion']}
+              />
+              <Line
+                type="monotone"
+                dataKey="percentage"
+                stroke={activeColor}
+                strokeWidth={2}
+                dot={{ fill: activeColor, strokeWidth: 0, r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {logs.length > 0 && (
+        <div className="bg-gray-900/40 rounded-xl p-3 border border-gray-800/60">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center justify-between w-full text-xs text-gray-400 hover:text-white transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className={`w-4 h-4 transition-transform ${showHistory ? 'rotate-90' : ''}`}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+              History ({logs.length} {logs.length === 1 ? 'entry' : 'entries'})
+            </span>
+            <span className="text-xs text-gray-500">{showHistory ? 'Hide' : 'View'}</span>
+          </button>
+
+          {showHistory && (
+            <div className="mt-3 space-y-2 max-h-60 overflow-y-auto pr-1">
+              {logs.map((log) => (
+                <div key={log.id} className="flex items-start justify-between bg-gray-900/70 rounded-lg p-2.5">
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-medium text-sm" style={{ color: activeColor }}>
+                        {log.percentage}%
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(log.logged_at).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    {log.notes && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{log.notes}</p>}
+                  </div>
+                  {canEdit && (
+                    <button
+                      onClick={() => deleteLogMutation.mutate(log.id)}
+                      disabled={deleteLogMutation.isPending}
+                      className="p-1.5 text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                      title="Delete log entry"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-3.5 h-3.5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {isLoading && <div className="text-gray-400 text-sm">Loading progress history...</div>}
+    </div>
+  )
+}
