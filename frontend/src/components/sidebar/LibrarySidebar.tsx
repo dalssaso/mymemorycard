@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useSidebar } from '@/contexts/SidebarContext'
+import { Checkbox } from '@/components/ui'
 
 interface LibrarySidebarProps {
   platformFilter: string
@@ -43,6 +44,23 @@ export function LibrarySidebar({
   if (isCollapsed) {
     return (
       <div className="space-y-3 pt-3 border-t border-gray-800">
+        <div className="flex justify-center">
+          <Link
+            to="/platforms"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Manage Platforms"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+              />
+            </svg>
+          </Link>
+        </div>
+
         {/* View Mode Icons */}
         <div className="flex flex-col items-center gap-2">
           <button
@@ -119,6 +137,20 @@ export function LibrarySidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         Import Games
+      </Link>
+      <Link
+        to="/platforms"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+          />
+        </svg>
+        Manage Platforms
       </Link>
 
       <div>
@@ -281,11 +313,9 @@ export function LibrarySidebar({
           Filters
         </h3>
         <label className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={favoritesOnly}
             onChange={(e) => setFavoritesOnly(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-red-500 focus:ring-2 focus:ring-red-500"
           />
           <span className="text-sm text-gray-300">Favorites Only</span>
         </label>

@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 interface Platform {
   id: string
   name: string
@@ -19,6 +21,21 @@ export function ImportSidebar({
 }: ImportSidebarProps) {
   return (
     <div className="space-y-6">
+      <Link
+        to="/platforms"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+          />
+        </svg>
+        Manage Platforms
+      </Link>
+
       <div>
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
           <svg

@@ -1,0 +1,1 @@
+ALTER TABLE "user_platforms" ADD COLUMN "icon_url" text;

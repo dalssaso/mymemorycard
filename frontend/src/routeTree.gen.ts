@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as PlatformsRouteImport } from './routes/platforms'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ImportRouteImport } from './routes/import'
@@ -18,9 +19,12 @@ import { Route as FranchisesRouteImport } from './routes/franchises'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlatformsIndexRouteImport } from './routes/platforms.index'
 import { Route as LibraryIndexRouteImport } from './routes/library.index'
 import { Route as FranchisesIndexRouteImport } from './routes/franchises.index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
+import { Route as PlatformsOnboardingRouteImport } from './routes/platforms.onboarding'
+import { Route as PlatformsIdRouteImport } from './routes/platforms.$id'
 import { Route as LibraryIdRouteImport } from './routes/library.$id'
 import { Route as FranchisesSeriesNameRouteImport } from './routes/franchises.$seriesName'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
@@ -34,6 +38,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformsRoute = PlatformsRouteImport.update({
+  id: '/platforms',
+  path: '/platforms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -71,6 +80,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformsIndexRoute = PlatformsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformsRoute,
+} as any)
 const LibraryIndexRoute = LibraryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -85,6 +99,16 @@ const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => CollectionsRoute,
+} as any)
+const PlatformsOnboardingRoute = PlatformsOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => PlatformsRoute,
+} as any)
+const PlatformsIdRoute = PlatformsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PlatformsRoute,
 } as any)
 const LibraryIdRoute = LibraryIdRouteImport.update({
   id: '/$id',
@@ -116,14 +140,18 @@ export interface FileRoutesByFullPath {
   '/import': typeof ImportRoute
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
+  '/platforms': typeof PlatformsRouteWithChildren
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
   '/library/$id': typeof LibraryIdRoute
+  '/platforms/$id': typeof PlatformsIdRoute
+  '/platforms/onboarding': typeof PlatformsOnboardingRoute
   '/collections/': typeof CollectionsIndexRoute
   '/franchises/': typeof FranchisesIndexRoute
   '/library/': typeof LibraryIndexRoute
+  '/platforms/': typeof PlatformsIndexRoute
   '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRoutesByTo {
@@ -136,9 +164,12 @@ export interface FileRoutesByTo {
   '/collections/$id': typeof CollectionsIdRoute
   '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
   '/library/$id': typeof LibraryIdRoute
+  '/platforms/$id': typeof PlatformsIdRoute
+  '/platforms/onboarding': typeof PlatformsOnboardingRoute
   '/collections': typeof CollectionsIndexRoute
   '/franchises': typeof FranchisesIndexRoute
   '/library': typeof LibraryIndexRoute
+  '/platforms': typeof PlatformsIndexRoute
   '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRoutesById {
@@ -150,14 +181,18 @@ export interface FileRoutesById {
   '/import': typeof ImportRoute
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
+  '/platforms': typeof PlatformsRouteWithChildren
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
   '/library/$id': typeof LibraryIdRoute
+  '/platforms/$id': typeof PlatformsIdRoute
+  '/platforms/onboarding': typeof PlatformsOnboardingRoute
   '/collections/': typeof CollectionsIndexRoute
   '/franchises/': typeof FranchisesIndexRoute
   '/library/': typeof LibraryIndexRoute
+  '/platforms/': typeof PlatformsIndexRoute
   '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRouteTypes {
@@ -170,14 +205,18 @@ export interface FileRouteTypes {
     | '/import'
     | '/library'
     | '/login'
+    | '/platforms'
     | '/register'
     | '/settings'
     | '/collections/$id'
     | '/franchises/$seriesName'
     | '/library/$id'
+    | '/platforms/$id'
+    | '/platforms/onboarding'
     | '/collections/'
     | '/franchises/'
     | '/library/'
+    | '/platforms/'
     | '/collections/series/$seriesName'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -190,9 +229,12 @@ export interface FileRouteTypes {
     | '/collections/$id'
     | '/franchises/$seriesName'
     | '/library/$id'
+    | '/platforms/$id'
+    | '/platforms/onboarding'
     | '/collections'
     | '/franchises'
     | '/library'
+    | '/platforms'
     | '/collections/series/$seriesName'
   id:
     | '__root__'
@@ -203,14 +245,18 @@ export interface FileRouteTypes {
     | '/import'
     | '/library'
     | '/login'
+    | '/platforms'
     | '/register'
     | '/settings'
     | '/collections/$id'
     | '/franchises/$seriesName'
     | '/library/$id'
+    | '/platforms/$id'
+    | '/platforms/onboarding'
     | '/collections/'
     | '/franchises/'
     | '/library/'
+    | '/platforms/'
     | '/collections/series/$seriesName'
   fileRoutesById: FileRoutesById
 }
@@ -222,6 +268,7 @@ export interface RootRouteChildren {
   ImportRoute: typeof ImportRoute
   LibraryRoute: typeof LibraryRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PlatformsRoute: typeof PlatformsRouteWithChildren
   RegisterRoute: typeof RegisterRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -240,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms': {
+      id: '/platforms'
+      path: '/platforms'
+      fullPath: '/platforms'
+      preLoaderRoute: typeof PlatformsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -291,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platforms/': {
+      id: '/platforms/'
+      path: '/'
+      fullPath: '/platforms/'
+      preLoaderRoute: typeof PlatformsIndexRouteImport
+      parentRoute: typeof PlatformsRoute
+    }
     '/library/': {
       id: '/library/'
       path: '/'
@@ -311,6 +372,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/collections/'
       preLoaderRoute: typeof CollectionsIndexRouteImport
       parentRoute: typeof CollectionsRoute
+    }
+    '/platforms/onboarding': {
+      id: '/platforms/onboarding'
+      path: '/onboarding'
+      fullPath: '/platforms/onboarding'
+      preLoaderRoute: typeof PlatformsOnboardingRouteImport
+      parentRoute: typeof PlatformsRoute
+    }
+    '/platforms/$id': {
+      id: '/platforms/$id'
+      path: '/$id'
+      fullPath: '/platforms/$id'
+      preLoaderRoute: typeof PlatformsIdRouteImport
+      parentRoute: typeof PlatformsRoute
     }
     '/library/$id': {
       id: '/library/$id'
@@ -386,6 +461,22 @@ const LibraryRouteChildren: LibraryRouteChildren = {
 const LibraryRouteWithChildren =
   LibraryRoute._addFileChildren(LibraryRouteChildren)
 
+interface PlatformsRouteChildren {
+  PlatformsIdRoute: typeof PlatformsIdRoute
+  PlatformsOnboardingRoute: typeof PlatformsOnboardingRoute
+  PlatformsIndexRoute: typeof PlatformsIndexRoute
+}
+
+const PlatformsRouteChildren: PlatformsRouteChildren = {
+  PlatformsIdRoute: PlatformsIdRoute,
+  PlatformsOnboardingRoute: PlatformsOnboardingRoute,
+  PlatformsIndexRoute: PlatformsIndexRoute,
+}
+
+const PlatformsRouteWithChildren = PlatformsRoute._addFileChildren(
+  PlatformsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
@@ -394,6 +485,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImportRoute: ImportRoute,
   LibraryRoute: LibraryRouteWithChildren,
   LoginRoute: LoginRoute,
+  PlatformsRoute: PlatformsRouteWithChildren,
   RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
 }

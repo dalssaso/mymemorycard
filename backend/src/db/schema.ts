@@ -117,6 +117,28 @@ export const platforms = pgTable('platforms', {
   platformType: varchar('platform_type', { length: 20 }),
 })
 
+export const userPlatforms = pgTable(
+  'user_platforms',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    platformId: uuid('platform_id')
+      .notNull()
+      .references(() => platforms.id),
+    username: varchar('username', { length: 100 }),
+    iconUrl: text('icon_url'),
+    profileUrl: text('profile_url'),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.platformId),
+    index('idx_user_platforms_user').on(table.userId),
+  ]
+)
+
 // ============================================================================
 // USER LIBRARY
 // ============================================================================

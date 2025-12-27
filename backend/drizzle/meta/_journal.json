@@ -85,6 +85,20 @@
       "when": 1767072050964,
       "tag": "0011_handy_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1767115083479,
+      "tag": "0012_perpetual_callisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1767118750359,
+      "tag": "0013_same_angel",
+      "breakpoints": true
     }
   ]
 }

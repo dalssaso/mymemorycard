@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { importAPI } from '@/lib/api'
-import axios from 'axios'
+import { importAPI, userPlatformsAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
 import { ImportSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
 
-interface Platform {
+interface UserPlatform {
   id: string
+  platform_id: string
   name: string
   display_name: string
-  platform_type: string
+  platform_type: string | null
 }
 
 interface ImportedGame {
@@ -20,6 +20,10 @@ interface ImportedGame {
     name: string
     cover_art_url: string | null
   }
+  display?: {
+    name: string
+    cover_art_url: string | null
+  } | null
   source: 'exact' | 'selected'
 }
 
@@ -46,20 +50,30 @@ export function Import() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { showToast } = useToast()
+  const refreshDashboardData = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['games'] }),
+      queryClient.invalidateQueries({ queryKey: ['achievementStats'] }),
+      queryClient.refetchQueries({ queryKey: ['games'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['achievementStats'], type: 'all' }),
+    ])
+  }
 
   // Fetch platforms
   const { data: platformsData } = useQuery({
-    queryKey: ['platforms'],
+    queryKey: ['user-platforms'],
     queryFn: async () => {
-      const token = localStorage.getItem('token')
-      const response = await axios.get('/api/platforms', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      return response.data as { platforms: Platform[] }
+      const response = await userPlatformsAPI.getAll()
+      return response.data as { platforms: UserPlatform[] }
     },
   })
 
-  const platforms = platformsData?.platforms || []
+  const platforms = (platformsData?.platforms || []).map((platform) => ({
+    id: platform.platform_id,
+    name: platform.name,
+    display_name: platform.display_name,
+    platform_type: platform.platform_type,
+  }))
   
   // Set default platform to steam (first PC platform) when platforms load
   if (platforms.length > 0 && !selectedPlatform) {
@@ -70,12 +84,12 @@ export function Import() {
   const importMutation = useMutation({
     mutationFn: ({ names, platformId }: { names: string[]; platformId?: string }) =>
       importAPI.bulk(names, platformId),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       setResults(response.data)
       const result = response.data as ImportResult
       
-      // Invalidate games list cache so library refreshes
-      queryClient.invalidateQueries({ queryKey: ['games'] })
+      // Refresh dashboard data so achievements sync without a full reload
+      await refreshDashboardData()
       
       // Invalidate individual game caches for imported games
       // This ensures game detail pages show updated platform info
@@ -108,8 +122,12 @@ export function Import() {
   const selectMutation = useMutation({
     mutationFn: ({ rawgId, platformId }: { rawgId: number; platformId?: string }) =>
       importAPI.single(rawgId, platformId),
-    onSuccess: (response, variables) => {
-      const importedGame = response.data as { game: ImportedGame['game']; source: string }
+    onSuccess: async (response, variables) => {
+      const importedGame = response.data as {
+        game: ImportedGame['game']
+        source: string
+        display?: ImportedGame['display']
+      }
       
       // Update results to move item from needsReview to imported
       setResults((prev) => {
@@ -123,14 +141,14 @@ export function Import() {
         return {
           imported: [
             ...prev.imported,
-            { game: importedGame.game, source: 'exact' as const },
+            { game: importedGame.game, display: importedGame.display, source: 'exact' as const },
           ],
           needsReview: updatedNeedsReview,
         }
       })
       
-      // Invalidate caches
-      queryClient.invalidateQueries({ queryKey: ['games'] })
+      // Refresh dashboard data so achievements sync without a full reload
+      await refreshDashboardData()
       queryClient.invalidateQueries({ queryKey: ['game', importedGame.game.id] })
       
       showToast(`Imported ${importedGame.game.name}`, 'success')
@@ -179,6 +197,19 @@ export function Import() {
         <p className="text-gray-400 mb-8">
           Paste game names (one per line) and we'll automatically enrich them with metadata
         </p>
+
+        {platforms.length === 0 && (
+          <div className="card mb-8">
+            <p className="text-gray-400">
+              You have not selected any platforms yet. Choose your platforms to start importing.
+            </p>
+            <div className="mt-4">
+              <Link to="/platforms" className="btn btn-primary">
+                Choose Platforms
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="card mb-8">
           <div className="mb-6">
@@ -273,10 +304,10 @@ export function Import() {
                       key={idx}
                       className="flex items-center gap-4 p-3 bg-bg-secondary rounded border border-zinc-700"
                     >
-                      {item.game.cover_art_url ? (
+                      {(item.display?.cover_art_url || item.game.cover_art_url) ? (
                         <img
-                          src={item.game.cover_art_url}
-                          alt={item.game.name}
+                          src={item.display?.cover_art_url || item.game.cover_art_url || undefined}
+                          alt={item.display?.name || item.game.name}
                           className="w-16 h-16 object-cover rounded"
                         />
                       ) : (
@@ -285,7 +316,7 @@ export function Import() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="font-medium">{item.game.name}</h3>
+                        <h3 className="font-medium">{item.display?.name || item.game.name}</h3>
                         <p className="text-sm text-zinc-500">
                           {item.source === 'exact' ? 'Exact match' : 'Selected'}
                         </p>

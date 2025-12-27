@@ -1,22 +1,32 @@
 import { Link } from '@tanstack/react-router'
 import { useSidebar } from '@/contexts/SidebarContext'
 
-interface CollectionDetailSidebarProps {
-  collectionId: string
-  collectionName: string
-  gameCount: number
-  isUpdating?: boolean
+interface PlatformDetailSidebarProps {
+  platformName: string
+  platformType: string | null
+  username: string | null
 }
 
+const PROFILE_ICON =
+  'M15.75 6a3 3 0 11-6 0 3 3 0 016 0zM4.5 20.25a7.5 7.5 0 0115 0'
+const NOTES_ICON = 'M4 6h16M4 12h16m-7 6h7'
+const BACK_ICON = 'M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18'
+const INFO_ICON = [
+  'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2',
+  ' 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2',
+  ' 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+].join('')
+
 const SECTIONS = [
-  { id: 'description', label: 'Description', icon: 'M4 6h16M4 12h16m-7 6h7' },
-  { id: 'games', label: 'Games', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
+  { id: 'profile', label: 'Profile', icon: PROFILE_ICON },
+  { id: 'notes', label: 'Notes', icon: NOTES_ICON },
 ]
 
-export function CollectionDetailSidebar({
-  collectionName,
-  gameCount,
-}: CollectionDetailSidebarProps) {
+export function PlatformDetailSidebar({
+  platformName,
+  platformType,
+  username,
+}: PlatformDetailSidebarProps) {
   const { isCollapsed } = useSidebar()
 
   const scrollToSection = (sectionId: string) => {
@@ -29,15 +39,22 @@ export function CollectionDetailSidebar({
   if (isCollapsed) {
     return (
       <div className="space-y-3 pt-3 border-t border-gray-800">
-        {/* Back to Collections */}
         <div className="flex justify-center">
           <Link
-            to="/collections"
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
-            title="Back to Collections"
+            to="/platforms"
+            className={[
+              'p-2 rounded-lg text-gray-400 hover:bg-gray-800',
+              'hover:text-white transition-all',
+            ].join(' ')}
+            title="Back to Platforms"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={BACK_ICON}
+              />
             </svg>
           </Link>
         </div>
@@ -45,7 +62,10 @@ export function CollectionDetailSidebar({
         <div className="flex justify-center pt-2 border-t border-gray-800">
           <Link
             to="/platforms"
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className={[
+              'p-2 rounded-lg text-gray-400 hover:bg-gray-800',
+              'hover:text-white transition-all',
+            ].join(' ')}
             title="Manage Platforms"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,23 +73,30 @@ export function CollectionDetailSidebar({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4 7h16M4 12h16M4 17h16"
+                d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
               />
             </svg>
           </Link>
         </div>
 
-        {/* Jump to Section Icons */}
         <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
           {SECTIONS.map((section) => (
             <button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
-              className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className={[
+                'p-2 rounded-lg text-gray-400 hover:bg-gray-800',
+                'hover:text-white transition-all',
+              ].join(' ')}
               title={section.label}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={section.icon} />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={section.icon}
+                />
               </svg>
             </button>
           ))}
@@ -82,8 +109,12 @@ export function CollectionDetailSidebar({
     <div className="space-y-6">
       <div>
         <Link
-          to="/collections"
-          className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-600 rounded-lg transition-colors text-sm"
+          to="/platforms"
+          className={[
+            'flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700',
+            'text-gray-300 hover:text-white hover:border-gray-600 rounded-lg',
+            'transition-colors text-sm',
+          ].join(' ')}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +130,7 @@ export function CollectionDetailSidebar({
               d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
             />
           </svg>
-          Back to Collections
+          Back to Platforms
         </Link>
       </div>
       <Link
@@ -118,7 +149,12 @@ export function CollectionDetailSidebar({
       </Link>
 
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3
+          className={[
+            'text-xs font-semibold text-gray-400 uppercase tracking-wider',
+            'mb-3 flex items-center gap-2',
+          ].join(' ')}
+        >
           <svg
             className="w-4 h-4 text-primary-cyan"
             fill="none"
@@ -129,29 +165,40 @@ export function CollectionDetailSidebar({
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              d={INFO_ICON}
             />
           </svg>
-          Collection Info
+          Platform Info
         </h3>
         <div className="space-y-2">
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-xs text-gray-400 mb-1">Name</div>
-            <div className="text-sm text-white font-medium truncate" title={collectionName}>
-              {collectionName}
+            <div className="text-sm text-white font-medium truncate" title={platformName}>
+              {platformName}
             </div>
           </div>
           <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400 mb-1">Games</div>
+            <div className="text-xs text-gray-400 mb-1">Type</div>
             <div className="text-sm text-white font-medium">
-              {gameCount} {gameCount === 1 ? 'game' : 'games'}
+              {platformType || 'platform'}
+            </div>
+          </div>
+          <div className="bg-gray-800/50 rounded-lg p-3">
+            <div className="text-xs text-gray-400 mb-1">Username</div>
+            <div className="text-sm text-white font-medium truncate">
+              {username || 'Not set'}
             </div>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3
+          className={[
+            'text-xs font-semibold text-gray-400 uppercase tracking-wider',
+            'mb-3 flex items-center gap-2',
+          ].join(' ')}
+        >
           <svg
             className="w-4 h-4 text-primary-purple"
             fill="none"
@@ -172,10 +219,18 @@ export function CollectionDetailSidebar({
             <button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all flex items-center gap-2"
+              className={[
+                'w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400',
+                'hover:bg-gray-800 hover:text-white transition-all flex items-center gap-2',
+              ].join(' ')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={section.icon} />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={section.icon}
+                />
               </svg>
               {section.label}
             </button>

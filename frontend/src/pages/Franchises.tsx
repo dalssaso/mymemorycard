@@ -81,9 +81,9 @@ export function Franchises() {
                 key={franchise.series_name}
                 to="/franchises/$seriesName"
                 params={{ seriesName: franchise.series_name }}
-                className="group"
+                className="group focus-visible:outline-none"
               >
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative">
+                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-primary-purple/60 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-gray-950">
                   {franchise.cover_art_url ? (
                     <img
                       src={franchise.cover_art_url}

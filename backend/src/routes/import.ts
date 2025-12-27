@@ -42,6 +42,34 @@ function normalizeForComparison(name: string): string {
     .trim()
 }
 
+async function findBaseGameDetails(baseName: string, excludeRawgId?: number): Promise<RAWGGame | null> {
+  const searchResults = await searchGames(baseName)
+  if (searchResults.length === 0) {
+    return null
+  }
+
+  const normalizedBaseName = normalizeForComparison(baseName)
+  const candidates = excludeRawgId
+    ? searchResults.filter((result) => result.id !== excludeRawgId)
+    : searchResults
+
+  const matchedBaseGame =
+    candidates.find((result) => {
+      const { baseName: candidateBaseName, isEdition: candidateIsEdition } = extractBaseGameName(result.name)
+      return !candidateIsEdition && normalizeForComparison(candidateBaseName) === normalizedBaseName
+    }) ||
+    candidates.find((result) => {
+      const { baseName: candidateBaseName } = extractBaseGameName(result.name)
+      return normalizeForComparison(candidateBaseName) === normalizedBaseName
+    })
+
+  if (!matchedBaseGame) {
+    return null
+  }
+
+  return (await getGameDetails(matchedBaseGame.id)) || matchedBaseGame
+}
+
 interface BulkImportRequest {
   gameNames: string[]
   platformId?: string
@@ -82,8 +110,15 @@ router.post(
       }
 
       const game = await importGame(fullGameDetails, user, platformId)
+      const { isEdition } = extractBaseGameName(fullGameDetails.name)
+      const display = isEdition
+        ? {
+          name: fullGameDetails.name,
+          cover_art_url: fullGameDetails.background_image || null,
+        }
+        : null
 
-      return new Response(JSON.stringify({ game, source: 'selected' }), {
+      return new Response(JSON.stringify({ game, source: 'selected', display }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       })
@@ -170,17 +205,10 @@ async function importGame(
   platformId?: string
 ): Promise<Game> {
   return withTransaction(async (client) => {
-    // Check if game already exists by RAWG ID
-    let game = await queryOne<Game>(
-      'SELECT * FROM games WHERE rawg_id = $1',
-      [rawgGame.id]
-    )
-
-    // Check if this is an edition and user already owns the base game
     const { baseName, isEdition } = extractBaseGameName(rawgGame.name)
     let existingBaseGame: Game | null = null
 
-    if (!game && isEdition && platformId) {
+    if (isEdition && platformId) {
       // Check if user owns the base game (by similar name matching)
       const userOwnedGames = await queryMany<Game & { user_game_id: string }>(
         `SELECT g.*, ug.id as user_game_id FROM games g
@@ -197,63 +225,142 @@ async function importGame(
       }) || null
     }
 
+    let baseGameDetails: RAWGGame | null = null
+
+    if (!existingBaseGame && isEdition) {
+      try {
+        baseGameDetails = await findBaseGameDetails(baseName, rawgGame.id)
+      } catch (error) {
+        console.warn(`Failed to resolve base game for "${rawgGame.name}":`, error)
+      }
+    }
+
+    const primaryDetails = baseGameDetails || rawgGame
+
+    // Check if game already exists by RAWG ID (base if available)
+    let game = existingBaseGame
+    if (!game) {
+      game = await queryOne<Game>(
+        'SELECT * FROM games WHERE rawg_id = $1',
+        [primaryDetails.id]
+      )
+    }
+
     if (existingBaseGame) {
       // User already owns the base game, add new platform to existing game
       game = existingBaseGame
       console.log(`Edition detected: "${rawgGame.name}" mapped to existing game "${game.name}"`)
     } else if (!game) {
-      // Fetch game series in the background (optional, don't block import)
-      let seriesName: string | null = null
-      try {
-        seriesName = await getGameSeries(rawgGame.id)
-      } catch (error) {
-        console.warn(`Failed to fetch series for ${rawgGame.name}:`, error)
+      let shouldInsertGenres = false
+
+      if (baseGameDetails) {
+        const editionGame = await queryOne<Game>(
+          'SELECT * FROM games WHERE rawg_id = $1',
+          [rawgGame.id]
+        )
+
+        if (editionGame) {
+          let seriesName: string | null = null
+          try {
+            seriesName = await getGameSeries(primaryDetails.id)
+          } catch (error) {
+            console.warn(`Failed to fetch series for ${primaryDetails.name}:`, error)
+          }
+
+          const result = await client.query<Game>(
+            `UPDATE games SET
+              rawg_id = $1,
+              name = $2,
+              slug = $3,
+              release_date = $4,
+              description = $5,
+              cover_art_url = $6,
+              background_image_url = $7,
+              metacritic_score = $8,
+              esrb_rating = $9,
+              series_name = $10,
+              expected_playtime = $11,
+              updated_at = NOW()
+             WHERE id = $12
+             RETURNING *`,
+            [
+              primaryDetails.id,
+              primaryDetails.name,
+              primaryDetails.slug,
+              primaryDetails.released || null,
+              primaryDetails.description_raw || null,
+              primaryDetails.background_image || null,
+              primaryDetails.background_image || null,
+              primaryDetails.metacritic || null,
+              primaryDetails.esrb_rating?.slug || null,
+              seriesName,
+              primaryDetails.playtime || null,
+              editionGame.id,
+            ]
+          )
+
+          game = result.rows[0]
+          shouldInsertGenres = true
+        }
       }
 
-      // Create new game
-      const result = await client.query<Game>(
-        `INSERT INTO games (
-          rawg_id, name, slug, release_date, description,
-          cover_art_url, background_image_url, metacritic_score,
-          esrb_rating, series_name, expected_playtime
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        RETURNING *`,
-        [
-          rawgGame.id,
-          rawgGame.name,
-          rawgGame.slug,
-          rawgGame.released || null,
-          rawgGame.description_raw || null,
-          rawgGame.background_image || null,
-          rawgGame.background_image || null,
-          rawgGame.metacritic || null,
-          rawgGame.esrb_rating?.slug || null,
-          seriesName,
-          rawgGame.playtime || null,
-        ]
-      )
-      game = result.rows[0]
-
-      // Insert genres
-      for (const genre of rawgGame.genres) {
-        // Get or create genre
-        let genreRecord = await client.query(
-          'SELECT id FROM genres WHERE rawg_id = $1',
-          [genre.id]
-        )
-
-        if (genreRecord.rows.length === 0) {
-          genreRecord = await client.query(
-            'INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id',
-            [genre.id, genre.name]
-          )
+      if (!game) {
+        // Fetch game series in the background (optional, don't block import)
+        let seriesName: string | null = null
+        try {
+          seriesName = await getGameSeries(primaryDetails.id)
+        } catch (error) {
+          console.warn(`Failed to fetch series for ${primaryDetails.name}:`, error)
         }
 
-        // Link game to genre
-        await client.query(
-          'INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-          [game!.id, genreRecord.rows[0].id]
+        // Create new game
+        const result = await client.query<Game>(
+          `INSERT INTO games (
+            rawg_id, name, slug, release_date, description,
+            cover_art_url, background_image_url, metacritic_score,
+            esrb_rating, series_name, expected_playtime
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          RETURNING *`,
+          [
+            primaryDetails.id,
+            primaryDetails.name,
+            primaryDetails.slug,
+            primaryDetails.released || null,
+            primaryDetails.description_raw || null,
+            primaryDetails.background_image || null,
+            primaryDetails.background_image || null,
+            primaryDetails.metacritic || null,
+            primaryDetails.esrb_rating?.slug || null,
+            seriesName,
+            primaryDetails.playtime || null,
+          ]
         )
+        game = result.rows[0]
+        shouldInsertGenres = true
+      }
+
+      if (shouldInsertGenres) {
+        // Insert genres
+        for (const genre of primaryDetails.genres) {
+          // Get or create genre
+          let genreRecord = await client.query(
+            'SELECT id FROM genres WHERE rawg_id = $1',
+            [genre.id]
+          )
+
+          if (genreRecord.rows.length === 0) {
+            genreRecord = await client.query(
+              'INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id',
+              [genre.id, genre.name]
+            )
+          }
+
+          // Link game to genre
+          await client.query(
+            'INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [game!.id, genreRecord.rows[0].id]
+          )
+        }
       }
     }
 
@@ -287,7 +394,7 @@ async function importGame(
 
       // If we matched to an existing base game and this is an edition,
       // set the display edition for this platform
-      if (existingBaseGame && isEdition) {
+      if (isEdition && (existingBaseGame || baseGameDetails)) {
         await client.query(
           `INSERT INTO user_game_display_editions 
            (user_id, game_id, platform_id, rawg_edition_id, edition_name, cover_art_url, background_image_url, description)

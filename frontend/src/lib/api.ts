@@ -89,7 +89,30 @@ export const importAPI = {
 // Platforms API
 export const platformsAPI = {
   getAll: () => api.get('/platforms'),
+  create: (data: { displayName: string; platformType?: string | null }) =>
+    api.post('/platforms', data),
 };
+
+export const rawgPlatformsAPI = {
+  getAll: () => api.get('/rawg/platforms'),
+}
+
+export const userPlatformsAPI = {
+  getAll: () => api.get('/user-platforms'),
+  getOne: (id: string) => api.get(`/user-platforms/${id}`),
+  add: (data: { platformId: string; username?: string; profileUrl?: string; notes?: string }) =>
+    api.post('/user-platforms', data),
+  update: (
+    id: string,
+    data: {
+      username?: string | null
+      iconUrl?: string | null
+      profileUrl?: string | null
+      notes?: string | null
+    }
+  ) => api.patch(`/user-platforms/${id}`, data),
+  remove: (id: string) => api.delete(`/user-platforms/${id}`),
+}
 
 // Preferences API
 export const preferencesAPI = {

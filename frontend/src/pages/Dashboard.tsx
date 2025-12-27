@@ -1,14 +1,17 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { gamesAPI } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
-import { Card } from '@/components/ui'
-import { DashboardSidebar } from '@/components/sidebar'
-import { ActivityHeatmap } from '@/components/ActivityHeatmap'
-import { ActivityFeed } from '@/components/ActivityFeed'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { Bar, BarChart, Cell, Legend, Pie, PieChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import type { RectangleProps, TooltipProps } from 'recharts'
 import { AchievementWidget } from '@/components/AchievementWidget'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import { useMemo, useState, useCallback } from 'react'
+import { ActivityFeed } from '@/components/ActivityFeed'
+import { ActivityHeatmap } from '@/components/ActivityHeatmap'
+import { PageLayout } from '@/components/layout'
+import { DashboardSidebar } from '@/components/sidebar'
+import { Card } from '@/components/ui'
+import { useToast } from '@/components/ui/Toast'
+import { useAnimatedNumber } from '@/hooks/use-animated-number'
+import { gamesAPI } from '@/lib/api'
 
 const STATUS_COLORS = {
   backlog: '#71717A',
@@ -20,9 +23,28 @@ const STATUS_COLORS = {
 
 const PLATFORM_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899']
 const GENRE_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#F472B6', '#A78BFA', '#34D399', '#FBBF24']
+const lastDashboardRefreshHref: { current: string | null } = { current: null }
+
+const renderActiveBar = (props: unknown) => {
+  const barProps = props as RectangleProps & { payload?: { color?: string } }
+
+  return (
+    <Rectangle
+      {...barProps}
+      stroke="#e5e7eb"
+      strokeWidth={2}
+      fill={barProps.payload?.color || barProps.fill}
+      fillOpacity={0.85}
+    />
+  )
+}
 
 export function Dashboard() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const locationHref = useRouterState({ select: (state) => state.location.href })
+  const { showToast } = useToast()
+  const refreshHrefRef = useRef<string | null>(null)
   const [heatmapType, setHeatmapType] = useState<'activity' | 'completion' | 'achievement'>('activity')
 
   const navigateToLibrary = useCallback((params: { status?: string; platform?: string; genre?: string; favorites?: boolean }) => {
@@ -35,6 +57,7 @@ export function Dashboard() {
       const response = await gamesAPI.getAll()
       return response.data as { games: any[] }
     },
+    refetchOnMount: 'always',
   })
 
   const { data: genreData } = useQuery({
@@ -43,7 +66,23 @@ export function Dashboard() {
       const response = await gamesAPI.getGenreStats()
       return response.data as { genres: Array<{ name: string; count: number }> }
     },
+    refetchOnMount: 'always',
   })
+
+  useEffect(() => {
+    if (!locationHref.includes('/dashboard')) {
+      return
+    }
+
+    if (refreshHrefRef.current !== locationHref && lastDashboardRefreshHref.current !== locationHref) {
+      showToast('Refreshing dashboard data...', 'info')
+      refreshHrefRef.current = locationHref
+      lastDashboardRefreshHref.current = locationHref
+    }
+    queryClient.refetchQueries({ queryKey: ['games'] })
+    queryClient.refetchQueries({ queryKey: ['genreStats'] })
+    queryClient.refetchQueries({ queryKey: ['achievementStats'] })
+  }, [locationHref, queryClient])
 
   const games = data?.games || []
   const totalGames = games.length
@@ -51,6 +90,10 @@ export function Dashboard() {
   const completedGames = games.filter((g) => g.status === 'completed' || g.status === 'finished').length
   const backlogGames = games.filter((g) => g.status === 'backlog').length
   const favoriteGames = games.filter((g) => g.is_favorite === true)
+  const animatedTotalGames = useAnimatedNumber(totalGames)
+  const animatedInProgressGames = useAnimatedNumber(inProgressGames)
+  const animatedCompletedGames = useAnimatedNumber(completedGames)
+  const animatedBacklogGames = useAnimatedNumber(backlogGames)
 
   const currentlyPlayingRecent = useMemo(() => {
     return games
@@ -99,12 +142,33 @@ export function Dashboard() {
   // Genre distribution data
   const genreChartData = useMemo(() => {
     if (!genreData?.genres) return []
-    return genreData.genres.map((genre, index) => ({
-      name: genre.name,
-      value: genre.count,
-      color: GENRE_COLORS[index % GENRE_COLORS.length],
-    }))
+    return [...genreData.genres]
+      .sort((a, b) => b.count - a.count)
+      .map((genre, index) => ({
+        name: genre.name,
+        value: genre.count,
+        color: GENRE_COLORS[index % GENRE_COLORS.length],
+      }))
   }, [genreData])
+
+  const renderGenreTooltip = useCallback((props: TooltipProps<number, string>) => {
+    if (!props.active || !props.payload?.length) return null
+    const entry = props.payload[0]
+    const data = entry?.payload as { name?: string; value?: number; color?: string } | undefined
+    const name = data?.name || (typeof entry?.name === 'string' ? entry.name : '')
+    const value = typeof entry?.value === 'number' ? entry.value : data?.value
+    if (!name || value === undefined) return null
+    const color = data?.color || '#a1a1aa'
+
+    return (
+      <div className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+          <span className="text-gray-300">{name}: {value}</span>
+        </div>
+      </div>
+    )
+  }, [])
 
   return (
     <PageLayout sidebar={<DashboardSidebar games={games} />}>
@@ -112,6 +176,20 @@ export function Dashboard() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold text-white">Dashboard</h1>
           <div className="flex gap-3">
+            <Link
+              to="/platforms"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+                />
+              </svg>
+              Manage Platforms
+            </Link>
             <Link
               to="/import"
               className="flex items-center gap-2 px-4 py-2 bg-primary-purple text-white rounded-lg hover:bg-primary-purple/80 transition-colors"
@@ -129,7 +207,7 @@ export function Dashboard() {
             onClick={() => navigateToLibrary({})}
           >
             <h3 className="text-gray-400 text-sm mb-2">Total Games</h3>
-            <p className="text-3xl font-bold text-white">{totalGames}</p>
+            <p className="text-3xl font-bold text-white">{animatedTotalGames}</p>
           </Card>
           
           <Card 
@@ -137,7 +215,7 @@ export function Dashboard() {
             onClick={() => navigateToLibrary({ status: 'playing' })}
           >
             <h3 className="text-gray-400 text-sm mb-2">Currently Playing</h3>
-            <p className="text-3xl font-bold text-primary-cyan">{inProgressGames}</p>
+            <p className="text-3xl font-bold text-primary-cyan">{animatedInProgressGames}</p>
           </Card>
           
           <Card 
@@ -145,7 +223,7 @@ export function Dashboard() {
             onClick={() => navigateToLibrary({ status: 'completed' })}
           >
             <h3 className="text-gray-400 text-sm mb-2">Completed</h3>
-            <p className="text-3xl font-bold text-primary-green">{completedGames}</p>
+            <p className="text-3xl font-bold text-primary-green">{animatedCompletedGames}</p>
           </Card>
 
           <Card 
@@ -153,7 +231,7 @@ export function Dashboard() {
             onClick={() => navigateToLibrary({ status: 'backlog' })}
           >
             <h3 className="text-gray-400 text-sm mb-2">Backlog</h3>
-            <p className="text-3xl font-bold text-gray-300">{backlogGames}</p>
+            <p className="text-3xl font-bold text-gray-300">{animatedBacklogGames}</p>
           </Card>
         </div>
 
@@ -251,7 +329,7 @@ export function Dashboard() {
 
         {/* Achievement Widget */}
         <div className="mb-8">
-          <AchievementWidget />
+          <AchievementWidget games={games} />
         </div>
 
         {/* Data Visualizations */}
@@ -271,6 +349,10 @@ export function Dashboard() {
                     paddingAngle={2}
                     dataKey="value"
                     style={{ cursor: 'pointer' }}
+                    isAnimationActive
+                    animationDuration={600}
+                    animationEasing="ease-out"
+                    animationBegin={100}
                     onClick={(data) => navigateToLibrary({ status: data.name.toLowerCase() })}
                   >
                     {statusData.map((entry, index) => (
@@ -308,6 +390,10 @@ export function Dashboard() {
                     paddingAngle={2}
                     dataKey="value"
                     style={{ cursor: 'pointer' }}
+                    isAnimationActive
+                    animationDuration={600}
+                    animationEasing="ease-out"
+                    animationBegin={100}
                     onClick={(data) => navigateToLibrary({ platform: data.name })}
                   >
                     {platformData.map((entry, index) => (
@@ -337,36 +423,36 @@ export function Dashboard() {
               <Card>
                 <h2 className="text-2xl font-bold text-primary-purple mb-4">Top Genres</h2>
                 <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={genreChartData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      paddingAngle={2}
+                  <BarChart
+                    data={genreChartData}
+                    layout="vertical"
+                    margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+                  >
+                    <XAxis type="number" tick={{ fill: '#a1a1aa' }} axisLine={{ stroke: '#3f3f46' }} />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={80}
+                      tick={{ fill: '#a1a1aa' }}
+                      axisLine={{ stroke: '#3f3f46' }}
+                    />
+                    <Bar
                       dataKey="value"
+                      radius={[0, 6, 6, 0]}
                       style={{ cursor: 'pointer' }}
-                      onClick={(data) => navigateToLibrary({ genre: data.name })}
+                      isAnimationActive
+                      animationDuration={600}
+                      animationEasing="ease-out"
+                      animationBegin={100}
+                      activeBar={renderActiveBar}
+                      onClick={(data) => navigateToLibrary({ genre: data?.payload?.name })}
                     >
                       {genreChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity" />
+                        <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#1a1a1a',
-                        border: '1px solid #3f3f46',
-                        borderRadius: '8px',
-                      }}
-                      itemStyle={{ color: '#fff' }}
-                      labelStyle={{ color: '#a1a1aa' }}
-                    />
-                    <Legend
-                      wrapperStyle={{ color: '#a1a1aa', cursor: 'pointer' }}
-                      formatter={(value) => <span style={{ color: '#a1a1aa' }}>{value}</span>}
-                      onClick={(data) => navigateToLibrary({ genre: data.value as string })}
-                    />
-                  </PieChart>
+                    </Bar>
+                    <Tooltip content={renderGenreTooltip} cursor={{ fill: 'transparent' }} />
+                  </BarChart>
                 </ResponsiveContainer>
               </Card>
             )}

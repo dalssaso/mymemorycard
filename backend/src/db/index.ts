@@ -17,9 +17,6 @@ export async function runMigrations() {
   const migrationDb = drizzle(migrationClient)
   await migrate(migrationDb, { migrationsFolder: './drizzle' })
   console.log('Migrations completed successfully')
-
-  const { seedPlatforms } = await import('./seed')
-  await seedPlatforms()
 }
 
 export async function closeMigrationConnection() {

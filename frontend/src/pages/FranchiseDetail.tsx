@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, Link } from '@tanstack/react-router'
-import { franchisesAPI, platformsAPI, OwnedGame, MissingGame } from '@/lib/api'
+import { franchisesAPI, userPlatformsAPI, OwnedGame, MissingGame } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
-import { Card, Button, useToast } from '@/components/ui'
+import { Button, Card, Checkbox, useToast } from '@/components/ui'
 
 const STATUS_COLORS: Record<string, string> = {
   backlog: 'bg-gray-600',
@@ -13,10 +13,12 @@ const STATUS_COLORS: Record<string, string> = {
   dropped: 'bg-red-500',
 }
 
-interface Platform {
+interface UserPlatform {
   id: string
+  platform_id: string
   name: string
   display_name: string
+  platform_type: string | null
 }
 
 export function FranchiseDetail() {
@@ -26,6 +28,7 @@ export function FranchiseDetail() {
   const [selectedGame, setSelectedGame] = useState<MissingGame | null>(null)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedGames, setSelectedGames] = useState<Set<number>>(new Set())
+  const [selectedPlatformIds, setSelectedPlatformIds] = useState<Set<string>>(new Set())
 
   const { data, isLoading } = useQuery({
     queryKey: ['franchise', seriesName],
@@ -36,19 +39,28 @@ export function FranchiseDetail() {
   })
 
   const { data: platformsData } = useQuery({
-    queryKey: ['platforms'],
+    queryKey: ['user-platforms'],
     queryFn: async () => {
-      const response = await platformsAPI.getAll()
-      return response.data as { platforms: Platform[] }
+      const response = await userPlatformsAPI.getAll()
+      return response.data as { platforms: UserPlatform[] }
     },
   })
 
   const importMutation = useMutation({
-    mutationFn: ({ rawgId, platformId, franchiseSeriesName }: { rawgId: number; platformId: string; gameName: string; franchiseSeriesName: string }) =>
-      franchisesAPI.importGame(rawgId, platformId, franchiseSeriesName),
-    onSuccess: async (_, variables) => {
-      showToast(`Added ${variables.gameName} to your library`, 'success')
-      setSelectedGame(null)
+    mutationFn: async ({ rawgId, platformIds, franchiseSeriesName }: { rawgId: number; platformIds: string[]; gameName: string; franchiseSeriesName: string }) => {
+      const results = await Promise.allSettled(
+        platformIds.map(platformId => franchisesAPI.importGame(rawgId, platformId, franchiseSeriesName))
+      )
+      const succeeded = results.filter(r => r.status === 'fulfilled').length
+      const failed = results.filter(r => r.status === 'rejected').length
+      return { succeeded, failed }
+    },
+    onSuccess: async (result, variables) => {
+      if (result.failed > 0) {
+        showToast(`Imported ${result.succeeded} item(s), ${result.failed} failed`, 'warning')
+      } else {
+        showToast(`Added ${variables.gameName} to ${result.succeeded} platform(s)`, 'success')
+      }
       await queryClient.refetchQueries({ queryKey: ['franchise', seriesName] })
       queryClient.invalidateQueries({ queryKey: ['games'] })
     },
@@ -58,9 +70,11 @@ export function FranchiseDetail() {
   })
 
   const bulkImportMutation = useMutation({
-    mutationFn: async ({ rawgIds, platformId, franchiseSeriesName }: { rawgIds: number[]; platformId: string; franchiseSeriesName: string }) => {
+    mutationFn: async ({ rawgIds, platformIds, franchiseSeriesName }: { rawgIds: number[]; platformIds: string[]; franchiseSeriesName: string }) => {
       const results = await Promise.allSettled(
-        rawgIds.map(rawgId => franchisesAPI.importGame(rawgId, platformId, franchiseSeriesName))
+        rawgIds.flatMap(rawgId =>
+          platformIds.map(platformId => franchisesAPI.importGame(rawgId, platformId, franchiseSeriesName))
+        )
       )
       const succeeded = results.filter(r => r.status === 'fulfilled').length
       const failed = results.filter(r => r.status === 'rejected').length
@@ -84,27 +98,12 @@ export function FranchiseDetail() {
 
   const handleImportClick = (game: MissingGame) => {
     setSelectedGame(game)
+    setSelectedPlatformIds(new Set())
   }
 
-  const handlePlatformSelect = (platformId: string) => {
-    if (selectedGame && data) {
-      importMutation.mutate({
-        rawgId: selectedGame.rawgId,
-        platformId,
-        gameName: selectedGame.name,
-        franchiseSeriesName: data.series_name,
-      })
-    }
-  }
-
-  const handleBulkPlatformSelect = (platformId: string) => {
-    if (selectedGames.size > 0 && data) {
-      bulkImportMutation.mutate({
-        rawgIds: Array.from(selectedGames),
-        platformId,
-        franchiseSeriesName: data.series_name,
-      })
-    }
+  const openBulkImportModal = () => {
+    setSelectedGame({ rawgId: -1, id: -1, name: 'Bulk Import', slug: '', released: null, background_image: null })
+    setSelectedPlatformIds(new Set())
   }
 
   const toggleGameSelection = (rawgId: number) => {
@@ -131,6 +130,51 @@ export function FranchiseDetail() {
   const handleExitSelectionMode = () => {
     setSelectionMode(false)
     setSelectedGames(new Set())
+    setSelectedPlatformIds(new Set())
+  }
+
+  const togglePlatformSelection = (platformId: string) => {
+    setSelectedPlatformIds(prev => {
+      const next = new Set(prev)
+      if (next.has(platformId)) {
+        next.delete(platformId)
+      } else {
+        next.add(platformId)
+      }
+      return next
+    })
+  }
+
+  const handleConfirmImport = async () => {
+    if (!data || selectedPlatformIds.size === 0 || !selectedGame) return
+    const platformIds = Array.from(selectedPlatformIds)
+    if (selectedGame.rawgId === -1) {
+      if (selectedGames.size === 0) return
+      try {
+        await bulkImportMutation.mutateAsync({
+          rawgIds: Array.from(selectedGames),
+          platformIds,
+          franchiseSeriesName: data.series_name,
+        })
+        setSelectedGame(null)
+        setSelectedPlatformIds(new Set())
+      } catch {
+        return
+      }
+      return
+    }
+    try {
+      await importMutation.mutateAsync({
+        rawgId: selectedGame.rawgId,
+        platformIds,
+        gameName: selectedGame.name,
+        franchiseSeriesName: data.series_name,
+      })
+      setSelectedGame(null)
+      setSelectedPlatformIds(new Set())
+    } catch {
+      return
+    }
   }
 
   if (isLoading) {
@@ -154,7 +198,13 @@ export function FranchiseDetail() {
   }
 
   const { series_name, owned_games, missing_games } = data
-  const platforms = platformsData?.platforms || []
+  const platforms = (platformsData?.platforms || []).map((platform) => ({
+    id: platform.platform_id,
+    name: platform.name,
+    display_name: platform.display_name,
+    platform_type: platform.platform_type,
+  }))
+  const isBulkImport = selectedGame?.rawgId === -1
 
   return (
     <PageLayout>
@@ -271,7 +321,7 @@ export function FranchiseDetail() {
                   >
                     <div className={`aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative border transition-colors ${
                       isSelected 
-                        ? 'border-primary-purple border-2' 
+                        ? 'border-primary-purple bg-primary-purple/20' 
                         : 'border-dashed border-gray-700 hover:border-primary-purple'
                     }`}>
                       {game.background_image ? (
@@ -320,35 +370,21 @@ export function FranchiseDetail() {
 
         {/* Bulk Import Floating Action Bar */}
         {selectionMode && selectedGames.size > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 rounded-xl px-6 py-4 shadow-xl z-40 flex items-center gap-4">
+          <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 rounded-xl px-6 py-4 shadow-xl z-40 flex items-center gap-4">
             <span className="text-white font-medium">
               {selectedGames.size} game{selectedGames.size !== 1 ? 's' : ''} selected
             </span>
             <div className="h-6 w-px bg-gray-700" />
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">Import to:</span>
-              <div className="flex flex-wrap gap-2 max-w-md">
-                {platforms.slice(0, 6).map((platform) => (
-                  <Button
-                    key={platform.id}
-                    variant="secondary"
-                    onClick={() => handleBulkPlatformSelect(platform.id)}
-                    disabled={bulkImportMutation.isPending}
-                    className="text-sm py-1 px-3"
-                  >
-                    {platform.display_name}
-                  </Button>
-                ))}
-                {platforms.length > 6 && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => setSelectedGame({ rawgId: -1, id: -1, name: 'Bulk Import', slug: '', released: null, background_image: null })}
-                    className="text-sm py-1 px-3"
-                  >
-                    More...
-                  </Button>
-                )}
-              </div>
+              <Button
+                variant="secondary"
+                onClick={openBulkImportModal}
+                disabled={bulkImportMutation.isPending}
+                className="text-sm py-1 px-3 border border-primary-purple bg-primary-purple/20 text-primary-purple hover:bg-primary-purple/30 focus:ring-primary-purple shadow-none"
+              >
+                Choose platforms
+              </Button>
             </div>
           </div>
         )}
@@ -356,49 +392,63 @@ export function FranchiseDetail() {
         {/* Platform Selection Modal */}
         {selectedGame && (
           <div
-            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/70 flex items-start md:items-center justify-center z-[60] overflow-y-auto px-4 py-6 pb-24 md:pb-6"
             onClick={() => setSelectedGame(null)}
           >
             <div
-              className="bg-gray-900 rounded-xl p-6 max-w-md w-full mx-4 border border-gray-700"
+              className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-700"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-bold text-white mb-2">
-                {selectedGame.rawgId === -1 ? 'Bulk Import' : 'Add to Library'}
+                {isBulkImport ? 'Bulk Import' : 'Add to Library'}
               </h3>
               <p className="text-gray-400 mb-4">
-                {selectedGame.rawgId === -1 
+                {isBulkImport
                   ? `Import ${selectedGames.size} selected game${selectedGames.size !== 1 ? 's' : ''}`
                   : selectedGame.name}
               </p>
-              <p className="text-sm text-gray-500 mb-4">Select a platform:</p>
-              <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                {platforms.map((platform) => (
-                  <Button
-                    key={platform.id}
-                    variant="secondary"
-                    onClick={() => {
-                      if (selectedGame.rawgId === -1) {
-                        handleBulkPlatformSelect(platform.id)
-                        setSelectedGame(null)
-                      } else {
-                        handlePlatformSelect(platform.id)
-                      }
-                    }}
-                    disabled={importMutation.isPending || bulkImportMutation.isPending}
-                    className="justify-start"
-                  >
-                    {platform.display_name}
-                  </Button>
-                ))}
+              <p className="text-sm text-gray-500 mb-4">Select platform(s):</p>
+              <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                {platforms.map((platform) => {
+                  const isSelected = selectedPlatformIds.has(platform.id)
+                  return (
+                    <label
+                      key={platform.id}
+                      className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'border-primary-purple bg-primary-purple/20 text-primary-purple'
+                          : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-primary-purple/60'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={() => togglePlatformSelection(platform.id)}
+                        disabled={importMutation.isPending || bulkImportMutation.isPending}
+                      />
+                      <span>{platform.display_name}</span>
+                    </label>
+                  )
+                })}
               </div>
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedGame(null)}
-                className="w-full mt-4"
-              >
-                Cancel
-              </Button>
+              <div className="flex items-center gap-2 mt-4">
+                <Button
+                  onClick={handleConfirmImport}
+                  disabled={selectedPlatformIds.size === 0 || importMutation.isPending || bulkImportMutation.isPending}
+                  className="flex-1"
+                >
+                  Import
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSelectedGame(null)
+                    setSelectedPlatformIds(new Set())
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         )}

@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { franchisesAPI, collectionsAPI, FranchiseSummary } from '@/lib/api'
+import { useAnimatedNumber } from '@/hooks/use-animated-number'
 
 interface Collection {
   id: string
@@ -21,6 +22,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
       const response = await franchisesAPI.getAll()
       return response.data
     },
+    refetchOnMount: 'always',
   })
 
   const { data: collectionsData } = useQuery({
@@ -29,6 +31,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
       const response = await collectionsAPI.getAll()
       return response.data as { collections: Collection[] }
     },
+    refetchOnMount: 'always',
   })
 
   const franchises = franchisesData?.franchises || []
@@ -40,6 +43,8 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
 
     return { totalFranchises, totalCollections }
   }, [franchises, collections])
+  const animatedFranchises = useAnimatedNumber(stats.totalFranchises)
+  const animatedCollections = useAnimatedNumber(stats.totalCollections)
 
   return (
     <div className="space-y-6">
@@ -52,6 +57,20 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         Import Games
+      </Link>
+      <Link
+        to="/platforms"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+          />
+        </svg>
+        Manage Platforms
       </Link>
 
       {/* Quick Stats */}
@@ -91,7 +110,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
               <span className="text-gray-400">Franchises</span>
             </div>
             <span className="text-primary-purple font-medium min-w-[2rem] text-right">
-              {stats.totalFranchises}
+              {animatedFranchises}
             </span>
           </div>
 
@@ -113,7 +132,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
               <span className="text-gray-400">Collections</span>
             </div>
             <span className="text-primary-cyan font-medium min-w-[2rem] text-right">
-              {stats.totalCollections}
+              {animatedCollections}
             </span>
           </div>
         </div>

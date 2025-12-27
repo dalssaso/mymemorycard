@@ -1,6 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { statsAPI, AchievementStats } from '@/lib/api'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { gamesAPI, statsAPI } from '@/lib/api'
+import type { AchievementStats } from '@/lib/api'
 import { Card } from '@/components/ui'
+import { useAnimatedNumber } from '@/hooks/use-animated-number'
 
 const RARITY_CONFIG = {
   legendary: { label: 'Legendary', color: 'text-yellow-400', bgColor: 'bg-yellow-400/20', threshold: '< 5%' },
@@ -9,14 +12,112 @@ const RARITY_CONFIG = {
   common: { label: 'Common', color: 'text-gray-400', bgColor: 'bg-gray-400/20', threshold: '> 35%' },
 }
 
-export function AchievementWidget() {
+interface AchievementWidgetGame {
+  id: string
+  platform_id: string
+  rawg_id?: number | null
+}
+
+interface AchievementWidgetProps {
+  games: AchievementWidgetGame[]
+}
+
+export function AchievementWidget({ games }: AchievementWidgetProps) {
+  const queryClient = useQueryClient()
+  const syncAttemptedRef = useRef(new Set<string>())
+  const gamesKeyRef = useRef<string | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
   const { data, isLoading } = useQuery({
     queryKey: ['achievementStats'],
     queryFn: async () => {
       const response = await statsAPI.getAchievementStats()
       return response.data as AchievementStats
     },
+    refetchOnMount: 'always',
   })
+
+  const summary = data?.summary ?? {
+    totalAchievements: 0,
+    completedAchievements: 0,
+    overallPercentage: 0,
+    gamesWithAchievements: 0,
+    perfectGames: 0,
+  }
+  const rarityBreakdown = data?.rarityBreakdown ?? {
+    legendary: 0,
+    rare: 0,
+    uncommon: 0,
+    common: 0,
+  }
+  const rarestUnlocked = data?.rarestUnlocked ?? []
+  const totalRarityCount = Object.values(rarityBreakdown).reduce((a, b) => a + b, 0)
+  const animatedOverallPercentage = useAnimatedNumber(summary.overallPercentage)
+  const animatedPerfectGames = useAnimatedNumber(summary.perfectGames)
+  const animatedCompletedAchievements = useAnimatedNumber(summary.completedAchievements)
+  const animatedTotalAchievements = useAnimatedNumber(summary.totalAchievements)
+  const animatedGamesWithAchievements = useAnimatedNumber(summary.gamesWithAchievements)
+
+  const gamesKey = useMemo(() => {
+    return games
+      .map((game) => `${game.id}:${game.platform_id}`)
+      .sort()
+      .join('|')
+  }, [games])
+
+  useEffect(() => {
+    if (gamesKeyRef.current && gamesKeyRef.current !== gamesKey) {
+      queryClient.invalidateQueries({ queryKey: ['achievementStats'] })
+    }
+    gamesKeyRef.current = gamesKey
+  }, [gamesKey, queryClient])
+
+  useEffect(() => {
+    if (isLoading || !data) {
+      return
+    }
+
+    const gamesWithRawg = games.filter((game) => Boolean(game.rawg_id))
+    if (gamesWithRawg.length === 0) {
+      return
+    }
+
+    const syncedGameIds = new Set(data.gameStats.map((game) => game.gameId))
+    const gamesToSync = gamesWithRawg.filter(
+      (game) => !syncedGameIds.has(game.id) && !syncAttemptedRef.current.has(game.id)
+    )
+
+    if (gamesToSync.length === 0) {
+      return
+    }
+
+    const attemptedIds = gamesToSync.map((game) => game.id)
+    attemptedIds.forEach((id) => syncAttemptedRef.current.add(id))
+    let cancelled = false
+
+    const syncAchievements = async () => {
+      try {
+        setIsSyncing(true)
+        await Promise.all(
+          gamesToSync.map((game) => gamesAPI.getAchievements(game.id, game.platform_id))
+        )
+        await queryClient.refetchQueries({ queryKey: ['achievementStats'] })
+      } catch (error) {
+        if (!cancelled) {
+          attemptedIds.forEach((id) => syncAttemptedRef.current.delete(id))
+        }
+      } finally {
+        if (!cancelled) {
+          setIsSyncing(false)
+        }
+      }
+    }
+
+    void syncAchievements()
+
+    return () => {
+      cancelled = true
+    }
+  }, [data, games, isLoading, queryClient])
 
   if (isLoading) {
     return (
@@ -34,15 +135,16 @@ export function AchievementWidget() {
     return (
       <Card className="bg-primary-yellow/5 border-primary-yellow/20">
         <h2 className="text-2xl font-bold text-primary-yellow mb-4">Achievements</h2>
-        <div className="text-gray-400 text-center py-8">
-          No achievement data yet. Add games with achievements to see your stats.
-        </div>
+        {isSyncing ? (
+          <div className="text-gray-400 text-center py-8">Syncing achievement data...</div>
+        ) : (
+          <div className="text-gray-400 text-center py-8">
+            No achievement data yet. Add games with achievements to see your stats.
+          </div>
+        )}
       </Card>
     )
   }
-
-  const { summary, rarityBreakdown, rarestUnlocked } = data
-  const totalRarityCount = Object.values(rarityBreakdown).reduce((a, b) => a + b, 0)
 
   return (
     <Card className="bg-primary-yellow/5 border-primary-yellow/20">
@@ -50,31 +152,31 @@ export function AchievementWidget() {
 
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-          <div className="text-3xl font-bold text-white">{summary.overallPercentage}%</div>
+          <div className="text-3xl font-bold text-white">{animatedOverallPercentage}%</div>
           <div className="text-sm text-gray-400">Overall Completion</div>
           <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
             <div
               className="bg-primary-yellow h-2 rounded-full transition-all"
-              style={{ width: `${summary.overallPercentage}%` }}
+              style={{ width: `${animatedOverallPercentage}%` }}
             />
           </div>
         </div>
 
         <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-          <div className="text-3xl font-bold text-primary-green">{summary.perfectGames}</div>
+          <div className="text-3xl font-bold text-primary-green">{animatedPerfectGames}</div>
           <div className="text-sm text-gray-400">Perfect Games</div>
           <div className="text-xs text-gray-500 mt-1">
-            of {summary.gamesWithAchievements} with achievements
+            of {animatedGamesWithAchievements} with achievements
           </div>
         </div>
 
         <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-          <div className="text-3xl font-bold text-primary-cyan">{summary.completedAchievements}</div>
+          <div className="text-3xl font-bold text-primary-cyan">{animatedCompletedAchievements}</div>
           <div className="text-sm text-gray-400">Unlocked</div>
         </div>
 
         <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-          <div className="text-3xl font-bold text-gray-300">{summary.totalAchievements}</div>
+          <div className="text-3xl font-bold text-gray-300">{animatedTotalAchievements}</div>
           <div className="text-sm text-gray-400">Total Available</div>
         </div>
       </div>

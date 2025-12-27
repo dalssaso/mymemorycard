@@ -1,6 +1,7 @@
 import { router } from '@/lib/router'
 import { handleCors, corsHeaders } from '@/middleware/cors'
 import { runMigrations, closeMigrationConnection } from '@/db'
+import { seedPlatforms } from '@/db/seed'
 import { config } from '@/config'
 
 // Import routes
@@ -20,9 +21,11 @@ import '@/routes/ownership'
 import '@/routes/stats'
 import '@/routes/editions'
 import '@/routes/franchises'
+import '@/routes/user-platforms'
 
 async function startServer() {
   await runMigrations()
+  await seedPlatforms()
   await closeMigrationConnection()
 
   const server = Bun.serve({

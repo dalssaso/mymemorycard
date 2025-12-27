@@ -2,6 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useCallback } from 'react'
 import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
+import { useAnimatedNumber } from '@/hooks/use-animated-number'
 
 interface Game {
   id: string
@@ -41,6 +42,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       const response = await collectionsAPI.getAll()
       return response.data as { collections: Collection[] }
     },
+    refetchOnMount: 'always',
   })
 
   const { data: franchisesData } = useQuery({
@@ -49,6 +51,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       const response = await franchisesAPI.getAll()
       return response.data
     },
+    refetchOnMount: 'always',
   })
 
   const collections = collectionsData?.collections || []
@@ -76,6 +79,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
 
     return { total, playing, completed, backlog, dropped, favorites }
   }, [games])
+  const animatedTotal = useAnimatedNumber(stats.total)
+  const animatedPlaying = useAnimatedNumber(stats.playing)
+  const animatedCompleted = useAnimatedNumber(stats.completed)
+  const animatedBacklog = useAnimatedNumber(stats.backlog)
+  const animatedDropped = useAnimatedNumber(stats.dropped)
+  const animatedFavorites = useAnimatedNumber(stats.favorites)
 
   return (
     <div className="space-y-6">
@@ -88,6 +97,20 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         Import Games
+      </Link>
+      <Link
+        to="/platforms"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+          />
+        </svg>
+        Manage Platforms
       </Link>
 
       {/* Quick Stats - Clickable */}
@@ -116,7 +139,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-gray-400">Total Games</span>
             </div>
-            <span className="text-white font-medium min-w-[2rem] text-right">{stats.total}</span>
+            <span className="text-white font-medium min-w-[2rem] text-right">{animatedTotal}</span>
           </button>
 
           <button
@@ -145,7 +168,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-gray-400">Playing</span>
             </div>
-            <span className="text-primary-cyan font-medium min-w-[2rem] text-right">{stats.playing}</span>
+            <span className="text-primary-cyan font-medium min-w-[2rem] text-right">{animatedPlaying}</span>
           </button>
 
           <button
@@ -168,7 +191,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-gray-400">Completed</span>
             </div>
-            <span className="text-primary-green font-medium min-w-[2rem] text-right">{stats.completed}</span>
+            <span className="text-primary-green font-medium min-w-[2rem] text-right">{animatedCompleted}</span>
           </button>
 
           <button
@@ -191,7 +214,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-gray-400">Backlog</span>
             </div>
-            <span className="text-gray-300 font-medium min-w-[2rem] text-right">{stats.backlog}</span>
+            <span className="text-gray-300 font-medium min-w-[2rem] text-right">{animatedBacklog}</span>
           </button>
 
           <button
@@ -214,7 +237,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-gray-400">Dropped</span>
             </div>
-            <span className="text-red-400 font-medium min-w-[2rem] text-right">{stats.dropped}</span>
+            <span className="text-red-400 font-medium min-w-[2rem] text-right">{animatedDropped}</span>
           </button>
 
           <button
@@ -227,7 +250,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-gray-400">Favorites</span>
             </div>
-            <span className="text-red-400 font-medium min-w-[2rem] text-right">{stats.favorites}</span>
+            <span className="text-red-400 font-medium min-w-[2rem] text-right">{animatedFavorites}</span>
           </button>
         </div>
       </div>

@@ -19,6 +19,7 @@ import { gamesAPI, collectionsAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
 import { PageLayout } from '@/components/layout'
 import { LibrarySidebar } from '@/components/sidebar'
+import { Checkbox } from '@/components/ui'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { PlatformIcons } from '@/components/PlatformIcon'
@@ -319,6 +320,8 @@ export function Library() {
     },
   })
 
+  const allFilteredSelected = filteredGames.length > 0 && table.getIsAllRowsSelected()
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -448,11 +451,9 @@ export function Library() {
                         key={column.id}
                         className="flex items-center gap-2 text-sm cursor-pointer hover:text-white"
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={column.getIsVisible()}
                           onChange={column.getToggleVisibilityHandler()}
-                          className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple"
                         />
                         <span className="text-zinc-300">
                           {COLUMN_LABELS[column.id] ?? column.id}
@@ -518,6 +519,14 @@ export function Library() {
                   ? `${selectedGameIds.length} game(s) selected`
                   : 'Select games to manage'}
               </span>
+              {filteredGames.length > 0 && (
+                <button
+                  onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
+                  className="text-sm text-zinc-400 hover:text-white"
+                >
+                  {allFilteredSelected ? 'Deselect all' : 'Select all'}
+                </button>
+              )}
               {selectedGameIds.length > 0 && (
                 <button
                   onClick={() => setRowSelection({})}
@@ -740,11 +749,10 @@ export function Library() {
                     <tr key={headerGroup.id} className="border-b border-zinc-700">
                       {selectionMode && (
                         <th className="w-12 p-4">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={table.getIsAllPageRowsSelected()}
                             onChange={table.getToggleAllPageRowsSelectedHandler()}
-                            className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple cursor-pointer"
+                            className="cursor-pointer"
                           />
                         </th>
                       )}
@@ -773,11 +781,10 @@ export function Library() {
                     >
                       {selectionMode && (
                         <td className="w-12 p-4">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={row.getIsSelected()}
                             onChange={row.getToggleSelectedHandler()}
-                            className="w-4 h-4 rounded border-zinc-700 bg-bg-secondary text-primary-purple focus:ring-2 focus:ring-primary-purple cursor-pointer"
+                            className="cursor-pointer"
                           />
                         </td>
                       )}

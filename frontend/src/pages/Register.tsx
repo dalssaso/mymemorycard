@@ -31,7 +31,7 @@ export function Register() {
 
     try {
       await register(username, email, password)
-      navigate({ to: '/dashboard' })
+      navigate({ to: '/platforms/onboarding' })
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to register')
     } finally {

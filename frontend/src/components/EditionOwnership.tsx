@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ownershipAPI, OwnershipData, completionLogsAPI } from '@/lib/api'
+import { Checkbox } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
 
 interface EditionOwnershipProps {
@@ -183,12 +184,10 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                       : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
                   } ${isCompleteEdition ? 'opacity-75 cursor-not-allowed' : ''}`}
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={isOwned}
                     onChange={() => handleDlcToggle(dlc.id)}
                     disabled={isCompleteEdition || updateDlcsMutation.isPending}
-                    className="w-4 h-4 rounded border-gray-600 text-primary-purple focus:ring-primary-purple focus:ring-offset-gray-900 disabled:opacity-50"
                   />
                   <div className="flex-1">
                     <span className="text-sm text-white">{dlc.name}</span>
