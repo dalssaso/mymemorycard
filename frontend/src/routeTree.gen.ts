@@ -14,12 +14,15 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as ImportRouteImport } from './routes/import'
+import { Route as FranchisesRouteImport } from './routes/franchises'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LibraryIndexRouteImport } from './routes/library.index'
+import { Route as FranchisesIndexRouteImport } from './routes/franchises.index'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as LibraryIdRouteImport } from './routes/library.$id'
+import { Route as FranchisesSeriesNameRouteImport } from './routes/franchises.$seriesName'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
 import { Route as CollectionsSeriesSeriesNameRouteImport } from './routes/collections.series.$seriesName'
 
@@ -48,6 +51,11 @@ const ImportRoute = ImportRouteImport.update({
   path: '/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FranchisesRoute = FranchisesRouteImport.update({
+  id: '/franchises',
+  path: '/franchises',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -68,6 +76,11 @@ const LibraryIndexRoute = LibraryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LibraryRoute,
 } as any)
+const FranchisesIndexRoute = FranchisesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FranchisesRoute,
+} as any)
 const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -77,6 +90,11 @@ const LibraryIdRoute = LibraryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => LibraryRoute,
+} as any)
+const FranchisesSeriesNameRoute = FranchisesSeriesNameRouteImport.update({
+  id: '/$seriesName',
+  path: '/$seriesName',
+  getParentRoute: () => FranchisesRoute,
 } as any)
 const CollectionsIdRoute = CollectionsIdRouteImport.update({
   id: '/$id',
@@ -94,14 +112,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/franchises': typeof FranchisesRouteWithChildren
   '/import': typeof ImportRoute
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
+  '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
   '/library/$id': typeof LibraryIdRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/franchises/': typeof FranchisesIndexRoute
   '/library/': typeof LibraryIndexRoute
   '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
@@ -113,8 +134,10 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
+  '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
   '/library/$id': typeof LibraryIdRoute
   '/collections': typeof CollectionsIndexRoute
+  '/franchises': typeof FranchisesIndexRoute
   '/library': typeof LibraryIndexRoute
   '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
@@ -123,14 +146,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/franchises': typeof FranchisesRouteWithChildren
   '/import': typeof ImportRoute
   '/library': typeof LibraryRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/collections/$id': typeof CollectionsIdRoute
+  '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
   '/library/$id': typeof LibraryIdRoute
   '/collections/': typeof CollectionsIndexRoute
+  '/franchises/': typeof FranchisesIndexRoute
   '/library/': typeof LibraryIndexRoute
   '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
@@ -140,14 +166,17 @@ export interface FileRouteTypes {
     | '/'
     | '/collections'
     | '/dashboard'
+    | '/franchises'
     | '/import'
     | '/library'
     | '/login'
     | '/register'
     | '/settings'
     | '/collections/$id'
+    | '/franchises/$seriesName'
     | '/library/$id'
     | '/collections/'
+    | '/franchises/'
     | '/library/'
     | '/collections/series/$seriesName'
   fileRoutesByTo: FileRoutesByTo
@@ -159,8 +188,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/settings'
     | '/collections/$id'
+    | '/franchises/$seriesName'
     | '/library/$id'
     | '/collections'
+    | '/franchises'
     | '/library'
     | '/collections/series/$seriesName'
   id:
@@ -168,14 +199,17 @@ export interface FileRouteTypes {
     | '/'
     | '/collections'
     | '/dashboard'
+    | '/franchises'
     | '/import'
     | '/library'
     | '/login'
     | '/register'
     | '/settings'
     | '/collections/$id'
+    | '/franchises/$seriesName'
     | '/library/$id'
     | '/collections/'
+    | '/franchises/'
     | '/library/'
     | '/collections/series/$seriesName'
   fileRoutesById: FileRoutesById
@@ -184,6 +218,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CollectionsRoute: typeof CollectionsRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  FranchisesRoute: typeof FranchisesRouteWithChildren
   ImportRoute: typeof ImportRoute
   LibraryRoute: typeof LibraryRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -228,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/franchises': {
+      id: '/franchises'
+      path: '/franchises'
+      fullPath: '/franchises'
+      preLoaderRoute: typeof FranchisesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -256,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryIndexRouteImport
       parentRoute: typeof LibraryRoute
     }
+    '/franchises/': {
+      id: '/franchises/'
+      path: '/'
+      fullPath: '/franchises/'
+      preLoaderRoute: typeof FranchisesIndexRouteImport
+      parentRoute: typeof FranchisesRoute
+    }
     '/collections/': {
       id: '/collections/'
       path: '/'
@@ -269,6 +318,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/library/$id'
       preLoaderRoute: typeof LibraryIdRouteImport
       parentRoute: typeof LibraryRoute
+    }
+    '/franchises/$seriesName': {
+      id: '/franchises/$seriesName'
+      path: '/$seriesName'
+      fullPath: '/franchises/$seriesName'
+      preLoaderRoute: typeof FranchisesSeriesNameRouteImport
+      parentRoute: typeof FranchisesRoute
     }
     '/collections/$id': {
       id: '/collections/$id'
@@ -303,6 +359,20 @@ const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
   CollectionsRouteChildren,
 )
 
+interface FranchisesRouteChildren {
+  FranchisesSeriesNameRoute: typeof FranchisesSeriesNameRoute
+  FranchisesIndexRoute: typeof FranchisesIndexRoute
+}
+
+const FranchisesRouteChildren: FranchisesRouteChildren = {
+  FranchisesSeriesNameRoute: FranchisesSeriesNameRoute,
+  FranchisesIndexRoute: FranchisesIndexRoute,
+}
+
+const FranchisesRouteWithChildren = FranchisesRoute._addFileChildren(
+  FranchisesRouteChildren,
+)
+
 interface LibraryRouteChildren {
   LibraryIdRoute: typeof LibraryIdRoute
   LibraryIndexRoute: typeof LibraryIndexRoute
@@ -320,6 +390,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  FranchisesRoute: FranchisesRouteWithChildren,
   ImportRoute: ImportRoute,
   LibraryRoute: LibraryRouteWithChildren,
   LoginRoute: LoginRoute,

@@ -7,9 +7,10 @@ import { useSidebar } from '@/contexts/SidebarContext'
 export interface PageLayoutProps {
   children: ReactNode
   sidebar?: ReactNode
+  customCollapsed?: boolean
 }
 
-export function PageLayout({ children, sidebar }: PageLayoutProps) {
+export function PageLayout({ children, sidebar, customCollapsed = false }: PageLayoutProps) {
   const { isCollapsed } = useSidebar()
 
   return (
@@ -20,7 +21,7 @@ export function PageLayout({ children, sidebar }: PageLayoutProps) {
       {/* Main Content Area with Sidebar */}
       <div className="pt-16 md:pb-0 pb-16">
         {/* Sidebar */}
-        <Sidebar>{sidebar}</Sidebar>
+        <Sidebar customCollapsed={customCollapsed}>{sidebar}</Sidebar>
 
         {/* Main Content */}
         <main

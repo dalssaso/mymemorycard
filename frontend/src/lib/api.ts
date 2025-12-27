@@ -74,12 +74,16 @@ export const gamesAPI = {
     api.get(`/games/${id}/achievements`, { params: { platform_id: platformId } }),
   updateAchievement: (id: string, platformId: string, achievementId: number, completed: boolean) =>
     api.put(`/games/${id}/achievements/${achievementId}`, { completed, platform_id: platformId }),
+  updateFromRawg: (id: string, options: { rawgId?: number; rawgSlug?: string }) =>
+    api.post(`/games/${id}/update-from-rawg`, options),
 };
 
 // Import API
 export const importAPI = {
   bulk: (gameNames: string[], platformId?: string) =>
     api.post('/import/bulk', { gameNames, platformId }),
+  single: (rawgId: number, platformId?: string) =>
+    api.post('/import/single', { rawgId, platformId }),
 }
 
 // Platforms API
@@ -109,6 +113,7 @@ export const sessionsAPI = {
     notes?: string | null
   }) => api.post(`/games/${gameId}/sessions`, data),
   update: (gameId: string, sessionId: string, data: {
+    startedAt?: string
     endedAt?: string | null
     durationMinutes?: number | null
     notes?: string | null
@@ -238,13 +243,67 @@ export const displayEditionAPI = {
 }
 
 // Stats API
+export interface AchievementStats {
+  summary: {
+    totalAchievements: number
+    completedAchievements: number
+    overallPercentage: number
+    gamesWithAchievements: number
+    perfectGames: number
+  }
+  rarityBreakdown: {
+    legendary: number
+    rare: number
+    uncommon: number
+    common: number
+  }
+  rarestUnlocked: Array<{
+    gameName: string
+    coverArtUrl: string | null
+    achievementName: string | null
+    rarity: number | null
+  }>
+  gameStats: Array<{
+    gameId: string
+    gameName: string
+    coverArtUrl: string | null
+    total: number
+    completed: number
+    percentage: number
+  }>
+}
+
+export interface CombinedHeatmapDay {
+  date: string
+  sessions: { count: number; minutes: number }
+  completions: { count: number }
+  achievements: { count: number }
+  total: number
+}
+
+export interface CombinedHeatmapSummary {
+  totalSessions: number
+  totalMinutes: number
+  totalHours: number
+  totalCompletions: number
+  totalAchievements: number
+  activeDays: number
+  currentStreak: number
+}
+
 export const statsAPI = {
   getActivityHeatmap: (year?: number) =>
     api.get('/stats/activity-heatmap', { params: { year } }),
   getCompletionHeatmap: (year?: number) =>
     api.get('/stats/completion-heatmap', { params: { year } }),
+  getAchievementHeatmap: (year?: number) =>
+    api.get('/stats/achievement-heatmap', { params: { year } }),
+  getCombinedHeatmap: (year?: number) =>
+    api.get<{ data: CombinedHeatmapDay[]; summary: CombinedHeatmapSummary }>('/stats/combined-heatmap', { params: { year } }),
   getActivityFeed: (limit?: number) =>
     api.get('/stats/activity-feed', { params: { limit } }),
+  getAchievementStats: () =>
+    api.get<AchievementStats>('/stats/achievements'),
 }
 
 // Collections API
@@ -265,4 +324,53 @@ export const collectionsAPI = {
   getSeries: () => api.get('/collections/series'),
   getSeriesGames: (seriesName: string) =>
     api.get(`/collections/series/${encodeURIComponent(seriesName)}/games`),
+  uploadCover: (id: string, file: File) => {
+    const formData = new FormData()
+    formData.append('cover', file)
+    return api.post(`/collections/${id}/cover`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+  deleteCover: (id: string) => api.delete(`/collections/${id}/cover`),
+};
+
+// Franchises API
+export interface FranchiseSummary {
+  series_name: string
+  game_count: number
+  cover_art_url: string | null
+}
+
+export interface OwnedGame {
+  id: string
+  rawg_id: number | null
+  name: string
+  release_date: string | null
+  cover_art_url: string | null
+  platforms: string[]
+  status: string
+}
+
+export interface MissingGame {
+  rawgId: number
+  id: number
+  name: string
+  slug: string
+  released: string | null
+  background_image: string | null
+}
+
+export interface FranchiseDetail {
+  series_name: string
+  owned_games: OwnedGame[]
+  missing_games: MissingGame[]
+}
+
+export const franchisesAPI = {
+  getAll: () => api.get<{ franchises: FranchiseSummary[] }>('/franchises'),
+  getOne: (seriesName: string) =>
+    api.get<FranchiseDetail>(`/franchises/${encodeURIComponent(seriesName)}`),
+  sync: () => api.post<{ success: boolean; games_checked: number; games_updated: number }>('/franchises/sync'),
+  importGame: (rawgId: number, platformId: string, seriesName: string) =>
+    api.post<{ success: boolean }>('/franchises/import', { rawgId, platformId, seriesName }),
 };

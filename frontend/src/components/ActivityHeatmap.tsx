@@ -1,24 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { statsAPI } from '@/lib/api'
-
-interface HeatmapData {
-  date: string
-  count: number
-  value: number
-}
-
-interface HeatmapSummary {
-  totalSessions: number
-  totalMinutes: number
-  totalHours: number
-  activeDays: number
-  currentStreak: number
-  longestStreak: number
-}
+import { statsAPI, CombinedHeatmapDay, CombinedHeatmapSummary } from '@/lib/api'
 
 interface ActivityHeatmapProps {
-  type?: 'activity' | 'completion'
+  type?: 'activity' | 'completion' | 'achievement'
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -46,8 +31,7 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [hoveredDay, setHoveredDay] = useState<{
     date: string
-    count: number
-    value: number
+    data: CombinedHeatmapDay | null
     x: number
     y: number
   } | null>(null)
@@ -69,15 +53,12 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   }, [])
 
   const { data, isLoading } = useQuery({
-    queryKey: [type === 'activity' ? 'activityHeatmap' : 'completionHeatmap', year],
+    queryKey: ['combinedHeatmap', year],
     queryFn: async () => {
-      const response =
-        type === 'activity'
-          ? await statsAPI.getActivityHeatmap(year)
-          : await statsAPI.getCompletionHeatmap(year)
+      const response = await statsAPI.getCombinedHeatmap(year)
       return response.data as {
-        data: HeatmapData[]
-        summary: HeatmapSummary
+        data: CombinedHeatmapDay[]
+        summary: CombinedHeatmapSummary
       }
     },
   })
@@ -85,14 +66,14 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   const { calendar, maxValue, monthLabels } = useMemo(() => {
     const startDate = new Date(year, 0, 1)
     const endDate = new Date(year, 11, 31)
-    const dataMap = new Map<string, HeatmapData>()
+    const dataMap = new Map<string, CombinedHeatmapDay>()
 
     if (data?.data) {
       data.data.forEach((d) => dataMap.set(d.date, d))
     }
 
-    const weeks: Array<Array<{ date: Date; data: HeatmapData | null } | null>> = []
-    let currentWeek: Array<{ date: Date; data: HeatmapData | null } | null> = []
+    const weeks: Array<Array<{ date: Date; data: CombinedHeatmapDay | null } | null>> = []
+    let currentWeek: Array<{ date: Date; data: CombinedHeatmapDay | null } | null> = []
 
     const startDayOfWeek = startDate.getDay()
     for (let i = 0; i < startDayOfWeek; i++) {
@@ -104,8 +85,19 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0]
       const dayData = dataMap.get(dateStr) || null
-      if (dayData && dayData.value > maxVal) {
-        maxVal = dayData.value
+
+      let value = 0
+      if (dayData) {
+        if (type === 'activity') {
+          value = dayData.sessions.count
+        } else if (type === 'completion') {
+          value = dayData.completions.count
+        } else {
+          value = dayData.achievements.count
+        }
+      }
+      if (value > maxVal) {
+        maxVal = value
       }
 
       currentWeek.push({ date: new Date(currentDate), data: dayData })
@@ -139,20 +131,20 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
     })
 
     return { calendar: weeks, maxValue: maxVal || 1, monthLabels: labels }
-  }, [year, data])
+  }, [year, data, type])
 
   const { displayCalendar, displayMonthLabels } = useMemo(() => {
     if (maxWeeks >= calendar.length) {
       return { displayCalendar: calendar, displayMonthLabels: monthLabels }
     }
-    
+
     const startIndex = Math.max(0, calendar.length - maxWeeks)
     const trimmedCalendar = calendar.slice(startIndex)
-    
+
     const trimmedLabels = monthLabels
       .filter(({ weekIndex }) => weekIndex >= startIndex)
       .map(({ month, weekIndex }) => ({ month, weekIndex: weekIndex - startIndex }))
-    
+
     return { displayCalendar: trimmedCalendar, displayMonthLabels: trimmedLabels }
   }, [calendar, monthLabels, maxWeeks])
 
@@ -161,15 +153,23 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   const levelColors = {
     activity: ['#1a1a1a', '#083344', '#0e7490', '#06b6d4', '#22d3ee'],
     completion: ['#1a1a1a', '#2d1f4a', '#4c2889', '#8b5cf6', '#a78bfa'],
+    achievement: ['#1a1a1a', '#422006', '#854d0e', '#ca8a04', '#facc15'],
   }
 
   const colors = levelColors[type]
+
+  const getValue = (dayData: CombinedHeatmapDay | null): number => {
+    if (!dayData) return 0
+    if (type === 'activity') return dayData.sessions.count
+    if (type === 'completion') return dayData.completions.count
+    return dayData.achievements.count
+  }
 
   return (
     <div className="space-y-4" ref={containerRef}>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">
-          {type === 'activity' ? 'Play Activity' : 'Completion Activity'}
+          {type === 'activity' ? 'Play Activity' : type === 'completion' ? 'Completion Activity' : 'Achievement Activity'}
         </h3>
         <div className="flex items-center gap-2">
           <button
@@ -198,10 +198,10 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-xs text-gray-400">
-              {type === 'activity' ? 'Total Sessions' : 'Total Logs'}
+              {type === 'activity' ? 'Total Sessions' : type === 'completion' ? 'Total Progress Updates' : 'Achievements Unlocked'}
             </div>
             <div className="text-xl font-bold text-white">
-              {type === 'activity' ? summary.totalSessions : (summary as any).totalLogs || 0}
+              {type === 'activity' ? summary.totalSessions : type === 'completion' ? summary.totalCompletions : summary.totalAchievements}
             </div>
           </div>
           {type === 'activity' && (
@@ -216,22 +216,12 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
             <div className="text-xs text-gray-400">Active Days</div>
             <div className="text-xl font-bold text-primary-cyan">{summary.activeDays}</div>
           </div>
-          {type === 'activity' && (
-            <div className="bg-gray-800/50 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Current Streak</div>
-              <div className="text-xl font-bold text-primary-purple">
-                {summary.currentStreak} {summary.currentStreak === 1 ? 'day' : 'days'}
-              </div>
+          <div className="bg-gray-800/50 rounded-lg p-3">
+            <div className="text-xs text-gray-400">Current Streak</div>
+            <div className="text-xl font-bold text-primary-purple">
+              {summary.currentStreak} {summary.currentStreak === 1 ? 'day' : 'days'}
             </div>
-          )}
-          {type === 'completion' && (
-            <div className="bg-gray-800/50 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Games Completed</div>
-              <div className="text-xl font-bold text-primary-purple">
-                {(summary as any).completedGames || 0}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -271,7 +261,8 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
                     if (!day) {
                       return <div key={dayIndex} className="w-[10px] h-[10px]" />
                     }
-                    const level = day.data ? getLevel(day.data.value, maxValue) : 0
+                    const value = getValue(day.data)
+                    const level = getLevel(value, maxValue)
                     return (
                       <div
                         key={dayIndex}
@@ -281,8 +272,7 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
                           const rect = e.currentTarget.getBoundingClientRect()
                           setHoveredDay({
                             date: day.date.toLocaleDateString(),
-                            count: day.data?.count || 0,
-                            value: day.data?.value || 0,
+                            data: day.data,
                             x: rect.left + rect.width / 2,
                             y: rect.top - 10,
                           })
@@ -301,12 +291,36 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
               className="fixed z-50 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full"
               style={{ left: hoveredDay.x, top: hoveredDay.y }}
             >
-              <div className="font-medium text-white">{hoveredDay.date}</div>
-              {hoveredDay.count > 0 ? (
-                <div className="text-gray-400">
-                  {type === 'activity'
-                    ? `${hoveredDay.count} session${hoveredDay.count > 1 ? 's' : ''}, ${formatMinutes(hoveredDay.value)}`
-                    : `${hoveredDay.count} update${hoveredDay.count > 1 ? 's' : ''}`}
+              <div className="font-medium text-white mb-1">{hoveredDay.date}</div>
+              {hoveredDay.data ? (
+                <div className="space-y-0.5">
+                  {hoveredDay.data.sessions.count > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary-cyan" />
+                      <span className="text-gray-300">
+                        {hoveredDay.data.sessions.count} session{hoveredDay.data.sessions.count > 1 ? 's' : ''}
+                        {hoveredDay.data.sessions.minutes > 0 && (
+                          <span className="text-gray-500"> ({formatMinutes(hoveredDay.data.sessions.minutes)})</span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {hoveredDay.data.completions.count > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary-purple" />
+                      <span className="text-gray-300">
+                        {hoveredDay.data.completions.count} progress update{hoveredDay.data.completions.count > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
+                  {hoveredDay.data.achievements.count > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                      <span className="text-gray-300">
+                        {hoveredDay.data.achievements.count} achievement{hoveredDay.data.achievements.count > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-gray-500">No activity</div>

@@ -29,6 +29,13 @@ function formatDuration(minutes: number): string {
   return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
 }
 
+function toLocalDateTimeString(isoString: string): string {
+  const date = new Date(isoString)
+  const offset = date.getTimezoneOffset()
+  const localDate = new Date(date.getTime() - offset * 60000)
+  return localDate.toISOString().slice(0, 16)
+}
+
 export function SessionsHistory({ gameId, platformId, onSessionChange }: SessionsHistoryProps) {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
@@ -36,6 +43,10 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
   const [manualDuration, setManualDuration] = useState('')
   const [manualDate, setManualDate] = useState(() => new Date().toISOString().split('T')[0])
   const [sessionNotes, setSessionNotes] = useState('')
+  const [editingSession, setEditingSession] = useState<PlaySession | null>(null)
+  const [editStartedAt, setEditStartedAt] = useState('')
+  const [editEndedAt, setEditEndedAt] = useState('')
+  const [editNotes, setEditNotes] = useState('')
 
   const { data: sessionsData, isLoading: loadingSessions } = useQuery({
     queryKey: ['sessions', gameId],
@@ -79,6 +90,26 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
     },
   })
 
+  const updateSessionMutation = useMutation({
+    mutationFn: (data: { sessionId: string; startedAt: string; endedAt: string; notes: string | null }) => {
+      return sessionsAPI.update(gameId, data.sessionId, {
+        startedAt: data.startedAt,
+        endedAt: data.endedAt,
+        notes: data.notes,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+      setEditingSession(null)
+      showToast('Session updated', 'success')
+      onSessionChange?.()
+    },
+    onError: () => {
+      showToast('Failed to update session', 'error')
+    },
+  })
+
   const deleteSessionMutation = useMutation({
     mutationFn: (sessionId: string) => sessionsAPI.delete(gameId, sessionId),
     onSuccess: () => {
@@ -91,6 +122,23 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       showToast('Failed to delete session', 'error')
     },
   })
+
+  const handleEditClick = (session: PlaySession) => {
+    setEditingSession(session)
+    setEditStartedAt(toLocalDateTimeString(session.started_at))
+    setEditEndedAt(session.ended_at ? toLocalDateTimeString(session.ended_at) : '')
+    setEditNotes(session.notes || '')
+  }
+
+  const handleEditSave = () => {
+    if (!editingSession || !editStartedAt || !editEndedAt) return
+    updateSessionMutation.mutate({
+      sessionId: editingSession.id,
+      startedAt: new Date(editStartedAt).toISOString(),
+      endedAt: new Date(editEndedAt).toISOString(),
+      notes: editNotes || null,
+    })
+  }
 
   const sessions = sessionsData?.sessions || []
   const totalMinutes = sessionsData?.totalMinutes || 0
@@ -181,6 +229,66 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
         </div>
       )}
 
+      {editingSession && (
+        <div className="bg-gray-800/50 rounded-lg p-4 space-y-3 border border-primary-purple/50">
+          <h4 className="text-sm font-medium text-white">Edit Session</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="edit-started-at" className="block text-sm text-gray-400 mb-1">
+                Started At
+              </label>
+              <input
+                id="edit-started-at"
+                type="datetime-local"
+                value={editStartedAt}
+                onChange={(e) => setEditStartedAt(e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-ended-at" className="block text-sm text-gray-400 mb-1">
+                Ended At
+              </label>
+              <input
+                id="edit-ended-at"
+                type="datetime-local"
+                value={editEndedAt}
+                onChange={(e) => setEditEndedAt(e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="edit-notes" className="block text-sm text-gray-400 mb-1">
+              Notes (optional)
+            </label>
+            <input
+              id="edit-notes"
+              type="text"
+              placeholder="What did you do in this session?"
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEditSave}
+              disabled={updateSessionMutation.isPending || !editStartedAt || !editEndedAt}
+              className="flex-1 py-2 bg-primary-purple hover:bg-primary-purple/80 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+            >
+              {updateSessionMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              onClick={() => setEditingSession(null)}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {loadingSessions ? (
         <div className="text-gray-400 text-sm">Loading sessions...</div>
       ) : sessions.length > 0 ? (
@@ -209,16 +317,29 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                   <p className="text-sm text-gray-400 mt-1">{session.notes}</p>
                 )}
               </div>
-              <button
-                onClick={() => deleteSessionMutation.mutate(session.id)}
-                disabled={deleteSessionMutation.isPending || !session.ended_at}
-                className="p-2 text-gray-500 hover:text-primary-red transition-colors disabled:opacity-50"
-                title={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-1">
+                {session.ended_at && (
+                  <button
+                    onClick={() => handleEditClick(session)}
+                    className="p-2 text-gray-500 hover:text-primary-cyan transition-colors"
+                    title="Edit session"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                    </svg>
+                  </button>
+                )}
+                <button
+                  onClick={() => deleteSessionMutation.mutate(session.id)}
+                  disabled={deleteSessionMutation.isPending || !session.ended_at}
+                  className="p-2 text-gray-500 hover:text-primary-red transition-colors disabled:opacity-50"
+                  title={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                  </svg>
+                </button>
+              </div>
             </div>
           ))}
         </div>

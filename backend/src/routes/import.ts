@@ -50,7 +50,7 @@ interface BulkImportRequest {
 interface ImportResult {
   imported: Array<{
     game: Game
-    source: 'exact' | 'best_match'
+    source: 'exact' | 'selected'
   }>
   needsReview: Array<{
     searchTerm: string
@@ -58,6 +58,44 @@ interface ImportResult {
     error?: string
   }>
 }
+
+router.post(
+  '/api/import/single',
+  requireAuth(async (req, user) => {
+    try {
+      const body = (await req.json()) as { rawgId: number; platformId?: string }
+      const { rawgId, platformId } = body
+
+      if (!rawgId || typeof rawgId !== 'number') {
+        return new Response(
+          JSON.stringify({ error: 'rawgId is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      const fullGameDetails = await getGameDetails(rawgId)
+      if (!fullGameDetails) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in RAWG' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      const game = await importGame(fullGameDetails, user, platformId)
+
+      return new Response(JSON.stringify({ game, source: 'selected' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
+    } catch (error) {
+      console.error('Single import error:', error)
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
+    }
+  })
+)
 
 router.post(
   '/api/import/bulk',
@@ -83,84 +121,8 @@ router.post(
         if (!trimmedName) continue
 
         try {
-          // First, check if we already have this game in our database by name
-          let existingGame = await queryOne<Game>(
-            'SELECT * FROM games WHERE LOWER(name) = LOWER($1)',
-            [trimmedName]
-          )
-
-          // Also check if this is an edition and user already owns the base game
-          const { baseName, isEdition } = extractBaseGameName(trimmedName)
-          let matchedToBaseGame = false
-
-          if (!existingGame && isEdition && platformId) {
-            // Check if user owns the base game (by similar name matching)
-            const userOwnedGames = await queryMany<Game>(
-              `SELECT g.* FROM games g
-               INNER JOIN user_games ug ON ug.game_id = g.id
-               WHERE ug.user_id = $1`,
-              [user.id]
-            )
-
-            // Find a base game match (normalize names for comparison to handle punctuation differences)
-            const normalizedBaseName = normalizeForComparison(baseName)
-            const baseGameMatch = userOwnedGames.find((g) => {
-              const { baseName: existingBaseName } = extractBaseGameName(g.name)
-              return normalizeForComparison(existingBaseName) === normalizedBaseName
-            })
-
-            if (baseGameMatch) {
-              existingGame = baseGameMatch
-              matchedToBaseGame = true
-              console.log(`Edition detected in bulk import: "${trimmedName}" mapped to existing game "${existingGame.name}"`)
-            }
-          }
-
-          if (existingGame) {
-            // Game already exists, just associate with user
-            if (platformId) {
-              const platform = await queryOne<Platform>(
-                'SELECT * FROM platforms WHERE id = $1',
-                [platformId]
-              )
-
-              if (platform) {
-                await query(
-                  `INSERT INTO user_games (user_id, game_id, platform_id, owned, import_source)
-                   VALUES ($1, $2, $3, true, 'bulk')
-                   ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
-                  [user.id, existingGame.id, platform.id]
-                )
-
-                await query(
-                  `INSERT INTO user_game_progress (user_id, game_id, platform_id, status)
-                   VALUES ($1, $2, $3, 'backlog')
-                   ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
-                  [user.id, existingGame.id, platform.id]
-                )
-
-                // If matched to base game, set the display edition for this platform
-                if (matchedToBaseGame && isEdition) {
-                  await query(
-                    `INSERT INTO user_game_display_editions 
-                     (user_id, game_id, platform_id, edition_name)
-                     VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (user_id, game_id, platform_id) DO UPDATE SET
-                       edition_name = EXCLUDED.edition_name`,
-                    [user.id, existingGame.id, platform.id, trimmedName]
-                  )
-                }
-              }
-            }
-
-            results.imported.push({
-              game: existingGame,
-              source: 'exact',
-            })
-            continue
-          }
-
-          // Game not in DB, search RAWG (this uses cache)
+          // Always search RAWG first to find the correct game by exact match
+          // The importGame function will check if game exists in DB by RAWG ID
           const rawgResults = await searchGames(trimmedName)
 
           if (rawgResults.length === 0) {
@@ -171,38 +133,13 @@ router.post(
             continue
           }
 
-          // Check for exact match (case-insensitive)
-          const exactMatch = rawgResults.find(
-            (g) => g.name.toLowerCase() === trimmedName.toLowerCase()
-          )
-
-          // Check for very close match (within first 2 results and high confidence)
-          const bestMatch =
-            exactMatch ||
-            (rawgResults.length === 1
-              ? rawgResults[0]
-              : rawgResults[0]?.name.toLowerCase().includes(trimmedName.toLowerCase())
-              ? rawgResults[0]
-              : null)
-
-          if (bestMatch) {
-            // Fetch full game details (including description)
-            const fullGameDetails = await getGameDetails(bestMatch.id)
-            const gameToImport = fullGameDetails || bestMatch
-            
-            // We have a confident match, import it
-            const game = await importGame(gameToImport, user, platformId)
-            results.imported.push({
-              game,
-              source: exactMatch ? 'exact' : 'best_match',
-            })
-          } else {
-            // Multiple matches, needs user review
-            results.needsReview.push({
-              searchTerm: trimmedName,
-              candidates: rawgResults,
-            })
-          }
+          // Always require user review to select the correct game
+          // RAWG has many games with similar/same names (e.g., "God Of War" game jam vs "God of War (2018)")
+          // Auto-import is unreliable, so user must always confirm
+          results.needsReview.push({
+            searchTerm: trimmedName,
+            candidates: rawgResults,
+          })
         } catch (error) {
           console.error(`Error processing game "${trimmedName}":`, error)
           results.needsReview.push({
@@ -278,8 +215,8 @@ async function importGame(
         `INSERT INTO games (
           rawg_id, name, slug, release_date, description,
           cover_art_url, background_image_url, metacritic_score,
-          esrb_rating, series_name
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          esrb_rating, series_name, expected_playtime
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *`,
         [
           rawgGame.id,
@@ -292,6 +229,7 @@ async function importGame(
           rawgGame.metacritic || null,
           rawgGame.esrb_rating?.slug || null,
           seriesName,
+          rawgGame.playtime || null,
         ]
       )
       game = result.rows[0]

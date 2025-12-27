@@ -252,43 +252,63 @@ router.patch(
       }
 
       const body = (await req.json()) as {
+        startedAt?: string
         endedAt?: string | null
         durationMinutes?: number | null
         notes?: string | null
       }
 
-      const { endedAt, durationMinutes, notes } = body
+      const { startedAt, endedAt, durationMinutes, notes } = body
 
-      // Calculate duration if ending a session
+      // Determine the effective start and end times
+      const effectiveStartedAt = startedAt || existingSession.started_at
+      const effectiveEndedAt = endedAt !== undefined ? endedAt : existingSession.ended_at
+
+      // Calculate duration if we have both start and end times
       let calculatedDuration = durationMinutes
-      if (endedAt && !durationMinutes && !existingSession.ended_at) {
-        const startTime = new Date(existingSession.started_at).getTime()
-        const endTime = new Date(endedAt).getTime()
+      if (effectiveEndedAt && !durationMinutes) {
+        const startTime = new Date(effectiveStartedAt).getTime()
+        const endTime = new Date(effectiveEndedAt).getTime()
         calculatedDuration = Math.round((endTime - startTime) / 60000)
       }
 
       const session = await queryOne<PlaySession>(
         `UPDATE play_sessions 
          SET 
-           ended_at = COALESCE($1, ended_at),
-           duration_minutes = COALESCE($2, duration_minutes),
-           notes = COALESCE($3, notes)
-         WHERE id = $4 AND user_id = $5
+           started_at = COALESCE($1, started_at),
+           ended_at = COALESCE($2, ended_at),
+           duration_minutes = COALESCE($3, duration_minutes),
+           notes = COALESCE($4, notes)
+         WHERE id = $5 AND user_id = $6
          RETURNING *`,
-        [endedAt || null, calculatedDuration || null, notes, sessionId, user.id]
+        [startedAt || null, endedAt || null, calculatedDuration || null, notes, sessionId, user.id]
       )
 
-      // If we just ended the session, update user_playtime
-      if (endedAt && !existingSession.ended_at) {
-        const duration = calculatedDuration || 0
+      // Recalculate user_playtime if duration changed on a completed session
+      const oldDuration = existingSession.duration_minutes || 0
+      const newDuration = session?.duration_minutes || 0
+      const durationChanged = oldDuration !== newDuration
+      const sessionIsCompleted = session?.ended_at !== null
+
+      if (sessionIsCompleted && (durationChanged || (endedAt && !existingSession.ended_at))) {
+        // Recalculate total playtime from all sessions for this game/platform
+        const totals = await queryOne<{ total: number; last: string | null }>(
+          `SELECT 
+             COALESCE(SUM(duration_minutes), 0) as total,
+             MAX(ended_at) as last
+           FROM play_sessions
+           WHERE user_id = $1 AND game_id = $2 AND platform_id = $3 AND ended_at IS NOT NULL`,
+          [user.id, gameId, existingSession.platform_id]
+        )
+
         await query(
           `INSERT INTO user_playtime (user_id, game_id, platform_id, total_minutes, last_played)
            VALUES ($1, $2, $3, $4, $5)
            ON CONFLICT (user_id, game_id, platform_id)
            DO UPDATE SET 
-             total_minutes = user_playtime.total_minutes + $4,
+             total_minutes = $4,
              last_played = $5`,
-          [user.id, gameId, existingSession.platform_id, duration, endedAt]
+          [user.id, gameId, existingSession.platform_id, totals?.total || 0, totals?.last]
         )
       }
 
@@ -336,14 +356,34 @@ router.delete(
 
       await query('DELETE FROM play_sessions WHERE id = $1 AND user_id = $2', [sessionId, user.id])
 
-      // If session had duration, subtract from user_playtime
-      if (existingSession.duration_minutes) {
-        await query(
-          `UPDATE user_playtime 
-           SET total_minutes = GREATEST(0, total_minutes - $1)
-           WHERE user_id = $2 AND game_id = $3 AND platform_id = $4`,
-          [existingSession.duration_minutes, user.id, gameId, existingSession.platform_id]
+      // Recalculate user_playtime from remaining sessions
+      if (existingSession.ended_at) {
+        const totals = await queryOne<{ total: number; last: string | null }>(
+          `SELECT 
+             COALESCE(SUM(duration_minutes), 0) as total,
+             MAX(ended_at) as last
+           FROM play_sessions
+           WHERE user_id = $1 AND game_id = $2 AND platform_id = $3 AND ended_at IS NOT NULL`,
+          [user.id, gameId, existingSession.platform_id]
         )
+
+        if (totals && (totals.total > 0 || totals.last)) {
+          await query(
+            `INSERT INTO user_playtime (user_id, game_id, platform_id, total_minutes, last_played)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (user_id, game_id, platform_id)
+             DO UPDATE SET 
+               total_minutes = $4,
+               last_played = $5`,
+            [user.id, gameId, existingSession.platform_id, totals.total, totals.last]
+          )
+        } else {
+          // No more sessions, delete user_playtime record
+          await query(
+            'DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            [user.id, gameId, existingSession.platform_id]
+          )
+        }
       }
 
       return new Response(JSON.stringify({ success: true }), {

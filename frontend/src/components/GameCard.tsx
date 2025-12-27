@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -15,6 +15,7 @@ interface GameCardProps {
   user_rating: number | null
   total_minutes: number
   is_favorite: boolean
+  series_name?: string | null
 }
 
 const STATUS_COLORS = {
@@ -35,10 +36,12 @@ export function GameCard({
   user_rating,
   total_minutes,
   is_favorite,
+  series_name,
 }: GameCardProps) {
   const hours = Math.floor(total_minutes / 60)
   const minutes = total_minutes % 60
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [isFavorite, setIsFavorite] = useState(is_favorite)
 
   const toggleFavoriteMutation = useMutation({
@@ -128,6 +131,18 @@ export function GameCard({
             <span className={`badge ${STATUS_COLORS[status as keyof typeof STATUS_COLORS]}`}>
               {status}
             </span>
+            {series_name && (
+              <span
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate({ to: '/franchises/$seriesName', params: { seriesName: series_name } })
+                }}
+                className="text-xs text-primary-cyan hover:text-primary-purple transition-colors cursor-pointer"
+              >
+                {series_name}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-4 text-sm text-zinc-400 flex-wrap">

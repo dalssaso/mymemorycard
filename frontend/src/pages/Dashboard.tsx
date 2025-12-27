@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
 import { PageLayout } from '@/components/layout'
 import { Card } from '@/components/ui'
 import { DashboardSidebar } from '@/components/sidebar'
 import { ActivityHeatmap } from '@/components/ActivityHeatmap'
 import { ActivityFeed } from '@/components/ActivityFeed'
+import { AchievementWidget } from '@/components/AchievementWidget'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 
 const STATUS_COLORS = {
   backlog: '#71717A',
@@ -21,7 +22,12 @@ const PLATFORM_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', 
 const GENRE_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#F472B6', '#A78BFA', '#34D399', '#FBBF24']
 
 export function Dashboard() {
-  const [heatmapType, setHeatmapType] = useState<'activity' | 'completion'>('activity')
+  const navigate = useNavigate()
+  const [heatmapType, setHeatmapType] = useState<'activity' | 'completion' | 'achievement'>('activity')
+
+  const navigateToLibrary = useCallback((params: { status?: string; platform?: string; genre?: string; favorites?: boolean }) => {
+    navigate({ to: '/library' as const, search: params as Record<string, string | boolean | undefined> })
+  }, [navigate])
 
   const { data } = useQuery({
     queryKey: ['games'],
@@ -103,28 +109,49 @@ export function Dashboard() {
   return (
     <PageLayout sidebar={<DashboardSidebar games={games} />}>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-8">
-          Dashboard
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+          <div className="flex gap-3">
+            <Link
+              to="/import"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-purple text-white rounded-lg hover:bg-primary-purple/80 transition-colors"
+            >
+              <span className="material-symbols-outlined text-xl">download</span>
+              Import Games
+            </Link>
+          </div>
+        </div>
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-primary-purple/10 border-primary-purple/30">
+          <Card 
+            className="bg-primary-purple/10 border-primary-purple/30 cursor-pointer hover:bg-primary-purple/20 transition-colors"
+            onClick={() => navigateToLibrary({})}
+          >
             <h3 className="text-gray-400 text-sm mb-2">Total Games</h3>
             <p className="text-3xl font-bold text-white">{totalGames}</p>
           </Card>
           
-          <Card className="bg-primary-cyan/10 border-primary-cyan/30">
+          <Card 
+            className="bg-primary-cyan/10 border-primary-cyan/30 cursor-pointer hover:bg-primary-cyan/20 transition-colors"
+            onClick={() => navigateToLibrary({ status: 'playing' })}
+          >
             <h3 className="text-gray-400 text-sm mb-2">Currently Playing</h3>
             <p className="text-3xl font-bold text-primary-cyan">{inProgressGames}</p>
           </Card>
           
-          <Card className="bg-primary-green/10 border-primary-green/30">
+          <Card 
+            className="bg-primary-green/10 border-primary-green/30 cursor-pointer hover:bg-primary-green/20 transition-colors"
+            onClick={() => navigateToLibrary({ status: 'completed' })}
+          >
             <h3 className="text-gray-400 text-sm mb-2">Completed</h3>
             <p className="text-3xl font-bold text-primary-green">{completedGames}</p>
           </Card>
 
-          <Card className="bg-gray-700/30 border-gray-600/30">
+          <Card 
+            className="bg-gray-700/30 border-gray-600/30 cursor-pointer hover:bg-gray-700/50 transition-colors"
+            onClick={() => navigateToLibrary({ status: 'backlog' })}
+          >
             <h3 className="text-gray-400 text-sm mb-2">Backlog</h3>
             <p className="text-3xl font-bold text-gray-300">{backlogGames}</p>
           </Card>
@@ -199,6 +226,16 @@ export function Dashboard() {
                   >
                     Completion
                   </button>
+                  <button
+                    onClick={() => setHeatmapType('achievement')}
+                    className={`px-3 py-1 rounded text-sm transition-colors ${
+                      heatmapType === 'achievement'
+                        ? 'bg-yellow-500 text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Achievements
+                  </button>
                 </div>
               </div>
               <ActivityHeatmap type={heatmapType} />
@@ -210,6 +247,11 @@ export function Dashboard() {
               <ActivityFeed limit={5} />
             </Card>
           </div>
+        </div>
+
+        {/* Achievement Widget */}
+        <div className="mb-8">
+          <AchievementWidget />
         </div>
 
         {/* Data Visualizations */}
@@ -228,9 +270,11 @@ export function Dashboard() {
                     outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(data) => navigateToLibrary({ status: data.name.toLowerCase() })}
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity" />
                     ))}
                   </Pie>
                   <Tooltip
@@ -243,8 +287,9 @@ export function Dashboard() {
                     labelStyle={{ color: '#a1a1aa' }}
                   />
                   <Legend
-                    wrapperStyle={{ color: '#a1a1aa' }}
+                    wrapperStyle={{ color: '#a1a1aa', cursor: 'pointer' }}
                     formatter={(value) => <span style={{ color: '#a1a1aa' }}>{value}</span>}
+                    onClick={(data) => navigateToLibrary({ status: (data.value as string).toLowerCase() })}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -262,9 +307,11 @@ export function Dashboard() {
                     outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(data) => navigateToLibrary({ platform: data.name })}
                   >
                     {platformData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity" />
                     ))}
                   </Pie>
                   <Tooltip
@@ -277,8 +324,9 @@ export function Dashboard() {
                     labelStyle={{ color: '#a1a1aa' }}
                   />
                   <Legend
-                    wrapperStyle={{ color: '#a1a1aa' }}
+                    wrapperStyle={{ color: '#a1a1aa', cursor: 'pointer' }}
                     formatter={(value) => <span style={{ color: '#a1a1aa' }}>{value}</span>}
+                    onClick={(data) => navigateToLibrary({ platform: data.value as string })}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -297,9 +345,11 @@ export function Dashboard() {
                       outerRadius={100}
                       paddingAngle={2}
                       dataKey="value"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(data) => navigateToLibrary({ genre: data.name })}
                     >
                       {genreChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity" />
                       ))}
                     </Pie>
                     <Tooltip
@@ -312,8 +362,9 @@ export function Dashboard() {
                       labelStyle={{ color: '#a1a1aa' }}
                     />
                     <Legend
-                      wrapperStyle={{ color: '#a1a1aa' }}
+                      wrapperStyle={{ color: '#a1a1aa', cursor: 'pointer' }}
                       formatter={(value) => <span style={{ color: '#a1a1aa' }}>{value}</span>}
+                      onClick={(data) => navigateToLibrary({ genre: data.value as string })}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -325,7 +376,12 @@ export function Dashboard() {
         {/* Favorites Section */}
         {favoriteGames.length > 0 && (
           <Card className="mb-6 bg-red-950/20 border-red-500/30">
-            <h2 className="text-2xl font-bold text-red-400 mb-4">Favorites</h2>
+            <h2 
+              className="text-2xl font-bold text-red-400 mb-4 cursor-pointer hover:text-red-300 transition-colors inline-block"
+              onClick={() => navigateToLibrary({ favorites: true })}
+            >
+              Favorites
+            </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {favoriteGames
                 .slice(0, 6)
@@ -359,39 +415,7 @@ export function Dashboard() {
           </Card>
         )}
 
-        {/* Quick Actions */}
-        {totalGames === 0 ? (
-          <Card>
-            <h2 className="text-2xl font-bold mb-4">Get Started</h2>
-            <p className="text-gray-400 mb-4">
-              Import your games to start tracking your library
-            </p>
-            <Link
-              to="/import"
-              className="inline-block px-6 py-3 bg-primary-purple text-white rounded-lg hover:bg-primary-purple/80 transition-colors"
-            >
-              Import Games
-            </Link>
-          </Card>
-        ) : (
-          <Card>
-            <h2 className="text-2xl font-bold text-primary-purple mb-4">Quick Actions</h2>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                to="/library"
-                className="px-6 py-3 bg-primary-purple text-white rounded-lg hover:bg-primary-purple/80 transition-colors"
-              >
-                View Library
-              </Link>
-              <Link
-                to="/import"
-                className="px-6 py-3 bg-primary-cyan text-white rounded-lg hover:bg-primary-cyan/80 transition-colors"
-              >
-                Import More Games
-              </Link>
-            </div>
-          </Card>
-        )}
+
       </div>
     </PageLayout>
   )

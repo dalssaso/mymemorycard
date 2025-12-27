@@ -22,6 +22,8 @@ export interface Game {
   metacritic_score?: number;
   opencritic_score?: number;
   esrb_rating?: string;
+  series_name?: string;
+  expected_playtime?: number;
   created_at: Date;
   updated_at: Date;
 }

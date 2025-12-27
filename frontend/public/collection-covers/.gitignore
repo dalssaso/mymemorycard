@@ -1,0 +1,4 @@
+# Ignore all uploaded covers
+*
+# But keep the directory
+!.gitignore

@@ -13,9 +13,12 @@ import { SessionsHistory } from '@/components/SessionsHistory'
 import { ProgressHistory } from '@/components/ProgressHistory'
 import { EditionOwnership } from '@/components/EditionOwnership'
 import { EditionSwitcher } from '@/components/EditionSwitcher'
+import { FranchisePreview } from '@/components/FranchisePreview'
+import { RawgIdCorrection } from '@/components/RawgIdCorrection'
 
 interface GameDetails {
   id: string
+  rawg_id: number | null
   name: string
   slug: string | null
   release_date: string | null
@@ -33,6 +36,8 @@ interface GameDetails {
   total_minutes: number
   last_played: string | null
   is_favorite: boolean
+  series_name: string | null
+  expected_playtime: number | null
 }
 
 
@@ -44,6 +49,21 @@ const STATUS_OPTIONS = [
   { value: 'completed', label: 'Completed' },
   { value: 'dropped', label: 'Dropped' },
 ]
+
+function normalizeGameName(name: string): string {
+  const editionPatterns = [
+    /\s*[-–—:]\s*(game of the year|goty|deluxe|ultimate|complete|definitive|enhanced|remastered|remake|hd|4k|anniversary|collector'?s?|gold|platinum|standard|special|limited|legacy|royal|premium)\s*(edition|version)?$/i,
+    /\s*\((game of the year|goty|deluxe|ultimate|complete|definitive|enhanced|remastered|remake|hd|4k|anniversary|collector'?s?|gold|platinum|standard|special|limited|legacy|royal|premium)\s*(edition|version)?\)$/i,
+    /\s*(remastered|remake|hd collection|collection)$/i,
+    /\s*[-–—]\s*\d{4}\s*(edition|remaster)?$/i,
+  ]
+  
+  let normalized = name
+  for (const pattern of editionPatterns) {
+    normalized = normalized.replace(pattern, '')
+  }
+  return normalized.trim()
+}
 
 export function GameDetail() {
   const { id } = useParams({ from: '/library/$id' })
@@ -195,7 +215,7 @@ export function GameDetail() {
   )
 
   return (
-    <PageLayout sidebar={sidebarContent}>
+    <PageLayout sidebar={sidebarContent} customCollapsed={true}>
       {/* Mobile Back Button - visible only on mobile */}
       <div className="lg:hidden mb-4">
         <Link
@@ -427,6 +447,18 @@ export function GameDetail() {
                   Metacritic: {game.metacritic_score}
                 </span>
               )}
+              {game.expected_playtime && game.expected_playtime > 0 && (
+                <span 
+                  className="px-3 py-1 bg-primary-cyan/20 border border-primary-cyan rounded-lg text-primary-cyan text-sm inline-flex items-center gap-1.5 group relative"
+                >
+                  ~{game.expected_playtime}h to beat
+                  <span className="cursor-help" title="Average playtime based on Steam player data">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 opacity-70">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.94 6.94a.75.75 0 1 1-1.061-1.061 3 3 0 1 1 2.871 5.026v.345a.75.75 0 0 1-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 1 0 8.94 6.94ZM10 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                </span>
+              )}
               {game.esrb_rating && (
                 <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400 text-sm">
                   {game.esrb_rating.toUpperCase()}
@@ -447,6 +479,54 @@ export function GameDetail() {
                 ))}
               </div>
             )}
+
+            {/* Franchise */}
+            {game.series_name && (
+              <div className="mt-4">
+                <span className="block text-sm font-medium text-gray-400 mb-2">Franchise</span>
+                <FranchisePreview seriesName={game.series_name} currentGameId={game.id} />
+              </div>
+            )}
+
+            {/* External Resources */}
+            <div className="mt-4">
+              <span className="block text-sm font-medium text-gray-400 mb-2">External Resources</span>
+              <div className="flex flex-col gap-2">
+                <a
+                  href={`https://howlongtobeat.com/?q=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-primary-cyan hover:text-primary-cyan rounded-lg transition-all text-center text-sm"
+                >
+                  HowLongToBeat
+                </a>
+                <a
+                  href={`https://www.ign.com/wikis/${normalizeGameName(activePlatform.name).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-primary-cyan hover:text-primary-cyan rounded-lg transition-all text-center text-sm"
+                >
+                  IGN Guide
+                </a>
+                <a
+                  href={`https://www.powerpyx.com/?s=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-primary-cyan hover:text-primary-cyan rounded-lg transition-all text-center text-sm"
+                >
+                  PowerPyx Guide
+                </a>
+              </div>
+            </div>
+
+            {/* RAWG ID Correction */}
+            <div className="mt-4">
+              <RawgIdCorrection
+                gameId={game.id}
+                currentRawgId={game.rawg_id}
+                gameName={game.name}
+              />
+            </div>
           </div>
 
           {/* Game Details */}
@@ -525,31 +605,6 @@ export function GameDetail() {
             {/* Progress History Section */}
             <div id="stats" className="mb-6 bg-gray-800/30 rounded-lg p-4">
               <ProgressHistory gameId={game.id} platformId={activePlatformId} />
-            </div>
-
-            {/* External Resources */}
-            <div id="resources" className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-primary-purple mb-4">External Resources</h2>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={`https://howlongtobeat.com/?q=${encodeURIComponent(activePlatform.name)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 min-w-[200px] px-4 py-3 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded-lg transition-all text-center"
-                >
-                  HowLongToBeat →
-                </a>
-                {game.slug && (
-                  <a
-                    href={`https://rawg.io/games/${game.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-primary-purple/20 border border-primary-purple/30 text-primary-purple hover:bg-primary-purple/30 rounded-lg transition-all text-center"
-                  >
-                    View on RAWG →
-                  </a>
-                )}
-              </div>
             </div>
 
           </div>

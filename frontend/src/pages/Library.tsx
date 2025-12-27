@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,7 +13,8 @@ import {
   type VisibilityState,
   type RowSelectionState,
 } from '@tanstack/react-table'
-import { Link } from '@tanstack/react-router'
+import { Link, useSearch } from '@tanstack/react-router'
+import type { LibrarySearchParams } from '@/routes/library.index'
 import { gamesAPI, collectionsAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
 import { PageLayout } from '@/components/layout'
@@ -43,6 +44,7 @@ interface Game {
   metacritic_score: number | null
   release_date: string | null
   is_favorite: boolean
+  series_name: string | null
 }
 
 interface AggregatedGame {
@@ -57,6 +59,7 @@ interface AggregatedGame {
   metacritic_score: number | null
   release_date: string | null
   is_favorite: boolean
+  series_name: string | null
 }
 
 const columnHelper = createColumnHelper<AggregatedGame>()
@@ -75,14 +78,27 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 export function Library() {
   const { showToast } = useToast()
   const queryClient = useQueryClient()
+  const searchParams = useSearch({ from: '/library/' }) as LibrarySearchParams
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [platformFilter, setPlatformFilter] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false)
+  const [platformFilter, setPlatformFilter] = useState<string>(searchParams.platform || '')
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.status || '')
+  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(searchParams.favorites || false)
+  const [_genreFilter, setGenreFilter] = useState<string>(searchParams.genre || '')
+
+  useEffect(() => {
+    if (searchParams.status) setPlatformFilter('')
+    if (searchParams.platform) setStatusFilter('')
+    setPlatformFilter(searchParams.platform || '')
+    setStatusFilter(searchParams.status || '')
+    setFavoritesOnly(searchParams.favorites || false)
+    setGenreFilter(searchParams.genre || '')
+  }, [searchParams])
+
+  void _genreFilter
   const [showColumnSettings, setShowColumnSettings] = useState<boolean>(false)
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false)
@@ -206,6 +222,7 @@ export function Library() {
           metacritic_score: game.metacritic_score,
           release_date: game.release_date,
           is_favorite: game.is_favorite,
+          series_name: game.series_name,
         })
       }
     }
@@ -357,7 +374,7 @@ export function Library() {
   )
 
   return (
-    <PageLayout sidebar={sidebarContent}>
+    <PageLayout sidebar={sidebarContent} customCollapsed={true}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-primary-purple">Library</h1>

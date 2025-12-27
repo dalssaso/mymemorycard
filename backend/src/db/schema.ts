@@ -70,6 +70,7 @@ export const games = pgTable(
     opencriticScore: real('opencritic_score'),
     esrbRating: varchar('esrb_rating', { length: 50 }),
     seriesName: text('series_name'),
+    expectedPlaytime: integer('expected_playtime'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
@@ -516,6 +517,7 @@ export const collections = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 100 }).notNull(),
     description: text('description'),
+    coverFilename: text('cover_filename'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },
   (table) => [index('idx_collections_user').on(table.userId)]

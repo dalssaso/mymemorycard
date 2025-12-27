@@ -20,7 +20,7 @@ interface ImportedGame {
     name: string
     cover_art_url: string | null
   }
-  source: 'exact' | 'best_match'
+  source: 'exact' | 'selected'
 }
 
 interface NeedsReview {
@@ -103,6 +103,41 @@ export function Import() {
     onError: () => {
       showToast('Failed to import games', 'error')
     }
+  })
+
+  const selectMutation = useMutation({
+    mutationFn: ({ rawgId, platformId }: { rawgId: number; platformId?: string }) =>
+      importAPI.single(rawgId, platformId),
+    onSuccess: (response, variables) => {
+      const importedGame = response.data as { game: ImportedGame['game']; source: string }
+      
+      // Update results to move item from needsReview to imported
+      setResults((prev) => {
+        if (!prev) return prev
+        
+        // Find and remove the needsReview item that contained this candidate
+        const updatedNeedsReview = prev.needsReview.filter(
+          (item) => !item.candidates.some((c) => c.id === variables.rawgId)
+        )
+        
+        return {
+          imported: [
+            ...prev.imported,
+            { game: importedGame.game, source: 'exact' as const },
+          ],
+          needsReview: updatedNeedsReview,
+        }
+      })
+      
+      // Invalidate caches
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      queryClient.invalidateQueries({ queryKey: ['game', importedGame.game.id] })
+      
+      showToast(`Imported ${importedGame.game.name}`, 'success')
+    },
+    onError: () => {
+      showToast('Failed to import game', 'error')
+    },
   })
 
   const handleImport = () => {
@@ -252,7 +287,7 @@ export function Import() {
                       <div className="flex-1">
                         <h3 className="font-medium">{item.game.name}</h3>
                         <p className="text-sm text-zinc-500">
-                          {item.source === 'exact' ? 'Exact match' : 'Best match'}
+                          {item.source === 'exact' ? 'Exact match' : 'Selected'}
                         </p>
                       </div>
                       <div className="text-primary-green">
@@ -315,8 +350,17 @@ export function Import() {
                                   <p className="text-xs text-zinc-500">{candidate.released}</p>
                                 )}
                               </div>
-                              <button className="btn btn-primary text-sm px-3 py-1">
-                                Select
+                              <button
+                                onClick={() =>
+                                  selectMutation.mutate({
+                                    rawgId: candidate.id,
+                                    platformId: selectedPlatform,
+                                  })
+                                }
+                                disabled={selectMutation.isPending}
+                                className="btn btn-primary text-sm px-3 py-1"
+                              >
+                                {selectMutation.isPending ? 'Importing...' : 'Select'}
                               </button>
                             </div>
                           ))}

@@ -1,13 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { gamesAPI } from '@/lib/api'
+import { PlatformIcons } from './PlatformIcon'
 
-interface Game {
+interface GameFromAPI {
   id: string
   name: string
   cover_art_url: string | null
+  platform_id: string
   platform_display_name: string
+  notes: string | null
+}
+
+interface AggregatedGame {
+  id: string
+  name: string
+  cover_art_url: string | null
+  platforms: { id: string; displayName: string }[]
   notes: string | null
 }
 
@@ -33,21 +43,51 @@ export function GlobalSearch() {
     queryKey: ['games'],
     queryFn: async () => {
       const response = await gamesAPI.getAll()
-      return response.data as { games: Game[] }
+      return response.data as { games: GameFromAPI[] }
     },
   })
 
-  const games = data?.games || []
+  const rawGames = data?.games || []
+
+  // Aggregate games by ID to handle multiple platforms
+  const games = useMemo(() => {
+    const gameMap = new Map<string, AggregatedGame>()
+    
+    for (const game of rawGames) {
+      const existing = gameMap.get(game.id)
+      if (existing) {
+        existing.platforms.push({
+          id: game.platform_id,
+          displayName: game.platform_display_name,
+        })
+      } else {
+        gameMap.set(game.id, {
+          id: game.id,
+          name: game.name,
+          cover_art_url: game.cover_art_url,
+          platforms: [{
+            id: game.platform_id,
+            displayName: game.platform_display_name,
+          }],
+          notes: game.notes,
+        })
+      }
+    }
+    
+    return Array.from(gameMap.values())
+  }, [rawGames])
 
   // Filter games based on search query
-  const searchResults = searchQuery.trim()
-    ? games.filter((game) => {
-        const query = searchQuery.toLowerCase()
-        const nameMatch = game.name.toLowerCase().includes(query)
-        const notesMatch = game.notes?.toLowerCase().includes(query)
-        return nameMatch || notesMatch
-      }).slice(0, 10)
-    : []
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    
+    const query = searchQuery.toLowerCase()
+    return games.filter((game) => {
+      const nameMatch = game.name.toLowerCase().includes(query)
+      const notesMatch = game.notes?.toLowerCase().includes(query)
+      return nameMatch || notesMatch
+    }).slice(0, 10)
+  }, [games, searchQuery])
 
   // Reset selected index when search results change
   useEffect(() => {
@@ -238,7 +278,7 @@ export function GlobalSearch() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="text-white font-medium truncate">{game.name}</div>
-                    <div className="text-sm text-gray-400">{game.platform_display_name}</div>
+                    <PlatformIcons platforms={game.platforms.map(p => p.displayName)} size="sm" />
                   </div>
                 </button>
               ))}

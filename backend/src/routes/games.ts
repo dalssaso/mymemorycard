@@ -1,7 +1,8 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
-import { queryMany, query, queryOne } from '@/services/db'
+import { queryMany, query, queryOne, withTransaction } from '@/services/db'
 import { corsHeaders } from '@/middleware/cors'
+import { getGameDetails, getGameDetailsBySlug, getGameSeries } from '@/services/rawg'
 import type { Game } from '@/types'
 
 interface UserGameWithDetails extends Game {
@@ -257,10 +258,10 @@ router.get(
           p.id as platform_id,
           p.name as platform_name,
           p.display_name as platform_display_name,
-          ugp.status,
+          COALESCE(ugp.status, 'backlog') as status,
           ugp.user_rating,
           ugp.notes,
-          upt.total_minutes,
+          COALESCE(upt.total_minutes, 0) as total_minutes,
           upt.last_played,
           COALESCE(ugp.is_favorite, FALSE) as is_favorite,
           ugde.edition_name as display_edition_name,
@@ -862,6 +863,160 @@ router.post(
       )
     } catch (error) {
       console.error('Bulk delete games error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)
+
+// Update game metadata from RAWG ID or slug
+router.post(
+  '/api/games/:id/update-from-rawg',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = (await req.json()) as { rawgId?: number; rawgSlug?: string }
+      const { rawgId, rawgSlug } = body
+
+      if (!gameId) {
+        return new Response(
+          JSON.stringify({ error: 'Game ID is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      if (!rawgId && !rawgSlug) {
+        return new Response(
+          JSON.stringify({ error: 'Either rawgId or rawgSlug is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns this game
+      const ownership = await queryOne<{ id: string }>(
+        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2',
+        [user.id, gameId]
+      )
+
+      if (!ownership) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Fetch game details from RAWG (by ID or slug)
+      let rawgGame = null
+      if (rawgId) {
+        rawgGame = await getGameDetails(rawgId)
+      } else if (rawgSlug) {
+        rawgGame = await getGameDetailsBySlug(rawgSlug)
+      }
+
+      if (!rawgGame) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found in RAWG database' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Check if another game already uses this RAWG ID
+      const existingGame = await queryOne<{ id: string; name: string }>(
+        'SELECT id, name FROM games WHERE rawg_id = $1 AND id != $2',
+        [rawgGame.id, gameId]
+      )
+
+      if (existingGame) {
+        return new Response(
+          JSON.stringify({
+            error: `Another game already uses this RAWG ID: "${existingGame.name}". You may want to merge these entries instead.`,
+          }),
+          { status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Fetch series info
+      let seriesName: string | null = null
+      try {
+        seriesName = await getGameSeries(rawgGame.id)
+      } catch (error) {
+        console.warn(`Failed to fetch series for RAWG ID ${rawgGame.id}:`, error)
+      }
+
+      // Update the game metadata
+      await withTransaction(async (client) => {
+        await client.query(
+          `UPDATE games SET
+            rawg_id = $1,
+            name = $2,
+            slug = $3,
+            release_date = $4,
+            description = $5,
+            cover_art_url = $6,
+            background_image_url = $7,
+            metacritic_score = $8,
+            esrb_rating = $9,
+            series_name = COALESCE($10, series_name),
+            expected_playtime = $11,
+            updated_at = NOW()
+          WHERE id = $12`,
+          [
+            rawgGame.id,
+            rawgGame.name,
+            rawgGame.slug,
+            rawgGame.released || null,
+            rawgGame.description_raw || null,
+            rawgGame.background_image || null,
+            rawgGame.background_image || null,
+            rawgGame.metacritic || null,
+            rawgGame.esrb_rating?.slug || null,
+            seriesName,
+            rawgGame.playtime || null,
+            gameId,
+          ]
+        )
+
+        // Update genres - first remove old ones
+        await client.query('DELETE FROM game_genres WHERE game_id = $1', [gameId])
+
+        // Insert new genres
+        for (const genre of rawgGame.genres) {
+          let genreRecord = await client.query(
+            'SELECT id FROM genres WHERE rawg_id = $1',
+            [genre.id]
+          )
+
+          if (genreRecord.rows.length === 0) {
+            genreRecord = await client.query(
+              'INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id',
+              [genre.id, genre.name]
+            )
+          }
+
+          await client.query(
+            'INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [gameId, genreRecord.rows[0].id]
+          )
+        }
+      })
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          game: {
+            id: gameId,
+            rawg_id: rawgGame.id,
+            name: rawgGame.name,
+            cover_art_url: rawgGame.background_image,
+            description: rawgGame.description_raw,
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Update from RAWG error:', error)
       return new Response(
         JSON.stringify({ error: 'Internal server error' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
