@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { ScrollFade } from '@/components/ui'
 import { franchisesAPI, OwnedGame } from '@/lib/api'
 
 interface FranchisePreviewProps {
@@ -19,7 +20,7 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
 
   if (isLoading) {
     return (
-      <div className="animate-pulse h-24 bg-gray-700 rounded-lg" />
+      <div className="animate-pulse h-24 bg-ctp-surface1 rounded-lg" />
     )
   }
 
@@ -30,27 +31,27 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
   const displayGames = data.owned_games.slice(0, 5)
 
   return (
-    <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
-      <div className="text-sm font-medium text-white mb-2">{seriesName}</div>
+    <div className="bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg p-3">
+      <div className="text-sm font-medium text-ctp-text mb-2">{seriesName}</div>
       
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <ScrollFade axis="x" className="flex gap-2 overflow-x-auto pb-2">
         {displayGames.map((game: OwnedGame) => (
           <Link
             key={game.id}
             to="/library/$id"
             params={{ id: game.id }}
-            className={`shrink-0 group ${game.id === currentGameId ? 'ring-2 ring-primary-purple rounded' : ''}`}
+            className={`shrink-0 group ${game.id === currentGameId ? 'ring-2 ring-ctp-mauve rounded' : ''}`}
           >
             {game.cover_art_url ? (
               <img
                 src={game.cover_art_url}
                 alt={game.name}
                 title={game.name}
-                className="w-12 h-16 object-cover rounded group-hover:ring-2 group-hover:ring-primary-cyan transition-all"
+                className="w-12 h-16 object-cover rounded group-hover:ring-2 group-hover:ring-ctp-teal transition-all"
               />
             ) : (
               <div 
-                className="w-12 h-16 bg-gray-700 rounded flex items-center justify-center text-gray-500 text-xs group-hover:ring-2 group-hover:ring-primary-cyan transition-all"
+                className="w-12 h-16 bg-ctp-surface1 rounded flex items-center justify-center text-ctp-overlay1 text-xs group-hover:ring-2 group-hover:ring-ctp-teal transition-all"
                 title={game.name}
               >
                 ?
@@ -59,21 +60,21 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
           </Link>
         ))}
         {data.owned_games.length > 5 && (
-          <div className="shrink-0 w-12 h-16 bg-gray-700 rounded flex items-center justify-center text-gray-400 text-xs">
+          <div className="shrink-0 w-12 h-16 bg-ctp-surface1 rounded flex items-center justify-center text-ctp-subtext0 text-xs">
             +{data.owned_games.length - 5}
           </div>
         )}
-      </div>
+      </ScrollFade>
 
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-700">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-ctp-surface1">
         <Link
           to="/franchises/$seriesName"
           params={{ seriesName }}
-          className="text-xs text-primary-purple hover:text-primary-cyan transition-colors"
+          className="text-xs text-ctp-mauve hover:text-ctp-teal transition-colors"
         >
           View franchise
         </Link>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-ctp-overlay1">
           {data.owned_games.length} owned{data.missing_games.length > 0 && ` · ${data.missing_games.length} missing`}
         </span>
       </div>

@@ -18,7 +18,7 @@ import { GameCard } from '@/components/GameCard'
 import { BackButton, PageLayout } from '@/components/layout'
 import { LibrarySidebar } from '@/components/sidebar'
 import { PlatformIcons } from '@/components/PlatformIcon'
-import { Checkbox } from '@/components/ui'
+import { Checkbox, ScrollFade } from '@/components/ui'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { collectionsAPI, gamesAPI } from '@/lib/api'
@@ -341,9 +341,9 @@ export function Library() {
           <div className="flex items-center gap-3 mb-8">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
-            <h1 className="text-4xl font-bold text-white">Library</h1>
+            <h1 className="text-4xl font-bold text-ctp-text">Library</h1>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -360,7 +360,7 @@ export function Library() {
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="card max-w-md">
-            <h2 className="text-2xl font-bold text-primary-red mb-4">Error</h2>
+            <h2 className="text-2xl font-bold text-ctp-red mb-4">Error</h2>
             <p className="text-zinc-400">Failed to load your library. Please try again.</p>
           </div>
         </div>
@@ -401,22 +401,22 @@ export function Library() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
-            <h1 className="text-4xl font-bold text-primary-purple">Library</h1>
+            <h1 className="text-4xl font-bold text-ctp-mauve">Library</h1>
           </div>
 
           {/* Export Buttons */}
           <div className="flex gap-2">
             <button
               onClick={() => handleExport('json')}
-              className="px-4 py-2 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded transition-all text-sm"
+              className="px-4 py-2 bg-ctp-teal/20 border border-ctp-teal/30 text-ctp-teal hover:bg-ctp-teal/30 rounded transition-all text-sm"
             >
               Export JSON
             </button>
             <button
               onClick={() => handleExport('csv')}
-              className="px-4 py-2 bg-primary-green/20 border border-primary-green/30 text-primary-green hover:bg-primary-green/30 rounded transition-all text-sm"
+              className="px-4 py-2 bg-ctp-green/20 border border-ctp-green/30 text-ctp-green hover:bg-ctp-green/30 rounded transition-all text-sm"
             >
               Export CSV
             </button>
@@ -439,7 +439,7 @@ export function Library() {
             <div className="relative">
               <button
                 onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary border border-zinc-700 rounded-lg hover:border-primary-purple transition-colors text-sm text-zinc-300"
+                className="flex items-center gap-2 px-3 py-2 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg hover:border-ctp-mauve transition-colors text-sm text-ctp-subtext1"
                 aria-expanded={showColumnSettings}
                 aria-controls="column-settings"
               >
@@ -467,13 +467,13 @@ export function Library() {
               {showColumnSettings && (
                 <div
                   id="column-settings"
-                  className="absolute top-full left-0 mt-2 p-3 bg-bg-secondary border border-zinc-700 rounded-lg shadow-lg z-10 min-w-[200px]"
+                  className="absolute top-full left-0 mt-2 p-3 bg-ctp-mantle border border-ctp-surface1 rounded-lg shadow-lg z-10 min-w-[200px]"
                 >
                   <div className="flex flex-col gap-2">
                     {table.getAllLeafColumns().map((column) => (
                       <label
                         key={column.id}
-                        className="flex items-center gap-2 text-sm cursor-pointer hover:text-white"
+                        className="flex items-center gap-2 text-sm cursor-pointer hover:text-ctp-text"
                       >
                         <Checkbox
                           checked={column.getIsVisible()}
@@ -506,7 +506,7 @@ export function Library() {
             {!selectionMode && games.length > 0 && (
               <button
                 onClick={() => setSelectionMode(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-ctp-text border border-zinc-700 hover:border-zinc-500 rounded transition-all"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -536,9 +536,9 @@ export function Library() {
 
         {/* Selection Mode Bar */}
         {selectionMode && (
-          <div className="mb-4 p-3 bg-bg-tertiary border border-zinc-700 rounded-lg flex items-center justify-between">
+          <div className="mb-4 p-3 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-medium text-ctp-text">
                 {selectedGameIds.length > 0 
                   ? `${selectedGameIds.length} game(s) selected`
                   : 'Select games to manage'}
@@ -546,7 +546,7 @@ export function Library() {
               {filteredGames.length > 0 && (
                 <button
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
-                  className="text-sm text-zinc-400 hover:text-white"
+                  className="text-sm text-zinc-400 hover:text-ctp-text"
                 >
                   {allFilteredSelected ? 'Deselect all' : 'Select all'}
                 </button>
@@ -554,7 +554,7 @@ export function Library() {
               {selectedGameIds.length > 0 && (
                 <button
                   onClick={() => setRowSelection({})}
-                  className="text-sm text-zinc-400 hover:text-white"
+                  className="text-sm text-zinc-400 hover:text-ctp-text"
                 >
                   Clear
                 </button>
@@ -567,12 +567,12 @@ export function Library() {
                   <div className="relative">
                     <button
                       onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
-                      className="px-3 py-1.5 bg-primary-cyan/20 border border-primary-cyan/30 text-primary-cyan hover:bg-primary-cyan/30 rounded text-sm transition-all"
+                      className="px-3 py-1.5 bg-ctp-teal/20 border border-ctp-teal/30 text-ctp-teal hover:bg-ctp-teal/30 rounded text-sm transition-all"
                     >
                       Add to Collection
                     </button>
                     {showCollectionDropdown && (
-                      <div className="absolute top-full right-0 mt-2 p-2 bg-bg-secondary border border-zinc-700 rounded-lg shadow-lg z-20 min-w-[200px]">
+                      <div className="absolute top-full right-0 mt-2 p-2 bg-ctp-mantle border border-ctp-surface1 rounded-lg shadow-lg z-20 min-w-[200px]">
                         {collections.length === 0 ? (
                           <p className="text-sm text-zinc-400 px-2 py-1">No collections yet</p>
                         ) : (
@@ -587,7 +587,7 @@ export function Library() {
                                   })
                                 }
                                 disabled={bulkAddToCollectionMutation.isPending}
-                                className="text-left px-3 py-2 text-sm text-zinc-300 hover:bg-bg-hover hover:text-white rounded transition-colors"
+                                className="text-left px-3 py-2 text-sm text-ctp-subtext1 hover:bg-ctp-surface1 hover:text-ctp-text rounded transition-colors"
                               >
                                 {collection.name}
                               </button>
@@ -601,7 +601,7 @@ export function Library() {
                   {/* Delete */}
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-3 py-1.5 bg-primary-red/20 border border-primary-red/30 text-primary-red hover:bg-primary-red/30 rounded text-sm transition-all"
+                    className="px-3 py-1.5 bg-ctp-red/20 border border-ctp-red/30 text-ctp-red hover:bg-ctp-red/30 rounded text-sm transition-all"
                   >
                     Delete
                   </button>
@@ -611,7 +611,7 @@ export function Library() {
               {/* Cancel/Done */}
               <button
                 onClick={handleExitSelectionMode}
-                className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded text-sm transition-all"
+                className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-ctp-text rounded text-sm transition-all"
               >
                 Done
               </button>
@@ -621,8 +621,8 @@ export function Library() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-bg-secondary border border-zinc-700 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="fixed inset-0 bg-ctp-base/50 flex items-center justify-center z-50">
+            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-xl font-bold mb-4">Delete Games</h3>
               <p className="text-zinc-400 mb-6">
                 Are you sure you want to delete {selectedGameIds.length} game(s) from your library?
@@ -638,7 +638,7 @@ export function Library() {
                 <button
                   onClick={() => bulkDeleteMutation.mutate(selectedGameIds)}
                   disabled={bulkDeleteMutation.isPending}
-                  className="px-4 py-2 bg-primary-red text-white hover:bg-primary-red/80 rounded transition-all"
+                  className="px-4 py-2 bg-ctp-red text-ctp-base hover:bg-ctp-red/80 rounded transition-all"
                 >
                   {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete'}
                 </button>
@@ -669,7 +669,7 @@ export function Library() {
                       onClick={() => row.toggleSelected()}
                       className={`card cursor-pointer transition-all relative p-0 sm:p-4 ${
                         isSelected 
-                          ? 'bg-primary-purple/20 border-primary-purple' 
+                          ? 'bg-ctp-mauve/20 border-ctp-mauve' 
                           : 'hover:border-zinc-500'
                       }`}
                     >
@@ -686,13 +686,13 @@ export function Library() {
                             <span className="text-zinc-600 text-sm">No image</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="text-sm font-bold text-white line-clamp-2">{row.original.name}</h3>
+                          <h3 className="text-sm font-bold text-ctp-text line-clamp-2">{row.original.name}</h3>
                         </div>
                         {isSelected && (
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
+                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-ctp-text">
                               <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                             </svg>
                           </div>
@@ -722,14 +722,14 @@ export function Library() {
                           </div>
                           {row.original.metacritic_score && (
                             <div className="flex items-center gap-1 text-sm text-zinc-400">
-                              <span className="text-primary-yellow">★</span>
+                              <span className="text-ctp-yellow">★</span>
                               <span>{row.original.metacritic_score}</span>
                             </div>
                           )}
                         </div>
                         {isSelected && (
-                          <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
+                          <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-ctp-text">
                               <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                             </svg>
                           </div>
@@ -766,7 +766,7 @@ export function Library() {
           </>
         ) : (
           <>
-            <div className="card overflow-x-auto">
+            <ScrollFade axis="x" className="card overflow-x-auto">
               <table className="w-full">
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -783,7 +783,7 @@ export function Library() {
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
-                          className="text-left p-4 text-zinc-400 font-medium cursor-pointer hover:text-white"
+                          className="text-left p-4 text-zinc-400 font-medium cursor-pointer hover:text-ctp-text"
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           <div className="flex items-center gap-2">
@@ -801,7 +801,7 @@ export function Library() {
                   {table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
-                      className={`border-b border-zinc-800 hover:bg-bg-hover transition-colors ${selectionMode && row.getIsSelected() ? 'bg-primary-purple/10' : ''}`}
+                      className={`border-b border-ctp-surface0 hover:bg-ctp-surface1 transition-colors ${selectionMode && row.getIsSelected() ? 'bg-ctp-mauve/10' : ''}`}
                     >
                       {selectionMode && (
                         <td className="w-12 p-4">
@@ -821,7 +821,7 @@ export function Library() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollFade>
 
             {table.getPageCount() > 1 && (
               <div className="flex justify-center items-center gap-4 mt-6">

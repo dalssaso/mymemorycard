@@ -87,7 +87,7 @@ export function PlatformDetail() {
     return (
       <PageLayout sidebar={sidebarContent} customCollapsed={true}>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-gray-400">Loading...</div>
+          <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
     )
@@ -116,7 +116,7 @@ export function PlatformDetail() {
           <div className="flex items-center gap-4">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
             <PlatformIconBadge
               platform={{
@@ -127,7 +127,7 @@ export function PlatformDetail() {
               size="lg"
             />
             <div>
-              <h1 className="text-4xl font-bold text-white">{platform.display_name}</h1>
+              <h1 className="text-4xl font-bold text-ctp-text">{platform.display_name}</h1>
               <div className="mt-1">
                 <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} />
               </div>
@@ -154,9 +154,9 @@ export function PlatformDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div id="profile" className="bg-gray-800/30 rounded-lg p-4">
+            <div id="profile" className="bg-ctp-surface0/30 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-semibold text-primary-purple">Profile</h2>
+                <h2 className="text-xl font-semibold text-ctp-mauve">Profile</h2>
                 {!isEditingProfile && (
                   <button
                     onClick={() => {
@@ -165,7 +165,7 @@ export function PlatformDetail() {
                       setIconUrlValue(platform.icon_url || '')
                       setIsEditingProfile(true)
                     }}
-                    className="text-sm text-primary-cyan hover:text-primary-purple"
+                    className="text-sm text-ctp-teal hover:text-ctp-mauve"
                   >
                     Edit
                   </button>
@@ -175,7 +175,7 @@ export function PlatformDetail() {
               {isEditingProfile ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-400">Username</label>
+                    <label className="block text-xs font-medium mb-1 text-ctp-subtext0">Username</label>
                     <input
                       value={usernameValue}
                       onChange={(event) => setUsernameValue(event.target.value)}
@@ -184,7 +184,7 @@ export function PlatformDetail() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-400">
+                    <label className="block text-xs font-medium mb-1 text-ctp-subtext0">
                       Profile URL
                     </label>
                     <input
@@ -195,7 +195,7 @@ export function PlatformDetail() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-400">
+                    <label className="block text-xs font-medium mb-1 text-ctp-subtext0">
                       Icon URL (SVG only - overrides default)
                     </label>
                     <input
@@ -204,13 +204,13 @@ export function PlatformDetail() {
                       className="input w-full"
                       placeholder={platform.default_icon_url || "https://cdn.simpleicons.org/steam/ffffff"}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-ctp-overlay1 mt-1">
                       Provide an SVG icon URL from{' '}
                       <a
                         href={`https://simpleicons.org/?q=${encodeURIComponent(
                           platform.display_name
                         )}`}
-                        className="text-primary-cyan hover:text-primary-purple"
+                        className="text-ctp-teal hover:text-ctp-mauve"
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -236,23 +236,23 @@ export function PlatformDetail() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2 text-gray-300">
+                <div className="space-y-2 text-ctp-subtext1">
                   <div>
                     <div>
-                      <span className="text-gray-500">Username:</span>{' '}
+                      <span className="text-ctp-overlay1">Username:</span>{' '}
                       {platform.username || 'Not set'}
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-500">Profile URL:</span>{' '}
+                    <span className="text-ctp-overlay1">Profile URL:</span>{' '}
                     {platform.profile_url || 'Not set'}
                   </div>
                   <div>
-                    <span className="text-gray-500">Icon URL:</span>{' '}
+                    <span className="text-ctp-overlay1">Icon URL:</span>{' '}
                     {platform.icon_url || 'Not set'}
                   </div>
                   {!platform.icon_url && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-ctp-overlay1">
                       Add a direct image URL for a square platform icon. Official press kits and
                       Simple Icons are good sources.
                     </div>
@@ -261,16 +261,16 @@ export function PlatformDetail() {
               )}
             </div>
 
-            <div id="notes" className="bg-gray-800/30 rounded-lg p-4">
+            <div id="notes" className="bg-ctp-surface0/30 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-semibold text-primary-purple">Notes</h2>
+                <h2 className="text-xl font-semibold text-ctp-mauve">Notes</h2>
                 {!isEditingNotes && (
                   <button
                     onClick={() => {
                       setNotesValue(platform.notes || '')
                       setIsEditingNotes(true)
                     }}
-                    className="text-sm text-primary-cyan hover:text-primary-purple"
+                    className="text-sm text-ctp-teal hover:text-ctp-mauve"
                   >
                     {platform.notes ? 'Edit' : 'Add Notes'}
                   </button>
@@ -283,8 +283,8 @@ export function PlatformDetail() {
                     value={notesValue}
                     onChange={(event) => setNotesValue(event.target.value)}
                     className={[
-                      'w-full bg-gray-900 border border-gray-700 rounded-lg',
-                      'px-3 py-2 text-white focus:outline-none focus:border-primary-purple',
+                      'w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg',
+                      'px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve',
                       'min-h-24',
                     ].join(' ')}
                     placeholder="Add notes about this platform"
@@ -306,7 +306,7 @@ export function PlatformDetail() {
                   </div>
                 </div>
               ) : (
-                <div className="text-gray-300 bg-gray-900/50 rounded-lg p-4">
+                <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
                   {platform.notes || 'No notes yet'}
                 </div>
               )}
@@ -314,31 +314,31 @@ export function PlatformDetail() {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <div className="text-xs text-gray-400 mb-1">Platform Type</div>
+            <div className="bg-ctp-surface0/50 rounded-lg p-4">
+              <div className="text-xs text-ctp-subtext0 mb-1">Platform Type</div>
               <PlatformTypeIcon type={platform.platform_type} size="md" showLabel={true} />
             </div>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <div className="text-xs text-gray-400 mb-1">Brand Color</div>
+            <div className="bg-ctp-surface0/50 rounded-lg p-4">
+              <div className="text-xs text-ctp-subtext0 mb-1">Brand Color</div>
               <div className="flex items-center gap-2">
                 <div 
-                  className="w-6 h-6 rounded border border-gray-600"
+                  className="w-6 h-6 rounded border border-ctp-surface2"
                   style={{ backgroundColor: platform.color_primary }}
                 />
-                <span className="text-sm text-white font-mono">{platform.color_primary}</span>
+                <span className="text-sm text-ctp-text font-mono">{platform.color_primary}</span>
               </div>
             </div>
             {platform.default_icon_url && (
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="text-xs text-gray-400 mb-1">Default Icon</div>
-                <div className="text-xs text-gray-500 break-all">
+              <div className="bg-ctp-surface0/50 rounded-lg p-4">
+                <div className="text-xs text-ctp-subtext0 mb-1">Default Icon</div>
+                <div className="text-xs text-ctp-overlay1 break-all">
                   {platform.default_icon_url.substring(0, 50)}...
                 </div>
               </div>
             )}
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <div className="text-xs text-gray-400 mb-1">Saved Since</div>
-              <div className="text-sm text-white">
+            <div className="bg-ctp-surface0/50 rounded-lg p-4">
+              <div className="text-xs text-ctp-subtext0 mb-1">Saved Since</div>
+              <div className="text-sm text-ctp-text">
                 {new Date(platform.created_at).toLocaleDateString()}
               </div>
             </div>

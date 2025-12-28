@@ -41,12 +41,12 @@ export function GameDetailSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 pt-3 border-t border-gray-800">
+      <div className="space-y-3 pt-3 border-t border-ctp-surface0">
         {/* Back to Library */}
         <div className="flex justify-center">
           <Link
             to="/library"
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Back to Library"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,10 +55,10 @@ export function GameDetailSidebar({
           </Link>
         </div>
 
-        <div className="flex justify-center pt-2 border-t border-gray-800">
+        <div className="flex justify-center pt-2 border-t border-ctp-surface0">
           <Link
             to="/platforms"
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Manage Platforms"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ export function GameDetailSidebar({
         </div>
 
         {/* Quick Status Icons */}
-        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           {STATUS_OPTIONS.map((option) => (
             <button
               key={option.value}
@@ -81,8 +81,8 @@ export function GameDetailSidebar({
               disabled={isUpdating}
               className={`p-2 rounded-lg transition-all disabled:opacity-50 ${
                 status === option.value
-                  ? 'bg-primary-purple/20 text-primary-purple ring-2 ring-primary-purple'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? 'bg-ctp-mauve/20 text-ctp-mauve ring-2 ring-ctp-mauve'
+                  : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
               }`}
               title={option.label}
             >
@@ -94,12 +94,12 @@ export function GameDetailSidebar({
         </div>
 
         {/* Jump to Section Icons */}
-        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           {SECTIONS.map((section) => (
             <button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
-              className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
               title={section.label}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@ export function GameDetailSidebar({
       <div>
         <Link
           to="/library"
-          className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-600 rounded-lg transition-colors text-sm"
+          className="flex items-center gap-2 px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:text-ctp-text hover:border-ctp-surface2 rounded-lg transition-colors text-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -140,7 +140,7 @@ export function GameDetailSidebar({
       </div>
       <Link
         to="/platforms"
-        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text rounded-lg transition-colors font-medium"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -154,9 +154,9 @@ export function GameDetailSidebar({
       </Link>
 
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3 flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-primary-cyan"
+            className="w-4 h-4 text-ctp-teal"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -178,8 +178,8 @@ export function GameDetailSidebar({
               disabled={isUpdating}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all disabled:opacity-50 flex items-center gap-2 ${
                 status === option.value
-                  ? 'bg-primary-purple/20 text-primary-purple border border-primary-purple/30'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? 'bg-ctp-mauve/20 text-ctp-mauve border border-ctp-mauve/30'
+                  : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
               }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,9 +192,9 @@ export function GameDetailSidebar({
       </div>
 
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3 flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-primary-purple"
+            className="w-4 h-4 text-ctp-mauve"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -213,7 +213,7 @@ export function GameDetailSidebar({
             <button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
-              className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all flex items-center gap-2"
+              className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={section.icon} />

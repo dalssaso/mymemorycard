@@ -112,15 +112,15 @@ export function StartSessionButton({ gameId, platformId, onSessionChange }: Star
 
   if (isActiveForThisGame) {
     return (
-      <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-3">
-        <div className="text-xs text-primary-cyan mb-1">Session in progress</div>
-        <div className="text-xl font-mono text-white mb-2">
+      <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3">
+        <div className="text-xs text-ctp-teal mb-1">Session in progress</div>
+        <div className="text-xl font-mono text-ctp-text mb-2">
           {formatElapsedTime(elapsedSeconds)}
         </div>
         <button
           onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
           disabled={endSessionMutation.isPending}
-          className="w-full py-2 bg-primary-red hover:bg-primary-red/80 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+          className="w-full py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
         >
           {endSessionMutation.isPending ? 'Stopping...' : 'Stop Session'}
         </button>
@@ -142,7 +142,7 @@ export function StartSessionButton({ gameId, platformId, onSessionChange }: Star
     <button
       onClick={() => startSessionMutation.mutate()}
       disabled={startSessionMutation.isPending}
-      className="w-full py-2.5 bg-primary-green hover:bg-primary-green/80 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+      className="w-full py-2.5 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
         <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />

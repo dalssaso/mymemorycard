@@ -2,15 +2,15 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, Link } from '@tanstack/react-router'
 import { BackButton, PageLayout } from '@/components/layout'
-import { Button, Card, Checkbox, useToast } from '@/components/ui'
+import { Button, Card, Checkbox, ScrollFade, useToast } from '@/components/ui'
 import { franchisesAPI, userPlatformsAPI, OwnedGame, MissingGame } from '@/lib/api'
 
 const STATUS_COLORS: Record<string, string> = {
   backlog: 'bg-gray-600',
-  playing: 'bg-primary-cyan',
-  finished: 'bg-primary-green',
-  completed: 'bg-primary-purple',
-  dropped: 'bg-red-500',
+  playing: 'bg-ctp-teal',
+  finished: 'bg-ctp-green',
+  completed: 'bg-ctp-mauve',
+  dropped: 'bg-ctp-red',
 }
 
 interface UserPlatform {
@@ -181,7 +181,7 @@ export function FranchiseDetail() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-gray-400">Loading...</div>
+          <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
     )
@@ -191,7 +191,7 @@ export function FranchiseDetail() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-red-400">Franchise not found</div>
+          <div className="text-ctp-red">Franchise not found</div>
         </div>
       </PageLayout>
     )
@@ -213,18 +213,18 @@ export function FranchiseDetail() {
         <div className="mb-8">
           <Link
             to="/franchises"
-            className="hidden md:inline-block text-primary-cyan hover:text-primary-purple transition-colors mb-4"
+            className="hidden md:inline-block text-ctp-teal hover:text-ctp-mauve transition-colors mb-4"
           >
             Back to Franchises
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
-            <h1 className="text-4xl font-bold text-white">{series_name}</h1>
+            <h1 className="text-4xl font-bold text-ctp-text">{series_name}</h1>
           </div>
-          <p className="text-gray-400">
+          <p className="text-ctp-subtext0">
             {owned_games.length} owned
             {missing_games.length > 0 && ` · ${missing_games.length} missing`}
           </p>
@@ -232,10 +232,10 @@ export function FranchiseDetail() {
 
         {/* Owned Games */}
         <div className="mb-10">
-          <h2 className="text-2xl font-bold text-primary-cyan mb-4">Your Games</h2>
+          <h2 className="text-2xl font-bold text-ctp-teal mb-4">Your Games</h2>
           {owned_games.length === 0 ? (
             <Card>
-              <p className="text-gray-400 text-center py-8">
+              <p className="text-ctp-subtext0 text-center py-8">
                 No games owned in this franchise.
               </p>
             </Card>
@@ -248,7 +248,7 @@ export function FranchiseDetail() {
                   params={{ id: game.id }}
                   className="group"
                 >
-                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative">
+                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
                     {game.cover_art_url ? (
                       <img
                         src={game.cover_art_url}
@@ -256,7 +256,7 @@ export function FranchiseDetail() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
+                      <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
                         No Cover
                       </div>
                     )}
@@ -265,10 +265,10 @@ export function FranchiseDetail() {
                       title={game.status}
                     />
                   </div>
-                  <p className="text-sm text-gray-300 truncate group-hover:text-white mb-1">
+                  <p className="text-sm text-ctp-subtext1 truncate group-hover:text-ctp-text mb-1">
                     {game.name}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-ctp-overlay1">
                     {game.release_date && (
                       <span>{new Date(game.release_date).getFullYear()}</span>
                     )}
@@ -289,19 +289,19 @@ export function FranchiseDetail() {
         {missing_games.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-primary-purple">Missing from Your Library</h2>
+              <h2 className="text-2xl font-bold text-ctp-mauve">Missing from Your Library</h2>
               <div className="flex items-center gap-2">
                 {selectionMode ? (
                   <>
                     <button
                       onClick={handleSelectAll}
-                      className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-all"
+                      className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
                     >
                       {selectedGames.size === missing_games.length ? 'Deselect All' : 'Select All'}
                     </button>
                     <button
                       onClick={handleExitSelectionMode}
-                      className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-all"
+                      className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
                     >
                       Cancel
                     </button>
@@ -309,7 +309,7 @@ export function FranchiseDetail() {
                 ) : (
                   <button
                     onClick={() => setSelectionMode(true)}
-                    className="px-3 py-1.5 bg-primary-purple/20 border border-primary-purple/30 text-primary-purple hover:bg-primary-purple/30 rounded text-sm transition-all"
+                    className="px-3 py-1.5 bg-ctp-mauve/20 border border-ctp-mauve/30 text-ctp-mauve hover:bg-ctp-mauve/30 rounded text-sm transition-all"
                   >
                     Select Games
                   </button>
@@ -325,10 +325,10 @@ export function FranchiseDetail() {
                     className="group cursor-pointer"
                     onClick={() => selectionMode ? toggleGameSelection(game.rawgId) : handleImportClick(game)}
                   >
-                    <div className={`aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative border transition-colors ${
+                    <div className={`aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative border transition-colors ${
                       isSelected 
-                        ? 'border-primary-purple bg-primary-purple/20' 
-                        : 'border-dashed border-gray-700 hover:border-primary-purple'
+                        ? 'border-ctp-mauve bg-ctp-mauve/20' 
+                        : 'border-dashed border-ctp-surface1 hover:border-ctp-mauve'
                     }`}>
                       {game.background_image ? (
                         <img
@@ -347,19 +347,19 @@ export function FranchiseDetail() {
                       )}
                       {selectionMode ? (
                         isSelected && (
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary-purple flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-white">
+                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-ctp-text">
                               <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                             </svg>
                           </div>
                         )
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
-                          <span className="text-white text-sm font-medium">+ Add to Library</span>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-ctp-base/50">
+                          <span className="text-ctp-text text-sm font-medium">+ Add to Library</span>
                         </div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-400 truncate group-hover:text-gray-300 mb-1">
+                    <p className="text-sm text-ctp-subtext0 truncate group-hover:text-ctp-subtext1 mb-1">
                       {game.name}
                     </p>
                     {game.released && (
@@ -376,18 +376,18 @@ export function FranchiseDetail() {
 
         {/* Bulk Import Floating Action Bar */}
         {selectionMode && selectedGames.size > 0 && (
-          <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 rounded-xl px-6 py-4 shadow-xl z-40 flex items-center gap-4">
-            <span className="text-white font-medium">
+          <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 bg-ctp-mantle border border-ctp-surface1 rounded-xl px-6 py-4 shadow-xl z-40 flex items-center gap-4">
+            <span className="text-ctp-text font-medium">
               {selectedGames.size} game{selectedGames.size !== 1 ? 's' : ''} selected
             </span>
-            <div className="h-6 w-px bg-gray-700" />
+            <div className="h-6 w-px bg-ctp-surface1" />
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">Import to:</span>
+              <span className="text-ctp-subtext0 text-sm">Import to:</span>
               <Button
                 variant="secondary"
                 onClick={openBulkImportModal}
                 disabled={bulkImportMutation.isPending}
-                className="text-sm py-1 px-3 border border-primary-purple bg-primary-purple/20 text-primary-purple hover:bg-primary-purple/30 focus:ring-primary-purple shadow-none"
+                className="text-sm py-1 px-3 border border-ctp-mauve bg-ctp-mauve/20 text-ctp-mauve hover:bg-ctp-mauve/30 focus:ring-ctp-mauve shadow-none"
               >
                 Choose platforms
               </Button>
@@ -398,23 +398,23 @@ export function FranchiseDetail() {
         {/* Platform Selection Modal */}
         {selectedGame && (
           <div
-            className="fixed inset-0 bg-black/70 flex items-start md:items-center justify-center z-[60] overflow-y-auto px-4 py-6 pb-24 md:pb-6"
+            className="fixed inset-0 bg-ctp-base/70 flex items-start md:items-center justify-center z-[60] overflow-y-auto px-4 py-6 pb-24 md:pb-6 scroll-container scrollbar-custom"
             onClick={() => setSelectedGame(null)}
           >
             <div
-              className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-700"
+              className="bg-ctp-mantle rounded-xl p-6 max-w-md w-full border border-ctp-surface1"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className="text-xl font-bold text-ctp-text mb-2">
                 {isBulkImport ? 'Bulk Import' : 'Add to Library'}
               </h3>
-              <p className="text-gray-400 mb-4">
+              <p className="text-ctp-subtext0 mb-4">
                 {isBulkImport
                   ? `Import ${selectedGames.size} selected game${selectedGames.size !== 1 ? 's' : ''}`
                   : selectedGame.name}
               </p>
-              <p className="text-sm text-gray-500 mb-4">Select platform(s):</p>
-              <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+              <p className="text-sm text-ctp-overlay1 mb-4">Select platform(s):</p>
+              <ScrollFade axis="y" className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
                 {platforms.map((platform) => {
                   const isSelected = selectedPlatformIds.has(platform.id)
                   return (
@@ -422,8 +422,8 @@ export function FranchiseDetail() {
                       key={platform.id}
                       className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
                         isSelected
-                          ? 'border-primary-purple bg-primary-purple/20 text-primary-purple'
-                          : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-primary-purple/60'
+                          ? 'border-ctp-mauve bg-ctp-mauve/20 text-ctp-mauve'
+                          : 'border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1 hover:border-ctp-mauve/60'
                       }`}
                     >
                       <Checkbox
@@ -435,7 +435,7 @@ export function FranchiseDetail() {
                     </label>
                   )
                 })}
-              </div>
+              </ScrollFade>
               <div className="flex items-center gap-2 mt-4">
                 <Button
                   onClick={handleConfirmImport}

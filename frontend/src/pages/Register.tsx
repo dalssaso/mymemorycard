@@ -42,13 +42,13 @@ export function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="card max-w-md w-full">
-        <h1 className="text-primary-purple mb-6 text-center">
+        <h1 className="text-ctp-mauve mb-6 text-center">
           Create Account
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-primary-red/20 border border-primary-red text-primary-red px-4 py-2 rounded">
+            <div className="bg-ctp-red/20 border border-ctp-red text-ctp-red px-4 py-2 rounded">
               {error}
             </div>
           )}
@@ -115,7 +115,7 @@ export function Register() {
           Already have an account?{' '}
           <Link
             to="/login"
-            className="text-primary-cyan hover:text-cyan-400 transition-colors"
+            className="text-ctp-teal hover:text-cyan-400 transition-colors"
           >
             Login
           </Link>

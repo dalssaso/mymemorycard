@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { gamesAPI } from '@/lib/api'
+import { ScrollFade } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
+import { gamesAPI } from '@/lib/api'
 
 interface Achievement {
   rawg_achievement_id: number
@@ -78,14 +79,14 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-gray-400">Loading achievements...</div>
+        <div className="text-ctp-subtext0">Loading achievements...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-red-400 py-4">Failed to load achievements</div>
+      <div className="text-ctp-red py-4">Failed to load achievements</div>
     )
   }
 
@@ -93,7 +94,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
 
   if (achievements.length === 0) {
     return (
-      <div className="text-gray-400 py-4">
+      <div className="text-ctp-subtext0 py-4">
         {data?.message || 'No achievements available for this game'}
       </div>
     )
@@ -113,19 +114,19 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-gray-400">Progress</div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-sm text-ctp-subtext0">Progress</div>
+          <div className="text-2xl font-bold text-ctp-text">
             {completedCount} / {totalCount}
           </div>
         </div>
         <div className="w-32">
-          <div className="w-full bg-gray-700 rounded-full h-3">
+          <div className="w-full bg-ctp-surface1 rounded-full h-3">
             <div
-              className="bg-primary-green h-3 rounded-full transition-all"
+              className="bg-ctp-green h-3 rounded-full transition-all"
               style={{ width: `${completionPercent}%` }}
             />
           </div>
-          <div className="text-sm text-gray-400 mt-1 text-right">
+          <div className="text-sm text-ctp-subtext0 mt-1 text-right">
             {completionPercent}%
           </div>
         </div>
@@ -138,8 +139,8 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
             onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded-lg text-sm transition-all ${
               filter === f
-                ? 'bg-primary-purple text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'bg-ctp-mauve text-ctp-base'
+                : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1'
             }`}
           >
             {f === 'all'
@@ -151,14 +152,14 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
         ))}
       </div>
 
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      <ScrollFade axis="y" className="space-y-2 max-h-96 overflow-y-auto">
         {filteredAchievements.map((ach) => (
           <div
             key={ach.rawg_achievement_id}
             className={`flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer ${
               ach.completed
-                ? 'bg-primary-green/10 border border-primary-green/30'
-                : 'bg-gray-800/50 border border-gray-700 hover:border-gray-600'
+                ? 'bg-ctp-green/10 border border-ctp-green/30'
+                : 'bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2'
             }`}
             onClick={() =>
               toggleMutation.mutate({
@@ -175,22 +176,22 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
               />
             ) : (
               <div
-                className={`w-12 h-12 rounded bg-gray-700 flex items-center justify-center ${
+                className={`w-12 h-12 rounded bg-ctp-surface1 flex items-center justify-center ${
                   ach.completed ? '' : 'opacity-50'
                 }`}
               >
-                <span className="text-gray-500 text-xl">?</span>
+                <span className="text-ctp-overlay1 text-xl">?</span>
               </div>
             )}
 
             <div className="flex-1 min-w-0">
               <div
-                className={`font-medium truncate ${ach.completed ? 'text-primary-green' : 'text-white'}`}
+                className={`font-medium truncate ${ach.completed ? 'text-ctp-green' : 'text-ctp-text'}`}
               >
                 {ach.name}
               </div>
               {ach.description && (
-                <div className="text-sm text-gray-400 truncate">
+                <div className="text-sm text-ctp-subtext0 truncate">
                   {ach.description}
                 </div>
               )}
@@ -199,17 +200,17 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   <span
                     className={`text-xs px-2 py-0.5 rounded ${
                       ach.rarity_percent < 10
-                        ? 'bg-primary-yellow/20 text-primary-yellow'
+                        ? 'bg-ctp-yellow/20 text-ctp-yellow'
                         : ach.rarity_percent < 25
-                          ? 'bg-primary-purple/20 text-primary-purple'
-                          : 'bg-gray-700 text-gray-400'
+                          ? 'bg-ctp-mauve/20 text-ctp-mauve'
+                          : 'bg-ctp-surface1 text-ctp-subtext0'
                     }`}
                   >
                     {ach.rarity_percent.toFixed(1)}% of players
                   </span>
                 )}
                 {ach.completed_at && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-ctp-overlay1">
                     Completed {new Date(ach.completed_at).toLocaleDateString()}
                   </span>
                 )}
@@ -219,8 +220,8 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
             <div
               className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                 ach.completed
-                  ? 'bg-primary-green border-primary-green text-white'
-                  : 'border-gray-600 text-transparent hover:border-gray-400'
+                  ? 'bg-ctp-green border-ctp-green text-ctp-base'
+                  : 'border-ctp-surface2 text-transparent hover:border-ctp-overlay1'
               }`}
             >
               <svg
@@ -239,7 +240,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
             </div>
           </div>
         ))}
-      </div>
+      </ScrollFade>
     </div>
   )
 }

@@ -165,7 +165,7 @@ export function GameDetail() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-gray-400">Loading...</div>
+          <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
     )
@@ -175,7 +175,7 @@ export function GameDetail() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-red-400">Game not found</div>
+          <div className="text-ctp-red">Game not found</div>
         </div>
       </PageLayout>
     )
@@ -240,8 +240,8 @@ export function GameDetail() {
                 className="w-full rounded-lg shadow-lg"
               />
             ) : (
-              <div className="w-full aspect-[3/4] bg-gray-800 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500">No cover art</span>
+              <div className="w-full aspect-[3/4] bg-ctp-surface0 rounded-lg flex items-center justify-center">
+                <span className="text-ctp-overlay1">No cover art</span>
               </div>
             )}
 
@@ -256,14 +256,14 @@ export function GameDetail() {
             {/* Platform Selector (for multi-platform games) */}
             {hasMultiplePlatforms && (
               <div className="mt-4">
-                <label htmlFor="platform-select" className="block text-sm font-medium text-gray-400 mb-2">
+                <label htmlFor="platform-select" className="block text-sm font-medium text-ctp-subtext0 mb-2">
                   Tracking Platform
                 </label>
                 <select
                   id="platform-select"
                   value={activePlatformId}
                   onChange={(e) => setSelectedPlatformId(e.target.value)}
-                  className="w-full bg-gray-900 border border-primary-purple rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-cyan"
+                  className="w-full bg-ctp-mantle border border-ctp-mauve rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-teal"
                 >
                   {platforms.map((platform) => (
                     <option key={platform.platform_id} value={platform.platform_id}>
@@ -271,7 +271,7 @@ export function GameDetail() {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-ctp-overlay1 mt-1">
                   Stats and progress are tracked per platform
                 </p>
               </div>
@@ -289,7 +289,7 @@ export function GameDetail() {
 
             {/* Status Selector */}
             <div className="mt-4">
-              <label htmlFor="game-status" className="block text-sm font-medium text-gray-400 mb-2">
+              <label htmlFor="game-status" className="block text-sm font-medium text-ctp-subtext0 mb-2">
                 Status
               </label>
               <select
@@ -297,7 +297,7 @@ export function GameDetail() {
                 value={activePlatform.status || 'backlog'}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 aria-describedby="status-description"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -312,16 +312,16 @@ export function GameDetail() {
 
             {/* Play Stats */}
             <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-3">
-                <div className="text-xs text-primary-cyan">Playtime</div>
-                <div className="text-lg font-semibold text-white">
+              <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3">
+                <div className="text-xs text-ctp-teal">Playtime</div>
+                <div className="text-lg font-semibold text-ctp-text">
                   {Math.floor(activePlatform.total_minutes / 60)}h {activePlatform.total_minutes % 60}m
                 </div>
               </div>
               {activePlatform.last_played && (
-                <div className="bg-primary-purple/10 border border-primary-purple/30 rounded-lg p-3">
-                  <div className="text-xs text-primary-purple">Last Played</div>
-                  <div className="text-sm font-semibold text-white">
+                <div className="bg-ctp-mauve/10 border border-ctp-mauve/30 rounded-lg p-3">
+                  <div className="text-xs text-ctp-mauve">Last Played</div>
+                  <div className="text-sm font-semibold text-ctp-text">
                     {new Date(activePlatform.last_played).toLocaleDateString()}
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export function GameDetail() {
 
             {/* Rating Selector */}
             <div className="mt-4">
-              <span className="block text-sm font-medium text-gray-400 mb-2" id="user-rating-label">
+              <span className="block text-sm font-medium text-ctp-subtext0 mb-2" id="user-rating-label">
                 Your Rating
               </span>
               <div className="grid grid-cols-10 gap-1" role="group" aria-labelledby="user-rating-label">
@@ -342,8 +342,8 @@ export function GameDetail() {
                     aria-pressed={activePlatform.user_rating === rating}
                     className={`py-2 text-sm rounded transition-all ${
                       activePlatform.user_rating === rating
-                        ? 'bg-primary-purple text-white shadow-lg shadow-primary-purple/50'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                        ? 'bg-ctp-mauve text-ctp-base shadow-lg shadow-ctp-mauve/50'
+                        : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
                     }`}
                   >
                     {rating}
@@ -362,19 +362,35 @@ export function GameDetail() {
                 disabled={toggleFavoriteMutation.isPending}
                 className={`w-full py-3 rounded-lg font-semibold transition-all ${
                   activePlatform.is_favorite
-                    ? 'bg-red-600/20 border-2 border-red-500 text-red-400 hover:bg-red-600/30'
-                    : 'bg-gray-800 border-2 border-gray-700 text-gray-400 hover:bg-gray-700 hover:border-red-500 hover:text-red-400'
+                    ? 'bg-ctp-red/20 border-2 border-ctp-red text-ctp-red hover:bg-ctp-red/30'
+                    : 'bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface1 hover:border-ctp-red hover:text-ctp-red'
                 }`}
               >
-                {activePlatform.is_favorite ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+                <span className="inline-flex items-center justify-center gap-2">
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill={activePlatform.is_favorite ? 'currentColor' : 'none'}
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                  {activePlatform.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                </span>
               </button>
             </div>
 
             {/* Remove from Library */}
             <div className="mt-4">
               {showDeleteConfirm ? (
-                <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
-                  <p className="text-sm text-gray-300 mb-3">
+                <div className="bg-ctp-red/20 border border-ctp-red/50 rounded-lg p-4">
+                  <p className="text-sm text-ctp-subtext1 mb-3">
                     Remove <strong>{activePlatform.platform_display_name}</strong> version from your library? This will delete all progress, sessions, and notes for this platform.
                   </p>
                   <div className="flex gap-2">
@@ -384,13 +400,13 @@ export function GameDetail() {
                         setShowDeleteConfirm(false)
                       }}
                       disabled={deleteGameMutation.isPending}
-                      className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50"
+                    className="flex-1 py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg font-semibold transition-all disabled:opacity-50"
                     >
                       {deleteGameMutation.isPending ? 'Removing...' : 'Confirm Remove'}
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all"
+                      className="flex-1 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-all"
                     >
                       Cancel
                     </button>
@@ -399,7 +415,7 @@ export function GameDetail() {
               ) : (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full py-3 rounded-lg font-semibold transition-all bg-gray-800 border-2 border-gray-700 text-gray-400 hover:bg-red-900/20 hover:border-red-500/50 hover:text-red-400"
+                  className="w-full py-3 rounded-lg font-semibold transition-all bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-red/20 hover:border-ctp-red/50 hover:text-ctp-red"
                 >
                   Remove from Library
                 </button>
@@ -409,12 +425,12 @@ export function GameDetail() {
             {/* Owned Platforms */}
             {platforms.length > 0 && (
               <div className="mt-4">
-                <span className="block text-sm font-medium text-gray-400 mb-2">Owned on</span>
+                <span className="block text-sm font-medium text-ctp-subtext0 mb-2">Owned on</span>
                 <div className="flex flex-wrap gap-2">
                   {platforms.map((platform) => (
                     <div
                       key={platform.platform_id}
-                      className="px-2 py-1.5 bg-primary-purple/10 border border-primary-purple/30 rounded-lg flex items-center gap-2"
+                      className="px-2 py-1.5 bg-ctp-mauve/10 border border-ctp-mauve/30 rounded-lg flex items-center gap-2"
                     >
                       <PlatformIconBadge
                         platform={{
@@ -424,7 +440,7 @@ export function GameDetail() {
                         }}
                         size="md"
                       />
-                      <span className="text-sm text-gray-300">{platform.platform_display_name}</span>
+                      <span className="text-sm text-ctp-subtext1">{platform.platform_display_name}</span>
                     </div>
                   ))}
                 </div>
@@ -434,18 +450,18 @@ export function GameDetail() {
             {/* Metadata */}
             <div className="mt-4 flex flex-wrap gap-2">
               {game.release_date && (
-                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400 text-sm">
+                <span className="px-3 py-1 bg-ctp-surface0 rounded-lg text-ctp-subtext0 text-sm">
                   {new Date(game.release_date).getFullYear()}
                 </span>
               )}
               {game.metacritic_score && (
-                <span className="px-3 py-1 bg-primary-green/20 border border-primary-green rounded-lg text-primary-green text-sm">
+                <span className="px-3 py-1 bg-ctp-green/20 border border-ctp-green rounded-lg text-ctp-green text-sm">
                   Metacritic: {game.metacritic_score}
                 </span>
               )}
               {game.expected_playtime && game.expected_playtime > 0 && (
                 <span 
-                  className="px-3 py-1 bg-primary-cyan/20 border border-primary-cyan rounded-lg text-primary-cyan text-sm inline-flex items-center gap-1.5 group relative"
+                  className="px-3 py-1 bg-ctp-teal/20 border border-ctp-teal rounded-lg text-ctp-teal text-sm inline-flex items-center gap-1.5 group relative"
                 >
                   ~{game.expected_playtime}h to beat
                   <span className="cursor-help" title="Average playtime based on Steam player data">
@@ -456,7 +472,7 @@ export function GameDetail() {
                 </span>
               )}
               {game.esrb_rating && (
-                <span className="px-3 py-1 bg-gray-800 rounded-lg text-gray-400 text-sm">
+                <span className="px-3 py-1 bg-ctp-surface0 rounded-lg text-ctp-subtext0 text-sm">
                   {game.esrb_rating.toUpperCase()}
                 </span>
               )}
@@ -468,7 +484,7 @@ export function GameDetail() {
                 {genres.map((genre) => (
                   <span
                     key={genre}
-                    className="px-2 py-1 bg-primary-cyan/10 border border-primary-cyan/30 rounded text-primary-cyan text-xs"
+                    className="px-2 py-1 bg-ctp-teal/10 border border-ctp-teal/30 rounded text-ctp-teal text-xs"
                   >
                     {genre}
                   </span>
@@ -479,20 +495,20 @@ export function GameDetail() {
             {/* Franchise */}
             {game.series_name && (
               <div className="mt-4">
-                <span className="block text-sm font-medium text-gray-400 mb-2">Franchise</span>
+                <span className="block text-sm font-medium text-ctp-subtext0 mb-2">Franchise</span>
                 <FranchisePreview seriesName={game.series_name} currentGameId={game.id} />
               </div>
             )}
 
             {/* External Resources */}
             <div className="mt-4">
-              <span className="block text-sm font-medium text-gray-400 mb-2">External Resources</span>
+              <span className="block text-sm font-medium text-ctp-subtext0 mb-2">External Resources</span>
               <div className="flex flex-col gap-2">
                 <a
                   href={`https://howlongtobeat.com/?q=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-primary-cyan hover:text-primary-cyan rounded-lg transition-all text-center text-sm"
+                  className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
                 >
                   HowLongToBeat
                 </a>
@@ -500,7 +516,7 @@ export function GameDetail() {
                   href={`https://www.ign.com/wikis/${normalizeGameName(activePlatform.name).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-primary-cyan hover:text-primary-cyan rounded-lg transition-all text-center text-sm"
+                  className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
                 >
                   IGN Guide
                 </a>
@@ -508,7 +524,7 @@ export function GameDetail() {
                   href={`https://www.powerpyx.com/?s=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-primary-cyan hover:text-primary-cyan rounded-lg transition-all text-center text-sm"
+                  className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
                 >
                   PowerPyx Guide
                 </a>
@@ -530,26 +546,26 @@ export function GameDetail() {
             <div className="flex items-center gap-3 mb-4">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
               />
               <h1 className="text-4xl font-bold">{activePlatform.name}</h1>
             </div>
 
             {activePlatform.description && (
-              <div id="about" className="mb-6 bg-gray-800/30 rounded-lg p-4">
-                <h2 className="text-xl font-semibold mb-3 text-primary-purple">About</h2>
-                <p className="text-gray-300 leading-relaxed">{activePlatform.description}</p>
+              <div id="about" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
+                <h2 className="text-xl font-semibold mb-3 text-ctp-mauve">About</h2>
+                <p className="text-ctp-subtext1 leading-relaxed">{activePlatform.description}</p>
               </div>
             )}
 
             {/* Notes Section */}
-            <div id="notes" className="mb-6 bg-gray-800/30 rounded-lg p-4">
+            <div id="notes" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-semibold text-primary-purple">Notes</h2>
+                <h2 className="text-xl font-semibold text-ctp-mauve">Notes</h2>
                 {!isEditingNotes && (
                   <button
                     onClick={startEditingNotes}
-                    className="text-sm text-primary-cyan hover:text-primary-purple"
+                    className="text-sm text-ctp-teal hover:text-ctp-mauve"
                   >
                     {activePlatform.notes ? 'Edit' : 'Add Notes'}
                   </button>
@@ -561,51 +577,51 @@ export function GameDetail() {
                   <textarea
                     value={notesValue}
                     onChange={(e) => setNotesValue(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple min-h-32"
+                    className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-32"
                     placeholder="Add your notes about this game..."
                   />
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={handleSaveNotes}
                       disabled={updateNotesMutation.isPending}
-                      className="px-4 py-2 bg-primary-purple hover:bg-primary-purple/80 rounded-lg disabled:opacity-50"
+                      className="px-4 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg disabled:opacity-50"
                     >
                       {updateNotesMutation.isPending ? 'Saving...' : 'Save'}
                     </button>
                     <button
                       onClick={() => setIsEditingNotes(false)}
-                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                      className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 rounded-lg"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="text-gray-300 bg-gray-900/50 rounded-lg p-4">
+                <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
                   {activePlatform.notes || 'No notes yet'}
                 </div>
               )}
             </div>
 
             {/* Edition & DLC Ownership Section */}
-            <div id="ownership" className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-primary-purple mb-4">Edition & DLC Ownership</h2>
+            <div id="ownership" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-ctp-mauve mb-4">Edition & DLC Ownership</h2>
               <EditionOwnership gameId={game.id} platformId={activePlatformId} />
             </div>
 
             {/* Achievements Section */}
-            <div id="achievements" className="mb-6 bg-gray-800/30 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-primary-purple mb-4">Achievements</h2>
+            <div id="achievements" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
+              <h2 className="text-xl font-semibold text-ctp-mauve mb-4">Achievements</h2>
               <GameAchievements gameId={game.id} platformId={activePlatformId} />
             </div>
 
             {/* Sessions History Section */}
-            <div id="sessions" className="mb-6 bg-gray-800/30 rounded-lg p-4">
+            <div id="sessions" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
               <SessionsHistory gameId={game.id} platformId={activePlatformId} />
             </div>
 
             {/* Progress History Section */}
-            <div id="stats" className="mb-6 bg-gray-800/30 rounded-lg p-4">
+            <div id="stats" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
               <ProgressHistory gameId={game.id} platformId={activePlatformId} />
             </div>
 

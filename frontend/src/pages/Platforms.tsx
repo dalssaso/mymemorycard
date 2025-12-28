@@ -48,11 +48,20 @@ function PlatformIcon({ name, iconUrl, color }: { name: string; iconUrl?: string
   }
 
   const initial = name.trim().charAt(0).toUpperCase() || 'P'
+  const colorValue = color || 'var(--ctp-surface2)'
+  const hex = colorValue.startsWith('#') ? colorValue.replace('#', '') : null
+  const isLightBackground = hex
+    ? (parseInt(hex.slice(0, 2), 16) * 299
+        + parseInt(hex.slice(2, 4), 16) * 587
+        + parseInt(hex.slice(4, 6), 16) * 114) / 1000 > 155
+    : false
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center text-white font-semibold text-6xl"
-      style={{ backgroundColor: color || '#374151' }}
+      className={`w-full h-full flex items-center justify-center font-semibold text-6xl ${
+        isLightBackground ? 'text-gray-900' : 'text-ctp-base dark:text-ctp-text'
+      }`}
+      style={{ backgroundColor: colorValue }}
     >
       {initial}
     </div>
@@ -185,11 +194,11 @@ export function Platforms() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
               />
-              <h1 className="text-4xl font-bold text-white">Platforms</h1>
+              <h1 className="text-4xl font-bold text-ctp-text">Platforms</h1>
             </div>
-            <p className="text-gray-400 mt-1">
+            <p className="text-ctp-subtext0 mt-1">
               Keep your platform list current for accurate imports.
             </p>
           </div>
@@ -209,7 +218,7 @@ export function Platforms() {
 
         {userPlatforms.length === 0 ? (
           <div className="card mb-8">
-            <p className="text-gray-400 text-center py-8">
+            <p className="text-ctp-subtext0 text-center py-8">
               No platforms saved yet. Add your first platform to get started.
             </p>
           </div>
@@ -228,7 +237,7 @@ export function Platforms() {
                 >
                   <div
                     className={[
-                      'aspect-square rounded-lg overflow-hidden bg-gray-800',
+                      'aspect-square rounded-lg overflow-hidden bg-ctp-surface0',
                       'mb-2 relative',
                     ].join(' ')}
                   >
@@ -240,14 +249,15 @@ export function Platforms() {
                     <div
                       className={[
                         'absolute inset-0 bg-gradient-to-t',
-                        'from-black/80 via-transparent to-transparent',
+                        'from-ctp-base/70 via-ctp-base/20 to-transparent',
+                        'dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent',
                       ].join(' ')}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-white font-medium truncate">
+                      <p className="text-ctp-text font-medium truncate">
                         {platform.display_name}
                       </p>
-                      <p className="text-sm text-primary-cyan truncate">
+                      <p className="text-sm text-ctp-teal truncate">
                         {platform.username || 'No username set'}
                       </p>
                     </div>
@@ -270,14 +280,14 @@ export function Platforms() {
 
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Add Platforms</h2>
-            <span className="text-sm text-gray-400">
+            <h2 className="text-lg font-semibold text-ctp-text">Add Platforms</h2>
+            <span className="text-sm text-ctp-subtext0">
               {selectedPlatformIds.length} selected
             </span>
           </div>
 
           {isLoadingPlatforms ? (
-            <div className="text-gray-400">Loading platforms...</div>
+            <div className="text-ctp-subtext0">Loading platforms...</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredPlatforms.map((platform) => {
@@ -291,16 +301,16 @@ export function Platforms() {
                     disabled={isLocked}
                     className={`text-left border rounded-lg px-4 py-3 transition-colors ${
                       isSelected
-                        ? 'border-primary-cyan bg-primary-cyan/10'
-                        : 'border-gray-800 bg-gray-900/50 hover:border-gray-700'
+                        ? 'border-ctp-teal bg-ctp-teal/10'
+                        : 'border-ctp-surface0 bg-ctp-mantle/50 hover:border-ctp-surface1'
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="font-medium text-white">
+                      <div className="font-medium text-ctp-text">
                         {platform.display_name}
                       </div>
                       {isLocked && (
-                        <span className="text-xs text-primary-cyan">Saved</span>
+                        <span className="text-xs text-ctp-teal">Saved</span>
                       )}
                     </div>
                     <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} color={platform.color_primary} />
@@ -309,7 +319,7 @@ export function Platforms() {
               })}
 
               {!isLoadingPlatforms && filteredPlatforms.length === 0 && (
-                <p className="text-gray-400">No platforms match your search.</p>
+                <p className="text-ctp-subtext0">No platforms match your search.</p>
               )}
             </div>
           )}

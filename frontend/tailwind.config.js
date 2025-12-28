@@ -1,32 +1,57 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        // Gaming theme colors - pure black base
+        ctp: {
+          base: 'var(--ctp-base)',
+          mantle: 'var(--ctp-mantle)',
+          crust: 'var(--ctp-crust)',
+          surface0: 'var(--ctp-surface0)',
+          surface1: 'var(--ctp-surface1)',
+          surface2: 'var(--ctp-surface2)',
+          overlay0: 'var(--ctp-overlay0)',
+          overlay1: 'var(--ctp-overlay1)',
+          overlay2: 'var(--ctp-overlay2)',
+          subtext0: 'var(--ctp-subtext0)',
+          subtext1: 'var(--ctp-subtext1)',
+          text: 'var(--ctp-text)',
+          rosewater: 'var(--ctp-rosewater)',
+          flamingo: 'var(--ctp-flamingo)',
+          pink: 'var(--ctp-pink)',
+          mauve: 'var(--ctp-mauve)',
+          red: 'var(--ctp-red)',
+          maroon: 'var(--ctp-maroon)',
+          peach: 'var(--ctp-peach)',
+          yellow: 'var(--ctp-yellow)',
+          green: 'var(--ctp-green)',
+          teal: 'var(--ctp-teal)',
+          sky: 'var(--ctp-sky)',
+          sapphire: 'var(--ctp-sapphire)',
+          blue: 'var(--ctp-blue)',
+          lavender: 'var(--ctp-lavender)',
+        },
         primary: {
-          purple: '#8B5CF6',
-          cyan: '#06B6D4',
-          green: '#10B981',
-          red: '#EF4444',
-          yellow: '#F59E0B',
+          purple: 'var(--ctp-mauve)',
+          cyan: 'var(--ctp-teal)',
+          green: 'var(--ctp-green)',
+          red: 'var(--ctp-red)',
+          yellow: 'var(--ctp-yellow)',
         },
         bg: {
-          primary: '#000000',
-          secondary: '#0A0A0A',
-          tertiary: '#121212',
-          hover: '#1A1A1A',
+          primary: 'var(--ctp-base)',
+          secondary: 'var(--ctp-mantle)',
+          tertiary: 'var(--ctp-surface0)',
+          hover: 'var(--ctp-surface1)',
         },
         status: {
-          backlog: '#71717A',
-          playing: '#06B6D4',
-          finished: '#10B981',
-          dropped: '#EF4444',
-          completed: '#F59E0B',
+          backlog: 'var(--ctp-overlay1)',
+          playing: 'var(--ctp-teal)',
+          finished: 'var(--ctp-green)',
+          dropped: 'var(--ctp-red)',
+          completed: 'var(--ctp-yellow)',
         },
       },
       boxShadow: {
@@ -38,4 +63,3 @@ export default {
   },
   plugins: [],
 }
-

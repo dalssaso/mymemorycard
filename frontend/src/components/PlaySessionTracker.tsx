@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { sessionsAPI } from '@/lib/api'
+import { ScrollFade } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
+import { sessionsAPI } from '@/lib/api'
 
 interface PlaySession {
   id: string
@@ -181,8 +182,8 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold text-white">Play Sessions</h3>
-        <div className="text-sm text-gray-400">
+        <h3 className="text-lg font-semibold text-ctp-text">Play Sessions</h3>
+        <div className="text-sm text-ctp-subtext0">
           Total: {formatDuration(totalMinutes)}
         </div>
       </div>
@@ -194,18 +195,18 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
       )}
 
       {isActiveForThisGame ? (
-        <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-4">
+        <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-primary-cyan">Session in progress</div>
-              <div className="text-3xl font-mono text-white mt-1">
+              <div className="text-sm text-ctp-teal">Session in progress</div>
+              <div className="text-3xl font-mono text-ctp-text mt-1">
                 {formatElapsedTime(elapsedSeconds)}
               </div>
             </div>
             <button
               onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
               disabled={endSessionMutation.isPending}
-              className="px-6 py-3 bg-primary-red hover:bg-primary-red/80 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
               {endSessionMutation.isPending ? 'Stopping...' : 'Stop'}
             </button>
@@ -216,7 +217,7 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
           <button
             onClick={() => startSessionMutation.mutate()}
             disabled={startSessionMutation.isPending || Boolean(activeSession && !isActiveForThisGame)}
-            className="flex-1 py-3 bg-primary-green hover:bg-primary-green/80 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {startSessionMutation.isPending ? 'Starting...' : 'Start Session'}
           </button>
@@ -224,8 +225,8 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
             onClick={() => setIsManualMode(!isManualMode)}
             className={`px-4 py-3 rounded-lg font-semibold transition-colors ${
               isManualMode
-                ? 'bg-primary-purple text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                ? 'bg-ctp-mauve text-ctp-base'
+                : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
             }`}
           >
             + Manual
@@ -234,10 +235,10 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
       )}
 
       {isManualMode && (
-        <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
+        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="manual-date" className="block text-sm text-gray-400 mb-1">
+              <label htmlFor="manual-date" className="block text-sm text-ctp-subtext0 mb-1">
                 Date
               </label>
               <input
@@ -245,11 +246,11 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
                 type="date"
                 value={manualDate}
                 onChange={(e) => setManualDate(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               />
             </div>
             <div>
-              <label htmlFor="manual-duration" className="block text-sm text-gray-400 mb-1">
+              <label htmlFor="manual-duration" className="block text-sm text-ctp-subtext0 mb-1">
                 Duration (minutes)
               </label>
               <input
@@ -259,12 +260,12 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
                 placeholder="60"
                 value={manualDuration}
                 onChange={(e) => setManualDuration(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="session-notes" className="block text-sm text-gray-400 mb-1">
+            <label htmlFor="session-notes" className="block text-sm text-ctp-subtext0 mb-1">
               Notes (optional)
             </label>
             <input
@@ -273,14 +274,14 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
               placeholder="What did you do in this session?"
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+              className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => addManualSessionMutation.mutate()}
               disabled={addManualSessionMutation.isPending || !manualDuration}
-              className="flex-1 py-2 bg-primary-purple hover:bg-primary-purple/80 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+              className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
               {addManualSessionMutation.isPending ? 'Adding...' : 'Add Session'}
             </button>
@@ -290,7 +291,7 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
                 setManualDuration('')
                 setSessionNotes('')
               }}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -299,22 +300,22 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
       )}
 
       {loadingSessions ? (
-        <div className="text-gray-400 text-sm">Loading sessions...</div>
+        <div className="text-ctp-subtext0 text-sm">Loading sessions...</div>
       ) : sessions.length > 0 ? (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-400">Recent Sessions</h4>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
+          <h4 className="text-sm font-medium text-ctp-subtext0">Recent Sessions</h4>
+          <ScrollFade axis="y" className="space-y-2 max-h-64 overflow-y-auto">
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3"
+                className="flex items-center justify-between bg-ctp-surface0/50 rounded-lg p-3"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-white font-medium">
+                    <span className="text-ctp-text font-medium">
                       {session.ended_at ? formatDuration(session.duration_minutes || 0) : 'In progress'}
                     </span>
-                    <span className="text-gray-500 text-sm">
+                    <span className="text-ctp-overlay1 text-sm">
                       {new Date(session.started_at).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -324,13 +325,13 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
                     </span>
                   </div>
                   {session.notes && (
-                    <p className="text-sm text-gray-400 mt-1">{session.notes}</p>
+                    <p className="text-sm text-ctp-subtext0 mt-1">{session.notes}</p>
                   )}
                 </div>
                 <button
                   onClick={() => deleteSessionMutation.mutate(session.id)}
                   disabled={deleteSessionMutation.isPending || !session.ended_at}
-                  className="p-2 text-gray-500 hover:text-primary-red transition-colors disabled:opacity-50"
+                  className="p-2 text-ctp-overlay1 hover:text-ctp-red transition-colors disabled:opacity-50"
                   title={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -339,10 +340,10 @@ export function PlaySessionTracker({ gameId, platformId, onSessionChange }: Play
                 </button>
               </div>
             ))}
-          </div>
+          </ScrollFade>
         </div>
       ) : (
-        <div className="text-gray-500 text-sm text-center py-4">
+        <div className="text-ctp-overlay1 text-sm text-center py-4">
           No sessions recorded yet. Start tracking your playtime!
         </div>
       )}

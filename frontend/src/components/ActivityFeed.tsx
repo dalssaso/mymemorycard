@@ -55,10 +55,10 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse flex gap-3">
-            <div className="w-10 h-10 bg-gray-700 rounded-lg" />
+            <div className="w-10 h-10 bg-ctp-surface1 rounded-lg" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-700 rounded w-3/4" />
-              <div className="h-3 bg-gray-700 rounded w-1/2" />
+              <div className="h-4 bg-ctp-surface1 rounded w-3/4" />
+              <div className="h-3 bg-ctp-surface1 rounded w-1/2" />
             </div>
           </div>
         ))}
@@ -68,7 +68,7 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
 
   if (feed.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-ctp-overlay1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -96,15 +96,15 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
           key={`${item.type}-${item.id}`}
           to="/library/$id"
           params={{ id: item.game_id }}
-          className="flex gap-3 p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors group"
+          className="flex gap-3 p-3 bg-ctp-surface0/50 rounded-lg hover:bg-ctp-surface0 transition-colors group"
         >
           <div
             className={`w-10 h-10 rounded-lg flex items-center justify-center ${
               item.type === 'session'
-                ? 'bg-primary-cyan/20 text-primary-cyan'
+                ? 'bg-ctp-teal/20 text-ctp-teal'
                 : item.type === 'achievement'
                   ? 'bg-yellow-400/20 text-yellow-400'
-                  : 'bg-primary-green/20 text-primary-green'
+                  : 'bg-ctp-green/20 text-ctp-green'
             }`}
           >
             {item.type === 'session' ? (
@@ -124,20 +124,20 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-white font-medium truncate group-hover:text-primary-cyan transition-colors">
+                <p className="text-ctp-text font-medium truncate group-hover:text-ctp-teal transition-colors">
                   {item.game_name}
                 </p>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-ctp-subtext0">
                   {item.type === 'session' ? (
                     item.duration_minutes ? (
                       <>
                         Played for{' '}
-                        <span className="text-primary-cyan">
+                        <span className="text-ctp-teal">
                           {formatDuration(item.duration_minutes)}
                         </span>
                       </>
                     ) : (
-                      <span className="text-gray-500">Session logged</span>
+                      <span className="text-ctp-overlay1">Session logged</span>
                     )
                   ) : item.type === 'achievement' ? (
                     <>
@@ -147,7 +147,7 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
                         <span className={`ml-1 text-xs ${
                           item.rarity_percent < 5 ? 'text-yellow-400' :
                           item.rarity_percent < 15 ? 'text-purple-400' :
-                          'text-gray-500'
+                          'text-ctp-overlay1'
                         }`}>
                           ({item.rarity_percent.toFixed(1)}%)
                         </span>
@@ -156,16 +156,16 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
                   ) : (
                     <>
                       Progress updated to{' '}
-                      <span className="text-primary-green">{item.percentage}%</span>
+                      <span className="text-ctp-green">{item.percentage}%</span>
                     </>
                   )}
                 </p>
               </div>
-              <span className="text-xs text-gray-500 whitespace-nowrap">
+              <span className="text-xs text-ctp-overlay1 whitespace-nowrap">
                 {formatRelativeTime(new Date(item.timestamp))}
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">{item.platform_name}</p>
+            <p className="text-xs text-ctp-overlay1 mt-1">{item.platform_name}</p>
           </div>
         </Link>
       ))}

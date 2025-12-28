@@ -23,10 +23,10 @@ export function PlatformTypeIcon({ type, size = 'sm', showLabel = false, color }
 
   return (
     <div className="flex items-center gap-1" style={color ? { color } : undefined}>
-      <span className={`material-symbols-outlined ${SIZE_CLASSES[size]} ${!color ? 'text-gray-400' : ''}`}>
+      <span className={`material-symbols-outlined ${SIZE_CLASSES[size]} ${!color ? 'text-ctp-subtext0' : ''}`}>
         {config.icon}
       </span>
-      {showLabel && <span className={`text-sm ${!color ? 'text-gray-400' : ''}`}>{config.label}</span>}
+      {showLabel && <span className={`text-sm ${!color ? 'text-ctp-subtext0' : ''}`}>{config.label}</span>}
     </div>
   )
 }

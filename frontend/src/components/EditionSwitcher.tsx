@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { displayEditionAPI, DisplayEditionData, RawgEditionOption } from '@/lib/api'
+import { ScrollFade } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
+import { displayEditionAPI, DisplayEditionData, RawgEditionOption } from '@/lib/api'
 
 interface EditionSwitcherProps {
   gameId: string
@@ -59,7 +60,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse h-10 bg-gray-700 rounded" />
+      <div className="animate-pulse h-10 bg-ctp-surface1 rounded" />
     )
   }
 
@@ -73,12 +74,12 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-400">Game Version</span>
+        <span className="text-sm font-medium text-ctp-subtext0">Game Version</span>
         {isUsingEdition && (
           <button
             onClick={() => resetEditionMutation.mutate()}
             disabled={resetEditionMutation.isPending}
-            className="text-xs text-gray-500 hover:text-primary-cyan transition-colors disabled:opacity-50"
+            className="text-xs text-ctp-overlay1 hover:text-ctp-teal transition-colors disabled:opacity-50"
           >
             Reset to Base Game
           </button>
@@ -86,20 +87,20 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
       </div>
 
       {isUsingEdition && data?.currentDisplay && (
-        <div className="bg-primary-purple/10 border border-primary-purple/30 rounded-lg p-3">
-          <div className="text-sm text-white whitespace-normal break-words">
+        <div className="bg-ctp-mauve/10 border border-ctp-mauve/30 rounded-lg p-3">
+          <div className="text-sm text-ctp-text whitespace-normal break-words">
             {data.currentDisplay.edition_name}
           </div>
-          <div className="text-xs text-primary-purple mt-1">Currently displaying</div>
+          <div className="text-xs text-ctp-mauve mt-1">Currently displaying</div>
         </div>
       )}
 
       {!isUsingEdition && data?.baseGame && (
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3">
-          <div className="text-sm text-white whitespace-normal break-words">
+        <div className="bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg p-3">
+          <div className="text-sm text-ctp-text whitespace-normal break-words">
             {data.baseGame.name}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Base game</div>
+          <div className="text-xs text-ctp-overlay1 mt-1">Base game</div>
         </div>
       )}
 
@@ -107,7 +108,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
         <>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-300 transition-colors flex items-center justify-between"
+            className="w-full py-2 px-4 bg-ctp-surface0 hover:bg-ctp-surface1 border border-ctp-surface2 rounded-lg text-sm text-ctp-subtext1 transition-colors flex items-center justify-between"
           >
             <span>Switch to Different Edition</span>
             <svg
@@ -123,13 +124,13 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
           </button>
 
           {isExpanded && (
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+            <ScrollFade axis="y" className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {data.availableEditions.map((edition) => (
                 <button
                   key={edition.rawg_id}
                   onClick={() => setEditionMutation.mutate(edition)}
                   disabled={setEditionMutation.isPending}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg border border-gray-700 hover:border-primary-purple bg-gray-900/50 hover:bg-gray-900 transition-all text-left disabled:opacity-50"
+                  className="w-full flex items-start gap-3 p-3 rounded-lg border border-ctp-surface1 hover:border-ctp-mauve bg-ctp-mantle/50 hover:bg-ctp-mantle transition-all text-left disabled:opacity-50"
                 >
                   {edition.cover_url && (
                     <img
@@ -139,21 +140,21 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white whitespace-normal break-words leading-snug">
+                    <div className="text-sm text-ctp-text whitespace-normal break-words leading-snug">
                       {edition.name}
                     </div>
-                    <div className="text-xs text-primary-cyan mt-2">
+                    <div className="text-xs text-ctp-teal mt-2">
                       Click to use this edition's metadata
                     </div>
                   </div>
                 </button>
               ))}
-            </div>
+            </ScrollFade>
           )}
         </>
       )}
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-ctp-overlay1">
         Switching editions changes the displayed name, cover art, and description. Achievements are always from the base game.
       </p>
     </div>

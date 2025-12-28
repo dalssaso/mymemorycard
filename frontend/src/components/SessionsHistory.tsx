@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { sessionsAPI } from '@/lib/api'
+import { ScrollFade } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
+import { sessionsAPI } from '@/lib/api'
 
 interface PlaySession {
   id: string
@@ -147,8 +148,8 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white">Sessions History</h3>
-          <div className="text-sm text-gray-400">
+          <h3 className="text-lg font-semibold text-ctp-text">Sessions History</h3>
+          <div className="text-sm text-ctp-subtext0">
             Total: {formatDuration(totalMinutes)}
           </div>
         </div>
@@ -156,8 +157,8 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
           onClick={() => setIsManualMode(!isManualMode)}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             isManualMode
-              ? 'bg-primary-purple text-white'
-              : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              ? 'bg-ctp-mauve text-ctp-base'
+              : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
           }`}
         >
           + Add Manual
@@ -165,10 +166,10 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       </div>
 
       {isManualMode && (
-        <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
+        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="manual-date-history" className="block text-sm text-gray-400 mb-1">
+              <label htmlFor="manual-date-history" className="block text-sm text-ctp-subtext0 mb-1">
                 Date
               </label>
               <input
@@ -176,11 +177,11 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 type="date"
                 value={manualDate}
                 onChange={(e) => setManualDate(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               />
             </div>
             <div>
-              <label htmlFor="manual-duration-history" className="block text-sm text-gray-400 mb-1">
+              <label htmlFor="manual-duration-history" className="block text-sm text-ctp-subtext0 mb-1">
                 Duration (minutes)
               </label>
               <input
@@ -190,12 +191,12 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 placeholder="60"
                 value={manualDuration}
                 onChange={(e) => setManualDuration(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="session-notes-history" className="block text-sm text-gray-400 mb-1">
+            <label htmlFor="session-notes-history" className="block text-sm text-ctp-subtext0 mb-1">
               Notes (optional)
             </label>
             <input
@@ -204,14 +205,14 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               placeholder="What did you do in this session?"
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+              className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => addManualSessionMutation.mutate()}
               disabled={addManualSessionMutation.isPending || !manualDuration}
-              className="flex-1 py-2 bg-primary-purple hover:bg-primary-purple/80 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+              className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
               {addManualSessionMutation.isPending ? 'Adding...' : 'Add Session'}
             </button>
@@ -221,7 +222,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 setManualDuration('')
                 setSessionNotes('')
               }}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -230,11 +231,11 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       )}
 
       {editingSession && (
-        <div className="bg-gray-800/50 rounded-lg p-4 space-y-3 border border-primary-purple/50">
-          <h4 className="text-sm font-medium text-white">Edit Session</h4>
+        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3 border border-ctp-mauve/50">
+          <h4 className="text-sm font-medium text-ctp-text">Edit Session</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="edit-started-at" className="block text-sm text-gray-400 mb-1">
+              <label htmlFor="edit-started-at" className="block text-sm text-ctp-subtext0 mb-1">
                 Started At
               </label>
               <input
@@ -242,11 +243,11 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 type="datetime-local"
                 value={editStartedAt}
                 onChange={(e) => setEditStartedAt(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               />
             </div>
             <div>
-              <label htmlFor="edit-ended-at" className="block text-sm text-gray-400 mb-1">
+              <label htmlFor="edit-ended-at" className="block text-sm text-ctp-subtext0 mb-1">
                 Ended At
               </label>
               <input
@@ -254,12 +255,12 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 type="datetime-local"
                 value={editEndedAt}
                 onChange={(e) => setEditEndedAt(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="edit-notes" className="block text-sm text-gray-400 mb-1">
+            <label htmlFor="edit-notes" className="block text-sm text-ctp-subtext0 mb-1">
               Notes (optional)
             </label>
             <input
@@ -268,20 +269,20 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               placeholder="What did you do in this session?"
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+              className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleEditSave}
               disabled={updateSessionMutation.isPending || !editStartedAt || !editEndedAt}
-              className="flex-1 py-2 bg-primary-purple hover:bg-primary-purple/80 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+              className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
               {updateSessionMutation.isPending ? 'Saving...' : 'Save Changes'}
             </button>
             <button
               onClick={() => setEditingSession(null)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -290,20 +291,20 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       )}
 
       {loadingSessions ? (
-        <div className="text-gray-400 text-sm">Loading sessions...</div>
+        <div className="text-ctp-subtext0 text-sm">Loading sessions...</div>
       ) : sessions.length > 0 ? (
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <ScrollFade axis="y" className="space-y-2 max-h-96 overflow-y-auto">
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="flex items-center justify-between bg-gray-800/50 rounded-lg p-3"
+              className="flex items-center justify-between bg-ctp-surface0/50 rounded-lg p-3"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-medium">
+                  <span className="text-ctp-text font-medium">
                     {session.ended_at ? formatDuration(session.duration_minutes || 0) : 'In progress'}
                   </span>
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-ctp-overlay1 text-sm">
                     {new Date(session.started_at).toLocaleDateString(undefined, {
                       month: 'short',
                       day: 'numeric',
@@ -314,14 +315,14 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                   </span>
                 </div>
                 {session.notes && (
-                  <p className="text-sm text-gray-400 mt-1">{session.notes}</p>
+                  <p className="text-sm text-ctp-subtext0 mt-1">{session.notes}</p>
                 )}
               </div>
               <div className="flex items-center gap-1">
                 {session.ended_at && (
                   <button
                     onClick={() => handleEditClick(session)}
-                    className="p-2 text-gray-500 hover:text-primary-cyan transition-colors"
+                    className="p-2 text-ctp-overlay1 hover:text-ctp-teal transition-colors"
                     title="Edit session"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -332,7 +333,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 <button
                   onClick={() => deleteSessionMutation.mutate(session.id)}
                   disabled={deleteSessionMutation.isPending || !session.ended_at}
-                  className="p-2 text-gray-500 hover:text-primary-red transition-colors disabled:opacity-50"
+                  className="p-2 text-ctp-overlay1 hover:text-ctp-red transition-colors disabled:opacity-50"
                   title={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -342,9 +343,9 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               </div>
             </div>
           ))}
-        </div>
+        </ScrollFade>
       ) : (
-        <div className="text-gray-500 text-sm text-center py-8 bg-gray-800/30 rounded-lg">
+        <div className="text-ctp-overlay1 text-sm text-center py-8 bg-ctp-surface0/30 rounded-lg">
           No sessions recorded yet
         </div>
       )}

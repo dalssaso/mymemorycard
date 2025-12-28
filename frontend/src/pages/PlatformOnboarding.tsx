@@ -140,11 +140,11 @@ export function PlatformOnboarding() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
-            <h1 className="text-4xl font-bold text-white">Choose Your Platforms</h1>
+            <h1 className="text-4xl font-bold text-ctp-text">Choose Your Platforms</h1>
           </div>
-          <p className="text-gray-400 mt-2">
+          <p className="text-ctp-subtext0 mt-2">
             Select the platforms you use. This keeps your imports focused and relevant.
           </p>
         </div>
@@ -161,14 +161,14 @@ export function PlatformOnboarding() {
 
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Platforms</h2>
-            <span className="text-sm text-gray-400">
+            <h2 className="text-lg font-semibold text-ctp-text">Platforms</h2>
+            <span className="text-sm text-ctp-subtext0">
               {selectedPlatformIds.length} selected
             </span>
           </div>
 
           {isLoadingPlatforms ? (
-            <div className="text-gray-400">Loading platforms...</div>
+            <div className="text-ctp-subtext0">Loading platforms...</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredPlatforms.map((platform) => {
@@ -182,16 +182,16 @@ export function PlatformOnboarding() {
                     disabled={isLocked}
                     className={`text-left border rounded-lg px-4 py-3 transition-colors ${
                       isSelected
-                        ? 'border-primary-purple bg-primary-purple/20'
-                        : 'border-gray-800 bg-gray-900/50 hover:border-gray-700'
+                        ? 'border-ctp-mauve bg-ctp-mauve/20'
+                        : 'border-ctp-surface0 bg-ctp-mantle/50 hover:border-ctp-surface1'
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="font-medium text-white">
+                      <div className="font-medium text-ctp-text">
                         {platform.display_name}
                       </div>
                       {isLocked && (
-                        <span className="text-xs text-primary-purple">Saved</span>
+                        <span className="text-xs text-ctp-mauve">Saved</span>
                       )}
                     </div>
                     <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} color={platform.color_primary} />
@@ -200,7 +200,7 @@ export function PlatformOnboarding() {
               })}
 
               {!isLoadingPlatforms && filteredPlatforms.length === 0 && (
-                <p className="text-gray-400">No platforms match your search.</p>
+                <p className="text-ctp-subtext0">No platforms match your search.</p>
               )}
             </div>
           )}

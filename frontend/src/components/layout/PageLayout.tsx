@@ -1,9 +1,10 @@
 import { ReactNode } from 'react'
+import { GlobalSearch } from '@/components/GlobalSearch'
+import { useSidebar } from '@/contexts/SidebarContext'
+import { BackToTopButton } from './BackToTopButton'
+import { MobileNav } from './MobileNav'
 import { Navbar } from './Navbar'
 import { Sidebar } from './Sidebar'
-import { MobileNav } from './MobileNav'
-import { BackToTopButton } from './BackToTopButton'
-import { useSidebar } from '@/contexts/SidebarContext'
 
 export interface PageLayoutProps {
   children: ReactNode
@@ -21,7 +22,8 @@ export function PageLayout({
   const { isCollapsed } = useSidebar()
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-ctp-base text-ctp-text">
+      <GlobalSearch />
       {/* Navbar */}
       <Navbar />
 

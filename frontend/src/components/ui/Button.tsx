@@ -7,13 +7,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', className = '', children, ...props }, ref) => {
-    const baseStyles = 'rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-950 disabled:opacity-50 disabled:cursor-not-allowed'
+    const baseStyles = 'rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ctp-base disabled:opacity-50 disabled:cursor-not-allowed'
     
     const variantStyles = {
-      primary: 'bg-primary-purple text-white hover:bg-primary-purple/80 focus:ring-primary-purple shadow-lg shadow-primary-purple/20',
-      secondary: 'bg-primary-cyan text-white hover:bg-primary-cyan/80 focus:ring-primary-cyan shadow-lg shadow-primary-cyan/20',
-      ghost: 'bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white focus:ring-gray-700',
-      danger: 'bg-primary-red text-white hover:bg-primary-red/80 focus:ring-primary-red shadow-lg shadow-primary-red/20'
+      primary: 'bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/80 focus:ring-ctp-mauve shadow-lg shadow-ctp-mauve/20',
+      secondary: 'bg-ctp-teal text-ctp-base hover:bg-ctp-teal/80 focus:ring-ctp-teal shadow-lg shadow-ctp-teal/20',
+      ghost: 'bg-transparent text-ctp-subtext1 hover:bg-ctp-surface0 hover:text-ctp-text focus:ring-ctp-surface1',
+      danger: 'bg-ctp-red text-ctp-base hover:bg-ctp-red/80 focus:ring-ctp-red shadow-lg shadow-ctp-red/20'
     }
     
     const sizeStyles = {

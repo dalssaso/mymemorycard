@@ -1,15 +1,39 @@
+@import './styles/theme.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   * {
-    @apply border-zinc-700;
+    @apply border-ctp-surface2;
   }
 
   body {
-    @apply bg-bg-primary text-white antialiased;
+    @apply bg-ctp-base text-ctp-text antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ctp-surface2) transparent;
+  }
+
+  body::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background-color: var(--ctp-surface2);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ctp-overlay1);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -31,23 +55,23 @@
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+    @apply px-4 py-2 rounded font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ctp-mauve focus:ring-offset-2 focus:ring-offset-ctp-base;
   }
 
   .btn-primary {
-    @apply bg-primary-purple hover:bg-purple-700 text-white border border-purple-500 hover:shadow-glow-purple;
+    @apply bg-ctp-mauve hover:bg-ctp-mauve text-ctp-base border border-ctp-mauve hover:shadow-glow-purple;
   }
 
   .btn-secondary {
-    @apply bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600;
+    @apply bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text border border-ctp-surface1;
   }
 
   .card {
-    @apply bg-bg-tertiary border border-zinc-700 rounded-lg p-6;
+    @apply bg-ctp-surface0 bg-opacity-40 border border-ctp-surface1 rounded-lg p-6;
   }
 
   .input {
-    @apply bg-bg-secondary border border-zinc-700 text-white px-4 py-2 rounded focus:outline-none focus:border-primary-purple focus:shadow-glow-purple transition-all;
+    @apply bg-ctp-mantle border border-ctp-surface1 text-ctp-text px-4 py-2 rounded focus:outline-none focus:border-ctp-mauve focus:shadow-glow-purple transition-all placeholder-ctp-overlay1;
   }
 
   .badge {
@@ -59,7 +83,7 @@
   }
 
   .badge-psn {
-    @apply bg-primary-purple/20 text-purple-400 border border-primary-purple/50;
+    @apply bg-ctp-mauve bg-opacity-20 text-ctp-mauve border border-ctp-mauve border-opacity-50;
   }
 
   .badge-xbox {
@@ -67,7 +91,7 @@
   }
 
   .badge-epic {
-    @apply bg-zinc-600/20 text-zinc-400 border border-zinc-600/50;
+    @apply bg-ctp-surface2 bg-opacity-30 text-ctp-subtext0 border border-ctp-surface2 border-opacity-50;
   }
 }
 
@@ -136,6 +160,74 @@
 
   .progress-slider::-moz-range-thumb:hover {
     box-shadow: 0 0 18px rgba(16, 185, 129, 0.8);
+  }
+
+  .scroll-container {
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ctp-surface2) transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background-color: var(--ctp-surface2);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ctp-overlay1);
+  }
+
+  .scroll-fade-y {
+    --scroll-fade-top: 0px;
+    --scroll-fade-bottom: 0px;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black var(--scroll-fade-top),
+      black calc(100% - var(--scroll-fade-bottom)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black var(--scroll-fade-top),
+      black calc(100% - var(--scroll-fade-bottom)),
+      transparent 100%
+    );
+  }
+
+  .scroll-fade-x {
+    --scroll-fade-left: 0px;
+    --scroll-fade-right: 0px;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black var(--scroll-fade-left),
+      black calc(100% - var(--scroll-fade-right)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black var(--scroll-fade-left),
+      black calc(100% - var(--scroll-fade-right)),
+      transparent 100%
+    );
   }
 
   @keyframes slide-in {

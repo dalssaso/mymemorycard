@@ -14,20 +14,20 @@ export function PlatformOnboardingSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 pt-3 border-t border-gray-800">
+      <div className="space-y-3 pt-3 border-t border-ctp-surface0">
         <div className="flex justify-center">
           <div
-            className="w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-800 flex items-center justify-center text-sm text-primary-cyan"
+            className="w-10 h-10 rounded-lg bg-ctp-surface0/50 border border-ctp-surface0 flex items-center justify-center text-sm text-ctp-teal"
             title="Platforms Selected"
           >
             {selectedCount}
           </div>
         </div>
 
-        <div className="flex justify-center pt-2 border-t border-gray-800">
+        <div className="flex justify-center pt-2 border-t border-ctp-surface0">
           <Link
             to="/platforms"
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Manage Platforms"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,11 +41,11 @@ export function PlatformOnboardingSidebar({
           </Link>
         </div>
 
-        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           <button
             type="button"
             onClick={onAddCustomPlatform}
-            className="p-2 rounded-lg text-primary-cyan hover:bg-gray-800 hover:text-white transition-all"
+            className="p-2 rounded-lg text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Add Custom Platform"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +54,7 @@ export function PlatformOnboardingSidebar({
           </button>
           <Link
             to="/import"
-            className="p-2 rounded-lg text-primary-purple hover:bg-gray-800 hover:text-white transition-all"
+            className="p-2 rounded-lg text-ctp-mauve hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Go to Import"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,12 +68,12 @@ export function PlatformOnboardingSidebar({
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-800/40 border border-gray-800 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-white mb-1">Platform Setup</h3>
-        <p className="text-xs text-gray-400">
+      <div className="bg-ctp-surface0/40 border border-ctp-surface0 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-ctp-text mb-1">Platform Setup</h3>
+        <p className="text-xs text-ctp-subtext0">
           Choose the platforms you use before importing games.
         </p>
-        <div className="mt-3 text-sm text-primary-cyan">
+        <div className="mt-3 text-sm text-ctp-teal">
           {selectedCount} selected
         </div>
       </div>
@@ -82,7 +82,7 @@ export function PlatformOnboardingSidebar({
         to="/platforms"
         className={[
           'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-gray-800 hover:bg-gray-700 text-white',
+          'bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text',
           'rounded-lg transition-colors font-medium',
         ].join(' ')}
       >
@@ -102,7 +102,7 @@ export function PlatformOnboardingSidebar({
         onClick={onAddCustomPlatform}
         className={[
           'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-primary-cyan/20 hover:bg-primary-cyan/30 text-primary-cyan',
+          'bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal',
           'rounded-lg transition-colors font-medium',
         ].join(' ')}
       >
@@ -113,20 +113,20 @@ export function PlatformOnboardingSidebar({
       </button>
 
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3">
           Steps
         </h3>
-        <div className="space-y-3 text-sm text-gray-400">
-          <div className="p-3 bg-gray-800/50 rounded-lg">
-            <p className="font-medium text-gray-300 mb-1">1. Pick platforms</p>
+        <div className="space-y-3 text-sm text-ctp-subtext0">
+          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
+            <p className="font-medium text-ctp-subtext1 mb-1">1. Pick platforms</p>
             <p className="text-xs">Select the stores or systems you use.</p>
           </div>
-          <div className="p-3 bg-gray-800/50 rounded-lg">
-            <p className="font-medium text-gray-300 mb-1">2. Save selection</p>
+          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
+            <p className="font-medium text-ctp-subtext1 mb-1">2. Save selection</p>
             <p className="text-xs">You can add more platforms later.</p>
           </div>
-          <div className="p-3 bg-gray-800/50 rounded-lg">
-            <p className="font-medium text-gray-300 mb-1">3. Import games</p>
+          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
+            <p className="font-medium text-ctp-subtext1 mb-1">3. Import games</p>
             <p className="text-xs">Head to import and bring in your library.</p>
           </div>
         </div>
@@ -136,7 +136,7 @@ export function PlatformOnboardingSidebar({
         to="/import"
         className={[
           'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-primary-purple hover:bg-primary-purple/80 text-white',
+          'bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base',
           'rounded-lg transition-colors font-medium',
         ].join(' ')}
       >

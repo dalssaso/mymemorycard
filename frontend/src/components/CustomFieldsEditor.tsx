@@ -57,14 +57,14 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
     <div className="space-y-8">
       <PlaySessionTracker gameId={gameId} platformId={platformId} />
 
-      <div className="border-t border-gray-700" />
+      <div className="border-t border-ctp-surface1" />
 
       <ProgressHistory gameId={gameId} platformId={platformId} />
 
-      <div className="border-t border-gray-700" />
+      <div className="border-t border-ctp-surface1" />
 
       <div>
-        <span className="block text-sm font-medium text-gray-400 mb-2" id="difficulty-rating-label">
+        <span className="block text-sm font-medium text-ctp-subtext0 mb-2" id="difficulty-rating-label">
           Difficulty Rating (1-10)
         </span>
         <div className="flex gap-1" role="group" aria-labelledby="difficulty-rating-label">
@@ -75,8 +75,8 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
               aria-pressed={fields.difficulty_rating === rating}
               className={`flex-1 py-2 rounded transition-all text-sm ${
                 fields.difficulty_rating === rating
-                  ? 'bg-primary-red text-white shadow-lg shadow-primary-red/50'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                  ? 'bg-ctp-red text-ctp-base shadow-lg shadow-ctp-red/50'
+                  : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
               }`}
             >
               {rating}
@@ -86,7 +86,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
         {fields.difficulty_rating && (
           <button
             onClick={() => handleFieldChange('difficulty_rating', null)}
-            className="mt-2 text-sm text-gray-500 hover:text-gray-300"
+            className="mt-2 text-sm text-ctp-overlay1 hover:text-ctp-subtext1"
           >
             Clear rating
           </button>

@@ -30,7 +30,7 @@ export function SeriesDetail() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-gray-400">Loading...</div>
+          <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
     )
@@ -40,7 +40,7 @@ export function SeriesDetail() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-red-400">Series not found</div>
+          <div className="text-ctp-red">Series not found</div>
         </div>
       </PageLayout>
     )
@@ -55,18 +55,18 @@ export function SeriesDetail() {
         <div className="mb-8">
           <Link
             to="/collections"
-            className="hidden md:inline-block text-primary-cyan hover:text-primary-purple transition-colors mb-4"
+            className="hidden md:inline-block text-ctp-teal hover:text-ctp-mauve transition-colors mb-4"
           >
             Back to Collections
           </Link>
           <div className="flex items-center gap-3 mb-2">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
-            <h1 className="text-4xl font-bold text-white">{seriesName} Series</h1>
+            <h1 className="text-4xl font-bold text-ctp-text">{seriesName} Series</h1>
           </div>
-          <p className="text-sm text-primary-cyan">
+          <p className="text-sm text-ctp-teal">
             {games.length} {games.length === 1 ? 'game' : 'games'}
           </p>
         </div>
@@ -74,7 +74,7 @@ export function SeriesDetail() {
         {/* Games Grid */}
         {games.length === 0 ? (
           <Card>
-            <p className="text-gray-400 text-center py-8">
+            <p className="text-ctp-subtext0 text-center py-8">
               No games found in this series.
             </p>
           </Card>
@@ -87,7 +87,7 @@ export function SeriesDetail() {
                 params={{ id: game.id }}
                 className="group"
               >
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative">
+                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
                   {game.cover_art_url ? (
                     <img
                       src={game.cover_art_url}
@@ -95,19 +95,34 @@ export function SeriesDetail() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                    <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
                       No Cover
                     </div>
                   )}
                   {game.is_favorite && (
-                    <div className="absolute top-2 right-2 text-xl">❤️</div>
+                    <div className="absolute top-2 right-2 text-ctp-red">
+                      <svg
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                      </svg>
+                    </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-300 truncate group-hover:text-white mb-1">
+                <p className="text-sm text-ctp-subtext1 truncate group-hover:text-ctp-text mb-1">
                   {game.name}
                 </p>
                 {game.release_date && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-ctp-overlay1">
                     {new Date(game.release_date).getFullYear()}
                   </p>
                 )}

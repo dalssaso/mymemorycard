@@ -47,9 +47,9 @@ export function ProgressDisplay({ gameId }: ProgressDisplayProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-800/50 rounded-lg p-3 animate-pulse">
-        <div className="h-4 bg-gray-700 rounded w-1/2 mb-2" />
-        <div className="h-6 bg-gray-700 rounded w-1/3" />
+      <div className="bg-ctp-surface0/50 rounded-lg p-3 animate-pulse">
+        <div className="h-4 bg-ctp-surface1 rounded w-1/2 mb-2" />
+        <div className="h-6 bg-ctp-surface1 rounded w-1/3" />
       </div>
     )
   }
@@ -63,13 +63,13 @@ export function ProgressDisplay({ gameId }: ProgressDisplayProps) {
     <Link
       to="."
       hash="stats"
-      className="block bg-gray-800/50 border border-gray-700 hover:border-primary-cyan/50 rounded-lg p-3 transition-colors group"
+      className="block bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-teal/50 rounded-lg p-3 transition-colors group"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-gray-400 group-hover:text-gray-300">
+        <span className="text-xs text-ctp-subtext0 group-hover:text-ctp-subtext1">
           {hasDlcs ? 'Full Progress' : 'Main Progress'}
         </span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 text-gray-500 group-hover:text-primary-cyan">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 text-ctp-overlay1 group-hover:text-ctp-teal">
           <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
         </svg>
       </div>
@@ -77,9 +77,9 @@ export function ProgressDisplay({ gameId }: ProgressDisplayProps) {
         <span className="text-2xl font-bold" style={{ color: hasDlcs ? TYPE_COLORS.full : TYPE_COLORS.main }}>
           {hasDlcs ? fullProgress : mainProgress}
         </span>
-        <span className="text-sm text-gray-400">%</span>
+        <span className="text-sm text-ctp-subtext0">%</span>
       </div>
-      <div className="mt-2 w-full bg-gray-900 rounded-full h-1.5">
+      <div className="mt-2 w-full bg-ctp-mantle rounded-full h-1.5">
         <div
           className="h-1.5 rounded-full transition-all duration-200"
           style={{

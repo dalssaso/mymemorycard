@@ -1,19 +1,30 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { BackButton, PageLayout } from '@/components/layout'
 import { useToast } from '@/components/ui/Toast'
+import { useTheme } from '@/contexts/ThemeContext'
 import { preferencesAPI } from '@/lib/api'
+
+type Theme = 'light' | 'dark' | 'auto'
 
 interface UserPreferences {
   default_view: 'grid' | 'table'
   items_per_page: number
-  theme: string
+  theme: Theme
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
+const THEME_OPTIONS: Array<{ value: Theme; label: string; description: string }> = [
+  { value: 'light', label: 'Light', description: 'Catppuccin Latte' },
+  { value: 'dark', label: 'Dark', description: 'Catppuccin Mocha' },
+  { value: 'auto', label: 'Auto', description: 'Match system preference' },
+]
 
 export function Settings() {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const { theme, setTheme } = useTheme()
+  const [isUpdatingTheme, setIsUpdatingTheme] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['preferences'],
@@ -37,7 +48,7 @@ export function Settings() {
   const preferences = data?.preferences || {
     default_view: 'grid',
     items_per_page: 25,
-    theme: 'dark',
+    theme,
   }
 
   const handleViewChange = (view: 'grid' | 'table') => {
@@ -48,6 +59,17 @@ export function Settings() {
     updateMutation.mutate({ items_per_page: size })
   }
 
+  const handleThemeChange = async (nextTheme: Theme) => {
+    if (isUpdatingTheme || nextTheme === theme) {
+      return
+    }
+
+    setIsUpdatingTheme(true)
+    await setTheme(nextTheme)
+    setIsUpdatingTheme(false)
+    showToast('Theme updated', 'success')
+  }
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -55,16 +77,16 @@ export function Settings() {
           <div className="flex items-center gap-3 mb-8">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             />
-            <h1 className="text-4xl font-bold text-white">Settings</h1>
+            <h1 className="text-4xl font-bold text-ctp-text">Settings</h1>
           </div>
           <div className="card">
             <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-gray-700 rounded w-1/3"></div>
-              <div className="h-12 bg-gray-700 rounded"></div>
-              <div className="h-8 bg-gray-700 rounded w-1/3"></div>
-              <div className="h-12 bg-gray-700 rounded"></div>
+              <div className="h-8 bg-ctp-surface1 rounded w-1/3"></div>
+              <div className="h-12 bg-ctp-surface1 rounded"></div>
+              <div className="h-8 bg-ctp-surface1 rounded w-1/3"></div>
+              <div className="h-12 bg-ctp-surface1 rounded"></div>
             </div>
           </div>
         </div>
@@ -78,17 +100,17 @@ export function Settings() {
         <div className="flex items-center gap-3 mb-8">
           <BackButton
             iconOnly={true}
-            className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
           />
-          <h1 className="text-4xl font-bold text-white">Settings</h1>
+          <h1 className="text-4xl font-bold text-ctp-text">Settings</h1>
         </div>
 
         <div className="card space-y-8">
           <div>
-            <h2 className="text-xl font-semibold text-primary-purple mb-4">
+            <h2 className="text-xl font-semibold text-ctp-mauve mb-4">
               Library View
             </h2>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-ctp-subtext0 mb-4">
               Choose how your game library is displayed by default.
             </p>
             <div className="flex gap-3">
@@ -97,8 +119,8 @@ export function Settings() {
                 disabled={updateMutation.isPending}
                 className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
                   preferences.default_view === 'grid'
-                    ? 'bg-primary-purple/20 border-primary-purple text-white'
-                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
+                    ? 'bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve'
+                    : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
@@ -117,7 +139,7 @@ export function Settings() {
                     />
                   </svg>
                   <span className="font-medium">Grid View</span>
-                  <span className="text-xs text-gray-500">Game covers in a grid</span>
+                  <span className="text-xs text-ctp-overlay1">Game covers in a grid</span>
                 </div>
               </button>
               <button
@@ -125,8 +147,8 @@ export function Settings() {
                 disabled={updateMutation.isPending}
                 className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
                   preferences.default_view === 'table'
-                    ? 'bg-primary-purple/20 border-primary-purple text-white'
-                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
+                    ? 'bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve'
+                    : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
@@ -145,17 +167,17 @@ export function Settings() {
                     />
                   </svg>
                   <span className="font-medium">Table View</span>
-                  <span className="text-xs text-gray-500">Sortable list format</span>
+                  <span className="text-xs text-ctp-overlay1">Sortable list format</span>
                 </div>
               </button>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8">
-            <h2 className="text-xl font-semibold text-primary-purple mb-4">
+          <div className="border-t border-ctp-surface0 pt-8">
+            <h2 className="text-xl font-semibold text-ctp-mauve mb-4">
               Items Per Page
             </h2>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-ctp-subtext0 mb-4">
               Number of games to show per page in your library.
             </p>
             <div className="flex gap-2">
@@ -166,8 +188,8 @@ export function Settings() {
                   disabled={updateMutation.isPending}
                   className={`px-4 py-2 rounded-lg border transition-all ${
                     preferences.items_per_page === size
-                      ? 'bg-primary-cyan/20 border-primary-cyan text-primary-cyan'
-                      : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
+                      ? 'bg-ctp-teal/20 border-ctp-teal text-ctp-teal'
+                      : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
                   }`}
                 >
                   {size}
@@ -176,23 +198,30 @@ export function Settings() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8">
-            <h2 className="text-xl font-semibold text-primary-purple mb-4">
+          <div className="border-t border-ctp-surface0 pt-8">
+            <h2 className="text-xl font-semibold text-ctp-mauve mb-4">
               Theme
             </h2>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-ctp-subtext0 mb-4">
               Appearance settings for the application.
             </p>
-            <div className="px-4 py-3 bg-gray-800/50 rounded-lg border border-gray-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-white">Dark Mode</p>
-                  <p className="text-sm text-gray-500">Currently the only available theme</p>
-                </div>
-                <div className="px-3 py-1 bg-primary-green/20 border border-primary-green/30 text-primary-green rounded text-sm">
-                  Active
-                </div>
-              </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {THEME_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleThemeChange(option.value)}
+                  disabled={isUpdatingTheme}
+                  className={`px-4 py-3 rounded-lg border-2 text-left transition-all ${
+                    theme === option.value
+                      ? 'bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve'
+                      : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
+                  }`}
+                >
+                  <div className="font-medium">{option.label}</div>
+                  <div className="text-xs text-ctp-overlay1">{option.description}</div>
+                </button>
+              ))}
             </div>
           </div>
         </div>

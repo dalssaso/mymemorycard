@@ -108,7 +108,7 @@ export function PlatformIconBadge({
         ) : (
           <span
             className={`font-semibold ${
-              isLightBackground ? 'text-gray-900' : 'text-white'
+              isLightBackground ? 'text-gray-900' : 'text-ctp-base dark:text-ctp-text'
             }`}
           >
             {initial}
@@ -116,7 +116,7 @@ export function PlatformIconBadge({
         )}
       </div>
       {showLabel && (
-        <span className="text-sm text-gray-300">{platform.displayName}</span>
+        <span className="text-sm text-ctp-subtext1">{platform.displayName}</span>
       )}
     </div>
   )
@@ -168,7 +168,7 @@ export function PlatformIcons({
         }
       })}
       {remainingCount > 0 && (
-        <span className="text-xs text-gray-400 ml-1">+{remainingCount}</span>
+        <span className="text-xs text-ctp-subtext0 ml-1">+{remainingCount}</span>
       )}
     </div>
   )

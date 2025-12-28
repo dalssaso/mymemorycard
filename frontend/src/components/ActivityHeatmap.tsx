@@ -151,9 +151,27 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   const summary = data?.summary
 
   const levelColors = {
-    activity: ['#1a1a1a', '#083344', '#0e7490', '#06b6d4', '#22d3ee'],
-    completion: ['#1a1a1a', '#2d1f4a', '#4c2889', '#8b5cf6', '#a78bfa'],
-    achievement: ['#1a1a1a', '#422006', '#854d0e', '#ca8a04', '#facc15'],
+    activity: [
+      'var(--ctp-surface1)',
+      'var(--ctp-sky)',
+      'var(--ctp-teal)',
+      'var(--ctp-sapphire)',
+      'var(--ctp-blue)',
+    ],
+    completion: [
+      'var(--ctp-surface1)',
+      'var(--ctp-lavender)',
+      'var(--ctp-mauve)',
+      'var(--ctp-pink)',
+      'var(--ctp-rosewater)',
+    ],
+    achievement: [
+      'var(--ctp-surface1)',
+      'var(--ctp-peach)',
+      'var(--ctp-yellow)',
+      'var(--ctp-maroon)',
+      'var(--ctp-red)',
+    ],
   }
 
   const colors = levelColors[type]
@@ -168,24 +186,24 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
   return (
     <div className="space-y-4" ref={containerRef}>
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-ctp-text">
           {type === 'activity' ? 'Play Activity' : type === 'completion' ? 'Completion Activity' : 'Achievement Activity'}
         </h3>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setYear((y) => y - 1)}
             disabled={year <= 2020}
-            className="p-1 text-gray-400 hover:text-white disabled:opacity-50"
+            className="p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          <span className="text-white font-medium min-w-[60px] text-center">{year}</span>
+          <span className="text-ctp-text font-medium min-w-[60px] text-center">{year}</span>
           <button
             onClick={() => setYear((y) => y + 1)}
             disabled={year >= currentYear}
-            className="p-1 text-gray-400 hover:text-white disabled:opacity-50"
+            className="p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -196,29 +214,29 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
 
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400">
+          <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+            <div className="text-xs text-ctp-subtext0">
               {type === 'activity' ? 'Total Sessions' : type === 'completion' ? 'Total Progress Updates' : 'Achievements Unlocked'}
             </div>
-            <div className="text-xl font-bold text-white">
+            <div className="text-xl font-bold text-ctp-text">
               {type === 'activity' ? summary.totalSessions : type === 'completion' ? summary.totalCompletions : summary.totalAchievements}
             </div>
           </div>
           {type === 'activity' && (
-            <div className="bg-gray-800/50 rounded-lg p-3">
-              <div className="text-xs text-gray-400">Total Playtime</div>
-              <div className="text-xl font-bold text-primary-green">
+            <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+              <div className="text-xs text-ctp-subtext0">Total Playtime</div>
+              <div className="text-xl font-bold text-ctp-green">
                 {formatMinutes(summary.totalMinutes)}
               </div>
             </div>
           )}
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400">Active Days</div>
-            <div className="text-xl font-bold text-primary-cyan">{summary.activeDays}</div>
+          <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+            <div className="text-xs text-ctp-subtext0">Active Days</div>
+            <div className="text-xl font-bold text-ctp-teal">{summary.activeDays}</div>
           </div>
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400">Current Streak</div>
-            <div className="text-xl font-bold text-primary-purple">
+          <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+            <div className="text-xs text-ctp-subtext0">Current Streak</div>
+            <div className="text-xl font-bold text-ctp-mauve">
               {summary.currentStreak} {summary.currentStreak === 1 ? 'day' : 'days'}
             </div>
           </div>
@@ -226,12 +244,12 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
       )}
 
       {isLoading ? (
-        <div className="h-[140px] flex items-center justify-center text-gray-400">
+        <div className="h-[140px] flex items-center justify-center text-ctp-subtext0">
           Loading activity data...
         </div>
       ) : (
         <div className="relative overflow-hidden">
-          <div className="relative h-4 ml-7 text-xs text-gray-500">
+          <div className="relative h-4 ml-7 text-xs text-ctp-overlay1">
             {displayMonthLabels.map(({ month, weekIndex }) => (
               <div
                 key={`${month}-${weekIndex}`}
@@ -243,7 +261,7 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
             ))}
           </div>
           <div className="flex gap-[2px]">
-            <div className="flex flex-col gap-[2px] text-xs text-gray-500 mr-1 shrink-0">
+            <div className="flex flex-col gap-[2px] text-xs text-ctp-overlay1 mr-1 shrink-0">
               {DAYS.map((day, i) => (
                 <div
                   key={day}
@@ -266,7 +284,7 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
                     return (
                       <div
                         key={dayIndex}
-                        className="w-[10px] h-[10px] rounded-sm cursor-pointer transition-all hover:ring-1 hover:ring-white"
+                        className="w-[10px] h-[10px] rounded-sm cursor-pointer transition-all hover:ring-1 hover:ring-ctp-text"
                         style={{ backgroundColor: colors[level] }}
                         onMouseEnter={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect()
@@ -288,47 +306,47 @@ export function ActivityHeatmap({ type = 'activity' }: ActivityHeatmapProps) {
 
           {hoveredDay && (
             <div
-              className="fixed z-50 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full"
+              className="fixed z-50 bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full"
               style={{ left: hoveredDay.x, top: hoveredDay.y }}
             >
-              <div className="font-medium text-white mb-1">{hoveredDay.date}</div>
+              <div className="font-medium text-ctp-text mb-1">{hoveredDay.date}</div>
               {hoveredDay.data ? (
                 <div className="space-y-0.5">
                   {hoveredDay.data.sessions.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary-cyan" />
-                      <span className="text-gray-300">
+                      <span className="w-2 h-2 rounded-full bg-ctp-teal" />
+                      <span className="text-ctp-subtext1">
                         {hoveredDay.data.sessions.count} session{hoveredDay.data.sessions.count > 1 ? 's' : ''}
                         {hoveredDay.data.sessions.minutes > 0 && (
-                          <span className="text-gray-500"> ({formatMinutes(hoveredDay.data.sessions.minutes)})</span>
+                          <span className="text-ctp-overlay1"> ({formatMinutes(hoveredDay.data.sessions.minutes)})</span>
                         )}
                       </span>
                     </div>
                   )}
                   {hoveredDay.data.completions.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary-purple" />
-                      <span className="text-gray-300">
+                      <span className="w-2 h-2 rounded-full bg-ctp-mauve" />
+                      <span className="text-ctp-subtext1">
                         {hoveredDay.data.completions.count} progress update{hoveredDay.data.completions.count > 1 ? 's' : ''}
                       </span>
                     </div>
                   )}
                   {hoveredDay.data.achievements.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                      <span className="text-gray-300">
+                      <span className="w-2 h-2 rounded-full bg-ctp-yellow" />
+                      <span className="text-ctp-subtext1">
                         {hoveredDay.data.achievements.count} achievement{hoveredDay.data.achievements.count > 1 ? 's' : ''}
                       </span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-gray-500">No activity</div>
+                <div className="text-ctp-overlay1">No activity</div>
               )}
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-1 mt-2 text-xs text-gray-500">
+          <div className="flex items-center justify-end gap-1 mt-2 text-xs text-ctp-overlay1">
             <span>Less</span>
             {colors.map((color, i) => (
               <div

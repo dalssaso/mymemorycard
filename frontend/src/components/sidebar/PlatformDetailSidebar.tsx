@@ -38,13 +38,13 @@ export function PlatformDetailSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 pt-3 border-t border-gray-800">
+      <div className="space-y-3 pt-3 border-t border-ctp-surface0">
         <div className="flex justify-center">
           <Link
             to="/platforms"
             className={[
-              'p-2 rounded-lg text-gray-400 hover:bg-gray-800',
-              'hover:text-white transition-all',
+              'p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0',
+              'hover:text-ctp-text transition-all',
             ].join(' ')}
             title="Back to Platforms"
           >
@@ -59,12 +59,12 @@ export function PlatformDetailSidebar({
           </Link>
         </div>
 
-        <div className="flex justify-center pt-2 border-t border-gray-800">
+        <div className="flex justify-center pt-2 border-t border-ctp-surface0">
           <Link
             to="/platforms"
             className={[
-              'p-2 rounded-lg text-gray-400 hover:bg-gray-800',
-              'hover:text-white transition-all',
+              'p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0',
+              'hover:text-ctp-text transition-all',
             ].join(' ')}
             title="Manage Platforms"
           >
@@ -79,14 +79,14 @@ export function PlatformDetailSidebar({
           </Link>
         </div>
 
-        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           {SECTIONS.map((section) => (
             <button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               className={[
-                'p-2 rounded-lg text-gray-400 hover:bg-gray-800',
-                'hover:text-white transition-all',
+                'p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0',
+                'hover:text-ctp-text transition-all',
               ].join(' ')}
               title={section.label}
             >
@@ -111,8 +111,8 @@ export function PlatformDetailSidebar({
         <Link
           to="/platforms"
           className={[
-            'flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700',
-            'text-gray-300 hover:text-white hover:border-gray-600 rounded-lg',
+            'flex items-center gap-2 px-3 py-2 bg-ctp-surface0 border border-ctp-surface1',
+            'text-ctp-subtext1 hover:text-ctp-text hover:border-ctp-surface2 rounded-lg',
             'transition-colors text-sm',
           ].join(' ')}
         >
@@ -135,7 +135,7 @@ export function PlatformDetailSidebar({
       </div>
       <Link
         to="/platforms"
-        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text rounded-lg transition-colors font-medium"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -151,12 +151,12 @@ export function PlatformDetailSidebar({
       <div>
         <h3
           className={[
-            'text-xs font-semibold text-gray-400 uppercase tracking-wider',
+            'text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider',
             'mb-3 flex items-center gap-2',
           ].join(' ')}
         >
           <svg
-            className="w-4 h-4 text-primary-cyan"
+            className="w-4 h-4 text-ctp-teal"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -171,21 +171,21 @@ export function PlatformDetailSidebar({
           Platform Info
         </h3>
         <div className="space-y-2">
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400 mb-1">Name</div>
-            <div className="text-sm text-white font-medium truncate" title={platformName}>
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <div className="text-xs text-ctp-subtext0 mb-1">Name</div>
+            <div className="text-sm text-ctp-text font-medium truncate" title={platformName}>
               {platformName}
             </div>
           </div>
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400 mb-1">Type</div>
-            <div className="text-sm text-white font-medium">
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <div className="text-xs text-ctp-subtext0 mb-1">Type</div>
+            <div className="text-sm text-ctp-text font-medium">
               {platformType || 'platform'}
             </div>
           </div>
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-xs text-gray-400 mb-1">Username</div>
-            <div className="text-sm text-white font-medium truncate">
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <div className="text-xs text-ctp-subtext0 mb-1">Username</div>
+            <div className="text-sm text-ctp-text font-medium truncate">
               {username || 'Not set'}
             </div>
           </div>
@@ -195,12 +195,12 @@ export function PlatformDetailSidebar({
       <div>
         <h3
           className={[
-            'text-xs font-semibold text-gray-400 uppercase tracking-wider',
+            'text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider',
             'mb-3 flex items-center gap-2',
           ].join(' ')}
         >
           <svg
-            className="w-4 h-4 text-primary-purple"
+            className="w-4 h-4 text-ctp-mauve"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -220,8 +220,8 @@ export function PlatformDetailSidebar({
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               className={[
-                'w-full text-left px-3 py-2 rounded-lg text-sm text-gray-400',
-                'hover:bg-gray-800 hover:text-white transition-all flex items-center gap-2',
+                'w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0',
+                'hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2',
               ].join(' ')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

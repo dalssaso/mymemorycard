@@ -16,7 +16,7 @@ function App() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="card max-w-md w-full">
-        <h1 className="text-primary-purple mb-6 text-center">
+        <h1 className="text-ctp-mauve mb-6 text-center">
           🎮 MyMemoryCard
         </h1>
         
@@ -65,7 +65,7 @@ function App() {
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-primary-cyan hover:text-cyan-400 transition-colors"
+            className="text-ctp-teal hover:text-cyan-400 transition-colors"
           >
             {isLogin ? 'Register' : 'Login'}
           </button>

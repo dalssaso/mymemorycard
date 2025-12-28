@@ -74,7 +74,7 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="card hover:border-primary-purple transition-all cursor-pointer group relative p-0 sm:p-4"
+      className="card hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-4"
     >
       {/* Mobile: Poster-only layout with overlay */}
       <div className="sm:hidden relative aspect-[3/4] overflow-hidden rounded-lg">
@@ -89,21 +89,33 @@ export function GameCard({
             <span className="text-zinc-600 text-sm">No image</span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+        <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 bg-ctp-base/60 p-2">
           <div className="flex gap-1 mb-1">
             <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
           </div>
-          <h3 className="text-sm font-bold text-white line-clamp-2 group-hover:text-primary-purple transition-colors">
+          <h3 className="text-sm font-bold text-ctp-text line-clamp-2 group-hover:text-ctp-mauve transition-colors">
             {name}
           </h3>
         </div>
         <button
           onClick={handleFavoriteClick}
-          className="absolute top-2 right-2 z-10 text-xl hover:scale-110 transition-transform"
+          className="absolute top-2 right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
-          {isFavorite ? '❤️' : '🤍'}
+          <svg
+            className="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill={isFavorite ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
         </button>
       </div>
 
@@ -123,15 +135,27 @@ export function GameCard({
           )}
           <button
             onClick={handleFavoriteClick}
-            className="absolute -top-2 -right-2 z-10 text-xl hover:scale-110 transition-transform"
+            className="absolute -top-2 -right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
-            {isFavorite ? '❤️' : '🤍'}
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill={isFavorite ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
           </button>
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold mb-2 group-hover:text-primary-purple transition-colors break-words">
+          <h3 className="text-lg font-bold mb-2 group-hover:text-ctp-mauve transition-colors break-words">
             {name}
           </h3>
 
@@ -147,7 +171,7 @@ export function GameCard({
                   e.stopPropagation()
                   navigate({ to: '/franchises/$seriesName', params: { seriesName: series_name } })
                 }}
-                className="text-xs text-primary-cyan hover:text-primary-purple transition-colors cursor-pointer"
+                className="text-xs text-ctp-teal hover:text-ctp-mauve transition-colors cursor-pointer"
               >
                 {series_name}
               </span>
@@ -157,14 +181,14 @@ export function GameCard({
           <div className="flex items-center gap-4 text-sm text-zinc-400 flex-wrap">
             {metacritic_score && (
               <div className="flex items-center gap-1">
-                <span className="text-primary-yellow">★</span>
+                <span className="text-ctp-yellow">★</span>
                 <span>{metacritic_score}</span>
               </div>
             )}
 
             {user_rating && (
               <div className="flex items-center gap-1">
-                <span className="text-primary-cyan">Your rating:</span>
+                <span className="text-ctp-teal">Your rating:</span>
                 <span>{user_rating}/10</span>
               </div>
             )}

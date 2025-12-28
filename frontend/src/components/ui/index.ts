@@ -18,3 +18,5 @@ export type { Toast, ToastType } from './Toast'
 
 export { Skeleton, GameCardSkeleton, GameRowSkeleton } from './Skeleton'
 export type { SkeletonProps } from './Skeleton'
+
+export { ScrollFade } from './ScrollFade'

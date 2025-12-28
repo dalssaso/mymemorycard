@@ -74,15 +74,15 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-400">RAWG ID</span>
+        <span className="text-sm font-medium text-ctp-subtext0">RAWG ID</span>
         {currentRawgId && (
-          <span className="text-xs text-gray-500">Current: {currentRawgId}</span>
+          <span className="text-xs text-ctp-overlay1">Current: {currentRawgId}</span>
         )}
       </div>
 
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg text-sm text-gray-300 transition-colors flex items-center justify-between"
+        className="w-full py-2 px-4 bg-ctp-surface0 hover:bg-ctp-surface1 border border-ctp-surface2 rounded-lg text-sm text-ctp-subtext1 transition-colors flex items-center justify-between"
       >
         <span>Correct Game Metadata</span>
         <svg
@@ -98,36 +98,36 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
       </button>
 
       {isExpanded && (
-        <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 space-y-4">
-          <div className="text-sm text-gray-300">
+        <div className="bg-ctp-mantle/50 border border-ctp-surface1 rounded-lg p-4 space-y-4">
+          <div className="text-sm text-ctp-subtext1">
             <p className="mb-2">
               If this game has wrong metadata (wrong cover, wrong description, etc.), 
               you can correct it by providing the correct RAWG game page URL.
             </p>
           </div>
 
-          <div className="bg-primary-cyan/10 border border-primary-cyan/30 rounded-lg p-3">
-            <p className="text-sm text-primary-cyan font-medium mb-2">How to find the correct game:</p>
-            <ol className="text-xs text-gray-300 space-y-1.5 list-decimal list-inside">
+          <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3">
+            <p className="text-sm text-ctp-teal font-medium mb-2">How to find the correct game:</p>
+            <ol className="text-xs text-ctp-subtext1 space-y-1.5 list-decimal list-inside">
               <li>
                 Go to{' '}
                 <a
                   href={`https://rawg.io/search?query=${encodeURIComponent(gameName)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary-cyan hover:underline"
+                  className="text-ctp-teal hover:underline"
                 >
                   RAWG.io and search for "{gameName}"
                 </a>
               </li>
               <li>Click on the correct game in the results</li>
-              <li>Copy the URL from your browser (e.g., <code className="bg-gray-800 px-1 rounded">rawg.io/games/<strong>god-of-war-2</strong></code>)</li>
+              <li>Copy the URL from your browser (e.g., <code className="bg-ctp-surface0 px-1 rounded">rawg.io/games/<strong>god-of-war-2</strong></code>)</li>
               <li>Paste the URL or just the slug below</li>
             </ol>
           </div>
 
           <div>
-            <label htmlFor="rawg-input" className="block text-sm text-gray-400 mb-2">
+            <label htmlFor="rawg-input" className="block text-sm text-ctp-subtext0 mb-2">
               RAWG URL or Slug
             </label>
             <input
@@ -136,10 +136,10 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
               value={rawgInput}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder="e.g., god-of-war-2 or https://rawg.io/games/god-of-war-2"
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-cyan"
+              className="w-full bg-ctp-surface0 border border-ctp-surface2 rounded-lg px-3 py-2 text-ctp-text placeholder-ctp-overlay1 focus:outline-none focus:border-ctp-teal"
             />
             {error && (
-              <p className="text-sm text-red-400 mt-2">{error}</p>
+              <p className="text-sm text-ctp-red mt-2">{error}</p>
             )}
           </div>
 
@@ -147,7 +147,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
             <button
               onClick={handleSubmit}
               disabled={updateMutation.isPending || !rawgInput}
-              className="flex-1 py-2 bg-primary-purple hover:bg-primary-purple/80 rounded-lg font-semibold transition-all disabled:opacity-50"
+              className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg font-semibold transition-all disabled:opacity-50"
             >
               {updateMutation.isPending ? 'Updating...' : 'Update Metadata'}
             </button>
@@ -157,13 +157,13 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
                 setRawgInput('')
                 setError(null)
               }}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all"
+              className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 rounded-lg transition-all"
             >
               Cancel
             </button>
           </div>
 
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ctp-overlay1">
             This will update the game's name, cover art, description, genres, and other metadata from RAWG.
           </p>
         </div>

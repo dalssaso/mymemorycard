@@ -61,16 +61,29 @@ router.put(
         )
       }
 
+      if (theme && !['light', 'dark', 'auto'].includes(theme)) {
+        return new Response(
+          JSON.stringify({ error: 'theme must be "light", "dark", or "auto"' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
       await query(
         `INSERT INTO user_preferences (user_id, default_view, items_per_page, theme, updated_at)
-         VALUES ($1, $2, $3, $4, NOW())
+         VALUES (
+           $1,
+           COALESCE($2, 'grid'),
+           COALESCE($3, 25),
+           COALESCE($4, 'dark'),
+           NOW()
+         )
          ON CONFLICT (user_id)
          DO UPDATE SET
            default_view = COALESCE($2, user_preferences.default_view),
            items_per_page = COALESCE($3, user_preferences.items_per_page),
            theme = COALESCE($4, user_preferences.theme),
            updated_at = NOW()`,
-        [user.id, default_view || 'grid', items_per_page || 25, theme || 'dark']
+        [user.id, default_view ?? null, items_per_page ?? null, theme ?? null]
       )
 
       const updated = await queryOne<UserPreferences>(

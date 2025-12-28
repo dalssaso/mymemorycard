@@ -71,10 +71,10 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) => void }) {
   const typeStyles = {
-    success: 'bg-primary-green/20 border-primary-green text-primary-green',
-    error: 'bg-primary-red/20 border-primary-red text-primary-red',
-    warning: 'bg-primary-yellow/20 border-primary-yellow text-primary-yellow',
-    info: 'bg-primary-cyan/20 border-primary-cyan text-primary-cyan'
+    success: 'bg-ctp-green/20 border-ctp-green text-ctp-green',
+    error: 'bg-ctp-red/20 border-ctp-red text-ctp-red',
+    warning: 'bg-ctp-yellow/20 border-ctp-yellow text-ctp-yellow',
+    info: 'bg-ctp-teal/20 border-ctp-teal text-ctp-teal'
   }
 
   const icons = {

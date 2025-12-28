@@ -36,7 +36,7 @@ export function Franchises() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-gray-400">Loading...</div>
+          <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
     )
@@ -58,11 +58,11 @@ export function Franchises() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
               />
-              <h1 className="text-4xl font-bold text-white">Franchises</h1>
+              <h1 className="text-4xl font-bold text-ctp-text">Franchises</h1>
             </div>
-            <p className="text-gray-400 mt-1">
+            <p className="text-ctp-subtext0 mt-1">
               Game series in your library
             </p>
           </div>
@@ -77,7 +77,7 @@ export function Franchises() {
 
         {franchises.length === 0 ? (
           <Card>
-            <p className="text-gray-400 text-center py-8">
+            <p className="text-ctp-subtext0 text-center py-8">
               No franchises found. Add games that belong to a series, or click "Sync Franchises" to detect series for your existing games.
             </p>
           </Card>
@@ -90,7 +90,7 @@ export function Franchises() {
                 params={{ seriesName: franchise.series_name }}
                 className="group focus-visible:outline-none"
               >
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-primary-purple/60 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-gray-950">
+                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ctp-mauve group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-ctp-base">
                   {franchise.cover_art_url ? (
                     <img
                       src={franchise.cover_art_url}
@@ -98,16 +98,16 @@ export function Franchises() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                    <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
                       <span className="text-sm">No Cover</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-white font-medium truncate">
+                    <p className="text-ctp-text font-medium truncate">
                       {franchise.series_name}
                     </p>
-                    <p className="text-sm text-primary-cyan">
+                    <p className="text-sm text-ctp-teal">
                       {franchise.game_count} {franchise.game_count === 1 ? 'game' : 'games'}
                     </p>
                   </div>

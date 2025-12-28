@@ -26,6 +26,9 @@ export function Collections() {
   const [newCollectionCoverFile, setNewCollectionCoverFile] = useState<File | null>(null)
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null)
   const [isUploadingCover, setIsUploadingCover] = useState(false)
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>([])
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const { data: collectionsData } = useQuery({
     queryKey: ['collections'],
@@ -35,14 +38,18 @@ export function Collections() {
     },
   })
 
-  const deleteCollectionMutation = useMutation({
-    mutationFn: (id: string) => collectionsAPI.delete(id),
+  const bulkDeleteCollectionsMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => collectionsAPI.delete(id)))
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Collection deleted', 'success')
+      setSelectedCollectionIds([])
+      setSelectionMode(false)
+      showToast('Collections deleted', 'success')
     },
     onError: () => {
-      showToast('Failed to delete collection', 'error')
+      showToast('Failed to delete collections', 'error')
     },
   })
 
@@ -82,10 +89,17 @@ export function Collections() {
     }
   }
 
-  const handleDeleteCollection = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete "${name}"?`)) {
-      deleteCollectionMutation.mutate(id)
-    }
+  const toggleCollectionSelection = (id: string) => {
+    setSelectedCollectionIds((current) =>
+      current.includes(id) ? current.filter((collectionId) => collectionId !== id) : [...current, id]
+    )
+  }
+
+  const allSelected = collections.length > 0 && selectedCollectionIds.length === collections.length
+
+  const handleExitSelectionMode = () => {
+    setSelectionMode(false)
+    setSelectedCollectionIds([])
   }
 
   return (
@@ -99,11 +113,11 @@ export function Collections() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
               />
-              <h1 className="text-4xl font-bold text-white">Collections</h1>
+              <h1 className="text-4xl font-bold text-ctp-text">Collections</h1>
             </div>
-            <p className="text-gray-400 mt-1">
+            <p className="text-ctp-subtext0 mt-1">
               Organize your games into custom collections
             </p>
           </div>
@@ -115,125 +129,205 @@ export function Collections() {
         <div>
           {collections.length === 0 ? (
             <Card>
-              <p className="text-gray-400 text-center py-8">
+              <p className="text-ctp-subtext0 text-center py-8">
                 No collections yet. Create your first collection to organize your games!
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {collections.map((collection) => (
-                <div key={collection.id} className="group">
-                  <Link
-                    to="/collections/$id"
-                    params={{ id: collection.id }}
+            <>
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <span className="text-sm text-ctp-subtext0">
+                  {collections.length} {collections.length === 1 ? 'collection' : 'collections'}
+                </span>
+                {!selectionMode && collections.length > 0 && (
+                  <button
+                    onClick={() => setSelectionMode(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-ctp-subtext0 hover:text-ctp-text border border-ctp-surface1 hover:border-ctp-surface2 rounded transition-all"
                   >
-                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-800 mb-2 relative">
-                      {collection.cover_filename ? (
-                        <img
-                          src={`/collection-covers/${collection.cover_filename}`}
-                          alt={collection.name}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                        />
-                      ) : collection.cover_art_url ? (
-                        <img
-                          src={collection.cover_art_url}
-                          alt={collection.name}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-500">
-                          <span className="text-sm">No Cover</span>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <p className="text-white font-medium truncate">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                    Select
+                  </button>
+                )}
+              </div>
+
+              {selectionMode && (
+                <div className="mb-4 p-3 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium text-ctp-text">
+                      {selectedCollectionIds.length > 0
+                        ? `${selectedCollectionIds.length} collection(s) selected`
+                        : 'Select collections to manage'}
+                    </span>
+                    {collections.length > 0 && (
+                      <button
+                        onClick={() =>
+                          setSelectedCollectionIds(allSelected ? [] : collections.map((collection) => collection.id))
+                        }
+                        className="text-sm text-ctp-subtext0 hover:text-ctp-text"
+                      >
+                        {allSelected ? 'Deselect all' : 'Select all'}
+                      </button>
+                    )}
+                    {selectedCollectionIds.length > 0 && (
+                      <button
+                        onClick={() => setSelectedCollectionIds([])}
+                        className="text-sm text-ctp-subtext0 hover:text-ctp-text"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedCollectionIds.length > 0 && (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="px-3 py-1.5 bg-ctp-red/20 border border-ctp-red/30 text-ctp-red hover:bg-ctp-red/30 rounded text-sm transition-all"
+                      >
+                        Delete
+                      </button>
+                    )}
+                    <button
+                      onClick={handleExitSelectionMode}
+                      className="px-3 py-1.5 bg-ctp-surface1 hover:bg-ctp-surface2 text-ctp-text rounded text-sm transition-all"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {collections.map((collection) => {
+                  const isSelected = selectedCollectionIds.includes(collection.id)
+                  const cardContent = (
+                    <>
+                      <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
+                        {collection.cover_filename ? (
+                          <img
+                            src={`/collection-covers/${collection.cover_filename}`}
+                            alt={collection.name}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                          />
+                        ) : collection.cover_art_url ? (
+                          <img
+                            src={collection.cover_art_url}
+                            alt={collection.name}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                            <span className="text-sm">No Cover</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
+                        {selectionMode && isSelected && (
+                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={3}
+                              stroke="currentColor"
+                              className="w-4 h-4 text-ctp-text"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m4.5 12.75 6 6 9-13.5"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1 px-2 pb-2 sm:px-0 sm:pb-0">
+                        <p className="text-ctp-text font-medium truncate group-hover:text-ctp-mauve transition-colors">
                           {collection.name}
                         </p>
-                        <p className="text-sm text-primary-purple">
+                        <p className="text-sm text-ctp-mauve">
                           {collection.game_count} {collection.game_count === 1 ? 'game' : 'games'}
                         </p>
                       </div>
-                    </div>
-                  </Link>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const input = document.createElement('input')
-                        input.type = 'file'
-                        input.accept = 'image/jpeg,image/jpg,image/png,image/webp,image/gif'
-                        input.onchange = async (e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0]
-                          if (!file) return
+                    </>
+                  )
 
-                          if (file.size > 5 * 1024 * 1024) {
-                            showToast('Image must be under 5MB', 'error')
-                            return
-                          }
+                  const cardClassName = selectionMode
+                    ? `card cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? 'bg-ctp-mauve/20 border-ctp-mauve' : 'hover:border-zinc-500'}`
+                    : 'card hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-3'
 
-                          try {
-                            await collectionsAPI.uploadCover(collection.id, file)
-                            queryClient.invalidateQueries({ queryKey: ['collections'] })
-                            showToast('Cover updated', 'success')
-                          } catch (error: any) {
-                            const errorMessage = error.response?.data?.error || 'Failed to upload cover'
-                            showToast(errorMessage, 'error')
-                          }
-                        }
-                        input.click()
-                      }}
-                      className="flex-1"
-                    >
-                      {collection.cover_filename ? 'Change Cover' : 'Add Cover'}
-                    </Button>
-
-                    {collection.cover_filename && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={async () => {
-                          if (!confirm('Remove custom cover? Will revert to auto-selected game cover.')) {
-                            return
-                          }
-                          try {
-                            await collectionsAPI.deleteCover(collection.id)
-                            queryClient.invalidateQueries({ queryKey: ['collections'] })
-                            showToast('Cover removed', 'success')
-                          } catch {
-                            showToast('Failed to remove cover', 'error')
-                          }
-                        }}
-                        className="flex-1"
+                  return (
+                    selectionMode ? (
+                      <div
+                        key={collection.id}
+                        className={cardClassName}
+                        onClick={() => toggleCollectionSelection(collection.id)}
                       >
-                        Remove
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteCollection(collection.id, collection.name)}
-                      className="flex-1"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                        {cardContent}
+                      </div>
+                    ) : (
+                      <Link
+                        key={collection.id}
+                        to="/collections/$id"
+                        params={{ id: collection.id }}
+                        className={cardClassName}
+                      >
+                        {cardContent}
+                      </Link>
+                    )
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
 
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-ctp-base/50 flex items-center justify-center z-50">
+            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-xl font-bold mb-4">Delete Collections</h3>
+              <p className="text-ctp-subtext0 mb-6">
+                Are you sure you want to delete {selectedCollectionIds.length} collection(s)?
+                This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => bulkDeleteCollectionsMutation.mutate(selectedCollectionIds)}
+                  disabled={bulkDeleteCollectionsMutation.isPending}
+                  className="px-4 py-2 bg-ctp-red text-ctp-base hover:bg-ctp-red/80 rounded transition-all"
+                >
+                  {bulkDeleteCollectionsMutation.isPending ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Create Collection Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-2xl font-bold text-white mb-4">Create Collection</h2>
+          <div className="fixed inset-0 bg-ctp-base/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full">
+              <h2 className="text-2xl font-bold text-ctp-text mb-4">Create Collection</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
                     Name
                   </label>
                   <input
@@ -241,26 +335,26 @@ export function Collections() {
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
                     placeholder="e.g., Couch Co-op Games"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                    className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
                     Description (optional)
                   </label>
                   <textarea
                     value={newCollectionDescription}
                     onChange={(e) => setNewCollectionDescription(e.target.value)}
                     placeholder="Describe your collection..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple min-h-24"
+                    className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-24"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
                     Cover Image (optional)
                   </label>
-                  <p className="text-xs text-gray-500 mb-2">
+                  <p className="text-xs text-ctp-overlay1 mb-2">
                     Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
                   </p>
                   <input
@@ -278,7 +372,7 @@ export function Collections() {
                         setCoverPreviewUrl(URL.createObjectURL(file))
                       }
                     }}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary-purple"
+                    className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                   />
                   {coverPreviewUrl && (
                     <div className="mt-2">
@@ -292,7 +386,7 @@ export function Collections() {
                           setNewCollectionCoverFile(null)
                           setCoverPreviewUrl(null)
                         }}
-                        className="text-sm text-gray-400 hover:text-white mt-1"
+                        className="text-sm text-ctp-subtext0 hover:text-ctp-text mt-1"
                       >
                         Remove
                       </button>

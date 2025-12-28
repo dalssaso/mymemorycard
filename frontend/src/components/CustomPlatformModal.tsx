@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ScrollFade } from '@/components/ui'
 import { PlatformIconBadge } from './PlatformIcon'
 import { PlatformTypeIcon } from './PlatformTypeIcon'
 
@@ -80,18 +81,18 @@ export function CustomPlatformModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-ctp-base/60"
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-lg bg-gray-900 border border-gray-800 rounded-lg p-6 max-h-[90vh] overflow-y-auto">
-        <h3 className="text-xl font-semibold text-white mb-2">Add Custom Platform</h3>
-        <p className="text-sm text-gray-400 mb-4">
+      <ScrollFade axis="y" className="relative w-full max-w-lg bg-ctp-mantle border border-ctp-surface0 rounded-lg p-6 max-h-[90vh] overflow-y-auto">
+        <h3 className="text-xl font-semibold text-ctp-text mb-2">Add Custom Platform</h3>
+        <p className="text-sm text-ctp-subtext0 mb-4">
           Create a custom platform for stores or systems not in the default list.
         </p>
 
         {error && (
-          <div className="mb-4 bg-primary-red/20 border border-primary-red text-primary-red px-3 py-2 rounded">
+          <div className="mb-4 bg-ctp-red/20 border border-ctp-red text-ctp-red px-3 py-2 rounded">
             {error}
           </div>
         )}
@@ -99,8 +100,8 @@ export function CustomPlatformModal({
         <div className="space-y-4">
           {/* Display Name */}
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-400">
-              Display Name <span className="text-primary-red">*</span>
+            <label className="block text-xs font-medium mb-1 text-ctp-subtext0">
+              Display Name <span className="text-ctp-red">*</span>
             </label>
             <input
               value={displayName}
@@ -112,8 +113,8 @@ export function CustomPlatformModal({
 
           {/* Platform Type */}
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-400">
-              Platform Type <span className="text-primary-red">*</span>
+            <label className="block text-xs font-medium mb-1 text-ctp-subtext0">
+              Platform Type <span className="text-ctp-red">*</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {PLATFORM_TYPES.map((type) => (
@@ -123,8 +124,8 @@ export function CustomPlatformModal({
                   onClick={() => setPlatformType(type.value)}
                   className={`px-3 py-2 rounded-lg text-sm border transition-colors flex items-center gap-2 ${
                     platformType === type.value
-                      ? 'border-primary-cyan bg-primary-cyan/10 text-primary-cyan'
-                      : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                      ? 'border-ctp-teal bg-ctp-teal/10 text-ctp-teal'
+                      : 'border-ctp-surface1 text-ctp-subtext0 hover:border-gray-500'
                   }`}
                 >
                   <PlatformTypeIcon type={type.value} size="sm" />
@@ -136,7 +137,7 @@ export function CustomPlatformModal({
 
           {/* Website URL */}
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-400">Website URL</label>
+            <label className="block text-xs font-medium mb-1 text-ctp-subtext0">Website URL</label>
             <input
               value={websiteUrl}
               onChange={(event) => setWebsiteUrl(event.target.value)}
@@ -148,7 +149,7 @@ export function CustomPlatformModal({
 
           {/* Icon URL */}
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-400">Icon URL (SVG only)</label>
+            <label className="block text-xs font-medium mb-1 text-ctp-subtext0">Icon URL (SVG only)</label>
             <input
               value={defaultIconUrl}
               onChange={(event) => setDefaultIconUrl(event.target.value)}
@@ -156,13 +157,13 @@ export function CustomPlatformModal({
               type="url"
               placeholder="https://cdn.simpleicons.org/steam/ffffff"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-ctp-overlay1 mt-1">
               Provide an SVG icon URL from{' '}
               <a
                 href="https://simpleicons.org"
                 target="_blank"
                 rel="noreferrer"
-                className="text-primary-cyan hover:text-primary-purple"
+                className="text-ctp-teal hover:text-ctp-mauve"
               >
                 Simple Icons
               </a>{' '}
@@ -172,7 +173,7 @@ export function CustomPlatformModal({
 
           {/* Color */}
           <div>
-            <label className="block text-xs font-medium mb-1 text-gray-400">Brand Color</label>
+            <label className="block text-xs font-medium mb-1 text-ctp-subtext0">Brand Color</label>
             <div className="flex gap-2">
               <input
                 value={colorPrimary}
@@ -189,15 +190,15 @@ export function CustomPlatformModal({
                 type="color"
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-ctp-overlay1 mt-1">
               Use the platform's official brand color for consistency.
             </p>
           </div>
 
           {/* Live Preview */}
           {displayName && (
-            <div className="border border-gray-700 rounded-lg p-4 bg-gray-800/50">
-              <label className="block text-xs font-medium mb-2 text-gray-400">Preview</label>
+            <div className="border border-ctp-surface1 rounded-lg p-4 bg-ctp-surface0/50">
+              <label className="block text-xs font-medium mb-2 text-ctp-subtext0">Preview</label>
               <div className="flex items-center justify-center py-4">
                 <PlatformIconBadge
                   platform={{
@@ -230,7 +231,7 @@ export function CustomPlatformModal({
             {isSubmitting ? 'Saving...' : 'Save Platform'}
           </button>
         </div>
-      </div>
+      </ScrollFade>
     </div>
   )
 }

@@ -18,19 +18,19 @@ export function Badge({
   
   if (variant === 'status' && status) {
     const statusStyles = {
-      backlog: 'bg-gray-700/50 border border-gray-600 text-gray-400',
-      playing: 'bg-primary-cyan/20 border border-primary-cyan rounded-lg text-primary-cyan',
-      finished: 'bg-primary-green/20 border border-primary-green rounded-lg text-primary-green',
-      dropped: 'bg-primary-red/20 border border-primary-red rounded-lg text-primary-red',
-      completed: 'bg-primary-yellow/20 border border-primary-yellow rounded-lg text-primary-yellow'
+      backlog: 'bg-ctp-surface1/50 border border-ctp-surface2 text-ctp-subtext0',
+      playing: 'bg-ctp-teal/20 border border-ctp-teal rounded-lg text-ctp-teal',
+      finished: 'bg-ctp-green/20 border border-ctp-green rounded-lg text-ctp-green',
+      dropped: 'bg-ctp-red/20 border border-ctp-red rounded-lg text-ctp-red',
+      completed: 'bg-ctp-yellow/20 border border-ctp-yellow rounded-lg text-ctp-yellow'
     }
     variantStyles = statusStyles[status]
   } else if (variant === 'platform') {
-    variantStyles = 'bg-primary-purple/20 border border-primary-purple rounded-lg text-primary-purple'
+    variantStyles = 'bg-ctp-mauve/20 border border-ctp-mauve rounded-lg text-ctp-mauve'
   } else if (variant === 'genre') {
-    variantStyles = 'bg-primary-cyan/10 border border-primary-cyan/30 rounded text-primary-cyan'
+    variantStyles = 'bg-ctp-teal/10 border border-ctp-teal/30 rounded text-ctp-teal'
   } else {
-    variantStyles = 'bg-gray-800 text-gray-300'
+    variantStyles = 'bg-ctp-surface0 text-ctp-subtext1'
   }
   
   return (
