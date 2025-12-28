@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
+import { useSearch, useNavigate } from '@tanstack/react-router'
 import { ScrollFade } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
 import { completionLogsAPI, additionsAPI, CompletionType, GameAddition } from '@/lib/api'
@@ -85,6 +86,7 @@ const getRangeStart = (range: RangeOption): Date => {
 export function ProgressHistory({ gameId, platformId, onProgressChange }: ProgressHistoryProps) {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabType>('main')
   const [selectedDlcId, setSelectedDlcId] = useState<string | null>(null)
   const [sliderValue, setSliderValue] = useState<number | null>(null)
@@ -103,6 +105,8 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
         total: number
         currentPercentage: number
         summary: CompletionSummary
+        achievementHistory?: Array<{ percentage: number; logged_at: string; notes: string }>
+        fullProgressHistory?: Array<{ percentage: number; logged_at: string; notes: string }>
       }
     },
   })
@@ -144,13 +148,54 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
     }
   }, [displayValue, isEditingPercentage])
 
-  const logs = (logsData?.logs || []).filter((log) => {
+  const manualLogs = (logsData?.logs || []).filter((log) => {
     if (activeTab === 'main') return log.completion_type === 'main'
     if (activeTab === 'full') return log.completion_type === 'full'
     if (activeTab === 'completionist') return log.completion_type === 'completionist'
     if (activeTab === 'dlc') return log.completion_type === 'dlc' && log.dlc_id === selectedDlcId
     return false
   })
+
+  const achievementHistoryData = logsData?.achievementHistory || []
+  const fullProgressHistoryData = logsData?.fullProgressHistory || []
+
+  let logs: typeof manualLogs = manualLogs
+
+  if (activeTab === 'main' && achievementHistoryData.length > 0) {
+    logs = [
+      ...achievementHistoryData.map((h) => ({
+        id: `achievement-${h.logged_at}`,
+        user_id: '',
+        game_id: gameId,
+        platform_id: platformId,
+        completion_type: 'main' as CompletionType,
+        dlc_id: null,
+        percentage: h.percentage,
+        logged_at: h.logged_at,
+        notes: h.notes,
+      })),
+      ...manualLogs.filter((log) => !achievementHistoryData.some((h) =>
+        Math.abs(new Date(h.logged_at).getTime() - new Date(log.logged_at).getTime()) < 1000
+      )),
+    ].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
+  } else if (activeTab === 'full' && fullProgressHistoryData.length > 0) {
+    logs = [
+      ...fullProgressHistoryData.map((h) => ({
+        id: `full-${h.logged_at}`,
+        user_id: '',
+        game_id: gameId,
+        platform_id: platformId,
+        completion_type: 'full' as CompletionType,
+        dlc_id: null,
+        percentage: h.percentage,
+        logged_at: h.logged_at,
+        notes: h.notes,
+      })),
+      ...manualLogs.filter((log) => !fullProgressHistoryData.some((h) =>
+        Math.abs(new Date(h.logged_at).getTime() - new Date(log.logged_at).getTime()) < 1000
+      )),
+    ].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
+  }
 
   const logProgressMutation = useMutation({
     mutationFn: () =>
@@ -212,12 +257,13 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
     }))
 
   const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab)
+    navigate({
+      to: '.',
+      hash: 'stats',
+      search: { tab },
+    })
     setSliderValue(null)
     setNotes('')
-    if (tab === 'dlc' && additions.length > 0 && !selectedDlcId) {
-      setSelectedDlcId(additions[0].id)
-    }
   }
 
   const handleSliderChange = (value: number) => {
@@ -277,6 +323,20 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
   const visibleTabs: TabType[] = hasDlcs
     ? ['main', 'dlc', 'full', 'completionist']
     : ['main', 'full', 'completionist']
+
+  const searchParams = useSearch({ from: '/library/$id' })
+
+  // Sync activeTab with URL search params
+  useEffect(() => {
+    if (searchParams.tab && visibleTabs.includes(searchParams.tab as TabType)) {
+      setActiveTab(searchParams.tab as TabType)
+
+      // Auto-select first DLC if tab is 'dlc' but no DLC selected yet
+      if (searchParams.tab === 'dlc' && additions.length > 0 && !selectedDlcId) {
+        setSelectedDlcId(additions[0].id)
+      }
+    }
+  }, [searchParams.tab, visibleTabs, additions, selectedDlcId])
 
   return (
     <div className="space-y-4">

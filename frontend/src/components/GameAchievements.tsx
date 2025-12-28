@@ -88,6 +88,8 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
       try {
         await completionLogsAPI.recalculate(gameId, platformId)
         queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
+        queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+        queryClient.invalidateQueries({ queryKey: ['games'] })
         queryClient.invalidateQueries({ queryKey: ['activityFeed'] })
         queryClient.invalidateQueries({ queryKey: ['achievementStats'] })
       } catch (error) {

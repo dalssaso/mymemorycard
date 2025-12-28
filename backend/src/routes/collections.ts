@@ -393,18 +393,18 @@ router.get(
   '/api/collections/series',
   requireAuth(async (req, user) => {
     try {
-      const series = await queryMany<{ series_name: string; count: number; cover_art_url: string | null }>(
-        `SELECT 
-          g.series_name, 
-          COUNT(DISTINCT g.id) as count,
+      const series = await queryMany<{ series_name: string; owned_count: number; cover_art_url: string | null }>(
+        `SELECT
+          g.series_name,
+          COUNT(DISTINCT g.id) as owned_count,
           (
             SELECT cover_art_url
             FROM games g2
             INNER JOIN user_games ug2 ON g2.id = ug2.game_id
-            WHERE ug2.user_id = $1 
+            WHERE ug2.user_id = $1
               AND g2.series_name = g.series_name
               AND g2.cover_art_url IS NOT NULL
-            ORDER BY 
+            ORDER BY
               g2.metacritic_score DESC NULLS LAST,
               g2.release_date DESC NULLS LAST
             LIMIT 1
@@ -413,8 +413,8 @@ router.get(
          INNER JOIN user_games ug ON g.id = ug.game_id
          WHERE ug.user_id = $1 AND g.series_name IS NOT NULL
          GROUP BY g.series_name
-         HAVING COUNT(DISTINCT g.id) > 1
-         ORDER BY count DESC, g.series_name ASC`,
+         HAVING COUNT(DISTINCT g.id) >= 1
+         ORDER BY owned_count DESC, g.series_name ASC`,
         [user.id]
       )
 

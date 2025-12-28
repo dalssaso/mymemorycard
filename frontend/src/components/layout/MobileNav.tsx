@@ -1,10 +1,8 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { useGlobalSearch } from '@/components/GlobalSearch'
 import { useAuth } from '@/contexts/AuthContext'
 
 export function MobileNav() {
   const { user } = useAuth()
-  const { openSearch } = useGlobalSearch()
   const locationHref = useRouterState({ select: (state) => state.location.href })
 
   const getNavLinkClass = (isActive: boolean) => (
@@ -68,22 +66,15 @@ export function MobileNav() {
           <span className="text-xs mt-1">Import</span>
         </Link>
 
-        <button
-          type="button"
-          onClick={(event) => openSearch(event.currentTarget)}
-          className="flex flex-col items-center justify-center text-ctp-subtext0 hover:text-ctp-text transition-colors"
-          aria-label="Search games"
+        <Link
+          to="/ai-curator"
+          className={getNavLinkClass(locationHref.includes('/ai-curator'))}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          <span className="text-xs mt-1">Search</span>
-        </button>
+          <span className="text-xs mt-1">AI</span>
+        </Link>
 
         <div className="flex flex-col items-center justify-center text-ctp-subtext0">
           <div className="w-6 h-6 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">

@@ -419,6 +419,41 @@ router.put(
           [user.id, achievement.id, completed, completedAt]
         )
 
+        if (completed) {
+          const achievementStats = await queryOne<{ total: number; completedCount: number }>(
+            `SELECT
+               (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) +
+               (SELECT COUNT(*) FROM achievements WHERE game_id = $1 AND platform_id = $2) as total,
+               (SELECT COUNT(*) FROM user_rawg_achievements WHERE user_id = $3 AND game_id = $1 AND completed = true) +
+               (SELECT COUNT(*)
+                FROM achievements a
+                INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+                WHERE a.game_id = $1 AND a.platform_id = $2 AND ua.user_id = $3 AND ua.unlocked = true) as "completedCount"`,
+            [gameId, platformId, user.id]
+          )
+
+          const total = achievementStats?.total || 0
+          const completedCount = achievementStats?.completedCount || 0
+
+          if (total > 0 && completedCount === total) {
+            const existingLog = await queryOne<{ id: string }>(
+              `SELECT id FROM completion_logs
+               WHERE user_id = $1 AND game_id = $2 AND platform_id = $3
+                 AND completion_type = 'main' AND percentage = 100
+               ORDER BY logged_at DESC LIMIT 1`,
+              [user.id, gameId, platformId]
+            )
+
+            if (!existingLog) {
+              await query(
+                `INSERT INTO completion_logs (user_id, game_id, platform_id, completion_type, percentage, notes)
+                 VALUES ($1, $2, $3, 'main', 100, 'Auto-logged: All achievements completed')`,
+                [user.id, gameId, platformId]
+              )
+            }
+          }
+        }
+
         return new Response(
           JSON.stringify({ success: true, completed, completed_at: completed ? completedAt : null }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
@@ -432,6 +467,41 @@ router.put(
          DO UPDATE SET completed = $5, completed_at = CASE WHEN $5 = true AND user_rawg_achievements.completed_at IS NULL THEN $6 ELSE CASE WHEN $5 = false THEN NULL ELSE user_rawg_achievements.completed_at END END`,
         [user.id, gameId, platformId, rawgAchievementId, completed, completedAt]
       )
+
+      if (completed) {
+        const achievementStats = await queryOne<{ total: number; completedCount: number }>(
+          `SELECT
+             (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) +
+             (SELECT COUNT(*) FROM achievements WHERE game_id = $1 AND platform_id = $2) as total,
+             (SELECT COUNT(*) FROM user_rawg_achievements WHERE user_id = $3 AND game_id = $1 AND completed = true) +
+             (SELECT COUNT(*)
+              FROM achievements a
+              INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+              WHERE a.game_id = $1 AND a.platform_id = $2 AND ua.user_id = $3 AND ua.unlocked = true) as "completedCount"`,
+          [gameId, platformId, user.id]
+        )
+
+        const total = achievementStats?.total || 0
+        const completedCount = achievementStats?.completedCount || 0
+
+        if (total > 0 && completedCount === total) {
+          const existingLog = await queryOne<{ id: string }>(
+            `SELECT id FROM completion_logs
+             WHERE user_id = $1 AND game_id = $2 AND platform_id = $3
+               AND completion_type = 'main' AND percentage = 100
+             ORDER BY logged_at DESC LIMIT 1`,
+            [user.id, gameId, platformId]
+          )
+
+          if (!existingLog) {
+            await query(
+              `INSERT INTO completion_logs (user_id, game_id, platform_id, completion_type, percentage, notes)
+               VALUES ($1, $2, $3, 'main', 100, 'Auto-logged: All achievements completed')`,
+              [user.id, gameId, platformId]
+            )
+          }
+        }
+      }
 
       return new Response(
         JSON.stringify({ success: true, completed, completed_at: completed ? completedAt : null }),

@@ -519,7 +519,7 @@ export function GameDetail() {
 
             {/* Progress Display */}
             <div className="mt-3">
-              <ProgressDisplay gameId={game.id} />
+              <ProgressDisplay gameId={game.id} platformId={activePlatformId} />
             </div>
 
             {/* Status Selector */}

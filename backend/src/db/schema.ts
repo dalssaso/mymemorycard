@@ -13,6 +13,7 @@ import {
   unique,
   index,
   check,
+  primaryKey,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
@@ -643,5 +644,68 @@ export const userPreferences = pgTable(
   (table) => [
     check('default_view_check', sql`default_view IN ('grid', 'table')`),
     check('items_per_page_check', sql`items_per_page IN (10, 25, 50, 100)`),
+  ]
+)
+
+// ============================================================================
+// AI CURATOR SETTINGS & ACTIVITY
+// ============================================================================
+
+export const aiProviderEnum = pgEnum('ai_provider', ['openai', 'openrouter', 'ollama', 'lmstudio'])
+
+export const userAiSettings = pgTable(
+  'user_ai_settings',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: aiProviderEnum('provider').notNull(),
+    baseUrl: text('base_url'),
+    apiKeyEncrypted: text('api_key_encrypted'),
+    model: varchar('model', { length: 100 }).notNull().default('gpt-4.1-mini'),
+    imageApiKeyEncrypted: text('image_api_key_encrypted'),
+    imageModel: varchar('image_model', { length: 100 }).default('dall-e-3'),
+    temperature: real('temperature').default(0.7),
+    maxTokens: integer('max_tokens').default(2000),
+    isActive: boolean('is_active').default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.userId, table.provider] }),
+  })
+)
+
+export const aiActionTypeEnum = pgEnum('ai_action_type', [
+  'suggest_collections',
+  'suggest_next_game',
+  'generate_cover_image',
+])
+
+export const aiActivityLogs = pgTable(
+  'ai_activity_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    actionType: aiActionTypeEnum('action_type').notNull(),
+    provider: varchar('provider', { length: 50 }).notNull(),
+    model: varchar('model', { length: 100 }).notNull(),
+    collectionId: uuid('collection_id').references(() => collections.id, { onDelete: 'set null' }),
+    userInput: text('user_input'),
+    promptTokens: integer('prompt_tokens'),
+    completionTokens: integer('completion_tokens'),
+    totalTokens: integer('total_tokens'),
+    estimatedCostUsd: real('estimated_cost_usd'),
+    durationMs: integer('duration_ms'),
+    success: boolean('success').notNull(),
+    errorMessage: text('error_message'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index('idx_ai_activity_user').on(table.userId),
+    index('idx_ai_activity_action').on(table.actionType),
+    index('idx_ai_activity_date').on(table.createdAt),
   ]
 )

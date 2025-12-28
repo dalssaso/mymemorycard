@@ -1,28 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
+import { useLibraryFilters } from '@/hooks/useLibraryFilters'
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   flexRender,
   createColumnHelper,
-  type SortingState,
   type ColumnFiltersState,
   type VisibilityState,
   type RowSelectionState,
 } from '@tanstack/react-table'
-import { Link, useSearch } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { GameCard } from '@/components/GameCard'
 import { BackButton, PageLayout } from '@/components/layout'
 import { LibrarySidebar } from '@/components/sidebar'
 import { PlatformIcons } from '@/components/PlatformIcon'
-import { Checkbox, ScrollFade } from '@/components/ui'
+import { Checkbox, ScrollFade, Select } from '@/components/ui'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { collectionsAPI, gamesAPI } from '@/lib/api'
-import type { LibrarySearchParams } from '@/routes/library.index'
+import { SortControl, ActiveFilterPills } from '@/components/filters'
 
 interface Collection {
   id: string
@@ -35,18 +34,20 @@ interface Game {
   id: string
   name: string
   cover_art_url: string | null
-  platform_id: string
-  platform_name: string
-  platform_display_name: string
-  platform_color_primary: string
-  platform_icon_url: string | null
+  platforms: {
+    id: string
+    name: string
+    displayName: string
+    iconUrl: string | null
+    colorPrimary: string
+  }[]
   status: string
-  user_rating: number | null
-  total_minutes: number
-  last_played: string | null
+  max_user_rating: number | null
+  total_minutes_sum: number
+  latest_last_played: string | null
   metacritic_score: number | null
   release_date: string | null
-  is_favorite: boolean
+  is_favorite_any: boolean
   series_name: string | null
 }
 
@@ -87,27 +88,11 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 export function Library() {
   const { showToast } = useToast()
   const queryClient = useQueryClient()
-  const searchParams = useSearch({ from: '/library/' }) as LibrarySearchParams
-  const [sorting, setSorting] = useState<SortingState>([])
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useLibraryFilters()
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [platformFilter, setPlatformFilter] = useState<string>(searchParams.platform || '')
-  const [statusFilter, setStatusFilter] = useState<string>(searchParams.status || '')
-  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(searchParams.favorites || false)
-  const [_genreFilter, setGenreFilter] = useState<string>(searchParams.genre || '')
-
-  useEffect(() => {
-    if (searchParams.status) setPlatformFilter('')
-    if (searchParams.platform) setStatusFilter('')
-    setPlatformFilter(searchParams.platform || '')
-    setStatusFilter(searchParams.status || '')
-    setFavoritesOnly(searchParams.favorites || false)
-    setGenreFilter(searchParams.genre || '')
-  }, [searchParams])
-
-  void _genreFilter
   const [showColumnSettings, setShowColumnSettings] = useState<boolean>(false)
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [showCollectionDropdown, setShowCollectionDropdown] = useState(false)
@@ -141,9 +126,17 @@ export function Library() {
   }
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['games'],
+    queryKey: ['games', filters],
     queryFn: async () => {
-      const response = await gamesAPI.getAll()
+      const response = await gamesAPI.getAll({
+        platform: filters.platform || undefined,
+        status: filters.status || undefined,
+        favorites: filters.favorites || undefined,
+        genre: filters.genre.length > 0 ? filters.genre.join(',') : undefined,
+        collection: filters.collection.length > 0 ? filters.collection.join(',') : undefined,
+        franchise: filters.franchise.length > 0 ? filters.franchise.join(',') : undefined,
+        sort: filters.sort || undefined,
+      })
       return response.data as { games: Game[] }
     },
   })
@@ -185,73 +178,41 @@ export function Library() {
   })
 
   const games = data?.games || []
-  
+
+  // Backend now returns aggregated games, use directly
+  const aggregatedGames = useMemo(() => {
+    return games.map(game => ({
+      id: game.id,
+      name: game.name,
+      cover_art_url: game.cover_art_url,
+      platforms: game.platforms,
+      status: game.status,
+      user_rating: game.max_user_rating,
+      total_minutes: game.total_minutes_sum,
+      last_played: game.latest_last_played,
+      metacritic_score: game.metacritic_score,
+      release_date: game.release_date,
+      is_favorite: game.is_favorite_any,
+      series_name: game.series_name,
+    }))
+  }, [games])
+
   // Get unique platforms and statuses for filters
   const uniquePlatforms = useMemo(() => {
-    const platforms = new Set(games.map(g => g.platform_display_name))
-    return Array.from(platforms).sort()
-  }, [games])
-  
-  const uniqueStatuses = useMemo(() => {
-    const statuses = new Set(games.map(g => g.status))
-    return Array.from(statuses).sort()
-  }, [games])
-  
-  // Aggregate games by ID to show one entry per game with multiple platforms
-  const aggregatedGames = useMemo(() => {
-    const gameMap = new Map<string, AggregatedGame>()
-    
-    for (const game of games) {
-      const existing = gameMap.get(game.id)
-      if (existing) {
-        existing.platforms.push({
-          id: game.platform_id,
-          name: game.platform_name,
-          displayName: game.platform_display_name,
-          iconUrl: game.platform_icon_url,
-          colorPrimary: game.platform_color_primary,
-        })
-        existing.total_minutes += game.total_minutes
-        if (game.is_favorite) existing.is_favorite = true
-        if (game.user_rating && (!existing.user_rating || game.user_rating > existing.user_rating)) {
-          existing.user_rating = game.user_rating
-        }
-      } else {
-        gameMap.set(game.id, {
-          id: game.id,
-          name: game.name,
-          cover_art_url: game.cover_art_url,
-          platforms: [{
-            id: game.platform_id,
-            name: game.platform_name,
-            displayName: game.platform_display_name,
-            iconUrl: game.platform_icon_url,
-            colorPrimary: game.platform_color_primary,
-          }],
-          status: game.status,
-          user_rating: game.user_rating,
-          total_minutes: game.total_minutes,
-          last_played: game.last_played,
-          metacritic_score: game.metacritic_score,
-          release_date: game.release_date,
-          is_favorite: game.is_favorite,
-          series_name: game.series_name,
-        })
-      }
-    }
-    
-    return Array.from(gameMap.values())
-  }, [games])
-  
-  // Filter games based on platform, status, and favorites
-  const filteredGames = useMemo(() => {
-    return aggregatedGames.filter(game => {
-      if (platformFilter && !game.platforms.some(p => p.displayName === platformFilter)) return false
-      if (statusFilter && game.status !== statusFilter) return false
-      if (favoritesOnly && !game.is_favorite) return false
-      return true
+    const platformsSet = new Set<string>()
+    aggregatedGames.forEach(game => {
+      game.platforms.forEach(p => platformsSet.add(p.displayName))
     })
-  }, [aggregatedGames, platformFilter, statusFilter, favoritesOnly])
+    return Array.from(platformsSet).sort()
+  }, [aggregatedGames])
+
+  const uniqueStatuses = useMemo(() => {
+    const statuses = new Set(aggregatedGames.map(g => g.status))
+    return Array.from(statuses).sort()
+  }, [aggregatedGames])
+
+  // Backend handles filtering and sorting, use aggregated games directly
+  const filteredGames = aggregatedGames
 
   const selectedGameIds = useMemo(() => {
     return Object.keys(rowSelection)
@@ -265,13 +226,26 @@ export function Library() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Link
-            to="/library/$id"
-            params={{ id: info.row.original.id }}
-            className="text-blue-400 hover:text-blue-300"
-          >
-            {info.getValue()}
-          </Link>
+          <div className="flex items-center gap-3">
+            {info.row.original.cover_art_url ? (
+              <img
+                src={info.row.original.cover_art_url}
+                alt={info.getValue()}
+                className="w-8 h-12 object-cover rounded"
+              />
+            ) : (
+              <div className="w-8 h-12 bg-zinc-800 rounded flex items-center justify-center">
+                <span className="text-zinc-600 text-xs">No image</span>
+              </div>
+            )}
+            <Link
+              to="/library/$id"
+              params={{ id: info.row.original.id }}
+              className="text-blue-400 hover:text-blue-300"
+            >
+              {info.getValue()}
+            </Link>
+          </div>
         ),
       }),
       columnHelper.accessor('platforms', {
@@ -309,20 +283,19 @@ export function Library() {
     data: filteredGames,
     columns,
     state: {
-      sorting,
       columnFilters,
       globalFilter,
       columnVisibility,
       rowSelection,
     },
-    onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     enableRowSelection: true,
+    enableSorting: false,
+    manualSorting: true,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
@@ -368,29 +341,22 @@ export function Library() {
     )
   }
 
-  const hasActiveFilters = Boolean(platformFilter || statusFilter || globalFilter || favoritesOnly)
-
   const handleClearFilters = () => {
-    setPlatformFilter('')
-    setStatusFilter('')
     setGlobalFilter('')
-    setFavoritesOnly(false)
+    clearFilters()
   }
 
   const sidebarContent = (
     <LibrarySidebar
-      platformFilter={platformFilter}
-      setPlatformFilter={setPlatformFilter}
-      statusFilter={statusFilter}
-      setStatusFilter={setStatusFilter}
-      favoritesOnly={favoritesOnly}
-      setFavoritesOnly={setFavoritesOnly}
+      filters={filters}
+      setFilter={setFilter}
       viewMode={viewMode}
       setViewMode={setViewMode}
       uniquePlatforms={uniquePlatforms}
       uniqueStatuses={uniqueStatuses}
+      collections={collections}
       onClearFilters={handleClearFilters}
-      hasActiveFilters={hasActiveFilters}
+      hasActiveFilters={hasActiveFilters || Boolean(globalFilter)}
     />
   )
 
@@ -491,6 +457,17 @@ export function Library() {
           )}
         </div>
         
+        {/* Active Filter Pills */}
+        {hasActiveFilters && (
+          <div className="mb-4">
+            <ActiveFilterPills
+              filters={filters}
+              setFilter={setFilter}
+              onClearAll={handleClearFilters}
+            />
+          </div>
+        )}
+
         {/* Results count, page size, and selection toggle */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -501,36 +478,38 @@ export function Library() {
                 const end = Math.min((pageIndex + 1) * pageSize, filteredGames.length)
                 return `Showing ${start}-${end} of ${filteredGames.length} games`
               })()}
-              {(platformFilter || statusFilter || favoritesOnly) && ` (filtered from ${games.length} total)`}
+              {hasActiveFilters && ` (filtered from ${games.length} total)`}
             </span>
             {!selectionMode && games.length > 0 && (
-              <button
-                onClick={() => setSelectionMode(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-ctp-text border border-zinc-700 hover:border-zinc-500 rounded transition-all"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                Select
-              </button>
+              <>
+                <SortControl currentSort={filters.sort} onSortChange={(s) => setFilter('sort', s)} />
+                <button
+                  onClick={() => setSelectionMode(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-ctp-text border border-zinc-700 hover:border-zinc-500 rounded transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                  Select
+                </button>
+              </>
             )}
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="pageSize" className="text-sm text-zinc-400">
               Items per page:
             </label>
-            <select
+            <Select
               id="pageSize"
               value={table.getState().pagination.pageSize}
-              onChange={(e) => table.setPageSize(Number(e.target.value))}
-              className="input py-1 px-2 text-sm min-w-[70px]"
-            >
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => table.setPageSize(Number(value))}
+              options={PAGE_SIZE_OPTIONS.map((size) => ({
+                value: size,
+                label: String(size),
+              }))}
+              showCheckmark={false}
+              className="min-w-[90px] text-sm"
+            />
           </div>
         </div>
 
@@ -783,15 +762,9 @@ export function Library() {
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
-                          className="text-left p-4 text-zinc-400 font-medium cursor-pointer hover:text-ctp-text"
-                          onClick={header.column.getToggleSortingHandler()}
+                          className="text-left p-4 text-zinc-400 font-medium"
                         >
-                          <div className="flex items-center gap-2">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {header.column.getIsSorted() && (
-                              <span>{header.column.getIsSorted() === 'asc' ? '↑' : '↓'}</span>
-                            )}
-                          </div>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
                         </th>
                       ))}
                     </tr>

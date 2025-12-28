@@ -54,6 +54,106 @@ interface UserGameEdition {
   edition_id: string | null
 }
 
+interface AchievementHistoryPoint {
+  percentage: number
+  logged_at: string
+  notes: string
+}
+
+async function getAchievementHistory(
+  userId: string,
+  gameId: string,
+  platformId: string
+): Promise<AchievementHistoryPoint[]> {
+  const rawgAchievements = await queryMany<{ completed_at: string }>(
+    `SELECT completed_at FROM user_rawg_achievements
+     WHERE user_id = $1 AND game_id = $2 AND completed = true AND completed_at IS NOT NULL
+     ORDER BY completed_at ASC`,
+    [userId, gameId]
+  )
+
+  const customAchievements = await queryMany<{ unlock_date: string }>(
+    `SELECT ua.unlock_date
+     FROM user_achievements ua
+     INNER JOIN achievements a ON ua.achievement_id = a.id
+     WHERE ua.user_id = $1 AND a.game_id = $2 AND a.platform_id = $3
+       AND ua.unlocked = true AND ua.unlock_date IS NOT NULL
+     ORDER BY ua.unlock_date ASC`,
+    [userId, gameId, platformId]
+  )
+
+  const totalAchievements = await queryOne<{ total: number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) +
+       (SELECT COUNT(*) FROM achievements WHERE game_id = $1 AND platform_id = $2) as total`,
+    [gameId, platformId]
+  )
+
+  const total = totalAchievements?.total || 0
+  if (total === 0) return []
+
+  const allUnlocks = [
+    ...rawgAchievements.map((a) => ({ timestamp: new Date(a.completed_at) })),
+    ...customAchievements.map((a) => ({ timestamp: new Date(a.unlock_date) })),
+  ].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+
+  const history: AchievementHistoryPoint[] = []
+  allUnlocks.forEach((unlock, index) => {
+    const percentage = Math.floor(((index + 1) / total) * 100)
+    history.push({
+      percentage,
+      logged_at: unlock.timestamp.toISOString(),
+      notes: 'Achievement unlocked',
+    })
+  })
+
+  return history
+}
+
+async function getFullProgressHistory(
+  userId: string,
+  gameId: string,
+  platformId: string
+): Promise<AchievementHistoryPoint[]> {
+  const achievementHistory = await getAchievementHistory(userId, gameId, platformId)
+  if (achievementHistory.length === 0) return []
+
+  const ownedRequiredDlcs = await queryMany<GameAddition>(
+    `SELECT ga.id, ga.name, ga.weight, ga.required_for_full, ga.addition_type, ga.is_complete_edition
+     FROM game_additions ga
+     WHERE ga.game_id = $1 AND ga.addition_type = 'dlc' AND ga.required_for_full = true`,
+    [gameId]
+  )
+
+  const ownedDlcIds = await getOwnedDlcIds(userId, gameId, platformId)
+  const ownedAndRequiredDlcs = ownedRequiredDlcs.filter((dlc) => ownedDlcIds.has(dlc.id))
+
+  if (ownedAndRequiredDlcs.length === 0) {
+    return achievementHistory
+  }
+
+  const fullHistory: AchievementHistoryPoint[] = []
+  achievementHistory.forEach((point) => {
+    const mainPct = point.percentage
+    let weightedSum = mainPct
+    let totalWeight = 1
+
+    ownedAndRequiredDlcs.forEach((dlc) => {
+      weightedSum += mainPct * dlc.weight
+      totalWeight += dlc.weight
+    })
+
+    const fullPct = Math.floor(weightedSum / totalWeight)
+    fullHistory.push({
+      percentage: fullPct,
+      logged_at: point.logged_at,
+      notes: 'Progress milestone',
+    })
+  })
+
+  return fullHistory
+}
+
 async function getOwnedDlcIds(
   userId: string,
   gameId: string,
@@ -92,44 +192,8 @@ async function calculateDerivedProgress(
   gameId: string,
   platformId: string
 ): Promise<{ full: number; completionist: number; main: number; achievementPercentage: number; hasDlcs: boolean }> {
-  const mainResult = await queryOne<{ percentage: number }>(
-    `SELECT percentage FROM completion_logs 
-     WHERE user_id = $1 AND game_id = $2 AND platform_id = $3 AND completion_type = 'main'
-     ORDER BY logged_at DESC LIMIT 1`,
-    [userId, gameId, platformId]
-  )
-  const main = mainResult?.percentage || 0
-
-  const allDlcs = await queryMany<GameAddition>(
-    `SELECT id, name, weight, required_for_full, addition_type, is_complete_edition FROM game_additions 
-     WHERE game_id = $1 AND addition_type = 'dlc' AND required_for_full = true`,
-    [gameId]
-  )
-
-  const ownedDlcIds = await getOwnedDlcIds(userId, gameId, platformId)
-
-  const ownedRequiredDlcs = allDlcs.filter((dlc) => ownedDlcIds.has(dlc.id))
-
-  let weightedSum = main
-  let totalWeight = 1
-
-  for (const dlc of ownedRequiredDlcs) {
-    const dlcProgress = await queryOne<{ percentage: number }>(
-      `SELECT percentage FROM completion_logs 
-       WHERE user_id = $1 AND game_id = $2 AND platform_id = $3 
-         AND completion_type = 'dlc' AND dlc_id = $4
-       ORDER BY logged_at DESC LIMIT 1`,
-      [userId, gameId, platformId, dlc.id]
-    )
-    const dlcPct = dlcProgress?.percentage || 0
-    weightedSum += dlcPct * dlc.weight
-    totalWeight += dlc.weight
-  }
-
-  const full = totalWeight > 0 ? Math.floor(weightedSum / totalWeight) : main
-
   const achievementStats = await queryOne<{ total: number; completed: number }>(
-    `SELECT 
+    `SELECT
        (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) +
        (SELECT COUNT(*)
         FROM achievements a
@@ -146,6 +210,48 @@ async function calculateDerivedProgress(
   const totalAch = achievementStats?.total || 0
   const completedAch = achievementStats?.completed || 0
   const achievementPercentage = totalAch > 0 ? Math.floor((completedAch / totalAch) * 100) : 100
+
+  const mainResult = await queryOne<{ percentage: number }>(
+    `SELECT percentage FROM completion_logs
+     WHERE user_id = $1 AND game_id = $2 AND platform_id = $3 AND completion_type = 'main'
+     ORDER BY logged_at DESC LIMIT 1`,
+    [userId, gameId, platformId]
+  )
+  let main = mainResult?.percentage ?? 0
+  if (main === 0 && totalAch > 0 && achievementPercentage > 0) {
+    main = achievementPercentage
+  }
+
+  const allDlcs = await queryMany<GameAddition>(
+    `SELECT id, name, weight, required_for_full, addition_type, is_complete_edition FROM game_additions 
+     WHERE game_id = $1 AND addition_type = 'dlc' AND required_for_full = true`,
+    [gameId]
+  )
+
+  const ownedDlcIds = await getOwnedDlcIds(userId, gameId, platformId)
+
+  const ownedRequiredDlcs = allDlcs.filter((dlc) => ownedDlcIds.has(dlc.id))
+
+  let weightedSum = main
+  let totalWeight = 1
+
+  for (const dlc of ownedRequiredDlcs) {
+    const dlcProgress = await queryOne<{ percentage: number }>(
+      `SELECT percentage FROM completion_logs
+       WHERE user_id = $1 AND game_id = $2 AND platform_id = $3
+         AND completion_type = 'dlc' AND dlc_id = $4
+       ORDER BY logged_at DESC LIMIT 1`,
+      [userId, gameId, platformId, dlc.id]
+    )
+    let dlcPct = dlcProgress?.percentage ?? 0
+    if (dlcPct === 0 && totalAch > 0 && achievementPercentage > 0) {
+      dlcPct = achievementPercentage
+    }
+    weightedSum += dlcPct * dlc.weight
+    totalWeight += dlc.weight
+  }
+
+  const full = totalWeight > 0 ? Math.floor(weightedSum / totalWeight) : main
 
   let completionist: number
   if (totalAch > 0) {
@@ -188,7 +294,8 @@ async function updateGameStatus(
   platformId: string,
   full: number,
   completionist: number,
-  main: number
+  main: number,
+  achievementPercentage: number
 ): Promise<{ statusChanged: boolean; newStatus: string | null }> {
   const progress = await queryOne<{ status: string }>(
     'SELECT status FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
@@ -200,9 +307,13 @@ async function updateGameStatus(
 
   if (completionist === 100) {
     newStatus = 'completed'
-  } else if (full === 100 && currentStatus !== 'completed') {
+  } else if (full === 100) {
     newStatus = 'finished'
-  } else if (currentStatus === 'backlog' && main > 0) {
+  } else if (currentStatus === 'completed' && completionist < 100 && full < 100) {
+    newStatus = 'playing'
+  } else if (currentStatus === 'finished' && full < 100) {
+    newStatus = 'playing'
+  } else if (currentStatus === 'backlog' && (main > 0 || achievementPercentage > 0)) {
     newStatus = 'playing'
   }
 
@@ -293,29 +404,33 @@ router.get(
         ownedDlcIds = await getOwnedDlcIds(user.id, gameId, activePlatformId)
       }
 
+      let derived = { full: 0, completionist: 0, main: 0, achievementPercentage: 100, hasDlcs: false }
+
+      if (activePlatformId) {
+        derived = await calculateDerivedProgress(user.id, gameId, activePlatformId)
+      }
+
       const dlcSummaries: DLCSummary[] = []
       for (const dlc of additions) {
         const isOwned = ownedDlcIds.has(dlc.id)
         const dlcProgress = await queryOne<{ percentage: number }>(
-          `SELECT percentage FROM completion_logs 
+          `SELECT percentage FROM completion_logs
            WHERE user_id = $1 AND game_id = $2 AND completion_type = 'dlc' AND dlc_id = $3
            ORDER BY logged_at DESC LIMIT 1`,
           [user.id, gameId, dlc.id]
         )
+        let dlcPct = dlcProgress?.percentage ?? 0
+        if (dlcPct === 0 && derived.achievementPercentage > 0 && isOwned) {
+          dlcPct = derived.achievementPercentage
+        }
         dlcSummaries.push({
           dlcId: dlc.id,
           name: dlc.name,
-          percentage: dlcProgress?.percentage || 0,
+          percentage: dlcPct,
           weight: dlc.weight,
           requiredForFull: dlc.required_for_full,
           owned: isOwned,
         })
-      }
-
-      let derived = { full: 0, completionist: 0, main: mainPct?.percentage || 0, achievementPercentage: 100, hasDlcs: false }
-
-      if (activePlatformId) {
-        derived = await calculateDerivedProgress(user.id, gameId, activePlatformId)
       }
 
       const ownedDlcs = dlcSummaries.filter((d) => d.owned)
@@ -329,12 +444,24 @@ router.get(
         hasDlcs: ownedDlcs.length > 0,
       }
 
+      let achievementHistory: AchievementHistoryPoint[] = []
+      let fullProgressHistory: AchievementHistoryPoint[] = []
+      if (activePlatformId && !platformId) {
+        achievementHistory = await getAchievementHistory(user.id, gameId, activePlatformId)
+        fullProgressHistory = await getFullProgressHistory(user.id, gameId, activePlatformId)
+      } else if (platformId) {
+        achievementHistory = await getAchievementHistory(user.id, gameId, platformId)
+        fullProgressHistory = await getFullProgressHistory(user.id, gameId, platformId)
+      }
+
       return new Response(
         JSON.stringify({
           logs,
           total: totalResult?.count || 0,
           currentPercentage: summary.main,
           summary,
+          achievementHistory,
+          fullProgressHistory,
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
@@ -475,13 +602,32 @@ router.post(
       await logDerivedProgress(user.id, gameId, platformId, 'full', derived.full)
       await logDerivedProgress(user.id, gameId, platformId, 'completionist', derived.completionist)
 
+      if (derived.full === 100) {
+        const existingFullLog = await queryOne<{ id: string }>(
+          `SELECT id FROM completion_logs
+           WHERE user_id = $1 AND game_id = $2 AND platform_id = $3
+             AND completion_type = 'full' AND percentage = 100
+           ORDER BY logged_at DESC LIMIT 1`,
+          [user.id, gameId, platformId]
+        )
+
+        if (!existingFullLog) {
+          await query(
+            `INSERT INTO completion_logs (user_id, game_id, platform_id, completion_type, percentage, notes)
+             VALUES ($1, $2, $3, 'full', 100, 'Auto-logged: Full game completed')`,
+            [user.id, gameId, platformId]
+          )
+        }
+      }
+
       const { statusChanged, newStatus } = await updateGameStatus(
         user.id,
         gameId,
         platformId,
         derived.full,
         derived.completionist,
-        derived.main
+        derived.main,
+        derived.achievementPercentage
       )
 
       return new Response(
@@ -606,6 +752,38 @@ router.post(
 
       const derived = await calculateDerivedProgress(user.id, gameId, platformId)
 
+      const allDlcs = await queryMany<{ id: string }>(
+        `SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'`,
+        [gameId]
+      )
+
+      const ownedDlcIds = await getOwnedDlcIds(user.id, gameId, platformId)
+
+      for (const dlc of allDlcs) {
+        const isOwned = ownedDlcIds.has(dlc.id)
+        if (!isOwned) {
+          const lastDlcLog = await queryOne<{ percentage: number }>(
+            `SELECT percentage FROM completion_logs
+             WHERE user_id = $1 AND game_id = $2 AND platform_id = $3 AND completion_type = 'dlc' AND dlc_id = $4
+             ORDER BY logged_at DESC LIMIT 1`,
+            [user.id, gameId, platformId, dlc.id]
+          )
+
+          let dlcPct = lastDlcLog?.percentage ?? 0
+          if (dlcPct === 0 && derived.achievementPercentage > 0) {
+            dlcPct = derived.achievementPercentage
+          }
+
+          if (dlcPct > 0) {
+            await query(
+              `INSERT INTO completion_logs (user_id, game_id, platform_id, completion_type, dlc_id, percentage, notes)
+               VALUES ($1, $2, $3, 'dlc', $4, 0, 'Auto-reset: DLC removed from ownership')`,
+              [user.id, gameId, platformId, dlc.id]
+            )
+          }
+        }
+      }
+
       await logDerivedProgress(user.id, gameId, platformId, 'full', derived.full)
       await logDerivedProgress(user.id, gameId, platformId, 'completionist', derived.completionist)
 
@@ -615,7 +793,8 @@ router.post(
         platformId,
         derived.full,
         derived.completionist,
-        derived.main
+        derived.main,
+        derived.achievementPercentage
       )
 
       return new Response(

@@ -22,6 +22,7 @@ import '@/routes/stats'
 import '@/routes/editions'
 import '@/routes/franchises'
 import '@/routes/user-platforms'
+import '@/routes/ai'
 
 async function startServer() {
   await runMigrations()

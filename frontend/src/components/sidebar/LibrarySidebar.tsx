@@ -1,18 +1,23 @@
 import { Link } from '@tanstack/react-router'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { Checkbox, ScrollFade } from '@/components/ui'
+import { FilterSection, GenreFilter, CollectionFilter, FranchiseFilter } from '@/components/filters'
+import type { LibraryFilters } from '@/hooks/useLibraryFilters'
+
+interface Collection {
+  id: string
+  name: string
+  game_count: number
+}
 
 interface LibrarySidebarProps {
-  platformFilter: string
-  setPlatformFilter: (value: string) => void
-  statusFilter: string
-  setStatusFilter: (value: string) => void
-  favoritesOnly: boolean
-  setFavoritesOnly: (value: boolean) => void
+  filters: LibraryFilters
+  setFilter: <K extends keyof LibraryFilters>(key: K, value: LibraryFilters[K]) => void
   viewMode: 'grid' | 'table'
   setViewMode: (value: 'grid' | 'table') => void
   uniquePlatforms: string[]
   uniqueStatuses: string[]
+  collections: Collection[]
   onClearFilters: () => void
   hasActiveFilters: boolean
 }
@@ -67,16 +72,13 @@ const STATUS_ACTIVE_STYLES: Record<string, React.CSSProperties> = {
 }
 
 export function LibrarySidebar({
-  platformFilter,
-  setPlatformFilter,
-  statusFilter,
-  setStatusFilter,
-  favoritesOnly,
-  setFavoritesOnly,
+  filters,
+  setFilter,
   viewMode,
   setViewMode,
   uniquePlatforms,
   uniqueStatuses,
+  collections,
   onClearFilters,
   hasActiveFilters,
 }: LibrarySidebarProps) {
@@ -135,15 +137,15 @@ export function LibrarySidebar({
         {/* Favorites Toggle */}
         <div className="flex justify-center pt-2 border-t border-ctp-surface0">
           <button
-            onClick={() => setFavoritesOnly(!favoritesOnly)}
+            onClick={() => setFilter('favorites', !filters.favorites)}
             className={`p-2 rounded-lg transition-all ${
-              favoritesOnly
+              filters.favorites
                 ? 'bg-ctp-red/20 text-ctp-red'
                 : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
             }`}
-            title={favoritesOnly ? 'Showing Favorites Only' : 'Show Favorites Only'}
+            title={filters.favorites ? 'Showing Favorites Only' : 'Show Favorites Only'}
           >
-            <svg className="w-5 h-5" fill={favoritesOnly ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill={filters.favorites ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
@@ -266,9 +268,9 @@ export function LibrarySidebar({
         </h3>
         <div className="space-y-1">
           <button
-            onClick={() => setStatusFilter('')}
+            onClick={() => setFilter('status', '')}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-              statusFilter === ''
+              filters.status === ''
                 ? 'bg-ctp-teal/20 text-ctp-teal'
                 : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
             }`}
@@ -278,14 +280,14 @@ export function LibrarySidebar({
           {uniqueStatuses.map((status) => (
             <button
               key={status}
-              onClick={() => setStatusFilter(status)}
+              onClick={() => setFilter('status', status)}
               style={
-                statusFilter === status
+                filters.status === status
                   ? STATUS_ACTIVE_STYLES[status] || undefined
                   : STATUS_BG_STYLES[status] || undefined
               }
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all text-ctp-text hover:opacity-90 ${
-                statusFilter === status
+                filters.status === status
                   ? 'border'
                   : ''
               }`}
@@ -315,9 +317,9 @@ export function LibrarySidebar({
         </h3>
         <ScrollFade axis="y" className="space-y-1 max-h-48 overflow-y-auto">
           <button
-            onClick={() => setPlatformFilter('')}
+            onClick={() => setFilter('platform', '')}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-              platformFilter === ''
+              filters.platform === ''
                 ? 'bg-ctp-mauve/20 text-ctp-mauve'
                 : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
             }`}
@@ -327,9 +329,9 @@ export function LibrarySidebar({
           {uniquePlatforms.map((platform) => (
             <button
               key={platform}
-              onClick={() => setPlatformFilter(platform)}
+              onClick={() => setFilter('platform', platform)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all truncate ${
-                platformFilter === platform
+                filters.platform === platform
                   ? 'bg-ctp-mauve/20 text-ctp-mauve'
                   : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
               }`}
@@ -340,6 +342,58 @@ export function LibrarySidebar({
           ))}
         </ScrollFade>
       </div>
+
+      <FilterSection
+        title="Genres"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        }
+        iconColor="text-ctp-peach"
+        onClear={() => setFilter('genre', [])}
+        hasSelection={filters.genre.length > 0}
+      >
+        <GenreFilter
+          selectedGenres={filters.genre}
+          onGenresChange={(g) => setFilter('genre', g)}
+        />
+      </FilterSection>
+
+      <FilterSection
+        title="Collections"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        }
+        iconColor="text-ctp-sapphire"
+        onClear={() => setFilter('collection', [])}
+        hasSelection={filters.collection.length > 0}
+      >
+        <CollectionFilter
+          selectedCollections={filters.collection}
+          onCollectionsChange={(c) => setFilter('collection', c)}
+          collections={collections}
+        />
+      </FilterSection>
+
+      <FilterSection
+        title="Franchises"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        }
+        iconColor="text-ctp-lavender"
+        onClear={() => setFilter('franchise', [])}
+        hasSelection={filters.franchise.length > 0}
+      >
+        <FranchiseFilter
+          selectedFranchises={filters.franchise}
+          onFranchisesChange={(f) => setFilter('franchise', f)}
+        />
+      </FilterSection>
 
       <div>
         <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -360,8 +414,8 @@ export function LibrarySidebar({
         </h3>
         <label className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-ctp-surface0 transition-colors">
           <Checkbox
-            checked={favoritesOnly}
-            onChange={(e) => setFavoritesOnly(e.target.checked)}
+            checked={filters.favorites}
+            onChange={(e) => setFilter('favorites', e.target.checked)}
           />
           <span className="text-sm text-ctp-subtext1">Favorites Only</span>
         </label>

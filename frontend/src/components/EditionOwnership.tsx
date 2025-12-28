@@ -37,12 +37,19 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
   }, [data, isInitialized])
 
   const updateEditionMutation = useMutation({
-    mutationFn: (editionId: string | null) => ownershipAPI.setEdition(gameId, platformId, editionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ownership', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['additions', gameId] })
-      completionLogsAPI.recalculate(gameId, platformId)
+    mutationFn: async (editionId: string | null) => {
+      await ownershipAPI.setEdition(gameId, platformId, editionId)
+      await completionLogsAPI.recalculate(gameId, platformId)
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['ownership', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['additions', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['game', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['games'] }),
+        queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] }),
+      ])
       showToast('Edition updated', 'success')
     },
     onError: () => {
@@ -51,12 +58,19 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
   })
 
   const updateDlcsMutation = useMutation({
-    mutationFn: (dlcIds: string[]) => ownershipAPI.setDlcs(gameId, platformId, dlcIds),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ownership', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['additions', gameId] })
-      completionLogsAPI.recalculate(gameId, platformId)
+    mutationFn: async (dlcIds: string[]) => {
+      await ownershipAPI.setDlcs(gameId, platformId, dlcIds)
+      await completionLogsAPI.recalculate(gameId, platformId)
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['ownership', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['additions', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['game', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['games'] }),
+        queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] }),
+      ])
       showToast('DLC ownership updated', 'success')
     },
     onError: () => {

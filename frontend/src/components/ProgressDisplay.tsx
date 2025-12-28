@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { completionLogsAPI, CompletionType } from '@/lib/api'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { ClickableBadge } from '@/components/ui'
 
 interface DLCSummary {
   dlcId: string
@@ -22,6 +23,7 @@ interface CompletionSummary {
 
 interface ProgressDisplayProps {
   gameId: string
+  platformId?: string
 }
 
 const TYPE_COLORS: Record<CompletionType, string> = {
@@ -31,11 +33,24 @@ const TYPE_COLORS: Record<CompletionType, string> = {
   completionist: '#F59E0B',
 }
 
-export function ProgressDisplay({ gameId }: ProgressDisplayProps) {
+export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
+  const navigate = useNavigate()
+
+  const handleBadgeClick = (tab: 'main' | 'dlc' | 'full' | 'completionist') => {
+    navigate({
+      to: '.',
+      hash: 'stats',
+      search: { tab },
+    })
+  }
+
   const { data, isLoading } = useQuery({
-    queryKey: ['completionLogs', gameId],
+    queryKey: ['completionLogs', gameId, platformId],
     queryFn: async () => {
-      const response = await completionLogsAPI.getAll(gameId, { limit: 1 })
+      const response = await completionLogsAPI.getAll(gameId, {
+        limit: 1,
+        ...(platformId && { platform_id: platformId })
+      })
       return response.data as {
         logs: unknown[]
         total: number
@@ -60,54 +75,95 @@ export function ProgressDisplay({ gameId }: ProgressDisplayProps) {
   const hasDlcs = summary.hasDlcs
 
   return (
-    <Link
-      to="."
-      hash="stats"
-      className="block bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-teal/50 rounded-lg p-3 transition-colors group"
-    >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-ctp-subtext0 group-hover:text-ctp-subtext1">
-          {hasDlcs ? 'Full Progress' : 'Main Progress'}
-        </span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 text-ctp-overlay1 group-hover:text-ctp-teal">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-        </svg>
-      </div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-bold" style={{ color: hasDlcs ? TYPE_COLORS.full : TYPE_COLORS.main }}>
-          {hasDlcs ? fullProgress : mainProgress}
-        </span>
-        <span className="text-sm text-ctp-subtext0">%</span>
-      </div>
-      <div className="mt-2 w-full bg-ctp-mantle rounded-full h-1.5">
-        <div
-          className="h-1.5 rounded-full transition-all duration-200"
-          style={{
-            width: `${hasDlcs ? fullProgress : mainProgress}%`,
-            backgroundColor: hasDlcs ? TYPE_COLORS.full : TYPE_COLORS.main,
-          }}
-        />
-      </div>
-      {hasDlcs && (
-        <div className="mt-2 flex gap-3 text-xs">
-          <span style={{ color: TYPE_COLORS.main }}>Main: {mainProgress}%</span>
-          {summary.dlcs.filter((d) => d.owned !== false).length > 0 && (
-            <span style={{ color: TYPE_COLORS.dlc }}>
-              DLCs: {Math.floor(
-                summary.dlcs
-                  .filter((d) => d.owned !== false)
-                  .reduce((acc, d) => acc + d.percentage, 0) /
-                  summary.dlcs.filter((d) => d.owned !== false).length
-              )}%
-            </span>
-          )}
+    <div className="bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg p-3">
+      <Link
+        to="."
+        hash="stats"
+        className="block hover:opacity-80 transition-opacity group"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-ctp-subtext0 group-hover:text-ctp-subtext1">
+            {hasDlcs ? 'Full Progress' : 'Main Progress'}
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 text-ctp-overlay1 group-hover:text-ctp-teal">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
         </div>
-      )}
-      {summary.completionist > 0 && (
-        <div className="mt-1 flex gap-3 text-xs">
-          <span style={{ color: TYPE_COLORS.completionist }}>Completionist: {summary.completionist}%</span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-bold" style={{ color: hasDlcs ? TYPE_COLORS.full : TYPE_COLORS.main }}>
+            {hasDlcs ? fullProgress : mainProgress}
+          </span>
+          <span className="text-sm text-ctp-subtext0">%</span>
         </div>
-      )}
-    </Link>
+        <div className="mt-2 w-full bg-ctp-mantle rounded-full h-1.5">
+          <div
+            className="h-1.5 rounded-full transition-all duration-200"
+            style={{
+              width: `${hasDlcs ? fullProgress : mainProgress}%`,
+              backgroundColor: hasDlcs ? TYPE_COLORS.full : TYPE_COLORS.main,
+            }}
+          />
+        </div>
+      </Link>
+      {(() => {
+        const ownedDlcs = summary.dlcs.filter((d) => d.owned !== false)
+        const hasAchievements = summary.achievementPercentage > 0 && summary.achievementPercentage < 100
+        const hasOwnedDlcsWithProgress = ownedDlcs.length > 0 && ownedDlcs.some((d) => d.percentage > 0)
+
+        const shouldShowCompletionist =
+          summary.completionist > 0 && (hasAchievements || hasOwnedDlcsWithProgress)
+
+        return (
+          <>
+            {hasDlcs && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <ClickableBadge
+                  label="Main"
+                  percentage={mainProgress}
+                  color={TYPE_COLORS.main}
+                  onClick={() => handleBadgeClick('main')}
+                />
+                {ownedDlcs.length > 0 && (
+                  <ClickableBadge
+                    label="DLCs"
+                    percentage={Math.floor(
+                      ownedDlcs.reduce((acc, d) => acc + d.percentage, 0) / ownedDlcs.length
+                    )}
+                    color={TYPE_COLORS.dlc}
+                    onClick={() => handleBadgeClick('dlc')}
+                  />
+                )}
+                <ClickableBadge
+                  label="Full"
+                  percentage={fullProgress}
+                  color={TYPE_COLORS.full}
+                  onClick={() => handleBadgeClick('full')}
+                />
+              </div>
+            )}
+            {!hasDlcs && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <ClickableBadge
+                  label="Main"
+                  percentage={mainProgress}
+                  color={TYPE_COLORS.main}
+                  onClick={() => handleBadgeClick('main')}
+                />
+              </div>
+            )}
+            {shouldShowCompletionist && (
+              <div className="mt-2">
+                <ClickableBadge
+                  label="Completionist"
+                  percentage={summary.completionist}
+                  color={TYPE_COLORS.completionist}
+                  onClick={() => handleBadgeClick('completionist')}
+                />
+              </div>
+            )}
+          </>
+        )
+      })()}
+    </div>
   )
 }

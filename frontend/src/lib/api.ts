@@ -42,7 +42,26 @@ export const authAPI = {
 
 // Games API
 export const gamesAPI = {
-  getAll: () => api.get('/games'),
+  getAll: (params?: {
+    platform?: string
+    status?: string
+    favorites?: boolean
+    genre?: string
+    collection?: string
+    franchise?: string
+    sort?: string
+  }) => {
+    if (!params) return api.get('/games')
+    const searchParams = new URLSearchParams()
+    if (params.platform) searchParams.set('platform', params.platform)
+    if (params.status) searchParams.set('status', params.status)
+    if (params.favorites) searchParams.set('favorites', 'true')
+    if (params.genre) searchParams.set('genre', params.genre)
+    if (params.collection) searchParams.set('collection', params.collection)
+    if (params.franchise) searchParams.set('franchise', params.franchise)
+    if (params.sort) searchParams.set('sort', params.sort)
+    return api.get(`/games?${searchParams.toString()}`)
+  },
   getGenreStats: () => api.get('/games/stats/genres'),
   export: (format: 'json' | 'csv') => api.get(`/games/export?format=${format}`, { responseType: 'blob' }),
   getOne: (id: string) => api.get(`/games/${id}`),
@@ -415,4 +434,72 @@ export const franchisesAPI = {
   sync: () => api.post<{ success: boolean; games_checked: number; games_updated: number }>('/franchises/sync'),
   importGame: (rawgId: number, platformId: string, seriesName: string) =>
     api.post<{ success: boolean }>('/franchises/import', { rawgId, platformId, seriesName }),
+};
+
+// AI API
+export interface AiProviderConfig {
+  provider: string
+  base_url: string | null
+  api_key_masked?: string | null
+  model: string
+  image_api_key_masked?: string | null
+  image_model: string | null
+  temperature: number
+  max_tokens: number
+  is_active: boolean
+}
+
+export interface CollectionSuggestion {
+  name: string
+  description: string
+  gameNames: string[]
+  reasoning: string
+}
+
+export interface NextGameSuggestion {
+  gameName: string
+  reasoning: string
+  estimatedHours?: number | null
+}
+
+export interface AiActivityLog {
+  id: string
+  actionType: string
+  provider: string
+  model: string
+  success: boolean
+  estimatedCostUsd: number | null
+  durationMs: number | null
+  createdAt: string
+}
+
+export const aiAPI = {
+  getSettings: () =>
+    api.get<{ providers: AiProviderConfig[]; activeProvider: AiProviderConfig | null }>('/ai/settings'),
+  updateSettings: (data: {
+    provider: string
+    baseUrl?: string | null
+    apiKey?: string | null
+    model?: string
+    imageApiKey?: string | null
+    imageModel?: string | null
+    temperature?: number
+    maxTokens?: number
+    setActive?: boolean
+  }) => api.put('/ai/settings', data),
+  setActiveProvider: (provider: string) => api.post('/ai/set-active-provider', { provider }),
+  suggestCollections: () =>
+    api.post<{ collections: CollectionSuggestion[]; cost: number }>('/ai/suggest-collections'),
+  suggestNextGame: (userInput?: string) =>
+    api.post<{ suggestion: NextGameSuggestion; cost: number }>('/ai/suggest-next-game', { userInput }),
+  generateCover: (collectionName: string, collectionDescription: string, collectionId: string) =>
+    api.post<{ imageUrl: string; cost: number }>('/ai/generate-cover', {
+      collectionName,
+      collectionDescription,
+      collectionId,
+    }),
+  getActivity: (limit?: number) =>
+    api.get<{ logs: AiActivityLog[] }>('/ai/activity', { params: { limit } }),
+  estimateCost: (actionType: string) =>
+    api.post<{ estimatedCostUsd: number }>('/ai/estimate-cost', { actionType }),
 };

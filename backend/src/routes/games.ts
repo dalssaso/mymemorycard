@@ -5,6 +5,28 @@ import { corsHeaders } from '@/middleware/cors'
 import { getGameDetails, getGameDetailsBySlug, getGameSeries } from '@/services/rawg'
 import type { Game } from '@/types'
 
+interface PlatformInfo {
+  id: string
+  name: string
+  displayName: string
+  iconUrl: string | null
+  colorPrimary: string
+}
+
+interface AggregatedUserGame extends Game {
+  platforms: PlatformInfo[]
+  status: string
+  max_user_rating: number | null
+  total_minutes_sum: number
+  latest_last_played: string | null
+  is_favorite_any: boolean
+  display_edition_name: string | null
+  display_cover_art_url: string | null
+  genres: string[] | null
+  max_completion_percentage: number | null
+  max_achievement_count: number | null
+}
+
 interface UserGameWithDetails extends Game {
   platform_id: string
   platform_name: string
@@ -38,34 +60,216 @@ router.get(
   '/api/games',
   requireAuth(async (req, user) => {
     try {
-      const games = await queryMany<UserGameWithDetails & {
-        display_edition_name: string | null
-        display_cover_art_url: string | null
-      }>(
-        `SELECT 
+      const url = new URL(req.url)
+      const platformFilter = url.searchParams.get('platform')
+      const statusFilter = url.searchParams.get('status')
+      const favoritesFilter = url.searchParams.get('favorites') === 'true'
+      const genreFilter = url.searchParams.get('genre')
+      const collectionFilter = url.searchParams.get('collection')
+      const franchiseFilter = url.searchParams.get('franchise')
+      const sortBy = url.searchParams.get('sort') || 'name'
+
+      const params: any[] = [user.id]
+      let paramIndex = 2
+      const whereClauses: string[] = ['ug.user_id = $1']
+
+      if (platformFilter) {
+        whereClauses.push(`p.display_name = $${paramIndex}`)
+        params.push(platformFilter)
+        paramIndex++
+      }
+
+      // Status and favorites filtering moved to HAVING clause (after GROUP BY)
+
+      if (genreFilter) {
+        whereClauses.push(`EXISTS (
+          SELECT 1 FROM game_genres gg
+          INNER JOIN genres gen ON gg.genre_id = gen.id
+          WHERE gg.game_id = g.id AND gen.name = $${paramIndex}
+        )`)
+        params.push(genreFilter)
+        paramIndex++
+      }
+
+      if (collectionFilter) {
+        whereClauses.push(`EXISTS (
+          SELECT 1 FROM collection_games cg
+          WHERE cg.game_id = g.id AND cg.collection_id = $${paramIndex}
+        )`)
+        params.push(collectionFilter)
+        paramIndex++
+      }
+
+      if (franchiseFilter) {
+        whereClauses.push(`g.series_name = $${paramIndex}`)
+        params.push(franchiseFilter)
+        paramIndex++
+      }
+
+      // Helper to get display name for sorting (repeat subquery since aliases aren't available in ORDER BY with GROUP BY)
+      const displayNameExpr = `COALESCE((SELECT ugde2.edition_name FROM user_game_display_editions ugde2 WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1), g.name)`
+
+      let orderByClause = `ORDER BY ${displayNameExpr} ASC`
+      if (sortBy === 'playtime_desc') {
+        orderByClause = `ORDER BY total_minutes_sum DESC, ${displayNameExpr} ASC`
+      } else if (sortBy === 'playtime_asc') {
+        orderByClause = `ORDER BY total_minutes_sum ASC, ${displayNameExpr} ASC`
+      } else if (sortBy === 'completion_high') {
+        orderByClause = `ORDER BY max_completion_percentage DESC, ${displayNameExpr} ASC`
+      } else if (sortBy === 'completion_low') {
+        orderByClause = `ORDER BY max_completion_percentage ASC, ${displayNameExpr} ASC`
+      } else if (sortBy === 'achievement_high') {
+        orderByClause = `ORDER BY max_achievement_count DESC NULLS LAST, ${displayNameExpr} ASC`
+      } else if (sortBy === 'achievement_low') {
+        orderByClause = `ORDER BY max_achievement_count ASC NULLS LAST, ${displayNameExpr} ASC`
+      } else if (sortBy === 'rating_high') {
+        orderByClause = `ORDER BY max_user_rating DESC NULLS LAST, ${displayNameExpr} ASC`
+      } else if (sortBy === 'rating_low') {
+        orderByClause = `ORDER BY max_user_rating ASC NULLS LAST, ${displayNameExpr} ASC`
+      } else if (sortBy === 'last_played_recent') {
+        orderByClause = `ORDER BY latest_last_played DESC NULLS LAST, ${displayNameExpr} ASC`
+      } else if (sortBy === 'last_played_oldest') {
+        orderByClause = `ORDER BY latest_last_played ASC NULLS LAST, ${displayNameExpr} ASC`
+      }
+
+      // Build HAVING clause for filters that need to check aggregated values
+      const havingClauses: string[] = []
+
+      if (statusFilter) {
+        // Filter on the aggregated status (calculated via subquery in SELECT)
+        havingClauses.push(`COALESCE((
+          SELECT ugp2.status
+          FROM user_game_progress ugp2
+          INNER JOIN user_games ug2 ON ugp2.game_id = ug2.game_id
+            AND ugp2.platform_id = ug2.platform_id
+            AND ugp2.user_id = ug2.user_id
+          WHERE ugp2.game_id = g.id
+            AND ugp2.user_id = $1
+          ORDER BY
+            CASE ugp2.status
+              WHEN 'completed' THEN 1
+              WHEN 'finished' THEN 2
+              WHEN 'playing' THEN 3
+              WHEN 'dropped' THEN 4
+              WHEN 'backlog' THEN 5
+              ELSE 6
+            END
+          LIMIT 1
+        ), 'backlog') = $${paramIndex}`)
+        params.push(statusFilter)
+        paramIndex++
+      }
+
+      if (favoritesFilter) {
+        // Filter on the aggregated is_favorite (using BOOL_OR)
+        havingClauses.push('BOOL_OR(COALESCE(ugp.is_favorite, FALSE)) = TRUE')
+      }
+
+      const havingClause = havingClauses.length > 0 ? `HAVING ${havingClauses.join(' AND ')}` : ''
+
+      const games = await queryMany<AggregatedUserGame>(
+        `SELECT
           g.*,
-          p.id as platform_id,
-          p.name as platform_name,
-          p.display_name as platform_display_name,
-          p.color_primary as platform_color_primary,
-          COALESCE(up.icon_url, p.default_icon_url) as platform_icon_url,
-          COALESCE(ugp.status, 'backlog') as status,
-          ugp.user_rating,
-          COALESCE(upt.total_minutes, 0) as total_minutes,
-          upt.last_played,
-          COALESCE(ugp.is_favorite, FALSE) as is_favorite,
-          ugde.edition_name as display_edition_name,
-          ugde.cover_art_url as display_cover_art_url
+          -- Aggregate platforms into JSON array
+          json_agg(json_build_object(
+            'id', p.id,
+            'name', p.name,
+            'displayName', p.display_name,
+            'iconUrl', COALESCE(up.icon_url, p.default_icon_url),
+            'colorPrimary', p.color_primary
+          ) ORDER BY p.display_name) as platforms,
+
+          -- Aggregated values for sorting and display
+          COALESCE(SUM(upt.total_minutes), 0) as total_minutes_sum,
+          MAX(ugp.user_rating) as max_user_rating,
+          MAX(upt.last_played) as latest_last_played,
+          BOOL_OR(COALESCE(ugp.is_favorite, FALSE)) as is_favorite_any,
+          COALESCE(MAX(ucf.completion_percentage), 0) as max_completion_percentage,
+
+          -- Status logic: prioritize most progressed status
+          -- completed > finished > playing > dropped > backlog
+          COALESCE((
+            SELECT ugp2.status
+            FROM user_game_progress ugp2
+            INNER JOIN user_games ug2 ON ugp2.game_id = ug2.game_id
+              AND ugp2.platform_id = ug2.platform_id
+              AND ugp2.user_id = ug2.user_id
+            WHERE ugp2.game_id = g.id
+              AND ugp2.user_id = $1
+            ORDER BY
+              CASE ugp2.status
+                WHEN 'completed' THEN 1
+                WHEN 'finished' THEN 2
+                WHEN 'playing' THEN 3
+                WHEN 'dropped' THEN 4
+                WHEN 'backlog' THEN 5
+                ELSE 6
+              END
+            LIMIT 1
+          ), 'backlog') as status,
+
+          -- Display edition overlay (take first found)
+          (SELECT ugde2.edition_name FROM user_game_display_editions ugde2
+           WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1) as display_edition_name,
+          (SELECT ugde2.cover_art_url FROM user_game_display_editions ugde2
+           WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1) as display_cover_art_url,
+
+          -- Achievement count (max across platforms)
+          COALESCE((
+            SELECT MAX(platform_count)
+            FROM (
+              SELECT
+                ug_inner.platform_id,
+                (
+                  -- RAWG achievements for this platform
+                  (SELECT COUNT(*)
+                   FROM user_rawg_achievements
+                   WHERE user_id = $1
+                     AND game_id = g.id
+                     AND platform_id = ug_inner.platform_id
+                     AND completed = true)
+                  +
+                  -- Manual achievements for this platform
+                  (SELECT COUNT(*)
+                   FROM achievements a
+                   INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+                   WHERE a.game_id = g.id
+                     AND a.platform_id = ug_inner.platform_id
+                     AND ua.user_id = $1
+                     AND ua.unlocked = true)
+                ) as platform_count
+              FROM user_games ug_inner
+              WHERE ug_inner.user_id = $1
+                AND ug_inner.game_id = g.id
+            ) platform_counts
+          ), 0) as max_achievement_count,
+
+          -- Genres (same for all platforms, take once)
+          (
+            SELECT json_agg(gen.name ORDER BY gen.name)
+            FROM game_genres gg
+            INNER JOIN genres gen ON gg.genre_id = gen.id
+            WHERE gg.game_id = g.id
+          ) as genres
+
         FROM games g
         INNER JOIN user_games ug ON g.id = ug.game_id
         INNER JOIN platforms p ON ug.platform_id = p.id
         LEFT JOIN user_platforms up ON up.platform_id = p.id AND up.user_id = $1
-        LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
-        LEFT JOIN user_playtime upt ON g.id = upt.game_id AND ug.platform_id = upt.platform_id AND upt.user_id = $1
-        LEFT JOIN user_game_display_editions ugde ON g.id = ugde.game_id AND ug.platform_id = ugde.platform_id AND ugde.user_id = $1
-        WHERE ug.user_id = $1
-        ORDER BY COALESCE(ugde.edition_name, g.name) ASC`,
-        [user.id]
+        LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id
+          AND ug.platform_id = ugp.platform_id
+          AND ugp.user_id = $1
+        LEFT JOIN user_playtime upt ON g.id = upt.game_id
+          AND ug.platform_id = upt.platform_id
+          AND upt.user_id = $1
+        LEFT JOIN user_game_custom_fields ucf ON g.id = ucf.game_id
+          AND ug.platform_id = ucf.platform_id
+          AND ucf.user_id = $1
+        WHERE ${whereClauses.join(' AND ')}
+        GROUP BY g.id
+        ${havingClause}
+        ${orderByClause}`,
+        params
       )
 
       // Apply display edition overlay

@@ -91,3 +91,4 @@ docs/_build/
 *.docx
 *.pptx
 
+.playwright-mcp/
