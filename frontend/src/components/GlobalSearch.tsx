@@ -517,7 +517,7 @@ export function GlobalSearch() {
                             />
                           ) : item.type === 'platform' ? (
                             <div className="w-full h-full flex items-center justify-center text-ctp-base text-sm font-semibold">
-                              {item.name.charAt(0).toUpperCase()}
+                              {item.name?.charAt(0).toUpperCase() || '?'}
                             </div>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-ctp-overlay1 text-xs">
@@ -562,6 +562,7 @@ export function GlobalSearch() {
                                 type={item.platformType as 'pc' | 'console' | 'mobile' | 'physical'}
                                 size="sm"
                                 showLabel={true}
+                                color={item.color}
                               />
                               {item.subtitle && <span className="text-ctp-overlay1 truncate">{item.subtitle}</span>}
                             </div>

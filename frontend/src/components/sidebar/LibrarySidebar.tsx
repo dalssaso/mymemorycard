@@ -25,6 +25,47 @@ const STATUS_LABELS: Record<string, string> = {
   dropped: 'Dropped',
 }
 
+const STATUS_BG_STYLES: Record<string, React.CSSProperties> = {
+  backlog: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)',
+  },
+  playing: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 35%, transparent)',
+  },
+  finished: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+  },
+  completed: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+  },
+  dropped: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+  },
+}
+
+const STATUS_ACTIVE_STYLES: Record<string, React.CSSProperties> = {
+  backlog: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)',
+  },
+  playing: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-teal) 55%, transparent)',
+  },
+  finished: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-green) 55%, transparent)',
+  },
+  completed: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-green) 55%, transparent)',
+  },
+  dropped: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-red) 55%, transparent)',
+  },
+}
+
 export function LibrarySidebar({
   platformFilter,
   setPlatformFilter,
@@ -238,10 +279,15 @@ export function LibrarySidebar({
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+              style={
                 statusFilter === status
-                  ? 'bg-ctp-teal/20 text-ctp-teal'
-                  : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+                  ? STATUS_ACTIVE_STYLES[status] || undefined
+                  : STATUS_BG_STYLES[status] || undefined
+              }
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all text-ctp-text hover:opacity-90 ${
+                statusFilter === status
+                  ? 'border'
+                  : ''
               }`}
             >
               {STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import './index.css'
 
 function App() {
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLogin, setIsLogin] = useState(true)
   const [username, setUsername] = useState('')
@@ -10,7 +9,7 @@ function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // TODO: Implement auth with TanStack Query
-    console.log(isLogin ? 'Login' : 'Register', { email, password, username })
+    console.log(isLogin ? 'Login' : 'Register', { password, username })
   }
 
   return (
@@ -33,17 +32,6 @@ function App() {
               />
             </div>
           )}
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input w-full"
-              placeholder="Enter email"
-            />
-          </div>
           
           <div>
             <label className="block text-sm font-medium mb-2">Password</label>

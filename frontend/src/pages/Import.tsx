@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { BackButton, PageLayout } from '@/components/layout'
 import { ImportSidebar } from '@/components/sidebar'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { ScrollFade } from '@/components/ui/ScrollFade'
 import { useToast } from '@/components/ui/Toast'
 import { importAPI, userPlatformsAPI } from '@/lib/api'
 
@@ -47,6 +49,9 @@ export function Import() {
   const [gameNames, setGameNames] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState<string>('')
   const [results, setResults] = useState<ImportResult | null>(null)
+  const [selectedCandidates, setSelectedCandidates] = useState<number[]>([])
+  const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false)
+  const [activeSelectionId, setActiveSelectionId] = useState<number | null>(null)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { showToast } = useToast()
@@ -86,6 +91,7 @@ export function Import() {
       importAPI.bulk(names, platformId),
     onSuccess: async (response) => {
       setResults(response.data)
+      setSelectedCandidates([])
       const result = response.data as ImportResult
       
       // Refresh dashboard data so achievements sync without a full reload
@@ -105,6 +111,7 @@ export function Import() {
       // Show warning if there are items needing review
       if (result.needsReview.length > 0) {
         showToast(`${result.needsReview.length} game(s) need review`, 'warning')
+        setIsSelectionModalOpen(true)
       }
       
       // If all games were imported successfully (no review needed), navigate to library
@@ -141,11 +148,13 @@ export function Import() {
         return {
           imported: [
             ...prev.imported,
-            { game: importedGame.game, display: importedGame.display, source: 'exact' as const },
+            { game: importedGame.game, display: importedGame.display, source: 'selected' as const },
           ],
           needsReview: updatedNeedsReview,
         }
       })
+
+      setSelectedCandidates((prev) => prev.filter((id) => id !== variables.rawgId))
       
       // Refresh dashboard data so achievements sync without a full reload
       await refreshDashboardData()
@@ -156,7 +165,66 @@ export function Import() {
     onError: () => {
       showToast('Failed to import game', 'error')
     },
+    onSettled: () => {
+      setActiveSelectionId(null)
+    },
   })
+
+  const bulkSelectMutation = useMutation({
+    mutationFn: async ({ rawgIds, platformId }: { rawgIds: number[]; platformId?: string }) => {
+      const responses = await Promise.all(
+        rawgIds.map(async (rawgId) => {
+          const response = await importAPI.single(rawgId, platformId)
+          return response.data as {
+            game: ImportedGame['game']
+            source: string
+            display?: ImportedGame['display']
+          }
+        })
+      )
+      return responses
+    },
+    onSuccess: async (importedGames, variables) => {
+      setResults((prev) => {
+        if (!prev) return prev
+        const selectedIds = new Set(variables.rawgIds)
+        const updatedNeedsReview = prev.needsReview.filter(
+          (item) => !item.candidates.some((candidate) => selectedIds.has(candidate.id))
+        )
+
+        return {
+          imported: [
+            ...prev.imported,
+            ...importedGames.map((game) => ({
+              game: game.game,
+              display: game.display,
+              source: 'selected' as const,
+            })),
+          ],
+          needsReview: updatedNeedsReview,
+        }
+      })
+
+      setSelectedCandidates([])
+      setIsSelectionModalOpen(false)
+      await refreshDashboardData()
+      importedGames.forEach((game) => {
+        queryClient.invalidateQueries({ queryKey: ['game', game.game.id] })
+      })
+
+      showToast(`Imported ${importedGames.length} game(s)`, 'success')
+      navigate({ to: '/dashboard' })
+    },
+    onError: () => {
+      showToast('Failed to import selected games', 'error')
+    },
+  })
+
+  const toggleCandidateSelection = (rawgId: number) => {
+    setSelectedCandidates((prev) =>
+      prev.includes(rawgId) ? prev.filter((id) => id !== rawgId) : [...prev, rawgId]
+    )
+  }
 
   const handleImport = () => {
     const names = gameNames
@@ -176,6 +244,37 @@ export function Import() {
     importMutation.mutate({
       names,
       platformId: selectedPlatform,
+    })
+  }
+
+  const handleImportSelected = () => {
+    if (selectedCandidates.length === 0 || !selectedPlatform) {
+      return
+    }
+
+    bulkSelectMutation.mutate({
+      rawgIds: selectedCandidates,
+      platformId: selectedPlatform,
+    })
+  }
+
+  const getSelectionList = (needsReview: NeedsReview[]) => {
+    const entries = needsReview.flatMap((item) =>
+      item.candidates.map((candidate) => ({
+        searchTerm: item.searchTerm,
+        candidate,
+      }))
+    )
+
+    return entries.sort((a, b) => {
+      const aSelected = selectedCandidates.includes(a.candidate.id)
+      const bSelected = selectedCandidates.includes(b.candidate.id)
+
+      if (aSelected !== bSelected) {
+        return aSelected ? -1 : 1
+      }
+
+      return a.candidate.name.localeCompare(b.candidate.name)
     })
   }
 
@@ -273,6 +372,8 @@ export function Import() {
                 onClick={() => {
                   setGameNames('')
                   setResults(null)
+                  setSelectedCandidates([])
+                  setIsSelectionModalOpen(false)
                 }}
                 className="btn btn-secondary"
               >
@@ -350,67 +451,149 @@ export function Import() {
 
             {results.needsReview.length > 0 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-4 text-ctp-yellow">
-                  Needs Review ({results.needsReview.length})
-                </h2>
-                <div className="space-y-4">
-                  {results.needsReview.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 bg-ctp-mantle rounded border border-ctp-surface1"
-                    >
-                      <h3 className="font-medium mb-2">"{item.searchTerm}"</h3>
-                      {item.error ? (
-                        <p className="text-sm text-ctp-red">Error: {item.error}</p>
-                      ) : item.candidates.length === 0 ? (
-                        <p className="text-sm text-ctp-overlay1">No matches found</p>
-                      ) : (
-                        <div className="space-y-2 mt-3">
-                          <p className="text-sm text-ctp-overlay1">
-                            Found {item.candidates.length} possible matches:
-                          </p>
-                          {item.candidates.map((candidate) => (
-                            <div
-                              key={candidate.id}
-                              className="flex items-center gap-3 p-2 bg-ctp-surface0 rounded"
-                            >
-                              {candidate.background_image && (
-                                <img
-                                  src={candidate.background_image}
-                                  alt={candidate.name}
-                                  className="w-12 h-12 object-cover rounded"
-                                />
-                              )}
-                              <div className="flex-1">
-                                <p className="text-sm font-medium">{candidate.name}</p>
-                                {candidate.released && (
-                                  <p className="text-xs text-ctp-overlay1">{candidate.released}</p>
-                                )}
-                              </div>
-                              <button
-                                onClick={() =>
-                                  selectMutation.mutate({
-                                    rawgId: candidate.id,
-                                    platformId: selectedPlatform,
-                                  })
-                                }
-                                disabled={selectMutation.isPending}
-                                className="btn btn-primary text-sm px-3 py-1"
-                              >
-                                {selectMutation.isPending ? 'Importing...' : 'Select'}
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-bold text-ctp-yellow">
+                      Select the games from the list below
+                    </h2>
+                    <p className="text-sm text-ctp-overlay1 mt-2">
+                      Choose the correct match for each entry. You can import multiple games at once.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsSelectionModalOpen(true)}
+                    className="btn btn-secondary text-sm px-3 py-1"
+                  >
+                    Review selections
+                  </button>
                 </div>
               </div>
             )}
           </div>
         )}
       </div>
+
+      {results && results.needsReview.length > 0 && isSelectionModalOpen && (
+        <div className="fixed inset-0 bg-ctp-base/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-3xl w-full max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-ctp-text">
+                  Select games ({selectedCandidates.length} selected)
+                </h2>
+                <p className="text-sm text-ctp-subtext0 mt-2">
+                  Select each match and import in bulk when ready.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsSelectionModalOpen(false)}
+                className="text-ctp-subtext0 hover:text-ctp-text"
+              >
+                Close
+              </button>
+            </div>
+
+            <ScrollFade axis="y" className="flex-1 overflow-y-auto space-y-2 pr-2">
+              {results.needsReview.some((item) => item.error) && (
+                <div className="p-3 bg-ctp-red/10 border border-ctp-red/30 rounded text-sm text-ctp-red">
+                  Some items failed to search. You can retry those imports later.
+                </div>
+              )}
+              {getSelectionList(results.needsReview).length === 0 ? (
+                <div className="text-sm text-ctp-subtext0 text-center py-6">
+                  No matches found for the imported names.
+                </div>
+              ) : (
+                getSelectionList(results.needsReview).map(({ candidate, searchTerm }) => {
+                  const isSelected = selectedCandidates.includes(candidate.id)
+                  return (
+                    <div
+                      key={`${searchTerm}-${candidate.id}`}
+                      className={`flex items-center gap-3 p-3 rounded border transition-colors ${
+                        isSelected
+                          ? 'border-ctp-mauve bg-ctp-mauve/10'
+                          : 'border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1'
+                      }`}
+                    >
+                      <Checkbox
+                        id={`import-select-${candidate.id}`}
+                        checked={isSelected}
+                        onChange={() => toggleCandidateSelection(candidate.id)}
+                        disabled={bulkSelectMutation.isPending || selectMutation.isPending}
+                      />
+                      {candidate.background_image ? (
+                        <img
+                          src={candidate.background_image}
+                          alt={candidate.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-ctp-surface0 rounded flex items-center justify-center text-ctp-overlay1 text-xs">
+                          No image
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{candidate.name}</p>
+                        <div className="text-xs text-ctp-overlay1 flex items-center gap-2">
+                          {candidate.released && <span>{candidate.released}</span>}
+                          <span className="text-ctp-subtext0">From: {searchTerm}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setActiveSelectionId(candidate.id)
+                          selectMutation.mutate({
+                            rawgId: candidate.id,
+                            platformId: selectedPlatform,
+                          })
+                        }}
+                        disabled={
+                          bulkSelectMutation.isPending ||
+                          (selectMutation.isPending && activeSelectionId !== candidate.id)
+                        }
+                        className="btn btn-primary text-sm px-3 py-1"
+                      >
+                        {selectMutation.isPending && activeSelectionId === candidate.id
+                          ? 'Importing...'
+                          : 'Select'}
+                      </button>
+                    </div>
+                  )
+                })
+              )}
+            </ScrollFade>
+
+            <div className="flex items-center justify-between gap-3 mt-6">
+              <div className="text-sm text-ctp-subtext0">
+                {selectedCandidates.length} selected
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedCandidates([])}
+                  disabled={selectedCandidates.length === 0}
+                  className="btn btn-secondary"
+                >
+                  Clear selection
+                </button>
+                <button
+                  onClick={handleImportSelected}
+                  disabled={
+                    selectedCandidates.length === 0 ||
+                    !selectedPlatform ||
+                    bulkSelectMutation.isPending ||
+                    selectMutation.isPending
+                  }
+                  className="btn btn-primary"
+                >
+                  {bulkSelectMutation.isPending
+                    ? 'Importing...'
+                    : `Import selected (${selectedCandidates.length})`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   )
 }

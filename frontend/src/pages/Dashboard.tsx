@@ -100,6 +100,7 @@ export function Dashboard() {
     queryClient.refetchQueries({ queryKey: ['games'] })
     queryClient.refetchQueries({ queryKey: ['genreStats'] })
     queryClient.refetchQueries({ queryKey: ['achievementStats'] })
+    queryClient.refetchQueries({ queryKey: ['activityFeed'] })
   }, [locationHref, queryClient])
 
   const games = data?.games || []
@@ -348,9 +349,15 @@ export function Dashboard() {
             </Card>
           </div>
           <div>
-            <Card className="h-full">
+            <Card className="lg:h-[366px] lg:flex lg:flex-col">
               <h2 className="text-xl font-bold text-ctp-mauve mb-4">Recent Activity</h2>
-              <ActivityFeed limit={5} />
+              <ActivityFeed
+                desktopLimit={12}
+                mobileLimit={5}
+                showMoreHref="/activity"
+                wrapperClassName="lg:flex lg:flex-col lg:min-h-0 lg:flex-1"
+                maxHeightClassName="lg:flex-1 lg:overflow-y-auto lg:pr-1 lg:min-h-0"
+              />
             </Card>
           </div>
         </div>

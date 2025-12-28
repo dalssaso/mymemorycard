@@ -1,6 +1,6 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
-import { queryMany } from '@/services/db'
+import { queryMany, queryOne } from '@/services/db'
 import { corsHeaders } from '@/middleware/cors'
 
 interface HeatmapData {
@@ -58,15 +58,29 @@ router.get(
 
       // Get achievements data
       const achievementsData = await queryMany<{ date: string; count: number }>(
-        `SELECT 
-          TO_CHAR(DATE(completed_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') as date,
+        `WITH all_achievements AS (
+          SELECT completed_at as unlocked_at
+          FROM user_rawg_achievements
+          WHERE user_id = $1
+            AND completed = true
+            AND completed_at IS NOT NULL
+            AND completed_at >= $2
+            AND completed_at <= $3
+          UNION ALL
+          SELECT ua.unlock_date as unlocked_at
+          FROM user_achievements ua
+          INNER JOIN achievements a ON ua.achievement_id = a.id
+          WHERE ua.user_id = $1
+            AND ua.unlocked = true
+            AND ua.unlock_date IS NOT NULL
+            AND ua.unlock_date >= $2
+            AND ua.unlock_date <= $3
+        )
+        SELECT 
+          TO_CHAR(DATE(unlocked_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') as date,
           COUNT(*) as count
-        FROM user_rawg_achievements
-        WHERE user_id = $1 
-          AND completed = true
-          AND completed_at >= $2 
-          AND completed_at <= $3
-        GROUP BY DATE(completed_at AT TIME ZONE 'UTC')`,
+        FROM all_achievements
+        GROUP BY DATE(unlocked_at AT TIME ZONE 'UTC')`,
         [user.id, startDate, endDate]
       )
 
@@ -335,16 +349,30 @@ router.get(
       const endDate = `${year}-12-31`
 
       const data = await queryMany<HeatmapData>(
-        `SELECT 
-          TO_CHAR(DATE(completed_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') as date,
+        `WITH all_achievements AS (
+          SELECT completed_at as unlocked_at
+          FROM user_rawg_achievements
+          WHERE user_id = $1
+            AND completed = true
+            AND completed_at IS NOT NULL
+            AND completed_at >= $2
+            AND completed_at <= $3
+          UNION ALL
+          SELECT ua.unlock_date as unlocked_at
+          FROM user_achievements ua
+          INNER JOIN achievements a ON ua.achievement_id = a.id
+          WHERE ua.user_id = $1
+            AND ua.unlocked = true
+            AND ua.unlock_date IS NOT NULL
+            AND ua.unlock_date >= $2
+            AND ua.unlock_date <= $3
+        )
+        SELECT 
+          TO_CHAR(DATE(unlocked_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') as date,
           COUNT(*) as count,
           COUNT(*) as value
-        FROM user_rawg_achievements
-        WHERE user_id = $1 
-          AND completed = true
-          AND completed_at >= $2 
-          AND completed_at <= $3
-        GROUP BY DATE(completed_at AT TIME ZONE 'UTC')
+        FROM all_achievements
+        GROUP BY DATE(unlocked_at AT TIME ZONE 'UTC')
         ORDER BY date`,
         [user.id, startDate, endDate]
       )
@@ -406,18 +434,30 @@ router.get(
             g.id as game_id,
             g.name as game_name,
             g.cover_art_url,
-            COUNT(gra.rawg_achievement_id) as total_achievements,
-            COUNT(ura.rawg_achievement_id) FILTER (WHERE ura.completed = true) as completed_achievements,
+            COUNT(gra.rawg_achievement_id) as rawg_total,
+            COUNT(ura.rawg_achievement_id) FILTER (WHERE ura.completed = true) as rawg_completed,
             AVG(gra.rarity_percent) as avg_rarity,
-            MIN(gra.rarity_percent) FILTER (WHERE ura.completed = true) as min_completed_rarity
+            MIN(gra.rarity_percent) FILTER (WHERE ura.completed = true) as min_completed_rarity,
+            (SELECT COUNT(*)
+             FROM achievements a
+             INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+             WHERE a.game_id = g.id AND ua.user_id = $1) as manual_total,
+            (SELECT COUNT(*)
+             FROM achievements a
+             INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+             WHERE a.game_id = g.id AND ua.user_id = $1 AND ua.unlocked = true) as manual_completed
           FROM games g
           INNER JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $1
-          INNER JOIN game_rawg_achievements gra ON g.id = gra.game_id
+          LEFT JOIN game_rawg_achievements gra ON g.id = gra.game_id
           LEFT JOIN user_rawg_achievements ura ON gra.game_id = ura.game_id 
             AND gra.rawg_achievement_id = ura.rawg_achievement_id 
             AND ura.user_id = $1
           GROUP BY g.id, g.name, g.cover_art_url
           HAVING COUNT(gra.rawg_achievement_id) > 0
+            OR (SELECT COUNT(*)
+                FROM achievements a
+                INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+                WHERE a.game_id = g.id AND ua.user_id = $1) > 0
         ),
         rarest_achievements AS (
           SELECT DISTINCT ON (gas.game_id)
@@ -436,14 +476,14 @@ router.get(
           gas.game_id,
           gas.game_name,
           gas.cover_art_url,
-          gas.total_achievements,
-          gas.completed_achievements,
+          (gas.rawg_total + gas.manual_total) as total_achievements,
+          (gas.rawg_completed + gas.manual_completed) as completed_achievements,
           gas.avg_rarity,
           ra.rarest_achievement_name,
           ra.rarest_achievement_rarity
         FROM game_achievement_stats gas
         LEFT JOIN rarest_achievements ra ON gas.game_id = ra.game_id
-        ORDER BY gas.completed_achievements DESC`,
+        ORDER BY completed_achievements DESC`,
         [user.id]
       )
 
@@ -537,6 +577,13 @@ router.get(
     try {
       const url = new URL(req.url)
       const limit = parseInt(url.searchParams.get('limit') || '20')
+      const page = parseInt(url.searchParams.get('page') || '1')
+      const pageSizeParam = url.searchParams.get('pageSize')
+      const pageSize = pageSizeParam ? parseInt(pageSizeParam) : limit
+      const safePage = Number.isFinite(page) && page > 0 ? page : 1
+      const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20
+      const fetchLimit = safePage * safePageSize
+      const offset = (safePage - 1) * safePageSize
 
       // Get recent sessions
       const sessions = await queryMany<{
@@ -562,7 +609,7 @@ router.get(
         WHERE ps.user_id = $1 AND ps.ended_at IS NOT NULL
         ORDER BY ps.ended_at DESC
         LIMIT $2`,
-        [user.id, limit]
+        [user.id, fetchLimit]
       )
 
       // Get recent completion logs
@@ -574,6 +621,8 @@ router.get(
         platform_name: string
         timestamp: string
         percentage: number
+        completion_type: string
+        dlc_id: string | null
       }>(
         `SELECT 
           'completion' as type,
@@ -582,14 +631,16 @@ router.get(
           g.name as game_name,
           p.display_name as platform_name,
           cl.logged_at as timestamp,
-          cl.percentage
+          cl.percentage,
+          cl.completion_type,
+          cl.dlc_id
         FROM completion_logs cl
         INNER JOIN games g ON cl.game_id = g.id
         INNER JOIN platforms p ON cl.platform_id = p.id
         WHERE cl.user_id = $1
         ORDER BY cl.logged_at DESC
         LIMIT $2`,
-        [user.id, limit]
+        [user.id, fetchLimit]
       )
 
       // Get recent achievement unlocks
@@ -620,15 +671,62 @@ router.get(
         WHERE ura.user_id = $1 AND ura.completed = true AND ura.completed_at IS NOT NULL
         ORDER BY ura.completed_at DESC
         LIMIT $2`,
-        [user.id, limit]
+        [user.id, fetchLimit]
+      )
+
+      const manualAchievements = await queryMany<{
+        type: string
+        id: string
+        game_id: string
+        game_name: string
+        platform_name: string
+        timestamp: string
+        achievement_name: string
+        rarity_percent: number | null
+      }>(
+        `SELECT 
+          'achievement' as type,
+          ua.id::text as id,
+          a.game_id,
+          g.name as game_name,
+          p.display_name as platform_name,
+          ua.unlock_date as timestamp,
+          a.name as achievement_name,
+          NULL as rarity_percent
+        FROM user_achievements ua
+        INNER JOIN achievements a ON ua.achievement_id = a.id
+        INNER JOIN games g ON a.game_id = g.id
+        INNER JOIN platforms p ON a.platform_id = p.id
+        WHERE ua.user_id = $1 AND ua.unlocked = true AND ua.unlock_date IS NOT NULL
+        ORDER BY ua.unlock_date DESC
+        LIMIT $2`,
+        [user.id, fetchLimit]
       )
 
       // Combine and sort
-      const feed = [...sessions, ...completions, ...achievements]
+      const feed = [...sessions, ...completions, ...achievements, ...manualAchievements]
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, limit)
+        .slice(offset, offset + safePageSize)
 
-      return new Response(JSON.stringify({ feed }), {
+      const sessionCount = await queryOne<{ count: string }>(
+        'SELECT COUNT(*) FROM play_sessions WHERE user_id = $1 AND ended_at IS NOT NULL',
+        [user.id]
+      )
+      const completionCount = await queryOne<{ count: string }>(
+        'SELECT COUNT(*) FROM completion_logs WHERE user_id = $1',
+        [user.id]
+      )
+      const achievementCount = await queryOne<{ count: string }>(
+        `SELECT 
+          (SELECT COUNT(*) FROM user_rawg_achievements WHERE user_id = $1 AND completed = true AND completed_at IS NOT NULL) +
+          (SELECT COUNT(*) FROM user_achievements WHERE user_id = $1 AND unlocked = true AND unlock_date IS NOT NULL) as count`,
+        [user.id]
+      )
+      const total = (sessionCount?.count ? parseInt(sessionCount.count, 10) : 0)
+        + (completionCount?.count ? parseInt(completionCount.count, 10) : 0)
+        + (achievementCount?.count ? parseInt(achievementCount.count, 10) : 0)
+
+      return new Response(JSON.stringify({ feed, total, page: safePage, pageSize: safePageSize }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       })

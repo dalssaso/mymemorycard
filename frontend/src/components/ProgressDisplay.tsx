@@ -105,7 +105,7 @@ export function ProgressDisplay({ gameId }: ProgressDisplayProps) {
       )}
       {summary.completionist > 0 && (
         <div className="mt-1 flex gap-3 text-xs">
-          <span style={{ color: TYPE_COLORS.completionist }}>100%: {summary.completionist}%</span>
+          <span style={{ color: TYPE_COLORS.completionist }}>Completionist: {summary.completionist}%</span>
         </div>
       )}
     </Link>

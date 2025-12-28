@@ -106,7 +106,7 @@ export function Sidebar({ children, customCollapsed = false, showBackButton = tr
               )}
               {/* User Avatar */}
               <div className="flex justify-center pb-3 border-b border-ctp-surface0">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary-cyan to-primary-purple rounded-full flex items-center justify-center" title={user?.username}>
+                <div className="w-8 h-8 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center" title={user?.username}>
                   <span className="text-ctp-text font-medium text-sm">
                     {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </span>
@@ -222,7 +222,7 @@ export function Sidebar({ children, customCollapsed = false, showBackButton = tr
           {/* User Section */}
           <div className="pb-4 border-b border-ctp-surface0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-cyan to-primary-purple rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">
                 <span className="text-ctp-text font-medium">
                   {user?.username?.charAt(0).toUpperCase() || 'U'}
                 </span>
@@ -230,9 +230,6 @@ export function Sidebar({ children, customCollapsed = false, showBackButton = tr
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-ctp-text truncate">
                   {user?.username}
-                </p>
-                <p className="text-xs text-ctp-subtext0">
-                  {user?.email}
                 </p>
               </div>
             </div>

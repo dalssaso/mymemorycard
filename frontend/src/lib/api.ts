@@ -33,9 +33,9 @@ export default api;
 
 // Auth API
 export const authAPI = {
-  register: (data: { username: string; email: string; password: string }) =>
+  register: (data: { username: string; password: string }) =>
     api.post('/auth/register', data),
-  login: (data: { email: string; password: string }) =>
+  login: (data: { username: string; password: string }) =>
     api.post('/auth/login', data),
   me: () => api.get('/auth/me'),
 };
@@ -72,8 +72,12 @@ export const gamesAPI = {
     api.put(`/games/${id}/custom-fields`, { platform_id: platformId, ...fields }),
   getAchievements: (id: string, platformId: string) =>
     api.get(`/games/${id}/achievements`, { params: { platform_id: platformId } }),
-  updateAchievement: (id: string, platformId: string, achievementId: number, completed: boolean) =>
+  updateAchievement: (id: string, platformId: string, achievementId: string, completed: boolean) =>
     api.put(`/games/${id}/achievements/${achievementId}`, { completed, platform_id: platformId }),
+  createManualAchievement: (id: string, platformId: string, data: { name: string; description?: string }) =>
+    api.post(`/games/${id}/achievements/manual`, { platform_id: platformId, ...data }),
+  deleteManualAchievements: (id: string, platformId: string, achievementIds: string[]) =>
+    api.post(`/games/${id}/achievements/manual/bulk-delete`, { platform_id: platformId, achievementIds }),
   updateFromRawg: (id: string, options: { rawgId?: number; rawgSlug?: string }) =>
     api.post(`/games/${id}/update-from-rawg`, options),
 };
@@ -312,6 +316,19 @@ export interface CombinedHeatmapSummary {
   currentStreak: number
 }
 
+export interface ActivityFeedResponse<T> {
+  feed: T[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface ActivityFeedParams {
+  limit?: number
+  page?: number
+  pageSize?: number
+}
+
 export const statsAPI = {
   getActivityHeatmap: (year?: number) =>
     api.get('/stats/activity-heatmap', { params: { year } }),
@@ -321,8 +338,12 @@ export const statsAPI = {
     api.get('/stats/achievement-heatmap', { params: { year } }),
   getCombinedHeatmap: (year?: number) =>
     api.get<{ data: CombinedHeatmapDay[]; summary: CombinedHeatmapSummary }>('/stats/combined-heatmap', { params: { year } }),
-  getActivityFeed: (limit?: number) =>
-    api.get('/stats/activity-feed', { params: { limit } }),
+  getActivityFeed: (params?: number | ActivityFeedParams) => {
+    if (typeof params === 'number') {
+      return api.get('/stats/activity-feed', { params: { limit: params } })
+    }
+    return api.get('/stats/activity-feed', { params })
+  },
   getAchievementStats: () =>
     api.get<AchievementStats>('/stats/achievements'),
 }

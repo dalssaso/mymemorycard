@@ -130,9 +130,17 @@ async function calculateDerivedProgress(
 
   const achievementStats = await queryOne<{ total: number; completed: number }>(
     `SELECT 
-       (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) as total,
-       (SELECT COUNT(*) FROM user_rawg_achievements WHERE user_id = $2 AND game_id = $1 AND completed = true) as completed`,
-    [gameId, userId]
+       (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) +
+       (SELECT COUNT(*)
+        FROM achievements a
+        INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+        WHERE a.game_id = $1 AND a.platform_id = $3 AND ua.user_id = $2) as total,
+       (SELECT COUNT(*) FROM user_rawg_achievements WHERE user_id = $2 AND game_id = $1 AND completed = true) +
+       (SELECT COUNT(*)
+        FROM achievements a
+        INNER JOIN user_achievements ua ON a.id = ua.achievement_id
+        WHERE a.game_id = $1 AND a.platform_id = $3 AND ua.user_id = $2 AND ua.unlocked = true) as completed`,
+    [gameId, userId, platformId]
   )
 
   const totalAch = achievementStats?.total || 0

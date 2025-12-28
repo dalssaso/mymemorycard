@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import { ScrollFade } from '@/components/ui'
@@ -45,6 +45,7 @@ interface ProgressHistoryProps {
 }
 
 type TabType = 'main' | 'dlc' | 'full' | 'completionist'
+type RangeOption = '1d' | '30d' | '3mo' | '6mo' | '12mo'
 
 const TAB_COLORS: Record<TabType, string> = {
   main: '#10B981',
@@ -54,6 +55,32 @@ const TAB_COLORS: Record<TabType, string> = {
 }
 
 const QUICK_PRESETS = [25, 50, 75, 100]
+const RANGE_OPTIONS: Array<{ value: RangeOption; label: string }> = [
+  { value: '1d', label: 'Last 1d' },
+  { value: '30d', label: 'Last 30d' },
+  { value: '3mo', label: 'Last 3mo' },
+  { value: '6mo', label: 'Last 6mo' },
+  { value: '12mo', label: 'Last 12mo' },
+]
+
+const clampPercentage = (value: number): number => Math.min(100, Math.max(0, Math.round(value)))
+
+const getRangeStart = (range: RangeOption): Date => {
+  const now = new Date()
+  const start = new Date(now)
+  if (range === '1d') {
+    start.setDate(now.getDate() - 1)
+  } else if (range === '30d') {
+    start.setDate(now.getDate() - 30)
+  } else if (range === '3mo') {
+    start.setMonth(now.getMonth() - 3)
+  } else if (range === '6mo') {
+    start.setMonth(now.getMonth() - 6)
+  } else {
+    start.setFullYear(now.getFullYear() - 1)
+  }
+  return start
+}
 
 export function ProgressHistory({ gameId, platformId, onProgressChange }: ProgressHistoryProps) {
   const queryClient = useQueryClient()
@@ -61,8 +88,11 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
   const [activeTab, setActiveTab] = useState<TabType>('main')
   const [selectedDlcId, setSelectedDlcId] = useState<string | null>(null)
   const [sliderValue, setSliderValue] = useState<number | null>(null)
+  const [percentageInput, setPercentageInput] = useState<string>('')
+  const [isEditingPercentage, setIsEditingPercentage] = useState(false)
   const [notes, setNotes] = useState('')
   const [showHistory, setShowHistory] = useState(false)
+  const [selectedRange, setSelectedRange] = useState<RangeOption>('3mo')
 
   const { data: logsData, isLoading } = useQuery({
     queryKey: ['completionLogs', gameId, platformId],
@@ -107,6 +137,12 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
   const currentPercentage = getCurrentPercentage()
   const displayValue = sliderValue ?? currentPercentage
   const activeColor = TAB_COLORS[activeTab]
+
+  useEffect(() => {
+    if (!isEditingPercentage) {
+      setPercentageInput(String(displayValue))
+    }
+  }, [displayValue, isEditingPercentage])
 
   const logs = (logsData?.logs || []).filter((log) => {
     if (activeTab === 'main') return log.completion_type === 'main'
@@ -166,7 +202,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
   const hasChanged = sliderValue !== null && sliderValue !== currentPercentage
   const canEdit = activeTab === 'main' || (activeTab === 'dlc' && selectedDlcId)
 
-  const chartData = [...logs]
+  const rangeStart = getRangeStart(selectedRange)
+  const rangeLogs = logs.filter((log) => new Date(log.logged_at) >= rangeStart)
+  const chartData = [...rangeLogs]
     .reverse()
     .map((log) => ({
       date: new Date(log.logged_at).toLocaleDateString(),
@@ -182,11 +220,45 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
     }
   }
 
+  const handleSliderChange = (value: number) => {
+    const clamped = clampPercentage(value)
+    setSliderValue(clamped)
+    setPercentageInput(String(clamped))
+  }
+
+  const handlePercentageChange = (value: string) => {
+    setPercentageInput(value)
+    if (!value.trim()) {
+      return
+    }
+    const parsed = Number(value)
+    if (!Number.isNaN(parsed)) {
+      setSliderValue(clampPercentage(parsed))
+    }
+  }
+
+  const handlePercentageBlur = () => {
+    if (!percentageInput.trim()) {
+      setSliderValue(null)
+      setPercentageInput(String(currentPercentage))
+      return
+    }
+    const parsed = Number(percentageInput)
+    if (Number.isNaN(parsed)) {
+      setSliderValue(null)
+      setPercentageInput(String(currentPercentage))
+      return
+    }
+    const clamped = clampPercentage(parsed)
+    setSliderValue(clamped)
+    setPercentageInput(String(clamped))
+  }
+
   const getTabLabel = (tab: TabType): string => {
     if (tab === 'main') return 'Main'
     if (tab === 'dlc') return 'DLCs'
     if (tab === 'full') return 'Full'
-    return '100%'
+    return 'Completionist'
   }
 
   const getTabPercentage = (tab: TabType): number => {
@@ -319,7 +391,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
 
       {canEdit && (
         <div className="bg-ctp-mantle/70 rounded-xl p-4 space-y-4 border border-ctp-surface0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h4 className="text-sm font-semibold text-ctp-text">
                 {activeTab === 'main' ? 'Main Story' : additions.find((d) => d.id === selectedDlcId)?.name || 'DLC'} Progress
@@ -328,39 +400,52 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 {activeTab === 'main' ? 'Main story completion' : 'DLC/Expansion content'}
               </p>
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold" style={{ color: activeColor }}>
-                {displayValue}
-              </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                min={0}
+                max={100}
+                step={1}
+                value={percentageInput}
+                onChange={(event) => handlePercentageChange(event.target.value)}
+                onFocus={() => setIsEditingPercentage(true)}
+                onBlur={() => {
+                  setIsEditingPercentage(false)
+                  handlePercentageBlur()
+                }}
+                aria-label="Progress percentage"
+                className="progress-percentage-input w-16 sm:w-20 text-center text-2xl font-bold bg-ctp-crust/70 border border-ctp-surface1 rounded-lg px-2 py-1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+              />
               <span className="text-sm text-ctp-subtext0">%</span>
             </div>
           </div>
 
-          <div className="relative">
-            <div className="w-full bg-ctp-surface0 rounded-full h-2">
-              <div
-                className="h-2 rounded-full transition-all duration-200"
-                style={{ width: `${displayValue}%`, backgroundColor: activeColor }}
-              />
-            </div>
+          <div className="relative h-3">
+            <div className="absolute inset-0 bg-ctp-surface0 rounded-full" />
+            <div
+              className="absolute inset-0 rounded-full transition-all duration-200"
+              style={{ width: `${displayValue}%`, backgroundColor: activeColor }}
+            />
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={displayValue}
+              onChange={(event) => handleSliderChange(parseInt(event.target.value, 10))}
+              className="progress-slider-inline absolute inset-0 w-full h-3"
+              style={{ accentColor: activeColor }}
+              aria-label="Progress slider"
+            />
           </div>
-
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={displayValue}
-            onChange={(e) => setSliderValue(parseInt(e.target.value))}
-            className="progress-slider w-full"
-            style={{ accentColor: activeColor }}
-          />
 
           <div className="flex flex-wrap gap-2">
             {QUICK_PRESETS.map((value) => (
               <button
                 key={value}
                 type="button"
-                onClick={() => setSliderValue(value)}
+                onClick={() => handleSliderChange(value)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border bg-ctp-mantle/80 ${
                   displayValue === value ? 'bg-opacity-20' : 'border-ctp-surface1/80 text-ctp-subtext0 hover:text-ctp-text'
                 }`}
@@ -377,7 +462,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
 
           {displayValue === 100 && (
             <div className="text-xs text-ctp-subtext0 bg-ctp-surface0/50 rounded-lg px-3 py-2">
-              Logging 100% will update the Full and Completionist progress automatically
+              Logging Completionist will update the Full and Completionist progress automatically
             </div>
           )}
 
@@ -419,51 +504,73 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
         </div>
       )}
 
-      {chartData.length >= 2 && (
+      {(chartData.length > 0 || logs.length > 0) && (
         <div className="bg-ctp-mantle/60 rounded-xl p-4 border border-ctp-surface0/80">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-semibold tracking-wide text-ctp-subtext0 uppercase">
-              {getTabLabel(activeTab)} Trend
-            </h4>
-            {logs[0] && (
-              <span className="text-xs text-ctp-overlay1">
-                Last: {new Date(logs[0].logged_at).toLocaleDateString()}
-              </span>
-            )}
+          <div className="flex items-center justify-between mb-3 gap-3">
+            <div>
+              <h4 className="text-xs font-semibold tracking-wide text-ctp-subtext0 uppercase">
+                {getTabLabel(activeTab)} Trend
+              </h4>
+              {rangeLogs[0] && (
+                <span className="text-xs text-ctp-overlay1">
+                  Last: {new Date(rangeLogs[0].logged_at).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+            <label className="text-xs text-ctp-subtext0">
+              <span className="sr-only">Select range</span>
+              <select
+                value={selectedRange}
+                onChange={(event) => setSelectedRange(event.target.value as RangeOption)}
+                className="bg-ctp-mantle border border-ctp-surface1 rounded-lg px-2 py-1 text-xs text-ctp-text focus:outline-none focus:border-ctp-mauve"
+              >
+                {RANGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-          <ResponsiveContainer width="100%" height={120}>
-            <LineChart data={chartData}>
-              <XAxis
-                dataKey="date"
-                tick={{ fill: '#71717A', fontSize: 10 }}
-                axisLine={{ stroke: '#3f3f46' }}
-                tickLine={false}
-              />
-              <YAxis
-                domain={[0, 100]}
-                tick={{ fill: '#71717A', fontSize: 10 }}
-                axisLine={{ stroke: '#3f3f46' }}
-                tickLine={false}
-                width={25}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #3f3f46',
-                  borderRadius: '8px',
-                }}
-                itemStyle={{ color: '#fff' }}
-                formatter={(value: number) => [`${value}%`, 'Completion']}
-              />
-              <Line
-                type="monotone"
-                dataKey="percentage"
-                stroke={activeColor}
-                strokeWidth={2}
-                dot={{ fill: activeColor, strokeWidth: 0, r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={120}>
+              <LineChart data={chartData}>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: '#71717A', fontSize: 10 }}
+                  axisLine={{ stroke: '#3f3f46' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fill: '#71717A', fontSize: 10 }}
+                  axisLine={{ stroke: '#3f3f46' }}
+                  tickLine={false}
+                  width={25}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1a1a1a',
+                    border: '1px solid #3f3f46',
+                    borderRadius: '8px',
+                  }}
+                  itemStyle={{ color: '#fff' }}
+                  formatter={(value: number) => [`${value}%`, 'Completion']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="percentage"
+                  stroke={activeColor}
+                  strokeWidth={2}
+                  dot={{ fill: activeColor, strokeWidth: 0, r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-xs text-ctp-subtext0 bg-ctp-surface0/50 rounded-lg p-3">
+              No progress logged in this range yet.
+            </div>
+          )}
         </div>
       )}
 

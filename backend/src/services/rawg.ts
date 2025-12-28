@@ -21,6 +21,8 @@ interface RAWGSeriesGame {
   slug: string
   released: string | null
   background_image: string | null
+  platforms?: RAWGGame['platforms']
+  genres?: RAWGGame['genres']
 }
 
 interface RAWGGameSeries {
@@ -88,13 +90,19 @@ const OTHER_PATTERNS = [
   /soundtrack/i,
   /ost/i,
   /theme/i,
-  /avatar/i,
   /artbook/i,
   /art\s*book/i,
   /wallpaper/i,
   /digital\s*art/i,
   /making\s*of/i,
   /behind\s*the\s*scenes/i,
+]
+
+const EXCLUDED_SEARCH_GENRES = new Set(['board games', 'card', 'music'])
+const EXCLUDED_SEARCH_NAME_PATTERNS = [
+  /soundtrack/i,
+  /\bost\b/i,
+  /original\s+soundtrack/i,
 ]
 
 export function classifyAddition(name: string): { type: AdditionType; isComplete: boolean } {
@@ -206,7 +214,7 @@ export async function searchGames(query: string, useCache = true): Promise<RAWGG
     const cached = await getCachedSearch(query)
     if (cached) {
       console.log(`Cache hit for search: ${query}`)
-      return cached
+      return cached.filter(isPlatformGameCandidate)
     }
   }
 
@@ -225,13 +233,14 @@ export async function searchGames(query: string, useCache = true): Promise<RAWGG
     }
 
     const data = (await response.json()) as RAWGSearchResponse
+    const filteredResults = data.results.filter(isPlatformGameCandidate)
     
     // Cache the results
     if (useCache) {
-      await cacheSearch(query, data.results)
+      await cacheSearch(query, filteredResults)
     }
     
-    return data.results
+    return filteredResults
   })
 }
 
@@ -463,7 +472,10 @@ export async function getGameSeriesMembers(
     const cached = await getCachedSeriesMembers(gameId)
     if (cached) {
       console.log(`Cache hit for series members: ${gameId}`)
-      return cached
+      return {
+        seriesName: cached.seriesName,
+        members: cached.members.filter(isPlatformGameCandidate),
+      }
     }
   }
 
@@ -486,7 +498,8 @@ export async function getGameSeriesMembers(
       }
 
       const data = (await response.json()) as RAWGGameSeries
-      for (const game of data.results) {
+      const filteredResults = data.results.filter(isPlatformGameCandidate)
+      for (const game of filteredResults) {
         allMembers.push({
           rawgId: game.id,
           id: game.id,
@@ -505,9 +518,9 @@ export async function getGameSeriesMembers(
     }
 
     // Derive series name using same logic as getGameSeries
-    // Include the queried game itself for better series name detection
-    let seriesName: string | null = null
-    if (allMembers.length >= 1) {
+      // Include the queried game itself for better series name detection
+      let seriesName: string | null = null
+      if (allMembers.length >= 1) {
       // Fetch the queried game's name to include in analysis
       const queriedGame = await getGameDetails(gameId, useCache)
       const allGamesForAnalysis = queriedGame
@@ -747,3 +760,30 @@ async function cacheAdditions(gameId: number, additions: RAWGAddition[]): Promis
 }
 
 export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries, RAWGAchievement, RAWGAddition, RAWGSeriesGame }
+
+function isPlatformGameCandidate(
+  game: {
+    name: string
+    platforms?: RAWGGame['platforms']
+    genres?: RAWGGame['genres']
+  }
+): boolean {
+  if (EXCLUDED_SEARCH_NAME_PATTERNS.some((pattern) => pattern.test(game.name))) {
+    return false
+  }
+
+  if (game.genres) {
+    const hasExcludedGenre = game.genres.some((genre) =>
+      EXCLUDED_SEARCH_GENRES.has(genre.name.toLowerCase())
+    )
+    if (hasExcludedGenre) {
+      return false
+    }
+  }
+
+  if (game.platforms && game.platforms.length === 0) {
+    return false
+  }
+
+  return true
+}

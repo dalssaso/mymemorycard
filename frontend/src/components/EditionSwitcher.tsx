@@ -67,24 +67,23 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
   const hasEditions = data && data.availableEditions.length > 0
   const isUsingEdition = data?.isUsingEdition
 
-  if (!hasEditions && !isUsingEdition) {
+  if (!data) {
     return null
   }
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-ctp-subtext0">Game Version</span>
-        {isUsingEdition && (
+      {isUsingEdition && (
+        <div className="flex justify-end">
           <button
             onClick={() => resetEditionMutation.mutate()}
             disabled={resetEditionMutation.isPending}
-            className="text-xs text-ctp-overlay1 hover:text-ctp-teal transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg text-xs transition-colors disabled:opacity-50"
           >
             Reset to Base Game
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {isUsingEdition && data?.currentDisplay && (
         <div className="bg-ctp-mauve/10 border border-ctp-mauve/30 rounded-lg p-3">

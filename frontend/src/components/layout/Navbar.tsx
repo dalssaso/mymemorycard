@@ -439,7 +439,7 @@ export function Navbar() {
                                 />
                               ) : item.type === 'platform' ? (
                                 <div className="w-full h-full flex items-center justify-center text-ctp-base text-xs font-semibold">
-                                  {item.name.charAt(0).toUpperCase()}
+                                  {item.name?.charAt(0).toUpperCase() || '?'}
                                 </div>
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-ctp-overlay1 text-[10px]">
@@ -490,7 +490,7 @@ export function Navbar() {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center space-x-2 px-3 py-2 text-ctp-subtext1 hover:text-ctp-text hover:bg-ctp-surface0 rounded-lg transition-colors"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-cyan to-primary-purple rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">
                 <span className="text-ctp-text font-medium text-sm">
                   {user?.username?.charAt(0).toUpperCase() || 'U'}
                 </span>

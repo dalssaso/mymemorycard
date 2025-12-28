@@ -70,35 +70,41 @@ function getLegacyColor(platform: string): string {
   return '#6B7280' // Default gray
 }
 
+export function getPlatformColor(platform: string): string {
+  return getLegacyColor(platform)
+}
+
 // New component for platform icons with colors and SVG support
 export function PlatformIconBadge({
   platform,
   size = 'sm',
   showLabel = false,
 }: PlatformIconBadgeProps) {
-  const initial = platform.displayName.charAt(0).toUpperCase()
+  const initial = platform.displayName?.charAt(0).toUpperCase() || '?'
+
+  const colorPrimary = platform.colorPrimary || '#6B7280'
 
   // Determine if background is light (need dark icon)
   const isLightBackground = useMemo(() => {
-    const hex = platform.colorPrimary.replace('#', '')
+    const hex = colorPrimary.replace('#', '')
     const r = parseInt(hex.substr(0, 2), 16)
     const g = parseInt(hex.substr(2, 2), 16)
     const b = parseInt(hex.substr(4, 2), 16)
     const brightness = (r * 299 + g * 587 + b * 114) / 1000
     return brightness > 155
-  }, [platform.colorPrimary])
+  }, [colorPrimary])
 
   return (
     <div className={`flex items-center gap-1 ${showLabel ? '' : 'inline-flex'}`}>
       <div
         className={`${SIZE_CLASSES[size]} ${PADDING_CLASSES[size]} rounded-lg flex items-center justify-center flex-shrink-0`}
-        style={{ backgroundColor: platform.colorPrimary }}
-        title={platform.displayName}
+        style={{ backgroundColor: colorPrimary }}
+        title={platform.displayName || 'Unknown'}
       >
         {platform.iconUrl ? (
           <img
             src={platform.iconUrl}
-            alt={platform.displayName}
+            alt={platform.displayName || 'Platform'}
             className={`w-full h-full object-contain ${
               isLightBackground
                 ? 'filter brightness-0'
@@ -116,7 +122,7 @@ export function PlatformIconBadge({
         )}
       </div>
       {showLabel && (
-        <span className="text-sm text-ctp-subtext1">{platform.displayName}</span>
+        <span className="text-sm text-ctp-subtext1">{platform.displayName || 'Unknown'}</span>
       )}
     </div>
   )

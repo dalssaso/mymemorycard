@@ -3,7 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/contexts/AuthContext'
 
 export function Login() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -17,7 +17,7 @@ export function Login() {
     setIsLoading(true)
 
     try {
-      await login(email, password)
+      await login(username, password)
       navigate({ to: '/dashboard' })
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to login')
@@ -41,13 +41,13 @@ export function Login() {
           )}
           
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-medium mb-2">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="input w-full"
-              placeholder="Enter email"
+              placeholder="Enter username"
               required
             />
           </div>

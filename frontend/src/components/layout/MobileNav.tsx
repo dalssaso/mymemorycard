@@ -86,7 +86,7 @@ export function MobileNav() {
         </button>
 
         <div className="flex flex-col items-center justify-center text-ctp-subtext0">
-          <div className="w-6 h-6 bg-gradient-to-br from-primary-cyan to-primary-purple rounded-full flex items-center justify-center">
+          <div className="w-6 h-6 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">
             <span className="text-ctp-text font-medium text-xs">
               {user?.username?.charAt(0).toUpperCase() || 'U'}
             </span>

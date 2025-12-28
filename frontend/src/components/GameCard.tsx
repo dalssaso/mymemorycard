@@ -24,12 +24,32 @@ interface GameCardProps {
   series_name?: string | null
 }
 
-const STATUS_COLORS = {
-  backlog: 'text-status-backlog border-status-backlog',
-  playing: 'text-status-playing border-status-playing',
-  finished: 'text-status-finished border-status-finished',
-  dropped: 'text-status-dropped border-status-dropped',
-  completed: 'text-status-completed border-status-completed',
+const STATUS_STYLES: Record<string, React.CSSProperties> = {
+  backlog: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)',
+  },
+  playing: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 45%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-teal) 65%, transparent)',
+  },
+  finished: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 45%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-green) 65%, transparent)',
+  },
+  dropped: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-red) 55%, transparent)',
+  },
+  completed: {
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 45%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-green) 65%, transparent)',
+  },
+}
+
+const FRANCHISE_STYLE: React.CSSProperties = {
+  backgroundColor: 'color-mix(in srgb, var(--ctp-mauve) 45%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--ctp-mauve) 65%, transparent)',
 }
 
 export function GameCard({
@@ -161,7 +181,10 @@ export function GameCard({
 
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
-            <span className={`badge ${STATUS_COLORS[status as keyof typeof STATUS_COLORS]}`}>
+            <span
+              className="badge border text-ctp-text"
+              style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
+            >
               {status}
             </span>
             {series_name && (
@@ -171,7 +194,8 @@ export function GameCard({
                   e.stopPropagation()
                   navigate({ to: '/franchises/$seriesName', params: { seriesName: series_name } })
                 }}
-                className="text-xs text-ctp-teal hover:text-ctp-mauve transition-colors cursor-pointer"
+                className="badge border text-ctp-text hover:opacity-90 transition-colors cursor-pointer"
+                style={FRANCHISE_STYLE}
               >
                 {series_name}
               </span>

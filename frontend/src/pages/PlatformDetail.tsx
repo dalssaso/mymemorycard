@@ -129,7 +129,12 @@ export function PlatformDetail() {
             <div>
               <h1 className="text-4xl font-bold text-ctp-text">{platform.display_name}</h1>
               <div className="mt-1">
-                <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} />
+                <PlatformTypeIcon
+                  type={platform.platform_type}
+                  size="sm"
+                  showLabel={true}
+                  color={platform.color_primary}
+                />
               </div>
             </div>
           </div>
@@ -316,7 +321,12 @@ export function PlatformDetail() {
           <div className="space-y-4">
             <div className="bg-ctp-surface0/50 rounded-lg p-4">
               <div className="text-xs text-ctp-subtext0 mb-1">Platform Type</div>
-              <PlatformTypeIcon type={platform.platform_type} size="md" showLabel={true} />
+              <PlatformTypeIcon
+                type={platform.platform_type}
+                size="md"
+                showLabel={true}
+                color={platform.color_primary}
+              />
             </div>
             <div className="bg-ctp-surface0/50 rounded-lg p-4">
               <div className="text-xs text-ctp-subtext0 mb-1">Brand Color</div>

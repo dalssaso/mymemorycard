@@ -56,7 +56,6 @@ export interface UserGame {
 export interface JWTPayload {
   userId: string;
   username: string;
-  email: string;
 }
 
 export interface AuthRequest extends Request {
