@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams, Link } from '@tanstack/react-router'
-import { collectionsAPI } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { Card } from '@/components/ui'
+import { collectionsAPI } from '@/lib/api'
 
 interface Game {
   id: string
@@ -55,11 +55,17 @@ export function SeriesDetail() {
         <div className="mb-8">
           <Link
             to="/collections"
-            className="text-primary-cyan hover:text-primary-purple transition-colors mb-4 inline-block"
+            className="hidden md:inline-block text-primary-cyan hover:text-primary-purple transition-colors mb-4"
           >
-            ← Back to Collections
+            Back to Collections
           </Link>
-          <h1 className="text-4xl font-bold text-white mb-2">{seriesName} Series</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-white">{seriesName} Series</h1>
+          </div>
           <p className="text-sm text-primary-cyan">
             {games.length} {games.length === 1 ? 'game' : 'games'}
           </p>

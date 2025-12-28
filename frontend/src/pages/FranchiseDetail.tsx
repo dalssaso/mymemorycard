@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, Link } from '@tanstack/react-router'
-import { franchisesAPI, userPlatformsAPI, OwnedGame, MissingGame } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { Button, Card, Checkbox, useToast } from '@/components/ui'
+import { franchisesAPI, userPlatformsAPI, OwnedGame, MissingGame } from '@/lib/api'
 
 const STATUS_COLORS: Record<string, string> = {
   backlog: 'bg-gray-600',
@@ -213,11 +213,17 @@ export function FranchiseDetail() {
         <div className="mb-8">
           <Link
             to="/franchises"
-            className="text-primary-cyan hover:text-primary-purple transition-colors mb-4 inline-block"
+            className="hidden md:inline-block text-primary-cyan hover:text-primary-purple transition-colors mb-4"
           >
-            ← Back to Franchises
+            Back to Franchises
           </Link>
-          <h1 className="text-4xl font-bold text-white mb-2">{series_name}</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-white">{series_name}</h1>
+          </div>
           <p className="text-gray-400">
             {owned_games.length} owned
             {missing_games.length > 0 && ` · ${missing_games.length} missing`}

@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { collectionsAPI } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
+import { CollectionDetailSidebar } from '@/components/sidebar/CollectionDetailSidebar'
 import { Button } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
-import { CollectionDetailSidebar } from '@/components/sidebar/CollectionDetailSidebar'
+import { collectionsAPI } from '@/lib/api'
 
 interface Game {
   id: string
@@ -167,6 +167,7 @@ export function CollectionDetail() {
   return (
     <PageLayout
       customCollapsed={true}
+      showBackButton={false}
       sidebar={
         <CollectionDetailSidebar
           collectionId={id}
@@ -274,7 +275,13 @@ export function CollectionDetail() {
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <h1 className="text-4xl font-bold text-white">{collection.name}</h1>
+                  <div className="flex items-center gap-3">
+                    <BackButton
+                      iconOnly={true}
+                      className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+                    />
+                    <h1 className="text-4xl font-bold text-white">{collection.name}</h1>
+                  </div>
                   <button
                     onClick={() => {
                       setNameValue(collection.name)

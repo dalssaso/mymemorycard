@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { PageLayout } from '@/components/layout'
-import { useToast } from '@/components/ui/Toast'
 import { CustomPlatformModal } from '@/components/CustomPlatformModal'
+import { BackButton, PageLayout } from '@/components/layout'
 import { PlatformOnboardingSidebar } from '@/components/sidebar'
-import { platformsAPI, rawgPlatformsAPI, userPlatformsAPI } from '@/lib/api'
+import { useToast } from '@/components/ui/Toast'
+import { PlatformTypeIcon } from '@/components/PlatformTypeIcon'
+import { platformsAPI, userPlatformsAPI } from '@/lib/api'
 
 interface Platform {
   id: string
   name: string
   display_name: string
-  platform_type: string | null
+  platform_type: 'pc' | 'console' | 'mobile' | 'physical'
+  is_system: boolean
+  color_primary: string
+  default_icon_url: string | null
 }
 
 interface UserPlatform {
@@ -28,9 +32,9 @@ export function PlatformOnboarding() {
   const navigate = useNavigate()
 
   const { data: rawgPlatformsData, isLoading: isLoadingPlatforms } = useQuery({
-    queryKey: ['rawg-platforms'],
+    queryKey: ['platforms'],
     queryFn: async () => {
-      const response = await rawgPlatformsAPI.getAll()
+      const response = await platformsAPI.getAll()
       return response.data as { platforms: Platform[] }
     },
   })
@@ -71,14 +75,14 @@ export function PlatformOnboarding() {
   })
 
   const customPlatformMutation = useMutation({
-    mutationFn: async (data: { displayName: string; platformType?: string | null }) => {
+    mutationFn: async (data: { displayName: string; platformType: string; websiteUrl?: string; defaultIconUrl?: string; colorPrimary?: string }) => {
       const response = await platformsAPI.create(data)
       const platform = response.data as { platform: Platform }
       await userPlatformsAPI.add({ platformId: platform.platform.id })
       return platform.platform
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rawg-platforms'] })
+      queryClient.invalidateQueries({ queryKey: ['platforms'] })
       queryClient.invalidateQueries({ queryKey: ['user-platforms'] })
       setIsCustomModalOpen(false)
       showToast('Custom platform added', 'success')
@@ -130,10 +134,16 @@ export function PlatformOnboarding() {
   )
 
   return (
-    <PageLayout sidebar={sidebarContent}>
+    <PageLayout sidebar={sidebarContent} customCollapsed={true}>
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white">Choose Your Platforms</h1>
+          <div className="flex items-center gap-3">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-white">Choose Your Platforms</h1>
+          </div>
           <p className="text-gray-400 mt-2">
             Select the platforms you use. This keeps your imports focused and relevant.
           </p>
@@ -184,9 +194,7 @@ export function PlatformOnboarding() {
                         <span className="text-xs text-primary-purple">Saved</span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {platform.platform_type || 'platform'}
-                    </div>
+                    <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} color={platform.color_primary} />
                   </button>
                 )
               })}

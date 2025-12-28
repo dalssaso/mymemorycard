@@ -93,9 +93,7 @@ export const platformsAPI = {
     api.post('/platforms', data),
 };
 
-export const rawgPlatformsAPI = {
-  getAll: () => api.get('/rawg/platforms'),
-}
+// Removed rawgPlatformsAPI - platforms are now accessed via platformsAPI
 
 export const userPlatformsAPI = {
   getAll: () => api.get('/user-platforms'),

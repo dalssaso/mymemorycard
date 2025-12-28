@@ -6,7 +6,7 @@ import type { RectangleProps, TooltipProps } from 'recharts'
 import { AchievementWidget } from '@/components/AchievementWidget'
 import { ActivityFeed } from '@/components/ActivityFeed'
 import { ActivityHeatmap } from '@/components/ActivityHeatmap'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { DashboardSidebar } from '@/components/sidebar'
 import { Card } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
@@ -171,10 +171,16 @@ export function Dashboard() {
   }, [])
 
   return (
-    <PageLayout sidebar={<DashboardSidebar games={games} />}>
+    <PageLayout sidebar={<DashboardSidebar games={games} />} customCollapsed={true}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+          </div>
           <div className="flex gap-3">
             <Link
               to="/platforms"

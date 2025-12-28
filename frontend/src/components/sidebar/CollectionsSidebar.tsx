@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
+import { useSidebar } from '@/contexts/SidebarContext'
 import { useAnimatedNumber } from '@/hooks/use-animated-number'
+import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
 
 interface Collection {
   id: string
@@ -15,6 +16,7 @@ interface CollectionsSidebarProps {
 }
 
 export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarProps) {
+  const { isCollapsed } = useSidebar()
   const { data: collectionsData } = useQuery({
     queryKey: ['collections'],
     queryFn: async () => {
@@ -44,6 +46,95 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
   }, [collections, franchises])
   const animatedCollections = useAnimatedNumber(stats.totalCollections)
   const animatedFranchises = useAnimatedNumber(stats.totalFranchises)
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-3 pt-3 border-t border-gray-800">
+        <div className="flex justify-center">
+          <Link
+            to="/import"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Import Games"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </Link>
+        </div>
+        <div className="flex justify-center pt-2 border-t border-gray-800">
+          <Link
+            to="/platforms"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Manage Platforms"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+              />
+            </svg>
+          </Link>
+        </div>
+        <div className="flex flex-col items-center gap-2 pt-2 border-t border-gray-800">
+          <div className="flex flex-col items-center gap-1" title={`Collections: ${animatedCollections}`}>
+            <div className="p-2 rounded-lg text-primary-cyan">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+            </div>
+            <span className="text-xs text-gray-500">{animatedCollections}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1" title={`Franchises: ${animatedFranchises}`}>
+            <div className="p-2 rounded-lg text-primary-purple">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                />
+              </svg>
+            </div>
+            <span className="text-xs text-gray-500">{animatedFranchises}</span>
+          </div>
+        </div>
+        {onCreateCollection && (
+          <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+            <button
+              onClick={onCreateCollection}
+              className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              title="Create Collection"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            <Link
+              to="/franchises"
+              className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              title="View Franchises"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                />
+              </svg>
+            </Link>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

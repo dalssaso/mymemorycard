@@ -2,7 +2,6 @@ import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
 import { corsHeaders } from '@/middleware/cors'
 import { query, queryMany, queryOne } from '@/services/db'
-import { getRawgPlatforms } from '@/services/rawg'
 
 interface UserPlatformRow {
   id: string
@@ -14,27 +13,10 @@ interface UserPlatformRow {
   created_at: string
   name: string
   display_name: string
-  platform_type: string | null
+  platform_type: string
+  color_primary: string
+  default_icon_url: string | null
 }
-
-router.get(
-  '/api/rawg/platforms',
-  requireAuth(async () => {
-    try {
-      const platforms = await getRawgPlatforms()
-      return new Response(JSON.stringify({ platforms }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
-    } catch (error) {
-      console.error('Get RAWG platforms error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
-    }
-  })
-)
 
 router.get(
   '/api/user-platforms',
@@ -51,11 +33,13 @@ router.get(
           up.created_at,
           p.name,
           p.display_name,
-          p.platform_type
+          p.platform_type,
+          p.color_primary,
+          p.default_icon_url
         FROM user_platforms up
         INNER JOIN platforms p ON p.id = up.platform_id
         WHERE up.user_id = $1
-        ORDER BY p.display_name`,
+        ORDER BY p.is_system DESC, p.sort_order ASC, p.display_name ASC`,
         [user.id]
       )
 
@@ -97,7 +81,9 @@ router.get(
           up.created_at,
           p.name,
           p.display_name,
-          p.platform_type
+          p.platform_type,
+          p.color_primary,
+          p.default_icon_url
         FROM user_platforms up
         INNER JOIN platforms p ON p.id = up.platform_id
         WHERE up.user_id = $1 AND up.id = $2`,

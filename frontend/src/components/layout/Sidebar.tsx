@@ -4,13 +4,15 @@ import { useSidebar } from '@/contexts/SidebarContext'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { gamesAPI, collectionsAPI, franchisesAPI } from '@/lib/api'
+import { BackButton } from './BackButton'
 
 export interface SidebarProps {
   children?: ReactNode
   customCollapsed?: boolean
+  showBackButton?: boolean
 }
 
-export function Sidebar({ children, customCollapsed = false }: SidebarProps) {
+export function Sidebar({ children, customCollapsed = false, showBackButton = true }: SidebarProps) {
   const { user } = useAuth()
   const { isCollapsed, toggleSidebar } = useSidebar()
 
@@ -78,6 +80,14 @@ export function Sidebar({ children, customCollapsed = false }: SidebarProps) {
       {/* Collapsed View - Icons Only */}
       {isCollapsed && (
         <div className="p-2 space-y-4 pt-10">
+          {showBackButton && (
+            <div className="flex justify-center pb-3 border-b border-gray-800">
+              <BackButton
+                iconOnly={true}
+                className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              />
+            </div>
+          )}
           {/* User Avatar */}
           <div className="flex justify-center pb-3 border-b border-gray-800">
             <div className="w-8 h-8 bg-gradient-to-br from-primary-cyan to-primary-purple rounded-full flex items-center justify-center" title={user?.username}>
@@ -182,6 +192,13 @@ export function Sidebar({ children, customCollapsed = false }: SidebarProps) {
       {/* Expanded View - Full Content */}
       {!isCollapsed && (
         <div className="p-4 space-y-6">
+          {showBackButton && (
+            <div>
+              <BackButton
+                className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-600 rounded-lg transition-colors text-sm"
+              />
+            </div>
+          )}
           {/* User Section */}
           <div className="pb-4 border-b border-gray-800">
             <div className="flex items-center space-x-3">

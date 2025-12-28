@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { franchisesAPI, FranchiseSummary } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
+import { FranchisesSidebar } from '@/components/sidebar'
 import { Card, Button } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
-import { FranchisesSidebar } from '@/components/sidebar'
+import { franchisesAPI, FranchiseSummary } from '@/lib/api'
 
 export function Franchises() {
   const queryClient = useQueryClient()
@@ -50,11 +50,18 @@ export function Franchises() {
           isSyncing={syncMutation.isPending}
         />
       }
+      customCollapsed={true}
     >
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-white">Franchises</h1>
+            <div className="flex items-center gap-3">
+              <BackButton
+                iconOnly={true}
+                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              />
+              <h1 className="text-4xl font-bold text-white">Franchises</h1>
+            </div>
             <p className="text-gray-400 mt-1">
               Game series in your library
             </p>

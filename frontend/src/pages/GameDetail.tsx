@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams, Link, useNavigate } from '@tanstack/react-router'
+import { useParams, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { gamesAPI } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { GameDetailSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
 import { GameAchievements } from '@/components/GameAchievements'
-import { PlatformIcon } from '@/components/PlatformIcon'
+import { PlatformIconBadge } from '@/components/PlatformIcon'
 import { StartSessionButton } from '@/components/StartSessionButton'
 import { ProgressDisplay } from '@/components/ProgressDisplay'
 import { SessionsHistory } from '@/components/SessionsHistory'
@@ -30,6 +30,8 @@ interface GameDetails {
   platform_id: string
   platform_name: string
   platform_display_name: string
+  platform_color_primary: string
+  platform_icon_url: string | null
   status: string | null
   user_rating: number | null
   notes: string | null
@@ -215,20 +217,7 @@ export function GameDetail() {
   )
 
   return (
-    <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-      {/* Mobile Back Button - visible only on mobile */}
-      <div className="lg:hidden mb-4">
-        <Link
-          to="/library"
-          className="inline-flex items-center gap-2 text-primary-cyan hover:text-primary-purple transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          Back to Library
-        </Link>
-      </div>
-
+    <PageLayout sidebar={sidebarContent} customCollapsed={true} showBackButton={false}>
       {/* Background Image Header - hidden on mobile to avoid overlap with cover */}
       {activePlatform.background_image_url && (
         <div className="hidden sm:block relative h-64 lg:h-96 w-full -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-4 sm:mb-6">
@@ -425,10 +414,17 @@ export function GameDetail() {
                   {platforms.map((platform) => (
                     <div
                       key={platform.platform_id}
-                      className="px-3 py-1.5 bg-primary-purple/20 border border-primary-purple/50 rounded-lg flex items-center gap-2"
+                      className="px-2 py-1.5 bg-primary-purple/10 border border-primary-purple/30 rounded-lg flex items-center gap-2"
                     >
-                      <PlatformIcon platform={platform.platform_display_name} size="sm" />
-                      <span className="text-sm text-primary-purple">{platform.platform_display_name}</span>
+                      <PlatformIconBadge
+                        platform={{
+                          displayName: platform.platform_display_name,
+                          iconUrl: platform.platform_icon_url,
+                          colorPrimary: platform.platform_color_primary,
+                        }}
+                        size="md"
+                      />
+                      <span className="text-sm text-gray-300">{platform.platform_display_name}</span>
                     </div>
                   ))}
                 </div>
@@ -531,7 +527,13 @@ export function GameDetail() {
 
           {/* Game Details */}
           <div className="lg:col-span-2">
-            <h1 className="text-4xl font-bold mb-4">{activePlatform.name}</h1>
+            <div className="flex items-center gap-3 mb-4">
+              <BackButton
+                iconOnly={true}
+                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              />
+              <h1 className="text-4xl font-bold">{activePlatform.name}</h1>
+            </div>
 
             {activePlatform.description && (
               <div id="about" className="mb-6 bg-gray-800/30 rounded-lg p-4">

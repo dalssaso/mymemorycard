@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useSidebar } from '@/contexts/SidebarContext'
 
 interface PlatformOnboardingSidebarProps {
   selectedCount: number
@@ -9,6 +10,62 @@ export function PlatformOnboardingSidebar({
   selectedCount,
   onAddCustomPlatform,
 }: PlatformOnboardingSidebarProps) {
+  const { isCollapsed } = useSidebar()
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-3 pt-3 border-t border-gray-800">
+        <div className="flex justify-center">
+          <div
+            className="w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-800 flex items-center justify-center text-sm text-primary-cyan"
+            title="Platforms Selected"
+          >
+            {selectedCount}
+          </div>
+        </div>
+
+        <div className="flex justify-center pt-2 border-t border-gray-800">
+          <Link
+            to="/platforms"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Manage Platforms"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+              />
+            </svg>
+          </Link>
+        </div>
+
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+          <button
+            type="button"
+            onClick={onAddCustomPlatform}
+            className="p-2 rounded-lg text-primary-cyan hover:bg-gray-800 hover:text-white transition-all"
+            title="Add Custom Platform"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          <Link
+            to="/import"
+            className="p-2 rounded-lg text-primary-purple hover:bg-gray-800 hover:text-white transition-all"
+            title="Go to Import"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-gray-800/40 border border-gray-800 rounded-lg p-4">

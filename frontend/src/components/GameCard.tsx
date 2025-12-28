@@ -9,7 +9,13 @@ interface GameCardProps {
   id: string
   name: string
   cover_art_url: string | null
-  platforms: { id: string; name: string; displayName: string }[]
+  platforms: {
+    id: string
+    name: string
+    displayName: string
+    iconUrl?: string | null
+    colorPrimary: string
+  }[]
   status: string
   metacritic_score: number | null
   user_rating: number | null
@@ -84,7 +90,10 @@ export function GameCard({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+          <div className="flex gap-1 mb-1">
+            <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
+          </div>
           <h3 className="text-sm font-bold text-white line-clamp-2 group-hover:text-primary-purple transition-colors">
             {name}
           </h3>
@@ -127,7 +136,7 @@ export function GameCard({
           </h3>
 
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <PlatformIcons platforms={platforms.map(p => p.displayName)} size="sm" />
+            <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
             <span className={`badge ${STATUS_COLORS[status as keyof typeof STATUS_COLORS]}`}>
               {status}
             </span>

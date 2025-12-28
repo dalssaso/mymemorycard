@@ -34,20 +34,6 @@ export interface SeriesMember extends RAWGSeriesGame {
   rawgId: number
 }
 
-interface RAWGPlatform {
-  id: number
-  name: string
-  slug: string
-  platform_type?: string | null
-}
-
-interface RAWGPlatformsResponse {
-  count: number
-  next: string | null
-  previous: string | null
-  results: RAWGPlatform[]
-}
-
 interface RAWGAchievement {
   id: number
   name: string
@@ -150,8 +136,6 @@ interface RAWGSearchResponse {
 }
 
 import { config } from '@/config'
-import { query, queryMany } from '@/services/db'
-import type { Platform } from '@/types'
 
 const RAWG_API_KEY = config.rawg.apiKey
 const RAWG_BASE_URL = 'https://api.rawg.io/api'
@@ -209,66 +193,7 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter()
 
-export async function getRawgPlatforms(useCache = true): Promise<Platform[]> {
-  const cacheKey = 'rawg:platforms'
-
-  if (useCache) {
-    try {
-      const cached = await redisClient.get(cacheKey)
-      if (cached) return JSON.parse(cached)
-    } catch (error) {
-      console.error('Redis cache get error:', error)
-    }
-  }
-
-  if (!RAWG_API_KEY) {
-    console.warn('RAWG API key not configured')
-    return getPlatformsFromDb()
-  }
-
-  return rateLimiter.schedule(async () => {
-    const url = new URL(`${RAWG_BASE_URL}/platforms`)
-    url.searchParams.set('key', RAWG_API_KEY!)
-    url.searchParams.set('page_size', '100')
-
-    console.log('RAWG API request: platforms')
-    await incrementRAWGRequestCount()
-    const response = await fetch(url.toString())
-
-    if (!response.ok) {
-      throw new Error(`RAWG API error: ${response.status}`)
-    }
-
-    const data = (await response.json()) as RAWGPlatformsResponse
-    const platforms = data.results.map((platform) => ({
-      name: platform.slug,
-      displayName: platform.name,
-      platformType: platform.platform_type || null,
-    }))
-
-    for (const platform of platforms) {
-      await query(
-        `INSERT INTO platforms (name, display_name, platform_type)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (name)
-         DO UPDATE SET display_name = EXCLUDED.display_name, platform_type = EXCLUDED.platform_type`,
-        [platform.name, platform.displayName, platform.platformType]
-      )
-    }
-
-    const syncedPlatforms = await getPlatformsFromDb()
-
-    if (useCache) {
-      try {
-        await redisClient.setEx(cacheKey, CACHE_TTL_DETAILS, JSON.stringify(syncedPlatforms))
-      } catch (error) {
-        console.error('Redis cache set error:', error)
-      }
-    }
-
-    return syncedPlatforms
-  })
-}
+// Removed getRawgPlatforms - platforms are now pre-seeded in database
 
 export async function searchGames(query: string, useCache = true): Promise<RAWGGame[]> {
   if (!RAWG_API_KEY) {
@@ -624,11 +549,7 @@ import { incrementRAWGRequestCount } from './api-monitor'
 const CACHE_TTL_SEARCH = 60 * 60 * 24 * 7 // 7 days for search results
 const CACHE_TTL_DETAILS = 60 * 60 * 24 * 30 // 30 days for game details
 
-async function getPlatformsFromDb(): Promise<Platform[]> {
-  return queryMany<Platform>(
-    'SELECT id, name, display_name, platform_type FROM platforms ORDER BY display_name'
-  )
-}
+// Removed getPlatformsFromDb - no longer needed
 
 async function getCachedSearch(query: string): Promise<RAWGGame[] | null> {
   try {

@@ -1,9 +1,40 @@
+import { useSidebar } from '@/contexts/SidebarContext'
+
 interface PlatformsSidebarProps {
   platformCount: number
   onAddCustomPlatform: () => void
 }
 
 export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: PlatformsSidebarProps) {
+  const { isCollapsed } = useSidebar()
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-3 pt-3 border-t border-gray-800">
+        <div className="flex justify-center">
+          <div
+            className="w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-800 flex items-center justify-center text-sm text-primary-cyan"
+            title="Platforms Saved"
+          >
+            {platformCount}
+          </div>
+        </div>
+        <div className="flex justify-center pt-2 border-t border-gray-800">
+          <button
+            type="button"
+            onClick={onAddCustomPlatform}
+            className="p-2 rounded-lg text-primary-cyan hover:bg-gray-800 hover:text-white transition-all"
+            title="Add Custom Platform"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="bg-gray-800/40 border border-gray-800 rounded-lg p-4">

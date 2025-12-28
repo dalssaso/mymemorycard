@@ -2,15 +2,22 @@ import { ReactNode } from 'react'
 import { Navbar } from './Navbar'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
+import { BackToTopButton } from './BackToTopButton'
 import { useSidebar } from '@/contexts/SidebarContext'
 
 export interface PageLayoutProps {
   children: ReactNode
   sidebar?: ReactNode
   customCollapsed?: boolean
+  showBackButton?: boolean
 }
 
-export function PageLayout({ children, sidebar, customCollapsed = false }: PageLayoutProps) {
+export function PageLayout({
+  children,
+  sidebar,
+  customCollapsed = false,
+  showBackButton = true,
+}: PageLayoutProps) {
   const { isCollapsed } = useSidebar()
 
   return (
@@ -21,7 +28,9 @@ export function PageLayout({ children, sidebar, customCollapsed = false }: PageL
       {/* Main Content Area with Sidebar */}
       <div className="pt-16 md:pb-0 pb-16">
         {/* Sidebar */}
-        <Sidebar customCollapsed={customCollapsed}>{sidebar}</Sidebar>
+        <Sidebar customCollapsed={customCollapsed} showBackButton={showBackButton}>
+          {sidebar}
+        </Sidebar>
 
         {/* Main Content */}
         <main
@@ -35,6 +44,8 @@ export function PageLayout({ children, sidebar, customCollapsed = false }: PageL
 
       {/* Mobile Navigation */}
       <MobileNav />
+
+      <BackToTopButton />
     </div>
   )
 }

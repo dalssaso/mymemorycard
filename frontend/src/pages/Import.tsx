@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { importAPI, userPlatformsAPI } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { ImportSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
+import { importAPI, userPlatformsAPI } from '@/lib/api'
 
 interface UserPlatform {
   id: string
@@ -189,11 +189,17 @@ export function Import() {
   )
 
   return (
-    <PageLayout sidebar={sidebarContent}>
+    <PageLayout sidebar={sidebarContent} customCollapsed={true}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-2">
-          Import Games
-        </h1>
+        <div className="flex items-center gap-3 mb-2">
+          <BackButton
+            iconOnly={true}
+            className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+          />
+          <h1 className="text-4xl font-bold text-white">
+            Import Games
+          </h1>
+        </div>
         <p className="text-gray-400 mb-8">
           Paste game names (one per line) and we'll automatically enrich them with metadata
         </p>

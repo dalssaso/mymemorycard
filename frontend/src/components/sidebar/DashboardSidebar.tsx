@@ -1,8 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useCallback } from 'react'
-import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
+import { useSidebar } from '@/contexts/SidebarContext'
 import { useAnimatedNumber } from '@/hooks/use-animated-number'
+import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
 
 interface Game {
   id: string
@@ -25,6 +26,7 @@ interface Collection {
 
 export function DashboardSidebar({ games }: DashboardSidebarProps) {
   const navigate = useNavigate()
+  const { isCollapsed } = useSidebar()
 
   const navigateToLibrary = useCallback(
     (params: { status?: string; favorites?: boolean }) => {
@@ -85,6 +87,129 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
   const animatedBacklog = useAnimatedNumber(stats.backlog)
   const animatedDropped = useAnimatedNumber(stats.dropped)
   const animatedFavorites = useAnimatedNumber(stats.favorites)
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-3 pt-3 border-t border-gray-800">
+        <div className="flex justify-center">
+          <Link
+            to="/import"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Import Games"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </Link>
+        </div>
+
+        <div className="flex justify-center pt-2 border-t border-gray-800">
+          <Link
+            to="/platforms"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Manage Platforms"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+              />
+            </svg>
+          </Link>
+        </div>
+
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+          <button
+            onClick={() => navigateToLibrary({})}
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Total Games"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => navigateToLibrary({ status: 'playing' })}
+            className="p-2 rounded-lg text-primary-cyan hover:bg-gray-800 hover:text-white transition-all"
+            title="Playing"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => navigateToLibrary({ status: 'completed' })}
+            className="p-2 rounded-lg text-primary-green hover:bg-gray-800 hover:text-white transition-all"
+            title="Completed"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => navigateToLibrary({ status: 'backlog' })}
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Backlog"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => navigateToLibrary({ status: 'dropped' })}
+            className="p-2 rounded-lg text-red-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Dropped"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => navigateToLibrary({ favorites: true })}
+            className="p-2 rounded-lg text-red-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Favorites"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

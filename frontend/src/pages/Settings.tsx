@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { preferencesAPI } from '@/lib/api'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { useToast } from '@/components/ui/Toast'
+import { preferencesAPI } from '@/lib/api'
 
 interface UserPreferences {
   default_view: 'grid' | 'table'
@@ -52,7 +52,13 @@ export function Settings() {
     return (
       <PageLayout>
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Settings</h1>
+          <div className="flex items-center gap-3 mb-8">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-white">Settings</h1>
+          </div>
           <div className="card">
             <div className="animate-pulse space-y-6">
               <div className="h-8 bg-gray-700 rounded w-1/3"></div>
@@ -69,7 +75,13 @@ export function Settings() {
   return (
     <PageLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold text-white mb-8">Settings</h1>
+        <div className="flex items-center gap-3 mb-8">
+          <BackButton
+            iconOnly={true}
+            className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+          />
+          <h1 className="text-4xl font-bold text-white">Settings</h1>
+        </div>
 
         <div className="card space-y-8">
           <div>

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import { PageLayout } from '@/components/layout'
-import { useToast } from '@/components/ui/Toast'
 import { PlatformDetailSidebar } from '@/components/sidebar'
+import { BackButton, PageLayout } from '@/components/layout'
+import { useToast } from '@/components/ui/Toast'
+import { PlatformIconBadge } from '@/components/PlatformIcon'
+import { PlatformTypeIcon } from '@/components/PlatformTypeIcon'
 import { userPlatformsAPI } from '@/lib/api'
 
 interface UserPlatformDetail {
@@ -16,33 +18,9 @@ interface UserPlatformDetail {
   created_at: string
   name: string
   display_name: string
-  platform_type: string | null
-}
-
-function PlatformIcon({ name, iconUrl }: { name: string; iconUrl?: string | null }) {
-  if (iconUrl) {
-    return (
-      <img
-        src={iconUrl}
-        alt={name}
-        className="w-full h-full object-cover"
-      />
-    )
-  }
-
-  const initial = name.trim().charAt(0).toUpperCase() || 'P'
-
-  return (
-    <div
-      className={[
-        'w-full h-full flex items-center justify-center',
-        'bg-gradient-to-br from-primary-cyan/30 to-primary-purple/40',
-        'text-white font-semibold',
-      ].join(' ')}
-    >
-      {initial}
-    </div>
-  )
+  platform_type: 'pc' | 'console' | 'mobile' | 'physical'
+  color_primary: string
+  default_icon_url: string | null
 }
 
 export function PlatformDetail() {
@@ -107,7 +85,7 @@ export function PlatformDetail() {
 
   if (isLoading || !platform) {
     return (
-      <PageLayout sidebar={sidebarContent}>
+      <PageLayout sidebar={sidebarContent} customCollapsed={true}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-gray-400">Loading...</div>
         </div>
@@ -132,18 +110,27 @@ export function PlatformDetail() {
   }
 
   return (
-    <PageLayout sidebar={sidebarContent}>
+    <PageLayout sidebar={sidebarContent} showBackButton={false} customCollapsed={true}>
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-800">
-              <PlatformIcon name={platform.display_name} iconUrl={platform.icon_url} />
-            </div>
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <PlatformIconBadge
+              platform={{
+                displayName: platform.display_name,
+                iconUrl: platform.icon_url || platform.default_icon_url,
+                colorPrimary: platform.color_primary,
+              }}
+              size="lg"
+            />
             <div>
               <h1 className="text-4xl font-bold text-white">{platform.display_name}</h1>
-              <p className="text-gray-400 mt-1">
-                {platform.platform_type || 'platform'}
-              </p>
+              <div className="mt-1">
+                <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} />
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
@@ -208,17 +195,17 @@ export function PlatformDetail() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-400">Icon URL</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-400">
+                      Icon URL (SVG only - overrides default)
+                    </label>
                     <input
                       value={iconUrlValue}
                       onChange={(event) => setIconUrlValue(event.target.value)}
                       className="input w-full"
-                      placeholder="Optional icon image URL"
+                      placeholder={platform.default_icon_url || "https://cdn.simpleicons.org/steam/ffffff"}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Use a direct image URL ending in .png or .svg. Square assets (256x256 or
-                      larger) with transparent backgrounds look best. You can grab official icons
-                      from platform press kits or a curated set like{' '}
+                      Provide an SVG icon URL from{' '}
                       <a
                         href={`https://simpleicons.org/?q=${encodeURIComponent(
                           platform.display_name
@@ -229,7 +216,7 @@ export function PlatformDetail() {
                       >
                         Simple Icons
                       </a>
-                      .
+                      {' '}or leave empty to use {platform.default_icon_url ? 'platform default' : 'text badge'}.
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -329,10 +316,26 @@ export function PlatformDetail() {
           <div className="space-y-4">
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="text-xs text-gray-400 mb-1">Platform Type</div>
-              <div className="text-lg font-semibold text-white">
-                {platform.platform_type || 'platform'}
+              <PlatformTypeIcon type={platform.platform_type} size="md" showLabel={true} />
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <div className="text-xs text-gray-400 mb-1">Brand Color</div>
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-6 h-6 rounded border border-gray-600"
+                  style={{ backgroundColor: platform.color_primary }}
+                />
+                <span className="text-sm text-white font-mono">{platform.color_primary}</span>
               </div>
             </div>
+            {platform.default_icon_url && (
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <div className="text-xs text-gray-400 mb-1">Default Icon</div>
+                <div className="text-xs text-gray-500 break-all">
+                  {platform.default_icon_url.substring(0, 50)}...
+                </div>
+              </div>
+            )}
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="text-xs text-gray-400 mb-1">Saved Since</div>
               <div className="text-sm text-white">

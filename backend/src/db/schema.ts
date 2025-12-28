@@ -110,11 +110,19 @@ export const gameGenres = pgTable(
 // PLATFORMS
 // ============================================================================
 
+export const platformTypeEnum = pgEnum('platform_type', ['pc', 'console', 'mobile', 'physical'])
+
 export const platforms = pgTable('platforms', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 50 }).unique().notNull(),
   displayName: varchar('display_name', { length: 100 }).notNull(),
-  platformType: varchar('platform_type', { length: 20 }),
+  platformType: platformTypeEnum('platform_type').notNull(),
+  isSystem: boolean('is_system').default(false),
+  isPhysical: boolean('is_physical').default(false),
+  websiteUrl: text('website_url'),
+  colorPrimary: varchar('color_primary', { length: 7 }).notNull().default('#6B7280'),
+  defaultIconUrl: text('default_icon_url'),
+  sortOrder: integer('sort_order').default(0),
 })
 
 export const userPlatforms = pgTable(

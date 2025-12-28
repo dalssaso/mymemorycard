@@ -1,17 +1,24 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { PageLayout } from '@/components/layout'
-import { useToast } from '@/components/ui/Toast'
 import { CustomPlatformModal } from '@/components/CustomPlatformModal'
+import { BackButton, PageLayout } from '@/components/layout'
 import { PlatformsSidebar } from '@/components/sidebar'
-import { platformsAPI, rawgPlatformsAPI, userPlatformsAPI } from '@/lib/api'
+import { useToast } from '@/components/ui/Toast'
+import { PlatformTypeIcon } from '@/components/PlatformTypeIcon'
+import { platformsAPI, userPlatformsAPI } from '@/lib/api'
 
 interface Platform {
   id: string
   name: string
   display_name: string
-  platform_type: string | null
+  platform_type: 'pc' | 'console' | 'mobile' | 'physical'
+  is_system: boolean
+  is_physical: boolean
+  website_url: string | null
+  color_primary: string
+  default_icon_url: string | null
+  sort_order: number
 }
 
 interface UserPlatform {
@@ -24,10 +31,12 @@ interface UserPlatform {
   created_at: string
   name: string
   display_name: string
-  platform_type: string | null
+  platform_type: 'pc' | 'console' | 'mobile' | 'physical'
+  color_primary: string
+  default_icon_url: string | null
 }
 
-function PlatformIcon({ name, iconUrl }: { name: string; iconUrl?: string | null }) {
+function PlatformIcon({ name, iconUrl, color }: { name: string; iconUrl?: string | null; color?: string }) {
   if (iconUrl) {
     return (
       <img
@@ -42,11 +51,8 @@ function PlatformIcon({ name, iconUrl }: { name: string; iconUrl?: string | null
 
   return (
     <div
-      className={[
-        'w-full h-full flex items-center justify-center',
-        'bg-gradient-to-br from-primary-cyan/30 to-primary-purple/40',
-        'text-white font-semibold',
-      ].join(' ')}
+      className="w-full h-full flex items-center justify-center text-white font-semibold text-6xl"
+      style={{ backgroundColor: color || '#374151' }}
     >
       {initial}
     </div>
@@ -61,9 +67,9 @@ export function Platforms() {
   const { showToast } = useToast()
 
   const { data: rawgPlatformsData, isLoading: isLoadingPlatforms } = useQuery({
-    queryKey: ['rawg-platforms'],
+    queryKey: ['platforms'],
     queryFn: async () => {
-      const response = await rawgPlatformsAPI.getAll()
+      const response = await platformsAPI.getAll()
       return response.data as { platforms: Platform[] }
     },
   })
@@ -106,7 +112,7 @@ export function Platforms() {
       return platform.platform
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rawg-platforms'] })
+      queryClient.invalidateQueries({ queryKey: ['platforms'] })
       queryClient.invalidateQueries({ queryKey: ['user-platforms'] })
       setIsCustomModalOpen(false)
       showToast('Custom platform added', 'success')
@@ -172,11 +178,17 @@ export function Platforms() {
   )
 
   return (
-    <PageLayout sidebar={sidebarContent}>
+    <PageLayout sidebar={sidebarContent} customCollapsed={true}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-white">Platforms</h1>
+            <div className="flex items-center gap-3">
+              <BackButton
+                iconOnly={true}
+                className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+              />
+              <h1 className="text-4xl font-bold text-white">Platforms</h1>
+            </div>
             <p className="text-gray-400 mt-1">
               Keep your platform list current for accurate imports.
             </p>
@@ -223,6 +235,7 @@ export function Platforms() {
                     <PlatformIcon
                       name={platform.display_name}
                       iconUrl={platform.icon_url}
+                      color={platform.color_primary}
                     />
                     <div
                       className={[
@@ -290,9 +303,7 @@ export function Platforms() {
                         <span className="text-xs text-primary-cyan">Saved</span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {platform.platform_type || 'platform'}
-                    </div>
+                    <PlatformTypeIcon type={platform.platform_type} size="sm" showLabel={true} color={platform.color_primary} />
                   </button>
                 )
               })}

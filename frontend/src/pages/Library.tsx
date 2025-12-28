@@ -14,15 +14,15 @@ import {
   type RowSelectionState,
 } from '@tanstack/react-table'
 import { Link, useSearch } from '@tanstack/react-router'
-import type { LibrarySearchParams } from '@/routes/library.index'
-import { gamesAPI, collectionsAPI } from '@/lib/api'
 import { GameCard } from '@/components/GameCard'
-import { PageLayout } from '@/components/layout'
+import { BackButton, PageLayout } from '@/components/layout'
 import { LibrarySidebar } from '@/components/sidebar'
+import { PlatformIcons } from '@/components/PlatformIcon'
 import { Checkbox } from '@/components/ui'
 import { GameCardSkeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
-import { PlatformIcons } from '@/components/PlatformIcon'
+import { collectionsAPI, gamesAPI } from '@/lib/api'
+import type { LibrarySearchParams } from '@/routes/library.index'
 
 interface Collection {
   id: string
@@ -38,6 +38,8 @@ interface Game {
   platform_id: string
   platform_name: string
   platform_display_name: string
+  platform_color_primary: string
+  platform_icon_url: string | null
   status: string
   user_rating: number | null
   total_minutes: number
@@ -52,7 +54,13 @@ interface AggregatedGame {
   id: string
   name: string
   cover_art_url: string | null
-  platforms: { id: string; name: string; displayName: string }[]
+  platforms: {
+    id: string
+    name: string
+    displayName: string
+    iconUrl: string | null
+    colorPrimary: string
+  }[]
   status: string
   user_rating: number | null
   total_minutes: number
@@ -200,6 +208,8 @@ export function Library() {
           id: game.platform_id,
           name: game.platform_name,
           displayName: game.platform_display_name,
+          iconUrl: game.platform_icon_url,
+          colorPrimary: game.platform_color_primary,
         })
         existing.total_minutes += game.total_minutes
         if (game.is_favorite) existing.is_favorite = true
@@ -215,6 +225,8 @@ export function Library() {
             id: game.platform_id,
             name: game.platform_name,
             displayName: game.platform_display_name,
+            iconUrl: game.platform_icon_url,
+            colorPrimary: game.platform_color_primary,
           }],
           status: game.status,
           user_rating: game.user_rating,
@@ -265,7 +277,7 @@ export function Library() {
       columnHelper.accessor('platforms', {
         header: 'Platforms',
         cell: (info) => (
-          <PlatformIcons platforms={info.getValue().map(p => p.displayName)} size="sm" />
+          <PlatformIcons platforms={info.getValue()} size="sm" maxDisplay={5} />
         ),
       }),
       columnHelper.accessor('status', {
@@ -326,7 +338,13 @@ export function Library() {
     return (
       <PageLayout>
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Library</h1>
+          <div className="flex items-center gap-3 mb-8">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-white">Library</h1>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
               <GameCardSkeleton key={i} />
@@ -380,7 +398,13 @@ export function Library() {
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-purple">Library</h1>
+          <div className="flex items-center gap-3">
+            <BackButton
+              iconOnly={true}
+              className="md:hidden p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            />
+            <h1 className="text-4xl font-bold text-primary-purple">Library</h1>
+          </div>
 
           {/* Export Buttons */}
           <div className="flex gap-2">
@@ -691,7 +715,7 @@ export function Library() {
                         <div className="flex-1">
                           <h3 className="text-lg font-bold mb-2">{row.original.name}</h3>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <PlatformIcons platforms={row.original.platforms.map(p => p.displayName)} size="sm" />
+                            <PlatformIcons platforms={row.original.platforms} size="sm" maxDisplay={5} />
                             <span className="badge text-zinc-400 border-zinc-600">
                               {row.original.status}
                             </span>

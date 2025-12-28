@@ -32,7 +32,13 @@ export interface Platform {
   id: string;
   name: string;
   display_name: string;
-  platform_type?: string;
+  platform_type: 'pc' | 'console' | 'mobile' | 'physical';
+  is_system: boolean;
+  is_physical: boolean;
+  website_url: string | null;
+  color_primary: string;
+  default_icon_url: string | null;
+  sort_order: number;
 }
 
 export interface UserGame {

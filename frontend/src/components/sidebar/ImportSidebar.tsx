@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useSidebar } from '@/contexts/SidebarContext'
 
 interface Platform {
   id: string
@@ -19,6 +20,48 @@ export function ImportSidebar({
   onPlatformSelect,
   isImporting,
 }: ImportSidebarProps) {
+  const { isCollapsed } = useSidebar()
+
+  if (isCollapsed) {
+    return (
+      <div className="space-y-3 pt-3 border-t border-gray-800">
+        <div className="flex justify-center">
+          <Link
+            to="/platforms"
+            className="p-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            title="Manage Platforms"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 4h6a2 2 0 012 2v2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2H5a2 2 0 01-2-2v-4a2 2 0 012-2h2V6a2 2 0 012-2z"
+              />
+            </svg>
+          </Link>
+        </div>
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-gray-800">
+          {platforms.map((platform) => (
+            <button
+              key={platform.id}
+              onClick={() => onPlatformSelect(platform.id)}
+              disabled={isImporting}
+              className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold transition-all disabled:opacity-50 ${
+                selectedPlatform === platform.id
+                  ? 'bg-primary-purple/20 text-primary-purple ring-2 ring-primary-purple'
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              }`}
+              title={platform.display_name}
+            >
+              {platform.display_name.trim().charAt(0).toUpperCase() || '?'}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <Link

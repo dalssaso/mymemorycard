@@ -47,6 +47,8 @@ router.get(
           p.id as platform_id,
           p.name as platform_name,
           p.display_name as platform_display_name,
+          p.color_primary as platform_color_primary,
+          COALESCE(up.icon_url, p.default_icon_url) as platform_icon_url,
           COALESCE(ugp.status, 'backlog') as status,
           ugp.user_rating,
           COALESCE(upt.total_minutes, 0) as total_minutes,
@@ -57,6 +59,7 @@ router.get(
         FROM games g
         INNER JOIN user_games ug ON g.id = ug.game_id
         INNER JOIN platforms p ON ug.platform_id = p.id
+        LEFT JOIN user_platforms up ON up.platform_id = p.id AND up.user_id = $1
         LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
         LEFT JOIN user_playtime upt ON g.id = upt.game_id AND ug.platform_id = upt.platform_id AND upt.user_id = $1
         LEFT JOIN user_game_display_editions ugde ON g.id = ugde.game_id AND ug.platform_id = ugde.platform_id AND ugde.user_id = $1
@@ -258,6 +261,8 @@ router.get(
           p.id as platform_id,
           p.name as platform_name,
           p.display_name as platform_display_name,
+          p.color_primary as platform_color_primary,
+          COALESCE(up.icon_url, p.default_icon_url) as platform_icon_url,
           COALESCE(ugp.status, 'backlog') as status,
           ugp.user_rating,
           ugp.notes,
@@ -271,6 +276,7 @@ router.get(
         FROM games g
         LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $1
         LEFT JOIN platforms p ON ug.platform_id = p.id
+        LEFT JOIN user_platforms up ON up.platform_id = p.id AND up.user_id = $1
         LEFT JOIN user_game_progress ugp ON g.id = ugp.game_id AND ug.platform_id = ugp.platform_id AND ugp.user_id = $1
         LEFT JOIN user_playtime upt ON g.id = upt.game_id AND ug.platform_id = upt.platform_id AND upt.user_id = $1
         LEFT JOIN user_game_display_editions ugde ON g.id = ugde.game_id AND ug.platform_id = ugde.platform_id AND ugde.user_id = $1
