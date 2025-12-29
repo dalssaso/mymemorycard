@@ -10,6 +10,9 @@ import {
   getActivityLogs,
   estimateCost,
 } from '@/services/ai/service'
+import { getModelsForProvider } from '@/services/ai/models'
+import { getCachedModels, setCachedModels } from '@/services/ai/cache'
+import OpenAI from 'openai'
 
 function maskApiKey(encryptedKey: string | null): string | null {
   if (!encryptedKey) return null
@@ -70,6 +73,78 @@ router.get(
       console.error('Get AI settings error:', error)
       return new Response(JSON.stringify({ error: 'Internal server error' }), {
         status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
+    }
+  })
+)
+
+router.get(
+  '/api/ai/models/:provider',
+  requireAuth(async (req, user) => {
+    try {
+      const url = new URL(req.url)
+      const pathParts = url.pathname.split('/')
+      const provider = pathParts[pathParts.length - 1]
+
+      if (!provider || !['openai', 'openrouter'].includes(provider)) {
+        return new Response(JSON.stringify({ textModels: [], imageModels: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
+      }
+
+      const cached = await getCachedModels(provider)
+      if (cached) {
+        return new Response(JSON.stringify(cached), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
+      }
+
+      const settings = await queryOne<{
+        provider: string
+        base_url: string | null
+        api_key_encrypted: string | null
+      }>(
+        `SELECT provider, base_url, api_key_encrypted
+         FROM user_ai_settings
+         WHERE user_id = $1 AND provider = $2::ai_provider`,
+        [user.id, provider]
+      )
+
+      if (!settings || !settings.api_key_encrypted) {
+        return new Response(JSON.stringify({ textModels: [], imageModels: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
+      }
+
+      const apiKey = decrypt(settings.api_key_encrypted)
+      let client: OpenAI | undefined
+      let models
+
+      if (provider === 'openai') {
+        const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey }
+        if (settings.base_url) {
+          config.baseURL = settings.base_url
+        }
+        client = new OpenAI(config)
+        models = await getModelsForProvider(provider, client)
+      } else {
+        models = await getModelsForProvider(provider, undefined, apiKey)
+      }
+
+      await setCachedModels(provider, models)
+
+      return new Response(JSON.stringify(models), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
+    } catch (error) {
+      console.error('Get models error:', error)
+      return new Response(JSON.stringify({ textModels: [], imageModels: [] }), {
+        status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       })
     }
@@ -138,7 +213,7 @@ router.put(
           user_id, provider, base_url, api_key_encrypted, model,
           image_api_key_encrypted, image_model, temperature, max_tokens, is_active, updated_at
         )
-        VALUES ($1, $2::ai_provider, $3, $4, COALESCE($5, 'gpt-4.1-mini'), $6, $7, COALESCE($8, 0.7), COALESCE($9, 2000), COALESCE($10, false), NOW())
+        VALUES ($1, $2::ai_provider, $3, $4, COALESCE($5, 'gpt-4.1-mini'), $6, $7, COALESCE($8, 0.7), COALESCE($9, 12000), COALESCE($10, false), NOW())
         ON CONFLICT (user_id, provider)
         DO UPDATE SET
           base_url = CASE WHEN $3 IS NOT NULL THEN $3 ELSE user_ai_settings.base_url END,
@@ -219,7 +294,10 @@ router.post(
   '/api/ai/suggest-collections',
   requireAuth(async (req, user) => {
     try {
-      const result = await suggestCollections(user.id)
+      const body = (await req.json()) as { theme?: string }
+      const { theme } = body
+
+      const result = await suggestCollections(user.id, theme)
 
       return new Response(JSON.stringify(result), {
         status: 200,
@@ -292,10 +370,61 @@ router.post(
         collectionId
       )
 
-      return new Response(JSON.stringify(result), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+      // Fetch/decode the image from temporary URL or data URL
+      let imageBuffer: Buffer
+      if (result.imageUrl.startsWith('data:')) {
+        // Base64 data URL - decode it
+        const base64Data = result.imageUrl.split(',')[1]
+        imageBuffer = Buffer.from(base64Data, 'base64')
+      } else {
+        // Temporary URL from OpenAI - fetch it
+        const imageResponse = await fetch(result.imageUrl)
+        imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
+      }
+
+      // Process with sharp (same as collections.ts cover upload)
+      const sharp = (await import('sharp')).default
+      const processedBuffer = await sharp(imageBuffer)
+        .resize(600, 900, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toBuffer()
+
+      // Save to disk
+      const fs = await import('fs/promises')
+      const path = await import('path')
+      const timestamp = Date.now()
+      const filename = `${user.id}-${collectionId}-${timestamp}.webp`
+      const coverDir = path.join(import.meta.dir, '../../uploads/collection-covers')
+      await fs.mkdir(coverDir, { recursive: true })
+      await fs.writeFile(path.join(coverDir, filename), processedBuffer)
+
+      // Delete old cover if exists
+      const oldCollection = await queryOne<{ cover_filename: string | null }>(
+        'SELECT cover_filename FROM collections WHERE id = $1 AND user_id = $2',
+        [collectionId, user.id]
+      )
+      if (oldCollection?.cover_filename) {
+        try {
+          await fs.unlink(path.join(coverDir, oldCollection.cover_filename))
+        } catch {
+          // Ignore if old file doesn't exist
+        }
+      }
+
+      // Update database with new cover filename
+      await query('UPDATE collections SET cover_filename = $1 WHERE id = $2 AND user_id = $3', [
+        filename,
+        collectionId,
+        user.id,
+      ])
+
+      return new Response(
+        JSON.stringify({ imageUrl: `/api/collection-covers/${filename}`, cost: result.cost }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        }
+      )
     } catch (error) {
       console.error('Generate cover error:', error)
       const message = error instanceof Error ? error.message : 'Internal server error'

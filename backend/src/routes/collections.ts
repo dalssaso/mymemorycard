@@ -33,15 +33,19 @@ router.get(
             [collection.id]
           )
           
-          // Get cover art from the highest-rated or most recent game
+          // Get cover art from the highest-rated or most recent game (with display edition support)
           const coverResult = await queryOne<{ cover_art_url: string | null }>(
-            `SELECT g.cover_art_url
+            `SELECT COALESCE(ugde.cover_art_url, g.cover_art_url) as cover_art_url
              FROM games g
              INNER JOIN collection_games cg ON g.id = cg.game_id
-             WHERE cg.collection_id = $1 AND g.cover_art_url IS NOT NULL
+             LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $2
+             LEFT JOIN user_game_display_editions ugde
+               ON g.id = ugde.game_id AND ugde.user_id = $2 AND ugde.platform_id = ug.platform_id
+             WHERE cg.collection_id = $1
+               AND COALESCE(ugde.cover_art_url, g.cover_art_url) IS NOT NULL
              ORDER BY g.metacritic_score DESC NULLS LAST, g.release_date DESC NULLS LAST
              LIMIT 1`,
-            [collection.id]
+            [collection.id, user.id]
           )
           
           return {
@@ -92,6 +96,21 @@ router.get(
         )
       }
 
+      // Get cover art from the highest-rated or most recent game (with display edition support)
+      const coverResult = await queryOne<{ cover_art_url: string | null }>(
+        `SELECT COALESCE(ugde.cover_art_url, g.cover_art_url) as cover_art_url
+         FROM games g
+         INNER JOIN collection_games cg ON g.id = cg.game_id
+         LEFT JOIN user_games ug ON g.id = ug.game_id AND ug.user_id = $2
+         LEFT JOIN user_game_display_editions ugde
+           ON g.id = ugde.game_id AND ugde.user_id = $2 AND ugde.platform_id = ug.platform_id
+         WHERE cg.collection_id = $1
+           AND COALESCE(ugde.cover_art_url, g.cover_art_url) IS NOT NULL
+         ORDER BY g.metacritic_score DESC NULLS LAST, g.release_date DESC NULLS LAST
+         LIMIT 1`,
+        [collectionId, user.id]
+      )
+
       const games = await queryMany(
         `SELECT 
           g.*,
@@ -121,7 +140,13 @@ router.get(
       )
 
       return new Response(
-        JSON.stringify({ collection, games }),
+        JSON.stringify({
+          collection: {
+            ...collection,
+            cover_art_url: coverResult?.cover_art_url || null,
+          },
+          games,
+        }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
     } catch (error) {
@@ -266,7 +291,7 @@ router.delete(
         const path = await import('path')
         const coverPath = path.join(
           import.meta.dir,
-          '../../../frontend/public/collection-covers',
+          '../../uploads/collection-covers',
           collection.cover_filename
         )
         try {
@@ -616,7 +641,7 @@ router.post(
       // Save file
       const fs = await import('fs/promises')
       const path = await import('path')
-      const coverDir = path.join(import.meta.dir, '../../../frontend/public/collection-covers')
+      const coverDir = path.join(import.meta.dir, '../../uploads/collection-covers')
 
       // Ensure directory exists
       await fs.mkdir(coverDir, { recursive: true })
@@ -641,7 +666,7 @@ router.post(
         JSON.stringify({
           success: true,
           filename,
-          url: `/collection-covers/${filename}`,
+          url: `/api/collection-covers/${filename}`,
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
@@ -687,7 +712,7 @@ router.delete(
         const path = await import('path')
         const coverPath = path.join(
           import.meta.dir,
-          '../../../frontend/public/collection-covers',
+          '../../uploads/collection-covers',
           collection.cover_filename
         )
         try {
@@ -713,3 +738,44 @@ router.delete(
     }
   })
 )
+
+// Serve collection cover images (bypasses Vite dev server caching issues)
+router.get('/api/collection-covers/:filename', async (req, params) => {
+  try {
+    const filename = params?.filename
+    if (!filename) {
+      return new Response('Not found', { status: 404 })
+    }
+
+    // Sanitize filename to prevent path traversal
+    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '')
+    if (sanitizedFilename !== filename) {
+      return new Response('Invalid filename', { status: 400 })
+    }
+
+    const path = await import('path')
+    const fs = await import('fs')
+    const coverPath = path.join(
+      import.meta.dir,
+      '../../uploads/collection-covers',
+      sanitizedFilename
+    )
+
+    // Check if file exists
+    if (!fs.existsSync(coverPath)) {
+      return new Response('Not found', { status: 404 })
+    }
+
+    const file = Bun.file(coverPath)
+    return new Response(file, {
+      headers: {
+        'Content-Type': file.type || 'image/webp',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        ...corsHeaders(),
+      },
+    })
+  } catch (error) {
+    console.error('Serve cover error:', error)
+    return new Response('Internal server error', { status: 500 })
+  }
+})

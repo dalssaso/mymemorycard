@@ -1,19 +1,26 @@
 import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BackButton, PageLayout } from '@/components/layout'
 import { useToast } from '@/components/ui/Toast'
 import { aiAPI, collectionsAPI, type CollectionSuggestion, type NextGameSuggestion } from '@/lib/api'
+import { AICuratorSidebar } from '@/components/sidebar'
 
 export function AICurator() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { showToast } = useToast()
   const [showCollectionsModal, setShowCollectionsModal] = useState(false)
   const [showNextGameModal, setShowNextGameModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<{ type: 'collections' | 'nextGame'; cost: number } | null>(null)
+  const [showGenerateCoverModal, setShowGenerateCoverModal] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<{ type: 'collections' | 'nextGame' | 'generateCover'; cost: number; collectionId?: string; collectionName?: string; collectionDescription?: string; theme?: string } | null>(null)
   const [nextGameInput, setNextGameInput] = useState('')
+  const [collectionThemeInput, setCollectionThemeInput] = useState('')
   const [suggestedCollections, setSuggestedCollections] = useState<CollectionSuggestion[]>([])
   const [suggestedGame, setSuggestedGame] = useState<NextGameSuggestion | null>(null)
+  const [expandedCard, setExpandedCard] = useState<'collections' | 'nextGame' | 'generateCover' | null>(null)
+  const [generateCoverOnCreate, setGenerateCoverOnCreate] = useState(false)
 
   const { data: settingsData } = useQuery({
     queryKey: ['ai-settings'],
@@ -31,8 +38,16 @@ export function AICurator() {
     },
   })
 
+  const { data: collectionsData } = useQuery({
+    queryKey: ['collections'],
+    queryFn: async () => {
+      const response = await collectionsAPI.getAll()
+      return response.data as { collections: Array<{ id: string; name: string; description: string | null }> }
+    },
+  })
+
   const suggestCollectionsMutation = useMutation({
-    mutationFn: () => aiAPI.suggestCollections(),
+    mutationFn: (theme?: string) => aiAPI.suggestCollections(theme),
     onSuccess: (response) => {
       setSuggestedCollections(response.data.collections)
       setShowCollectionsModal(true)
@@ -58,21 +73,64 @@ export function AICurator() {
   })
 
   const createCollectionMutation = useMutation({
-    mutationFn: (data: { name: string; description: string }) =>
-      collectionsAPI.create(data.name, data.description),
-    onSuccess: (_response, variables) => {
-      showToast(`Created collection: ${variables.name}`, 'success')
+    mutationFn: async (data: { name: string; description: string; gameIds: string[]; generateCover?: boolean }) => {
+      const createResult = await collectionsAPI.create(data.name, data.description)
+      const collectionId = createResult.data.collection.id
+
+      if (data.gameIds.length > 0) {
+        await collectionsAPI.bulkAddGames(collectionId, data.gameIds)
+      }
+
+      let coverCost = 0
+      if (data.generateCover) {
+        const coverResult = await aiAPI.generateCover(data.name, data.description, collectionId)
+        coverCost = coverResult.data.cost
+      }
+
+      return { collection: createResult.data.collection, addedCount: data.gameIds.length, coverCost }
+    },
+    onSuccess: (result, variables) => {
+      const gameCount = result.addedCount
+      let message = gameCount > 0
+        ? `Created "${variables.name}" with ${gameCount} games`
+        : `Created collection: ${variables.name}`
+      if (result.coverCost > 0) {
+        message += ` (cover: $${result.coverCost.toFixed(4)})`
+      }
+      showToast(message, 'success')
       queryClient.invalidateQueries({ queryKey: ['collections'] })
+      queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
     },
     onError: () => {
       showToast('Failed to create collection', 'error')
     },
   })
 
+  const generateCoverMutation = useMutation({
+    mutationFn: (data: { collectionName: string; collectionDescription: string; collectionId: string }) =>
+      aiAPI.generateCover(data.collectionName, data.collectionDescription, data.collectionId),
+    onSuccess: (response, variables) => {
+      showToast(`Cover generated ($${response.data.cost.toFixed(4)})`, 'success')
+      queryClient.invalidateQueries({ queryKey: ['collections'] })
+      queryClient.invalidateQueries({ queryKey: ['collection', variables.collectionId] })
+      queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
+      setShowGenerateCoverModal(false)
+      // Navigate to the collection to show the new cover
+      navigate({ to: '/collections/$id', params: { id: variables.collectionId } })
+    },
+    onError: (error: any) => {
+      showToast(error.response?.data?.error || 'Failed to generate cover', 'error')
+    },
+  })
+
   const handleSuggestCollections = async () => {
     try {
       const { data } = await aiAPI.estimateCost('suggest_collections')
-      setConfirmAction({ type: 'collections', cost: data.estimatedCostUsd })
+      setConfirmAction({
+        type: 'collections',
+        cost: data.estimatedCostUsd,
+        theme: collectionThemeInput || undefined,
+      })
       setShowConfirmModal(true)
     } catch (error) {
       console.error('Failed to estimate cost:', error)
@@ -91,14 +149,40 @@ export function AICurator() {
     }
   }
 
+  const handleGenerateCover = async (collectionId: string) => {
+    const collection = collectionsData?.collections.find((c) => c.id === collectionId)
+    if (!collection) return
+
+    try {
+      const { data } = await aiAPI.estimateCost('generate_cover_image')
+      setConfirmAction({
+        type: 'generateCover',
+        cost: data.estimatedCostUsd,
+        collectionId: collection.id,
+        collectionName: collection.name,
+        collectionDescription: collection.description || '',
+      })
+      setShowConfirmModal(true)
+    } catch (error) {
+      console.error('Failed to estimate cost:', error)
+      showToast('Failed to estimate cost', 'error')
+    }
+  }
+
   const handleConfirmAction = () => {
     if (!confirmAction) return
 
     setShowConfirmModal(false)
     if (confirmAction.type === 'collections') {
-      suggestCollectionsMutation.mutate()
+      suggestCollectionsMutation.mutate(confirmAction.theme)
     } else if (confirmAction.type === 'nextGame') {
       suggestNextGameMutation.mutate(nextGameInput || undefined)
+    } else if (confirmAction.type === 'generateCover' && confirmAction.collectionId) {
+      generateCoverMutation.mutate({
+        collectionId: confirmAction.collectionId,
+        collectionName: confirmAction.collectionName || '',
+        collectionDescription: confirmAction.collectionDescription || '',
+      })
     }
     setConfirmAction(null)
   }
@@ -112,7 +196,7 @@ export function AICurator() {
 
   if (!isEnabled) {
     return (
-      <PageLayout>
+      <PageLayout sidebar={<AICuratorSidebar />}>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
             <BackButton
@@ -145,7 +229,7 @@ export function AICurator() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout sidebar={<AICuratorSidebar />}>
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <BackButton
@@ -165,51 +249,128 @@ export function AICurator() {
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 mb-8">
-          <button
-            onClick={handleSuggestCollections}
-            disabled={suggestCollectionsMutation.isPending}
-            className="card hover:bg-ctp-surface0/50 transition-all text-left p-6 disabled:opacity-50 disabled:cursor-not-allowed"
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8 items-start">
+          <div
+            className={`card transition-all cursor-pointer ${
+              expandedCard === 'collections' ? 'p-6' : 'p-4'
+            } hover:bg-ctp-surface0/50`}
+            onClick={() =>
+              setExpandedCard(expandedCard === 'collections' ? null : 'collections')
+            }
           >
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-ctp-mauve/20 rounded-lg">
-                <svg className="w-6 h-6 text-ctp-mauve" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-ctp-mauve/20 rounded-lg">
+                <svg className="w-5 h-5 text-ctp-mauve" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-ctp-text mb-1">
-                  Suggest Collections
-                </h3>
-                <p className="text-sm text-ctp-subtext0">
-                  AI analyzes your library to suggest themed collections based on genres, series, and gameplay styles
-                </p>
-              </div>
+              <h3 className="text-base font-semibold text-ctp-text">Suggest Collections</h3>
             </div>
-          </button>
+            {expandedCard === 'collections' && (
+              <>
+                <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
+                  AI analyzes your library to suggest themed collections based on mood, gameplay style, and context
+                </p>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-ctp-text mb-2">
+                    Theme (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={collectionThemeInput}
+                    onChange={(e) => setCollectionThemeInput(e.target.value)}
+                    placeholder="e.g., Scary games, To play with my S.O., Short games..."
+                    className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <p className="text-xs text-ctp-overlay1 mt-1">
+                    Leave empty for general suggestions, or specify themes for targeted collections
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleSuggestCollections()
+                  }}
+                  disabled={suggestCollectionsMutation.isPending}
+                  className="w-full px-4 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {suggestCollectionsMutation.isPending ? 'Generating...' : 'Generate Suggestions'}
+                </button>
+              </>
+            )}
+          </div>
 
-          <button
-            onClick={() => setShowNextGameModal(true)}
-            disabled={suggestNextGameMutation.isPending}
-            className="card hover:bg-ctp-surface0/50 transition-all text-left p-6 disabled:opacity-50 disabled:cursor-not-allowed"
+          <div
+            className={`card transition-all cursor-pointer ${
+              expandedCard === 'nextGame' ? 'p-6' : 'p-4'
+            } hover:bg-ctp-surface0/50`}
+            onClick={() =>
+              setExpandedCard(expandedCard === 'nextGame' ? null : 'nextGame')
+            }
           >
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-ctp-blue/20 rounded-lg">
-                <svg className="w-6 h-6 text-ctp-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-ctp-blue/20 rounded-lg">
+                <svg className="w-5 h-5 text-ctp-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-ctp-text mb-1">
-                  Suggest Next Game
-                </h3>
-                <p className="text-sm text-ctp-subtext0">
+              <h3 className="text-base font-semibold text-ctp-text">Suggest Next Game</h3>
+            </div>
+            {expandedCard === 'nextGame' && (
+              <>
+                <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
                   Get personalized recommendations on what to play next based on your play history and preferences
                 </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowNextGameModal(true)
+                  }}
+                  disabled={suggestNextGameMutation.isPending}
+                  className="w-full px-4 py-2 bg-ctp-blue text-ctp-base rounded-lg hover:bg-ctp-blue/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {suggestNextGameMutation.isPending ? 'Analyzing...' : 'Get Recommendation'}
+                </button>
+              </>
+            )}
+          </div>
+
+          <div
+            className={`card transition-all cursor-pointer ${
+              expandedCard === 'generateCover' ? 'p-6' : 'p-4'
+            } hover:bg-ctp-surface0/50`}
+            onClick={() =>
+              setExpandedCard(expandedCard === 'generateCover' ? null : 'generateCover')
+            }
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-ctp-green/20 rounded-lg">
+                <svg className="w-5 h-5 text-ctp-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </div>
+              <h3 className="text-base font-semibold text-ctp-text">Generate Collection Cover</h3>
             </div>
-          </button>
+            {expandedCard === 'generateCover' && (
+              <>
+                <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
+                  Create AI-generated cover art for your collections based on their name and description
+                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowGenerateCoverModal(true)
+                  }}
+                  disabled={generateCoverMutation.isPending || !collectionsData?.collections.length}
+                  className="w-full px-4 py-2 bg-ctp-green text-ctp-base rounded-lg hover:bg-ctp-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generateCoverMutation.isPending ? 'Generating...' : 'Select Collection'}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {activityData && activityData.logs.length > 0 && (
@@ -280,17 +441,30 @@ export function AICurator() {
                   <div className="text-xs text-ctp-overlay2 italic mb-3">
                     {collection.reasoning}
                   </div>
+                  {settingsData?.activeProvider?.provider === 'openai' && (
+                    <label className="flex items-center gap-2 text-sm text-ctp-subtext0 mb-3">
+                      <input
+                        type="checkbox"
+                        checked={generateCoverOnCreate}
+                        onChange={(e) => setGenerateCoverOnCreate(e.target.checked)}
+                        className="rounded border-ctp-surface1"
+                      />
+                      Generate AI cover (~$0.04)
+                    </label>
+                  )}
                   <button
                     onClick={() => {
                       createCollectionMutation.mutate({
                         name: collection.name,
                         description: collection.description,
+                        gameIds: collection.gameIds,
+                        generateCover: generateCoverOnCreate,
                       })
                     }}
                     disabled={createCollectionMutation.isPending}
                     className="px-4 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors text-sm disabled:opacity-50"
                   >
-                    Create Collection
+                    {createCollectionMutation.isPending ? 'Creating...' : 'Create Collection'}
                   </button>
                 </div>
               ))}
@@ -366,6 +540,56 @@ export function AICurator() {
         </div>
       )}
 
+      {showGenerateCoverModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowGenerateCoverModal(false)}>
+          <div className="card max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-ctp-text">Generate Collection Cover</h2>
+              <button
+                onClick={() => setShowGenerateCoverModal(false)}
+                className="p-2 hover:bg-ctp-surface0 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5 text-ctp-subtext0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-sm text-ctp-subtext0 mb-4">
+              Select a collection to generate AI-powered cover art. The image will be based on the collection's name and description.
+            </p>
+
+            <div className="space-y-2">
+              {collectionsData?.collections.map((collection) => (
+                <button
+                  key={collection.id}
+                  onClick={() => {
+                    setShowGenerateCoverModal(false)
+                    handleGenerateCover(collection.id)
+                  }}
+                  className="w-full p-4 bg-ctp-surface0 hover:bg-ctp-surface1 rounded-lg transition-colors text-left"
+                >
+                  <h3 className="text-base font-semibold text-ctp-text mb-1">
+                    {collection.name}
+                  </h3>
+                  {collection.description && (
+                    <p className="text-sm text-ctp-subtext0">
+                      {collection.description}
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {collectionsData?.collections.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-ctp-subtext0">No collections found. Create a collection first.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {showConfirmModal && confirmAction && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancelAction}>
           <div className="card max-w-md w-full" onClick={(e) => e.stopPropagation()}>
@@ -390,8 +614,12 @@ export function AICurator() {
                   <div>
                     <p className="text-sm text-ctp-text mb-2">
                       {confirmAction.type === 'collections'
-                        ? 'This will analyze your game library and generate collection suggestions.'
-                        : 'This will analyze your play history and suggest what to play next.'}
+                        ? confirmAction.theme
+                          ? `This will analyze your game library and generate collection suggestions for theme: "${confirmAction.theme}".`
+                          : 'This will analyze your game library and generate collection suggestions.'
+                        : confirmAction.type === 'nextGame'
+                          ? 'This will analyze your play history and suggest what to play next.'
+                          : `This will generate an AI cover image for "${confirmAction.collectionName}".`}
                     </p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-xs text-ctp-subtext0">Estimated cost:</span>

@@ -37,6 +37,11 @@ const MODEL_COSTS = {
   'gpt-4-turbo': { input: 10, output: 30 },
   'dall-e-3': { perImage: 0.04 },
   'dall-e-2': { perImage: 0.02 },
+  'gpt-image-1.5': { perImage: 0.04 },
+  'openai/gpt-image-1.5': { perImage: 0.04 },
+  'google/gemini-2.5-flash-image': { perImage: 0.00003 },
+  'black-forest-labs/flux.2-max': { perImage: 0.04 },
+  'bytedance-seed/seedream-4.5': { perImage: 0.04 },
   default: { input: 0.001, output: 0.002 },
 }
 
@@ -88,7 +93,7 @@ function createOpenAIClient(settings: AiSettings): OpenAI {
   return new OpenAI(config)
 }
 
-function createImageClient(settings: AiSettings): OpenAI {
+function createImageClient(settings: AiSettings): { client: OpenAI; provider: string } {
   const apiKey = settings.imageApiKeyEncrypted
     ? decrypt(settings.imageApiKeyEncrypted)
     : settings.apiKeyEncrypted
@@ -99,7 +104,19 @@ function createImageClient(settings: AiSettings): OpenAI {
     throw new Error('Image API key not configured')
   }
 
-  return new OpenAI({ apiKey })
+  const imageModel = settings.imageModel || 'dall-e-3'
+  const isOpenRouter = imageModel.includes('/') || settings.provider === 'openrouter'
+
+  const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey }
+
+  if (isOpenRouter) {
+    config.baseURL = 'https://openrouter.ai/api/v1'
+  }
+
+  return {
+    client: new OpenAI(config),
+    provider: isOpenRouter ? 'openrouter' : 'openai',
+  }
 }
 
 async function getLibrarySummary(userId: string): Promise<GameSummary[]> {
@@ -203,7 +220,8 @@ async function logActivity(
 }
 
 export async function suggestCollections(
-  userId: string
+  userId: string,
+  theme?: string
 ): Promise<{ collections: CollectionSuggestion[]; cost: number }> {
   const startTime = Date.now()
   const settings = await getUserAiSettings(userId)
@@ -220,23 +238,65 @@ export async function suggestCollections(
   }
 
   try {
-    const completion = await client.chat.completions.create({
+    const completionParams: any = {
       model: settings.model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPTS.organizer },
-        { role: 'user', content: buildCollectionSuggestionsPrompt(library) },
+        { role: 'user', content: buildCollectionSuggestionsPrompt(library, theme) },
       ],
-      temperature: settings.temperature,
-      max_tokens: settings.maxTokens,
-      response_format: { type: 'json_object' },
-    })
+    }
 
-    const content = completion.choices[0]?.message?.content
+    // Use max_completion_tokens for OpenAI (newer models require it), max_tokens for others
+    // Note: OpenAI reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support custom temperature
+    if (settings.provider === 'openai') {
+      completionParams.max_completion_tokens = settings.maxTokens
+      completionParams.response_format = { type: 'json_object' }
+      // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
+      if (!settings.model.startsWith('gpt-5') && !settings.model.includes('o1') && !settings.model.includes('o3')) {
+        completionParams.temperature = settings.temperature
+      }
+    } else {
+      completionParams.max_tokens = settings.maxTokens
+      completionParams.temperature = settings.temperature
+      // Only add response_format for GPT models on other providers
+      if (settings.model.includes('gpt')) {
+        completionParams.response_format = { type: 'json_object' }
+      }
+    }
+
+    const completion = await client.chat.completions.create(completionParams)
+
+    console.log('API Response:', JSON.stringify(completion, null, 2))
+
+    const message = completion.choices[0]?.message
+    const content = message?.content
+
+    // Check if we hit token limit
+    if (completion.choices[0]?.finish_reason === 'length') {
+      console.warn('Response was truncated due to max_tokens limit. Reasoning tokens:', (completion.usage as any)?.completion_tokens_details?.reasoning_tokens)
+      throw new Error('Response truncated - increase max_tokens to at least 12000 for reasoning models')
+    }
+
     if (!content) {
+      console.error('No content in response. Full completion:', completion)
+      const reasoning = (message as any)?.reasoning
+      if (reasoning) {
+        console.error('Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning.')
+        throw new Error('Model reasoning exhausted max_tokens - increase to at least 12000')
+      }
       throw new Error('No response from AI')
     }
 
-    const result = JSON.parse(content) as { collections: CollectionSuggestion[] }
+    const result = JSON.parse(content) as { collections: Omit<CollectionSuggestion, 'gameIds'>[] }
+
+    // Map game names to IDs using the library we already fetched
+    const collectionsWithIds: CollectionSuggestion[] = result.collections.map((suggestion) => {
+      const gameIds = suggestion.gameNames
+        .map((name) => library.find((g) => g.name === name)?.id)
+        .filter((id): id is string => id !== undefined)
+      return { ...suggestion, gameIds }
+    })
+
     const usage: TokenUsage = {
       promptTokens: completion.usage?.prompt_tokens ?? 0,
       completionTokens: completion.usage?.completion_tokens ?? 0,
@@ -251,10 +311,13 @@ export async function suggestCollections(
       settings.model,
       usage,
       Date.now() - startTime,
-      true
+      true,
+      null,
+      null,
+      theme ?? null
     )
 
-    return { collections: result.collections, cost }
+    return { collections: collectionsWithIds, cost }
   } catch (error) {
     await logActivity(
       userId,
@@ -264,7 +327,9 @@ export async function suggestCollections(
       null,
       Date.now() - startTime,
       false,
-      error instanceof Error ? error.message : 'Unknown error'
+      error instanceof Error ? error.message : 'Unknown error',
+      null,
+      theme ?? null
     )
     throw error
   }
@@ -289,19 +354,52 @@ export async function suggestNextGame(
   }
 
   try {
-    const completion = await client.chat.completions.create({
+    const completionParams: any = {
       model: settings.model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPTS.curator },
         { role: 'user', content: buildNextGameSuggestionPrompt(library, userInput) },
       ],
-      temperature: settings.temperature,
-      max_tokens: settings.maxTokens,
-      response_format: { type: 'json_object' },
-    })
+    }
 
-    const content = completion.choices[0]?.message?.content
+    // Use max_completion_tokens for OpenAI (newer models require it), max_tokens for others
+    // Note: OpenAI reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support custom temperature
+    if (settings.provider === 'openai') {
+      completionParams.max_completion_tokens = settings.maxTokens
+      completionParams.response_format = { type: 'json_object' }
+      // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
+      if (!settings.model.startsWith('gpt-5') && !settings.model.includes('o1') && !settings.model.includes('o3')) {
+        completionParams.temperature = settings.temperature
+      }
+    } else {
+      completionParams.max_tokens = settings.maxTokens
+      completionParams.temperature = settings.temperature
+      // Only add response_format for GPT models on other providers
+      if (settings.model.includes('gpt')) {
+        completionParams.response_format = { type: 'json_object' }
+      }
+    }
+
+    const completion = await client.chat.completions.create(completionParams)
+
+    console.log('Next Game API Response:', JSON.stringify(completion, null, 2))
+
+    const message = completion.choices[0]?.message
+    const content = message?.content
+
+    // Check if we hit token limit
+    if (completion.choices[0]?.finish_reason === 'length') {
+      console.warn('Response was truncated due to max_tokens limit. Reasoning tokens:', (completion.usage as any)?.completion_tokens_details?.reasoning_tokens)
+      throw new Error('Response truncated - increase max_tokens to at least 12000 for reasoning models')
+    }
+
     if (!content) {
+      console.error('No content in next game response. Full completion:', completion)
+      const reasoning = (message as any)?.reasoning
+      if (reasoning) {
+        console.error('Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning.')
+        throw new Error('Model reasoning exhausted max_tokens - increase to at least 12000')
+      }
       throw new Error('No response from AI')
     }
 
@@ -357,29 +455,54 @@ export async function generateCollectionCover(
     throw new Error('No active AI provider configured')
   }
 
-  if (settings.provider !== 'openai') {
-    throw new Error('Image generation is only supported with OpenAI provider')
+  const { client, provider } = createImageClient(settings)
+
+  // Only OpenAI is supported for image generation
+  if (provider !== 'openai') {
+    throw new Error('Image generation is only supported with OpenAI (DALL-E models). Please configure an OpenAI provider in Settings.')
   }
 
-  const client = createImageClient(settings)
   const model = settings.imageModel || 'dall-e-3'
+  const size = '1024x1536' // Portrait orientation for collection covers (options: '1024x1024', '1024x1536', '1536x1024', 'auto')
+
+  // gpt-image models return base64, DALL-E models return URLs
+  const isGptImageModel = model.includes('gpt-image')
 
   try {
-    const response = await client.images.generate({
+    // Build image generation params based on model type
+    const imageParams: any = {
       model,
       prompt: buildCoverImagePrompt(collectionName, collectionDescription),
       n: 1,
-      size: '1792x1024',
-      quality: 'standard',
-    })
+      size,
+    }
+
+    if (isGptImageModel) {
+      // gpt-image models use output_format instead of quality
+      imageParams.output_format = 'png'
+    } else {
+      // DALL-E models support quality parameter
+      imageParams.quality = 'medium' // Options: 'low', 'medium', 'high', 'auto'
+    }
+
+    const response = await client.images.generate(imageParams)
 
     if (!response.data || response.data.length === 0) {
       throw new Error('No image data in response')
     }
 
-    const imageUrl = response.data[0]?.url
-    if (!imageUrl) {
-      throw new Error('No image URL in response')
+    // Handle both URL and base64 response formats
+    const urlResponse = response.data[0]?.url
+    const b64Response = response.data[0]?.b64_json
+
+    let imageUrl: string
+    if (urlResponse) {
+      imageUrl = urlResponse
+    } else if (b64Response) {
+      // Convert base64 to data URL for gpt-image models
+      imageUrl = `data:image/png;base64,${b64Response}`
+    } else {
+      throw new Error('No image data in response (neither URL nor base64)')
     }
 
     const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
@@ -388,7 +511,7 @@ export async function generateCollectionCover(
     await logActivity(
       userId,
       'generate_cover_image',
-      'openai',
+      provider,
       model,
       usage,
       Date.now() - startTime,
@@ -403,7 +526,7 @@ export async function generateCollectionCover(
     await logActivity(
       userId,
       'generate_cover_image',
-      'openai',
+      provider,
       model,
       null,
       Date.now() - startTime,

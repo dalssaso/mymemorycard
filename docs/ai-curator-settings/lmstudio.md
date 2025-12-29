@@ -2,6 +2,11 @@
 
 LM Studio is a user-friendly desktop application for running large language models locally with a GUI interface.
 
+**Supported AI Curator Features:**
+- ✅ Collection Suggestions
+- ✅ Next Game Recommendations
+- ❌ Cover Image Generation (requires OpenAI provider)
+
 ## Installation
 
 1. Visit [LM Studio website](https://lmstudio.ai/)

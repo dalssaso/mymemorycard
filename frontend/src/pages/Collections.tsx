@@ -3,9 +3,9 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { BackButton, PageLayout } from '@/components/layout'
 import { CollectionsSidebar } from '@/components/sidebar'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, Checkbox } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
-import { collectionsAPI } from '@/lib/api'
+import { collectionsAPI, aiAPI, type CollectionSuggestion } from '@/lib/api'
 
 interface Collection {
   id: string
@@ -29,12 +29,28 @@ export function Collections() {
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedCollectionIds, setSelectedCollectionIds] = useState<string[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [coverKey, setCoverKey] = useState(Date.now())
+  const [useAI, setUseAI] = useState(false)
+  const [aiTheme, setAiTheme] = useState('')
+  const [aiSuggestion, setAiSuggestion] = useState<CollectionSuggestion | null>(null)
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
+  const [showAICostConfirm, setShowAICostConfirm] = useState(false)
+  const [estimatedAICost, setEstimatedAICost] = useState(0)
+  const [generateCoverOnCreate, setGenerateCoverOnCreate] = useState(false)
 
   const { data: collectionsData } = useQuery({
     queryKey: ['collections'],
     queryFn: async () => {
       const response = await collectionsAPI.getAll()
       return response.data as { collections: Collection[] }
+    },
+  })
+
+  const { data: settingsData } = useQuery({
+    queryKey: ['ai-settings'],
+    queryFn: async () => {
+      const response = await aiAPI.getSettings()
+      return response.data
     },
   })
 
@@ -72,8 +88,36 @@ export function Collections() {
         await collectionsAPI.uploadCover(newCollectionId, newCollectionCoverFile)
       }
 
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Collection created successfully', 'success')
+      // Add AI-suggested games if available
+      if (aiSuggestion && aiSuggestion.gameIds.length > 0) {
+        await collectionsAPI.bulkAddGames(newCollectionId, aiSuggestion.gameIds)
+      }
+
+      // Generate AI cover if requested and no manual cover was uploaded
+      let coverCost = 0
+      if (generateCoverOnCreate && !newCollectionCoverFile) {
+        const coverResult = await aiAPI.generateCover(
+          newCollectionName,
+          newCollectionDescription,
+          newCollectionId
+        )
+        coverCost = coverResult.data.cost
+      }
+
+      setCoverKey(Date.now())
+      await queryClient.refetchQueries({ queryKey: ['collections'] })
+      if (coverCost > 0) {
+        queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
+      }
+
+      const gameCount = aiSuggestion?.gameIds.length || 0
+      let message = gameCount > 0
+        ? `Collection created with ${gameCount} games`
+        : 'Collection created successfully'
+      if (coverCost > 0) {
+        message += ` (cover: $${coverCost.toFixed(4)})`
+      }
+      showToast(message, 'success')
 
       // Reset state
       setShowCreateModal(false)
@@ -81,6 +125,10 @@ export function Collections() {
       setNewCollectionDescription('')
       setNewCollectionCoverFile(null)
       setCoverPreviewUrl(null)
+      setUseAI(false)
+      setAiTheme('')
+      setAiSuggestion(null)
+      setGenerateCoverOnCreate(false)
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Failed to create collection'
       showToast(errorMessage, 'error')
@@ -100,6 +148,44 @@ export function Collections() {
   const handleExitSelectionMode = () => {
     setSelectionMode(false)
     setSelectedCollectionIds([])
+  }
+
+  const handleGenerateAISuggestion = async () => {
+    if (!aiTheme.trim()) {
+      showToast('Please enter a theme for AI suggestions', 'error')
+      return
+    }
+
+    try {
+      const { data } = await aiAPI.estimateCost('suggest_collections')
+      setEstimatedAICost(data.estimatedCostUsd)
+      setShowAICostConfirm(true)
+    } catch (error) {
+      showToast('Failed to estimate cost', 'error')
+    }
+  }
+
+  const handleConfirmAIGeneration = async () => {
+    setShowAICostConfirm(false)
+    setIsGeneratingAI(true)
+
+    try {
+      const response = await aiAPI.suggestCollections(aiTheme)
+      // Take the first suggestion and pre-fill the form
+      if (response.data.collections.length > 0) {
+        const suggestion = response.data.collections[0]
+        setAiSuggestion(suggestion)
+        setNewCollectionName(suggestion.name)
+        setNewCollectionDescription(suggestion.description)
+        showToast(`AI suggestion generated ($${response.data.cost.toFixed(4)})`, 'success')
+      } else {
+        showToast('No suggestions generated for this theme', 'error')
+      }
+    } catch (error: any) {
+      showToast(error.response?.data?.error || 'Failed to generate AI suggestion', 'error')
+    } finally {
+      setIsGeneratingAI(false)
+    }
   }
 
   return (
@@ -217,15 +303,15 @@ export function Collections() {
                       <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
                         {collection.cover_filename ? (
                           <img
-                            src={`/collection-covers/${collection.cover_filename}`}
+                            src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}
                             alt={collection.name}
-                            className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
                         ) : collection.cover_art_url ? (
                           <img
-                            src={collection.cover_art_url}
+                            src={`${collection.cover_art_url}${collection.cover_art_url.includes('?') ? '&' : '?'}v=${coverKey}`}
                             alt={collection.name}
-                            className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
@@ -323,84 +409,173 @@ export function Collections() {
         {/* Create Collection Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-ctp-base/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
               <h2 className="text-2xl font-bold text-ctp-text mb-4">Create Collection</h2>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={newCollectionName}
-                    onChange={(e) => setNewCollectionName(e.target.value)}
-                    placeholder="e.g., Couch Co-op Games"
-                    className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
-                    Description (optional)
-                  </label>
-                  <textarea
-                    value={newCollectionDescription}
-                    onChange={(e) => setNewCollectionDescription(e.target.value)}
-                    placeholder="Describe your collection..."
-                    className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-24"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
-                    Cover Image (optional)
-                  </label>
-                  <p className="text-xs text-ctp-overlay1 mb-2">
-                    Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
-                  </p>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                {/* AI Toggle */}
+                <div className="flex items-center gap-3 p-3 bg-ctp-surface0 rounded-lg">
+                  <Checkbox
+                    id="use-ai"
+                    checked={useAI}
                     onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        if (file.size > 5 * 1024 * 1024) {
-                          showToast('Image must be under 5MB', 'error')
-                          e.target.value = ''
-                          return
-                        }
-                        setNewCollectionCoverFile(file)
-                        setCoverPreviewUrl(URL.createObjectURL(file))
+                      setUseAI(e.target.checked)
+                      if (!e.target.checked) {
+                        setAiSuggestion(null)
+                        setAiTheme('')
                       }
                     }}
-                    className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                   />
-                  {coverPreviewUrl && (
-                    <div className="mt-2">
-                      <img
-                        src={coverPreviewUrl}
-                        alt="Preview"
-                        className="max-h-48 rounded-lg mx-auto"
-                      />
+                  <label htmlFor="use-ai" className="text-sm text-ctp-text cursor-pointer flex-1">
+                    Use AI to create collection
+                  </label>
+                </div>
+
+                {/* AI Theme Input (shown when AI is enabled and no suggestion yet) */}
+                {useAI && !aiSuggestion && (
+                  <div className="p-3 bg-ctp-mauve/10 border border-ctp-mauve/20 rounded-lg">
+                    <label className="block text-sm font-medium text-ctp-text mb-2">
+                      Collection Theme
+                    </label>
+                    <input
+                      type="text"
+                      value={aiTheme}
+                      onChange={(e) => setAiTheme(e.target.value)}
+                      placeholder="e.g., Cozy games for rainy days"
+                      className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve mb-3"
+                    />
+                    <Button
+                      onClick={handleGenerateAISuggestion}
+                      disabled={isGeneratingAI || !aiTheme.trim()}
+                      className="w-full"
+                    >
+                      {isGeneratingAI ? 'Generating...' : 'Generate AI Suggestion'}
+                    </Button>
+                  </div>
+                )}
+
+                {/* AI Suggestion Preview */}
+                {aiSuggestion && (
+                  <div className="p-3 bg-ctp-green/10 border border-ctp-green/20 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-ctp-green">AI Suggestion</span>
                       <button
                         onClick={() => {
-                          setNewCollectionCoverFile(null)
-                          setCoverPreviewUrl(null)
+                          setAiSuggestion(null)
+                          setNewCollectionName('')
+                          setNewCollectionDescription('')
                         }}
-                        className="text-sm text-ctp-subtext0 hover:text-ctp-text mt-1"
+                        className="text-xs text-ctp-subtext0 hover:text-ctp-text"
                       >
-                        Remove
+                        Clear
                       </button>
                     </div>
-                  )}
-                </div>
+                    <p className="text-xs text-ctp-overlay1 mb-1">
+                      {aiSuggestion.gameIds.length} games will be added: {aiSuggestion.gameNames.slice(0, 3).join(', ')}
+                      {aiSuggestion.gameNames.length > 3 && ` +${aiSuggestion.gameNames.length - 3} more`}
+                    </p>
+                    <p className="text-xs text-ctp-overlay2 italic">{aiSuggestion.reasoning}</p>
+                  </div>
+                )}
+
+                {/* Manual fields - only show when AI is off OR suggestion exists */}
+                {(!useAI || aiSuggestion) && (
+                  <>
+                    {/* Name field */}
+                    <div>
+                      <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
+                        Name {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={newCollectionName}
+                        onChange={(e) => setNewCollectionName(e.target.value)}
+                        placeholder="e.g., Couch Co-op Games"
+                        className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                        autoFocus={!useAI}
+                      />
+                    </div>
+
+                    {/* Description field */}
+                    <div>
+                      <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
+                        Description (optional) {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
+                      </label>
+                      <textarea
+                        value={newCollectionDescription}
+                        onChange={(e) => setNewCollectionDescription(e.target.value)}
+                        placeholder="Describe your collection..."
+                        className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-24"
+                      />
+                    </div>
+
+                    {/* Cover Image upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-ctp-subtext0 mb-2">
+                        Cover Image (optional)
+                      </label>
+                      <p className="text-xs text-ctp-overlay1 mb-2">
+                        Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              showToast('Image must be under 5MB', 'error')
+                              e.target.value = ''
+                              return
+                            }
+                            setNewCollectionCoverFile(file)
+                            setCoverPreviewUrl(URL.createObjectURL(file))
+                          }
+                        }}
+                        className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                      />
+                      {coverPreviewUrl && (
+                        <div className="mt-2">
+                          <img
+                            src={coverPreviewUrl}
+                            alt="Preview"
+                            className="max-h-48 rounded-lg mx-auto"
+                          />
+                          <button
+                            onClick={() => {
+                              setNewCollectionCoverFile(null)
+                              setCoverPreviewUrl(null)
+                            }}
+                            className="text-sm text-ctp-subtext0 hover:text-ctp-text mt-1"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* AI Cover Generation option */}
+                    {aiSuggestion && !coverPreviewUrl && settingsData?.activeProvider?.provider === 'openai' && (
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="generate-cover"
+                          checked={generateCoverOnCreate}
+                          onChange={(e) => setGenerateCoverOnCreate(e.target.checked)}
+                        />
+                        <label htmlFor="generate-cover" className="text-sm text-ctp-subtext0 cursor-pointer">
+                          Generate AI cover (~$0.04)
+                        </label>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
               <div className="flex gap-3 mt-6">
                 <Button
                   onClick={handleCreateCollection}
-                  disabled={isUploadingCover}
+                  disabled={isUploadingCover || (useAI && !aiSuggestion && !newCollectionName.trim())}
                   className="flex-1"
                 >
-                  {isUploadingCover ? 'Creating...' : 'Create'}
+                  {isUploadingCover ? 'Creating...' : aiSuggestion ? `Create with ${aiSuggestion.gameIds.length} games` : 'Create'}
                 </Button>
                 <Button
                   variant="secondary"
@@ -410,10 +585,47 @@ export function Collections() {
                     setNewCollectionDescription('')
                     setNewCollectionCoverFile(null)
                     setCoverPreviewUrl(null)
+                    setUseAI(false)
+                    setAiTheme('')
+                    setAiSuggestion(null)
+                    setGenerateCoverOnCreate(false)
                   }}
                   className="flex-1"
                 >
                   Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Cost Confirmation Modal */}
+        {showAICostConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-ctp-text mb-4">Confirm AI Generation</h3>
+              <p className="text-sm text-ctp-subtext0 mb-4">
+                This will generate an AI-powered collection suggestion for theme: &quot;{aiTheme}&quot;
+              </p>
+              <div className="flex items-baseline gap-2 mb-6">
+                <span className="text-sm text-ctp-subtext0">Estimated cost:</span>
+                <span className="text-lg font-semibold text-ctp-mauve">
+                  ${estimatedAICost.toFixed(4)}
+                </span>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowAICostConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmAIGeneration}
+                  className="flex-1"
+                >
+                  Continue
                 </Button>
               </div>
             </div>

@@ -46,6 +46,7 @@ export function CollectionDetail() {
   const [selectedGameIds, setSelectedGameIds] = useState<string[]>([])
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedCollectionGameIds, setSelectedCollectionGameIds] = useState<string[]>([])
+  const [coverKey, setCoverKey] = useState(Date.now())
 
   const { data, isLoading } = useQuery({
     queryKey: ['collection', id],
@@ -215,8 +216,9 @@ export function CollectionDetail() {
 
     try {
       await collectionsAPI.uploadCover(id, file)
-      queryClient.invalidateQueries({ queryKey: ['collection', id] })
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
+      setCoverKey(Date.now())
+      await queryClient.refetchQueries({ queryKey: ['collection', id] })
+      await queryClient.invalidateQueries({ queryKey: ['collections'] })
       showToast('Cover updated', 'success')
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Failed to upload cover'
@@ -230,8 +232,9 @@ export function CollectionDetail() {
     }
     try {
       await collectionsAPI.deleteCover(id)
-      queryClient.invalidateQueries({ queryKey: ['collection', id] })
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
+      setCoverKey(Date.now())
+      await queryClient.refetchQueries({ queryKey: ['collection', id] })
+      await queryClient.invalidateQueries({ queryKey: ['collections'] })
       showToast('Cover removed', 'success')
     } catch {
       showToast('Failed to remove cover', 'error')
@@ -334,15 +337,15 @@ export function CollectionDetail() {
             <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-4">
               {collection.cover_filename ? (
                 <img
-                  src={`/collection-covers/${collection.cover_filename}`}
+                  src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}
                   alt={collection.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               ) : collection.cover_art_url ? (
                 <img
-                  src={collection.cover_art_url}
+                  src={`${collection.cover_art_url}${collection.cover_art_url.includes('?') ? '&' : '?'}v=${coverKey}`}
                   alt={collection.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">

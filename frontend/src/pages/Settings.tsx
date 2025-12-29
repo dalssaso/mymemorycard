@@ -4,6 +4,8 @@ import { BackButton, PageLayout } from '@/components/layout'
 import { useToast } from '@/components/ui/Toast'
 import { useTheme } from '@/contexts/ThemeContext'
 import { preferencesAPI, aiAPI } from '@/lib/api'
+import { Select } from '@/components/ui/Select'
+import type { SelectOption } from '@/components/ui/Select'
 
 type Theme = 'light' | 'dark' | 'auto'
 
@@ -123,10 +125,25 @@ export function Settings() {
     },
   })
 
+  const { data: modelsData, isLoading: modelsLoading } = useQuery({
+    queryKey: ['ai-models', selectedProvider],
+    queryFn: async () => {
+      if (!['openai', 'openrouter'].includes(selectedProvider)) {
+        return { textModels: [], imageModels: [] }
+      }
+      const response = await aiAPI.getModels(selectedProvider)
+      return response.data
+    },
+    enabled: ['openai', 'openrouter'].includes(selectedProvider),
+    staleTime: 24 * 60 * 60 * 1000,
+  })
+
   const updateAiMutation = useMutation({
     mutationFn: aiAPI.updateSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-settings'] })
+      // Also invalidate models query so it refetches with new API key
+      queryClient.invalidateQueries({ queryKey: ['ai-models', selectedProvider] })
       showToast('AI provider settings saved', 'success')
     },
     onError: () => {
@@ -162,16 +179,19 @@ export function Settings() {
     const form = providerForms[selectedProvider]
     if (!form) return
 
+    // OpenRouter doesn't support image generation reliably - only allow for OpenAI
+    const supportsImages = selectedProvider === 'openai'
+
     updateAiMutation.mutate({
       provider: selectedProvider,
       baseUrl: form.base_url,
       apiKey: form.api_key !== undefined ? form.api_key : undefined,
       model: form.model,
-      imageApiKey: form.image_api_key !== undefined ? form.image_api_key : undefined,
-      imageModel: form.image_model,
+      imageApiKey: supportsImages && form.image_api_key !== undefined ? form.image_api_key : undefined,
+      imageModel: supportsImages ? form.image_model : undefined,
       temperature: form.temperature,
       maxTokens: form.max_tokens,
-      setActive: !aiData?.activeProvider || aiData.activeProvider.provider !== selectedProvider,
+      setActive: true, // Always set as active when saving
     })
   }
 
@@ -183,7 +203,7 @@ export function Settings() {
         ...providerForms,
         [provider]: {
           temperature: 0.7,
-          max_tokens: 2000,
+          max_tokens: 12000,
         },
       })
     }
@@ -414,14 +434,14 @@ export function Settings() {
                   View setup guides
                 </a>
               </p>
-              {selectedProvider !== 'openai' && !currentForm.image_api_key_masked && (
+              {selectedProvider !== 'openai' && (
                 <div className="mt-3 p-3 bg-ctp-yellow/10 border border-ctp-yellow/30 rounded-lg">
                   <p className="text-xs text-ctp-yellow flex items-start gap-2">
                     <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <span>
-                      <strong>Note:</strong> AI-generated collection cover images require an OpenAI API key. You can configure a separate OpenAI key for image generation in Advanced Options below.
+                      <strong>Note:</strong> AI-generated collection cover images require OpenAI (DALL-E). Configure an OpenAI provider to enable image generation.
                     </span>
                   </p>
                 </div>
@@ -491,7 +511,7 @@ export function Settings() {
                       : 'Enter your API key'
                   }
                   className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                  readOnly={currentForm.api_key === undefined && currentForm.api_key_masked !== null}
+                  readOnly={currentForm.api_key === undefined && currentForm.api_key_masked != null}
                 />
                 <p className="text-xs text-ctp-overlay1 mt-1">
                   {currentForm.api_key_masked && currentForm.api_key === undefined
@@ -504,37 +524,121 @@ export function Settings() {
                 <label className="block text-sm font-medium text-ctp-text mb-2">
                   Model
                 </label>
-                <input
-                  type="text"
-                  value={currentForm.model || 'gpt-4.1-mini'}
-                  onChange={(e) => updateCurrentForm({ model: e.target.value })}
-                  placeholder={
-                    selectedProvider === 'openrouter'
-                      ? 'e.g., openai/gpt-4.1-mini, anthropic/claude-3.5-sonnet'
-                      : selectedProvider === 'ollama'
-                      ? 'e.g., llama3.2:3b, mistral:latest'
-                      : 'e.g., gpt-4.1-mini, gpt-4o-mini'
-                  }
-                  className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                />
-                <p className="text-xs text-ctp-overlay1 mt-1">
-                  {selectedProvider === 'openrouter' && (
-                    <span>
-                      <strong>Note:</strong> OpenRouter requires provider prefix (e.g., openai/gpt-4.1-mini, anthropic/claude-3.5-sonnet).{' '}
-                      <a
-                        href="https://openrouter.ai/models"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-ctp-blue hover:underline"
-                      >
-                        View available models
-                      </a>
-                    </span>
-                  )}
-                  {selectedProvider === 'ollama' && 'Recommended: llama3.2:3b, mistral:latest, qwen2.5:3b'}
-                  {selectedProvider === 'lmstudio' && 'Use the model name shown in LM Studio server tab'}
-                  {selectedProvider === 'openai' && 'Recommended: gpt-4.1-mini (fast & cheap), gpt-4o-mini, gpt-4o'}
-                </p>
+                {selectedProvider === 'openai' ? (
+                  <>
+                    {modelsData && modelsData.textModels.length > 0 ? (
+                      <Select
+                        id="model-select"
+                        value={currentForm.model || ''}
+                        options={modelsData.textModels.map((model): SelectOption => ({
+                          value: model.id,
+                          label: model.displayName,
+                          metadata: model.pricing.input && model.pricing.output ? (
+                            <span className="text-xs text-ctp-overlay1">
+                              ${model.pricing.input.toFixed(3)}/${model.pricing.output.toFixed(3)} per 1M tokens
+                            </span>
+                          ) : null,
+                        }))}
+                        onChange={(value) => updateCurrentForm({ model: value })}
+                        placeholder="Select a model"
+                        className="w-full"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={currentForm.model || ''}
+                        onChange={(e) => updateCurrentForm({ model: e.target.value })}
+                        placeholder={modelsLoading ? 'Loading models...' : 'e.g., gpt-4o, gpt-4o-mini'}
+                        disabled={modelsLoading}
+                        className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
+                      />
+                    )}
+                    <p className="text-xs text-ctp-overlay1 mt-1">
+                      {modelsLoading
+                        ? 'Loading available models from OpenAI...'
+                        : modelsData && modelsData.textModels.length > 0
+                        ? 'Select from available OpenAI models'
+                        : 'Save your API key first, then reload to see available models'}
+                    </p>
+                  </>
+                ) : selectedProvider === 'openrouter' ? (
+                  <>
+                    {modelsData && modelsData.textModels.length > 0 ? (
+                      <Select
+                        id="model-select"
+                        value={currentForm.model || ''}
+                        options={modelsData.textModels.map((model): SelectOption => ({
+                          value: model.id,
+                          label: model.displayName,
+                          metadata: model.pricing.input && model.pricing.output ? (
+                            <span className="text-xs text-ctp-overlay1">
+                              ${model.pricing.input.toFixed(3)}/${model.pricing.output.toFixed(3)} per 1M tokens
+                            </span>
+                          ) : null,
+                        }))}
+                        onChange={(value) => updateCurrentForm({ model: value })}
+                        placeholder="Select a model"
+                        className="w-full"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={currentForm.model || ''}
+                        onChange={(e) => updateCurrentForm({ model: e.target.value })}
+                        placeholder={modelsLoading ? 'Loading models...' : 'e.g., openai/gpt-4o, anthropic/claude-3.5-sonnet'}
+                        disabled={modelsLoading}
+                        className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
+                      />
+                    )}
+                    <p className="text-xs text-ctp-overlay1 mt-1">
+                      {modelsLoading ? (
+                        'Loading available models from OpenRouter...'
+                      ) : modelsData && modelsData.textModels.length > 0 ? (
+                        <span>
+                          Top 5 recommended models.{' '}
+                          <a
+                            href="https://openrouter.ai/models"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-ctp-blue hover:underline"
+                          >
+                            View all models
+                          </a>
+                        </span>
+                      ) : (
+                        <span>
+                          Save your API key first, then reload to see available models. Requires provider prefix (e.g., openai/gpt-4o).{' '}
+                          <a
+                            href="https://openrouter.ai/models"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-ctp-blue hover:underline"
+                          >
+                            View all models
+                          </a>
+                        </span>
+                      )}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={currentForm.model || ''}
+                      onChange={(e) => updateCurrentForm({ model: e.target.value })}
+                      placeholder={
+                        selectedProvider === 'ollama'
+                          ? 'e.g., llama3.2:3b, mistral:latest'
+                          : 'e.g., gpt-4o-mini'
+                      }
+                      className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                    />
+                    <p className="text-xs text-ctp-overlay1 mt-1">
+                      {selectedProvider === 'ollama' && 'Recommended: llama3.2:3b, mistral:latest, qwen2.5:3b'}
+                      {selectedProvider === 'lmstudio' && 'Use the model name shown in LM Studio server tab'}
+                    </p>
+                  </>
+                )}
               </div>
 
               <div>
@@ -552,53 +656,102 @@ export function Settings() {
 
               {showAdvanced && (
                 <div className="space-y-4 pl-4 border-l-2 border-ctp-surface1">
-                  <div>
-                    <label className="block text-sm font-medium text-ctp-text mb-2">
-                      Image API Key (OpenAI - Optional)
-                    </label>
-                    <input
-                      type={currentForm.image_api_key === undefined && currentForm.image_api_key_masked ? 'text' : 'password'}
-                      value={currentForm.image_api_key !== undefined ? currentForm.image_api_key || '' : currentForm.image_api_key_masked || ''}
-                      onChange={(e) => updateCurrentForm({ image_api_key: e.target.value || null })}
-                      onFocus={(e) => {
-                        if (currentForm.image_api_key === undefined && currentForm.image_api_key_masked) {
-                          updateCurrentForm({ image_api_key: '' })
-                          setTimeout(() => e.target.select(), 0)
-                        }
-                      }}
-                      placeholder={
-                        currentForm.image_api_key_masked && currentForm.image_api_key === undefined
-                          ? 'Click to replace existing key'
-                          : selectedProvider === 'openai'
-                          ? 'Leave empty to use main API key'
-                          : 'Enter OpenAI API key for image generation'
-                      }
-                      className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                      readOnly={currentForm.image_api_key === undefined && currentForm.image_api_key_masked !== null}
-                    />
-                    <p className="text-xs text-ctp-overlay1 mt-1">
-                      {currentForm.image_api_key_masked && currentForm.image_api_key === undefined
-                        ? 'Separate OpenAI API key configured for image generation.'
-                        : selectedProvider === 'openai'
-                        ? 'If not specified, the main API key will be used for image generation.'
-                        : 'Provide an OpenAI API key to enable AI-generated collection cover images.'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-ctp-text mb-2">
-                      Image Model
-                    </label>
-                    <input
-                      type="text"
-                      value={currentForm.image_model || 'dall-e-3'}
-                      onChange={(e) => updateCurrentForm({ image_model: e.target.value || null })}
-                      placeholder="dall-e-3"
-                      className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                    />
-                    <p className="text-xs text-ctp-overlay1 mt-1">
-                      OpenAI DALL-E model for generating collection cover images
-                    </p>
-                  </div>
+                  {selectedProvider === 'openai' ? (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-ctp-text mb-2">
+                          Image API Key (Optional)
+                        </label>
+                        <input
+                          type={currentForm.image_api_key === undefined && currentForm.image_api_key_masked ? 'text' : 'password'}
+                          value={currentForm.image_api_key !== undefined ? currentForm.image_api_key || '' : currentForm.image_api_key_masked || ''}
+                          onChange={(e) => updateCurrentForm({ image_api_key: e.target.value || null })}
+                          onFocus={(e) => {
+                            if (currentForm.image_api_key === undefined && currentForm.image_api_key_masked) {
+                              updateCurrentForm({ image_api_key: '' })
+                              setTimeout(() => e.target.select(), 0)
+                            }
+                          }}
+                          placeholder={
+                            currentForm.image_api_key_masked && currentForm.image_api_key === undefined
+                              ? 'Click to replace existing key'
+                              : 'Leave empty to use main API key'
+                          }
+                          className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                          readOnly={currentForm.image_api_key === undefined && currentForm.image_api_key_masked != null}
+                        />
+                        <p className="text-xs text-ctp-overlay1 mt-1">
+                          {currentForm.image_api_key_masked && currentForm.image_api_key === undefined
+                            ? 'Separate API key configured for image generation.'
+                            : 'If not specified, the main API key will be used for image generation.'}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-ctp-text mb-2">
+                          Image Model
+                        </label>
+                        {modelsData && modelsData.imageModels.length > 0 ? (
+                          <>
+                            <Select
+                              id="image-model-select"
+                              value={currentForm.image_model || ''}
+                              options={modelsData.imageModels.map((model): SelectOption => ({
+                                value: model.id,
+                                label: model.displayName,
+                                metadata: model.pricing.perImage ? (
+                                  <span className="text-xs text-ctp-overlay1">
+                                    ${model.pricing.perImage.toFixed(4)} per image
+                                  </span>
+                                ) : null,
+                              }))}
+                              onChange={(value) => updateCurrentForm({ image_model: value || null })}
+                              placeholder="Select an image model"
+                              className="w-full"
+                            />
+                            <p className="text-xs text-ctp-overlay1 mt-1">
+                              Select from available OpenAI image models
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <input
+                              type="text"
+                              value={currentForm.image_model || ''}
+                              onChange={(e) => updateCurrentForm({ image_model: e.target.value || null })}
+                              placeholder={modelsLoading ? 'Loading models...' : 'dall-e-3'}
+                              disabled={modelsLoading}
+                              className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
+                            />
+                            <p className="text-xs text-ctp-overlay1 mt-1">
+                              {modelsLoading
+                                ? 'Loading available models from OpenAI...'
+                                : 'Save your API key first, then reload to see available models. DALL-E 3 is recommended.'}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-4 bg-ctp-blue/10 border border-ctp-blue/30 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <svg className="w-5 h-5 text-ctp-blue mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-sm text-ctp-blue">
+                          <p className="font-medium mb-1">Image Generation Not Available</p>
+                          <p className="text-ctp-overlay1">
+                            AI-generated collection cover images are only supported with OpenAI (DALL-E models).
+                            {selectedProvider === 'ollama' || selectedProvider === 'lmstudio'
+                              ? ' Local models do not support image generation.'
+                              : ' OpenRouter image generation has been disabled due to reliability issues.'}
+                          </p>
+                          <p className="mt-2 text-ctp-overlay1">
+                            To use this feature, configure an OpenAI provider above with an API key and save the settings.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-ctp-text mb-2">
@@ -626,12 +779,12 @@ export function Settings() {
                       type="number"
                       min="100"
                       max="16000"
-                      value={currentForm.max_tokens ?? 2000}
+                      value={currentForm.max_tokens ?? 12000}
                       onChange={(e) => updateCurrentForm({ max_tokens: parseInt(e.target.value, 10) })}
                       className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                     />
                     <p className="text-xs text-ctp-overlay1 mt-1">
-                      Maximum response length (affects cost)
+                      Maximum response length. Reasoning models (GPT-5 Nano, Mini) require 12000+ tokens
                     </p>
                   </div>
                 </div>

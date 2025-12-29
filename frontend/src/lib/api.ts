@@ -453,6 +453,7 @@ export interface CollectionSuggestion {
   name: string
   description: string
   gameNames: string[]
+  gameIds: string[]
   reasoning: string
 }
 
@@ -473,6 +474,25 @@ export interface AiActivityLog {
   createdAt: string
 }
 
+export interface ModelCapability {
+  id: string
+  name: string
+  displayName: string
+  pricing: {
+    input?: number
+    output?: number
+    perImage?: number
+  }
+  capabilities: ('text' | 'image')[]
+  provider: string
+  context?: number
+}
+
+export interface ModelsResponse {
+  textModels: ModelCapability[]
+  imageModels: ModelCapability[]
+}
+
 export const aiAPI = {
   getSettings: () =>
     api.get<{ providers: AiProviderConfig[]; activeProvider: AiProviderConfig | null }>('/ai/settings'),
@@ -488,15 +508,22 @@ export const aiAPI = {
     setActive?: boolean
   }) => api.put('/ai/settings', data),
   setActiveProvider: (provider: string) => api.post('/ai/set-active-provider', { provider }),
-  suggestCollections: () =>
-    api.post<{ collections: CollectionSuggestion[]; cost: number }>('/ai/suggest-collections'),
+  getModels: (provider: string) => api.get<ModelsResponse>(`/ai/models/${provider}`),
+  suggestCollections: (theme?: string) =>
+    api.post<{ collections: CollectionSuggestion[]; cost: number }>('/ai/suggest-collections', { theme }, {
+      timeout: 120000,
+    }),
   suggestNextGame: (userInput?: string) =>
-    api.post<{ suggestion: NextGameSuggestion; cost: number }>('/ai/suggest-next-game', { userInput }),
+    api.post<{ suggestion: NextGameSuggestion; cost: number }>('/ai/suggest-next-game', { userInput }, {
+      timeout: 120000,
+    }),
   generateCover: (collectionName: string, collectionDescription: string, collectionId: string) =>
     api.post<{ imageUrl: string; cost: number }>('/ai/generate-cover', {
       collectionName,
       collectionDescription,
       collectionId,
+    }, {
+      timeout: 180000,
     }),
   getActivity: (limit?: number) =>
     api.get<{ logs: AiActivityLog[] }>('/ai/activity', { params: { limit } }),

@@ -2,6 +2,13 @@
 
 OpenAI provides the official ChatGPT API with excellent quality and reliability.
 
+**Note:** OpenAI is the only provider that supports AI-generated collection cover images using DALL-E models.
+
+**Supported AI Curator Features:**
+- ✅ Collection Suggestions
+- ✅ Next Game Recommendations
+- ✅ Cover Image Generation (DALL-E)
+
 ## Getting an API Key
 
 1. Visit [OpenAI Platform](https://platform.openai.com/)

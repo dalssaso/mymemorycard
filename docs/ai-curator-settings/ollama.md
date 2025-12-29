@@ -2,6 +2,11 @@
 
 Ollama lets you run large language models locally on your machine for free.
 
+**Supported AI Curator Features:**
+- ✅ Collection Suggestions
+- ✅ Next Game Recommendations
+- ❌ Cover Image Generation (requires OpenAI provider)
+
 ## Installation
 
 ### macOS

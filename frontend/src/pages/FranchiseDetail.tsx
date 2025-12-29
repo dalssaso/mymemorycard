@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, Link } from '@tanstack/react-router'
 import { BackButton, PageLayout } from '@/components/layout'
+import { FranchiseDetailSidebar } from '@/components/sidebar'
 import { Button, Card, Checkbox, ScrollFade, useToast } from '@/components/ui'
 import { franchisesAPI, userPlatformsAPI, OwnedGame, MissingGame } from '@/lib/api'
 
@@ -207,7 +208,15 @@ export function FranchiseDetail() {
   const isBulkImport = selectedGame?.rawgId === -1
 
   return (
-    <PageLayout>
+    <PageLayout
+      sidebar={
+        <FranchiseDetailSidebar
+          seriesName={series_name}
+          ownedCount={owned_games.length}
+          missingCount={missing_games.length}
+        />
+      }
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -232,7 +241,7 @@ export function FranchiseDetail() {
 
         {/* Owned Games */}
         <div className="mb-10">
-          <h2 className="text-2xl font-bold text-ctp-teal mb-4">Your Games</h2>
+          <h2 id="owned-games" className="text-2xl font-bold text-ctp-teal mb-4">Your Games</h2>
           {owned_games.length === 0 ? (
             <Card>
               <p className="text-ctp-subtext0 text-center py-8">
@@ -289,7 +298,7 @@ export function FranchiseDetail() {
         {missing_games.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-ctp-mauve">Missing from Your Library</h2>
+              <h2 id="missing-games" className="text-2xl font-bold text-ctp-mauve">Missing from Your Library</h2>
               <div className="flex items-center gap-2">
                 {selectionMode ? (
                   <>

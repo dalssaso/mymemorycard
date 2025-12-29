@@ -27,6 +27,7 @@ export interface CollectionSuggestion {
   name: string
   description: string
   gameNames: string[]
+  gameIds: string[]
   reasoning: string
 }
 
@@ -36,7 +37,7 @@ export interface NextGameSuggestion {
   estimatedHours?: number | null
 }
 
-export function buildCollectionSuggestionsPrompt(library: GameSummary[]): string {
+export function buildCollectionSuggestionsPrompt(library: GameSummary[], theme?: string): string {
   const libraryText = library
     .slice(0, 100)
     .map(
@@ -47,7 +48,12 @@ export function buildCollectionSuggestionsPrompt(library: GameSummary[]): string
     )
     .join('\n')
 
-  return `Based on this game library, suggest 3-5 themed collections that would be meaningful for this player.
+  const themeContext = theme
+    ? `\n\nUser's requested theme: "${theme}"
+Generate 3-5 collection variants that incorporate this theme. Each variant should interpret the theme differently or combine it with other aspects from the library. If not enough games match the theme exactly, include partial matches with explanation.`
+    : ''
+
+  return `Based on this game library, suggest 3-5 themed collections that would be meaningful for this player.${themeContext}
 
 Library (${library.length} games total, showing first 100):
 ${libraryText}
@@ -65,11 +71,16 @@ Return JSON with this exact structure:
 }
 
 Guidelines:
-- Focus on: game series, genres, gameplay styles, completion status, themes, developers
-- Collection names should be creative and descriptive
+- AVOID franchise/series-based collections (the app has a separate Franchises feature for that)
+- Focus on creative, thematic connections like:
+  - Mood/atmosphere: scary, cozy, melancholic, adrenaline-pumping, relaxing
+  - Play context: games for short sessions, weekend marathons, playing with a partner, winding down before bed
+  - Gameplay style: puzzle-focused, exploration-heavy, competitive, narrative-driven
+  - Themes: emotional journeys, underdog stories, nostalgic throwbacks, hidden gems
+- Collection names should be evocative and creative (e.g., "Rainy Day Comfort Games" not "RPG Games")
 - Each collection should have 3-15 games
 - Use exact game titles from the library
-- Avoid generic collections (e.g., "All RPGs") - be more specific
+- If user specified a theme, prioritize that but offer creative interpretations
 - Consider the player's preferences based on ratings and playtime`
 }
 
@@ -135,7 +146,7 @@ Description: ${collectionDescription}
 
 The image should:
 - Visually represent the theme of this game collection
-- Be suitable as a collection cover (landscape orientation, 16:9 ratio preferred)
+- Be suitable as a collection poster (portrait orientation, 4:3 ratio preferred)
 - Have a cohesive color scheme that fits the theme
 - Be visually appealing and professional
 - Not include text (the collection name will be overlaid separately)`

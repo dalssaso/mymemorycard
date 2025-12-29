@@ -263,7 +263,7 @@ export function GlobalSearch() {
         id: collection.id,
         name: collection.name,
         imageUrl: collection.cover_filename
-          ? `/collection-covers/${collection.cover_filename}`
+          ? `/api/collection-covers/${collection.cover_filename}`
           : collection.cover_art_url,
         subtitle: `${collection.game_count} ${collection.game_count === 1 ? 'game' : 'games'}`,
         index: index++,
