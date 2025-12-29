@@ -696,7 +696,7 @@ export function Library() {
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <PlatformIcons platforms={row.original.platforms} size="sm" maxDisplay={5} />
                             <span className="badge text-zinc-400 border-zinc-600">
-                              {row.original.status}
+                              {row.original.status.charAt(0).toUpperCase() + row.original.status.slice(1)}
                             </span>
                           </div>
                           {row.original.metacritic_score && (

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { completionLogsAPI, gamesAPI, sessionsAPI } from '@/lib/api'
+import { completionLogsAPI, gamesAPI, sessionsAPI, userPlatformsAPI } from '@/lib/api'
 import { BackButton, PageLayout } from '@/components/layout'
 import { GameDetailSidebar } from '@/components/sidebar'
 import { useToast } from '@/components/ui/Toast'
@@ -42,7 +42,15 @@ interface GameDetails {
   expected_playtime: number | null
 }
 
-
+interface UserPlatform {
+  id: string
+  platform_id: string
+  name: string
+  display_name: string
+  platform_type: string | null
+  color_primary: string
+  default_icon_url: string | null
+}
 
 const STATUS_OPTIONS = [
   {
@@ -127,11 +135,19 @@ export function GameDetail() {
     queryKey: ['game', id],
     queryFn: async () => {
       const response = await gamesAPI.getOne(id)
-      return response.data as { 
+      return response.data as {
         game: GameDetails
         platforms: GameDetails[]
         genres: string[]
       }
+    },
+  })
+
+  const { data: userPlatformsData } = useQuery({
+    queryKey: ['user-platforms'],
+    queryFn: async () => {
+      const response = await userPlatformsAPI.getAll()
+      return response.data as { platforms: UserPlatform[] }
     },
   })
 
@@ -262,6 +278,23 @@ export function GameDetail() {
     }
   })
 
+  const addToPlatformMutation = useMutation({
+    mutationFn: ({ platformId }: { platformId: string }) =>
+      gamesAPI.addToPlatform(id, platformId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['game', id] })
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      // Auto-switch to the newly added platform
+      setSelectedPlatformId(variables.platformId)
+      const userPlatforms = userPlatformsData?.platforms || []
+      const platform = userPlatforms.find(p => p.platform_id === variables.platformId)
+      showToast(platform ? `Added to ${platform.display_name}` : 'Added to platform', 'success')
+    },
+    onError: () => {
+      showToast('Failed to add game to platform', 'error')
+    }
+  })
+
   const addPlaytimeMutation = useMutation({
     mutationFn: async () => {
       if (!mutationPlatformId) {
@@ -367,6 +400,11 @@ export function GameDetail() {
   const activePlatform = platforms.find(p => p.platform_id === activePlatformId) || game
   const activeStatus = activePlatform.status || 'backlog'
   const activeStatusOption = STATUS_OPTIONS.find((option) => option.value === activeStatus) || STATUS_OPTIONS[0]
+
+  // Compute platforms user has in profile but doesn't own the game on
+  const ownedPlatformIds = new Set(platforms.map(p => p.platform_id))
+  const availablePlatforms = (userPlatformsData?.platforms || [])
+    .filter(p => !ownedPlatformIds.has(p.platform_id))
 
   const parsedPlaytimeHours = playtimeHours.trim() ? Number(playtimeHours) : 0
   const parsedPlaytimeMinutes = playtimeMinutes.trim() ? Number(playtimeMinutes) : 0
@@ -513,6 +551,45 @@ export function GameDetail() {
                   <p className="text-xs text-ctp-overlay1 mt-1">
                     Stats and progress are tracked per platform
                   </p>
+                )}
+
+                {/* Add to Platform section */}
+                {availablePlatforms.length > 0 && (
+                  <div className="mt-3">
+                    <span className="block text-xs font-medium text-ctp-overlay1 mb-2">
+                      Add to Platform
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {availablePlatforms.map((platform) => (
+                        <button
+                          key={platform.platform_id}
+                          type="button"
+                          onClick={() => addToPlatformMutation.mutate({ platformId: platform.platform_id })}
+                          disabled={addToPlatformMutation.isPending}
+                          className="px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border border-dashed border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-mauve/50 hover:bg-ctp-mauve/10 disabled:opacity-50"
+                        >
+                          <PlatformIconBadge
+                            platform={{
+                              displayName: platform.display_name,
+                              iconUrl: platform.default_icon_url,
+                              colorPrimary: platform.color_primary,
+                            }}
+                            size="md"
+                          />
+                          <span className="text-sm text-ctp-overlay1">{platform.display_name}</span>
+                          <svg
+                            className="h-3.5 w-3.5 text-ctp-overlay1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

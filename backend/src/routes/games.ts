@@ -1234,3 +1234,99 @@ router.post(
     }
   })
 )
+
+// Add game to a new platform (for games already in user's library)
+router.post(
+  '/api/games/:id/platforms',
+  requireAuth(async (req, user, params) => {
+    try {
+      const gameId = params?.id
+      const body = await req.json() as { platformId?: string }
+      const { platformId } = body
+
+      if (!gameId || !platformId) {
+        return new Response(
+          JSON.stringify({ error: 'Game ID and platformId are required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify the game exists
+      const game = await queryOne<{ id: string }>(
+        'SELECT id FROM games WHERE id = $1',
+        [gameId]
+      )
+
+      if (!game) {
+        return new Response(
+          JSON.stringify({ error: 'Game not found' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify user owns the game on at least one platform
+      const existingOwnership = await queryOne<{ id: string }>(
+        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2',
+        [user.id, gameId]
+      )
+
+      if (!existingOwnership) {
+        return new Response(
+          JSON.stringify({ error: 'Game not in your library' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Verify the platform exists and user has it in their profile
+      const userPlatform = await queryOne<{ platform_id: string }>(
+        'SELECT platform_id FROM user_platforms WHERE user_id = $1 AND platform_id = $2',
+        [user.id, platformId]
+      )
+
+      if (!userPlatform) {
+        return new Response(
+          JSON.stringify({ error: 'Platform not in your profile' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Check if user already owns the game on this platform
+      const alreadyOwned = await queryOne<{ id: string }>(
+        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        [user.id, gameId, platformId]
+      )
+
+      if (alreadyOwned) {
+        return new Response(
+          JSON.stringify({ error: 'You already own this game on this platform' }),
+          { status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+        )
+      }
+
+      // Add the game to the platform
+      await query(
+        `INSERT INTO user_games (user_id, game_id, platform_id, owned, import_source)
+         VALUES ($1, $2, $3, true, 'add_platform')`,
+        [user.id, gameId, platformId]
+      )
+
+      // Create initial progress entry with 'backlog' status
+      await query(
+        `INSERT INTO user_game_progress (user_id, game_id, platform_id, status)
+         VALUES ($1, $2, $3, 'backlog')`,
+        [user.id, gameId, platformId]
+      )
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 201, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    } catch (error) {
+      console.error('Add game to platform error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
+      )
+    }
+  })
+)

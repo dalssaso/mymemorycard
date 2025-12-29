@@ -145,12 +145,18 @@ export function Dashboard() {
 
   // Platform distribution data
   const platformData = useMemo(() => {
-    const platformCounts = games.reduce((acc, game) => {
-      const platform = game.platform_display_name || 'Unknown'
-      acc[platform] = (acc[platform] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
+    const platformCounts: Record<string, number> = {}
+    games.forEach((game) => {
+      const platforms = game.platforms || []
+      if (platforms.length === 0) {
+        platformCounts['Unknown'] = (platformCounts['Unknown'] || 0) + 1
+      } else {
+        platforms.forEach((platform: { displayName?: string }) => {
+          const displayName = platform.displayName || 'Unknown'
+          platformCounts[displayName] = (platformCounts[displayName] || 0) + 1
+        })
+      }
+    })
     return Object.entries(platformCounts).map(([name, value], index) => ({
       name,
       value,

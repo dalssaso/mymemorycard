@@ -271,7 +271,7 @@ export function FranchiseDetail() {
                     )}
                     <div
                       className={`absolute top-2 right-2 w-3 h-3 rounded-full ${STATUS_COLORS[game.status] || 'bg-gray-600'}`}
-                      title={game.status}
+                      title={game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     />
                   </div>
                   <p className="text-sm text-ctp-subtext1 truncate group-hover:text-ctp-text mb-1">

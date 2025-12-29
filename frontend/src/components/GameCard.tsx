@@ -185,7 +185,7 @@ export function GameCard({
               className="badge border text-ctp-text"
               style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
             >
-              {status}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </span>
             {series_name && (
               <span

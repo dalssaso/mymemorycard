@@ -99,6 +99,8 @@ export const gamesAPI = {
     api.post(`/games/${id}/achievements/manual/bulk-delete`, { platform_id: platformId, achievementIds }),
   updateFromRawg: (id: string, options: { rawgId?: number; rawgSlug?: string }) =>
     api.post(`/games/${id}/update-from-rawg`, options),
+  addToPlatform: (id: string, platformId: string) =>
+    api.post(`/games/${id}/platforms`, { platformId }),
 };
 
 // Import API

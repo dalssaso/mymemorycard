@@ -62,6 +62,7 @@ export function Collections() {
       queryClient.invalidateQueries({ queryKey: ['collections'] })
       setSelectedCollectionIds([])
       setSelectionMode(false)
+      setShowDeleteConfirm(false)
       showToast('Collections deleted', 'success')
     },
     onError: () => {
