@@ -1,7 +1,7 @@
 # MyMemoryCard Makefile
 # Run `make help` to see available commands
 
-.PHONY: help dev stop clean test test-unit test-integration test-coverage typecheck lint format install db-shell logs
+.PHONY: help dev stop clean test test-unit test-integration test-coverage typecheck format install db-shell logs
 
 # Default target
 help:
@@ -23,7 +23,6 @@ help:
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make typecheck        Run TypeScript type checking"
-	@echo "  make lint             Run ESLint on frontend"
 	@echo "  make format           Format all code with Prettier"
 	@echo "  make format-check     Check formatting without changes"
 	@echo ""
@@ -132,9 +131,6 @@ typecheck:
 	cd backend && bun run typecheck
 	@echo "Type checking frontend..."
 	cd frontend && npm run typecheck
-
-lint:
-	cd frontend && npm run lint
 
 format:
 	npm run format

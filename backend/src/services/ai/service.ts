@@ -266,8 +266,6 @@ export async function suggestCollections(
 
     const completion = await client.chat.completions.create(completionParams)
 
-    console.log('API Response:', JSON.stringify(completion, null, 2))
-
     const message = completion.choices[0]?.message
     const content = message?.content
 
@@ -381,8 +379,6 @@ export async function suggestNextGame(
     }
 
     const completion = await client.chat.completions.create(completionParams)
-
-    console.log('Next Game API Response:', JSON.stringify(completion, null, 2))
 
     const message = completion.choices[0]?.message
     const content = message?.content

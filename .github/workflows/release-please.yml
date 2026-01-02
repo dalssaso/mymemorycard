@@ -1,0 +1,51 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    outputs:
+      backend-release-created: ${{ steps.release.outputs['backend--release_created'] }}
+      backend-tag-name: ${{ steps.release.outputs['backend--tag_name'] }}
+      backend-version: ${{ steps.release.outputs['backend--version'] }}
+      frontend-release-created: ${{ steps.release.outputs['frontend--release_created'] }}
+      frontend-tag-name: ${{ steps.release.outputs['frontend--tag_name'] }}
+      frontend-version: ${{ steps.release.outputs['frontend--version'] }}
+    steps:
+      - name: Run release-please
+        uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build-backend:
+    name: Build Backend Docker Image
+    needs: release-please
+    if: ${{ needs.release-please.outputs.backend-release-created == 'true' }}
+    uses: ./.github/workflows/docker.yml
+    with:
+      component: backend
+      version: ${{ needs.release-please.outputs.backend-version }}
+    secrets: inherit
+
+  build-frontend:
+    name: Build Frontend Docker Image
+    needs: release-please
+    if: ${{ needs.release-please.outputs.frontend-release-created == 'true' }}
+    uses: ./.github/workflows/docker.yml
+    with:
+      component: frontend
+      version: ${{ needs.release-please.outputs.frontend-version }}
+    secrets: inherit
