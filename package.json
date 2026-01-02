@@ -11,7 +11,6 @@
     "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
     "typecheck:backend": "cd backend && bun run typecheck",
     "typecheck:frontend": "cd frontend && npm run typecheck",
-    "lint": "cd frontend && npm run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },

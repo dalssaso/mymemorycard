@@ -1,0 +1,53 @@
+# Traefik Static Configuration
+# See: https://doc.traefik.io/traefik/
+
+api:
+  dashboard: false
+  insecure: false
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+    # Extended timeouts for AI responses
+    transport:
+      respondingTimeouts:
+        readTimeout: 300s
+        writeTimeout: 300s
+        idleTimeout: 180s
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "${ACME_EMAIL}"
+      storage: /certs/acme.json
+      httpChallenge:
+        entryPoint: web
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: mymemorycard_mymemorycard-public
+
+# Request body size limit for file uploads (50MB)
+serversTransport:
+  insecureSkipVerify: false
+
+log:
+  level: INFO
+
+accessLog:
+  filePath: "/var/log/access.log"
+  format: json

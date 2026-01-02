@@ -1,5 +1,9 @@
 # Deployment with Traefik
 
+> **Quick Start:** For the simplest deployment experience, use the pre-configured Docker Compose files
+> in the [`/deploy`](../deploy/) directory. Run `cd deploy && docker compose -f docker-compose.traefik.yml up -d`
+> after configuring your `.env` file. This guide covers manual server setup if you prefer to run Traefik directly on the host.
+
 This guide covers deploying MyMemoryCard with Traefik as a reverse proxy, including automatic SSL/TLS certificate management with Let's Encrypt.
 
 ## Prerequisites
