@@ -1,12 +1,12 @@
-# MyMemoryCard Production Deployment with Nginx
+# MyMemoryCard Production Deployment
 #
 # Usage:
-#   1. Copy .env.example to .env and configure
+#   1. Create nginx.conf (see README.md for full config)
 #   2. Place SSL certificates in ./certs/ (fullchain.pem, privkey.pem)
-#   3. Run: docker compose up -d
+#   3. Configure environment: copy .env.example to .env, or pass vars inline
+#   4. Run: docker compose up -d
 #
-# This is the default deployment with Nginx as the reverse proxy.
-# For automatic HTTPS, use docker-compose.caddy.yml or docker-compose.traefik.yml
+# Environment can be passed inline: DB_PASSWORD=xxx JWT_SECRET=yyy docker compose up -d
 
 name: mymemorycard
 
@@ -22,7 +22,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro
       - nginx_logs:/var/log/nginx
     depends_on:

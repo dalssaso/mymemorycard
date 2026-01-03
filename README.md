@@ -49,18 +49,16 @@ No `.env` file needed for local development - sensible defaults are built-in.
 For production deployment, see the [deploy/](deploy/) directory:
 
 ```bash
-cd deploy
-cp .env.example .env
-# Edit .env with your configuration
+mkdir mymemorycard && cd mymemorycard
 
-# Using Caddy (recommended - automatic HTTPS)
-docker compose -f docker-compose.caddy.yml up -d
+# Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/dalssaso/MyMemoryCard/main/deploy/docker-compose.yml
 
-# Or using Nginx (requires manual SSL setup)
-docker compose up -d
+# Create nginx.conf (see deploy/README.md for full config)
+# Set up SSL certificates in ./certs/
 
-# Or using Traefik
-docker compose -f docker-compose.traefik.yml up -d
+# Deploy with environment variables
+DB_PASSWORD=your-password JWT_SECRET=your-secret DOMAIN=games.example.com docker compose up -d
 ```
 
 See [deploy/README.md](deploy/README.md) for detailed deployment instructions.
@@ -117,9 +115,7 @@ mymemorycard/
 │       ├── components/# UI components
 │       └── hooks/     # Custom hooks
 ├── deploy/            # Production deployment configs
-│   ├── docker-compose.yml        # Nginx (default)
-│   ├── docker-compose.caddy.yml  # Caddy (auto HTTPS)
-│   └── docker-compose.traefik.yml# Traefik (auto HTTPS)
+│   └── docker-compose.yml        # Production with Nginx
 ├── docs/
 └── docker-compose.yml # Local development (PostgreSQL, Redis)
 ```
@@ -139,9 +135,7 @@ make db-studio        # Open Drizzle Studio GUI
 - `docker-compose.yml` - Infrastructure only (PostgreSQL on port 5433, Redis on port 6380)
 
 ### Production (deploy/ directory)
-- `deploy/docker-compose.yml` - Production with Nginx reverse proxy
-- `deploy/docker-compose.caddy.yml` - Production with Caddy (automatic HTTPS)
-- `deploy/docker-compose.traefik.yml` - Production with Traefik (automatic HTTPS)
+- `deploy/docker-compose.yml` - Full stack with Nginx reverse proxy
 
 ## Contributing
 
