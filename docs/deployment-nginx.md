@@ -6,6 +6,21 @@
 
 This guide covers deploying MyMemoryCard with Nginx as a reverse proxy, including SSL/TLS configuration with Let's Encrypt.
 
+## Image Versions
+
+Production docker-compose files use pinned versions that are auto-updated on each release:
+
+- Backend: `1.1.0` <!-- x-release-please-version -->
+- Frontend: `1.1.0` <!-- x-release-please-version -->
+
+Images are pulled from GitHub Container Registry:
+```bash
+ghcr.io/dalssaso/mymemorycard/backend:1.1.0
+ghcr.io/dalssaso/mymemorycard/frontend:1.1.0
+```
+
+See the [release process documentation](./release-process.md) for more details.
+
 ## Prerequisites
 
 - Ubuntu/Debian server (or similar Linux distribution)
@@ -212,85 +227,23 @@ Visit `https://games.yourdomain.com` in your browser.
 
 ## Production Docker Compose
 
-For production, update your `docker-compose.yml`:
+Use the pre-configured production docker-compose file from the `deploy/` directory:
 
-```yaml
-version: '3.8'
+```bash
+cd deploy
+cp .env.example .env
+# Edit .env with your configuration
 
-services:
-  postgres:
-    image: postgres:16
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - mymemorycard
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      - mymemorycard
-
-  backend:
-    build: ./backend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET}
-      RAWG_API_KEY: ${RAWG_API_KEY}
-      NODE_ENV: production
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - mymemorycard
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    restart: unless-stopped
-    ports:
-      - "5173:5173"
-    environment:
-      VITE_API_URL: https://games.yourdomain.com
-    depends_on:
-      - backend
-    networks:
-      - mymemorycard
-
-volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  mymemorycard:
-    driver: bridge
+docker compose up -d
 ```
+
+The `deploy/docker-compose.yml` file uses pre-built images from GitHub Container Registry with pinned versions. See [`deploy/README.md`](../deploy/README.md) for full configuration options.
+
+Key features of the production configuration:
+- Pre-built multi-platform images (amd64/arm64)
+- Health checks for all services
+- Network isolation (internal network for databases)
+- Nginx reverse proxy with SSL support
 
 ## Firewall Configuration
 

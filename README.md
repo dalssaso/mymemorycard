@@ -71,18 +71,18 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 - Backend and frontend are versioned independently
 - Docker images are published to GHCR on each release
-- Tags follow the format: `backend-v1.0.0`, `frontend-v1.0.0`
+- Tags follow the format: `backend-v1.1.0`, `frontend-v1.1.0`
 
 ### Docker Images
 
 ```bash
 # Backend
 docker pull ghcr.io/dalssaso/mymemorycard/backend:latest
-docker pull ghcr.io/dalssaso/mymemorycard/backend:1.0.0
+docker pull ghcr.io/dalssaso/mymemorycard/backend:1.1.0 # x-release-please-version
 
 # Frontend
 docker pull ghcr.io/dalssaso/mymemorycard/frontend:latest
-docker pull ghcr.io/dalssaso/mymemorycard/frontend:1.0.0
+docker pull ghcr.io/dalssaso/mymemorycard/frontend:1.1.0 # x-release-please-version
 ```
 
 ## Development

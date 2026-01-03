@@ -37,7 +37,7 @@ services:
   # APPLICATION SERVICES
   # ===========================================
   backend:
-    image: ghcr.io/dalssaso/mymemorycard/backend:${BACKEND_VERSION:-latest}
+    image: ghcr.io/dalssaso/mymemorycard/backend:1.1.0 # x-release-please-version
     container_name: mymemorycard-backend
     restart: unless-stopped
     environment:
@@ -69,7 +69,7 @@ services:
       - "traefik.http.routers.backend.middlewares=security-headers"
 
   frontend:
-    image: ghcr.io/dalssaso/mymemorycard/frontend:${FRONTEND_VERSION:-latest}
+    image: ghcr.io/dalssaso/mymemorycard/frontend:1.1.0 # x-release-please-version
     container_name: mymemorycard-frontend
     restart: unless-stopped
     networks:

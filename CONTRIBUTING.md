@@ -11,6 +11,7 @@ Thank you for considering contributing to MyMemoryCard! This document provides g
 - [Testing Requirements](#testing-requirements)
 - [Commit Guidelines](#commit-guidelines)
 - [Pull Request Process](#pull-request-process)
+- [Releases](#releases)
 
 ## Code of Conduct
 
@@ -420,6 +421,30 @@ make db-studio
 - Use parameterized SQL queries
 - Sanitize user-generated content
 - Keep dependencies up to date
+
+## Releases
+
+This project uses [release-please](https://github.com/googleapis/release-please) for automated releases.
+
+### How It Works
+
+1. **Conventional commits** trigger releases automatically
+   - `feat:` commits create minor releases (1.1.0 -> 1.2.0)
+   - `fix:` commits create patch releases (1.1.0 -> 1.1.1)
+   - `feat!:` or `BREAKING CHANGE:` create major releases
+
+2. **Release-please** creates a combined release PR when changes are merged to `main`
+   - Updates version in `package.json`
+   - Generates `CHANGELOG.md`
+   - Updates version references in documentation and docker-compose files
+
+3. **Docker images** are automatically built and published to GitHub Container Registry
+
+### Pre-releases
+
+For testing before official release, use the **Manual Pre-Release Build** workflow in GitHub Actions.
+
+See [docs/release-process.md](docs/release-process.md) for complete documentation.
 
 ## Getting Help
 

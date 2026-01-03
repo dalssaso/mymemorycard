@@ -4,7 +4,7 @@
   "include-component-in-tag": true,
   "include-v-in-tag": true,
   "tag-separator": "-",
-  "separate-pull-requests": true,
+  "separate-pull-requests": false,
   "changelog-sections": [
     { "type": "feat", "section": "Features" },
     { "type": "fix", "section": "Bug Fixes" },
@@ -20,14 +20,28 @@
       "component": "backend",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": true
+      "bump-patch-for-minor-pre-major": true,
+      "extra-files": [
+        { "type": "generic", "path": "../README.md" },
+        { "type": "generic", "path": "../deploy/README.md" },
+        { "type": "generic", "path": "../deploy/docker-compose.yml" },
+        { "type": "generic", "path": "../deploy/docker-compose.caddy.yml" },
+        { "type": "generic", "path": "../deploy/docker-compose.traefik.yml" }
+      ]
     },
     "frontend": {
       "release-type": "node",
       "component": "frontend",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": true
+      "bump-patch-for-minor-pre-major": true,
+      "extra-files": [
+        { "type": "generic", "path": "../README.md" },
+        { "type": "generic", "path": "../deploy/README.md" },
+        { "type": "generic", "path": "../deploy/docker-compose.yml" },
+        { "type": "generic", "path": "../deploy/docker-compose.caddy.yml" },
+        { "type": "generic", "path": "../deploy/docker-compose.traefik.yml" }
+      ]
     }
   }
 }

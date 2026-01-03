@@ -6,6 +6,21 @@
 
 This guide covers deploying MyMemoryCard with Caddy as a reverse proxy. Caddy automatically handles SSL/TLS certificates with zero configuration.
 
+## Image Versions
+
+Production docker-compose files use pinned versions that are auto-updated on each release:
+
+- Backend: `1.1.0` <!-- x-release-please-version -->
+- Frontend: `1.1.0` <!-- x-release-please-version -->
+
+Images are pulled from GitHub Container Registry:
+```bash
+ghcr.io/dalssaso/mymemorycard/backend:1.1.0
+ghcr.io/dalssaso/mymemorycard/frontend:1.1.0
+```
+
+See the [release process documentation](./release-process.md) for more details.
+
 ## Prerequisites
 
 - Ubuntu/Debian server (or similar Linux distribution)
@@ -161,131 +176,28 @@ For a simpler configuration (Caddy's default security is already good):
 }
 ```
 
-### 4. Create Docker Compose Configuration
+### 4. Use Production Docker Compose
 
-Create production docker-compose file:
-
-```bash
-sudo nano /opt/mymemorycard/docker-compose.caddy.yml
-```
-
-```yaml
-version: '3.8'
-
-services:
-  caddy:
-    image: caddy:2-alpine
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"  # HTTP/3
-      - "2019:2019"    # Metrics (optional)
-    environment:
-      DOMAIN: ${DOMAIN:-localhost}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-      - /var/log/caddy:/var/log/caddy
-    networks:
-      - caddy
-    depends_on:
-      - backend
-      - frontend
-
-  postgres:
-    image: postgres:16
-    container_name: mymemorycard-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-mymemorycard}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-mymemorycard}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mymemorycard}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - backend
-
-  redis:
-    image: redis:7-alpine
-    container_name: mymemorycard-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      - backend
-
-  backend:
-    build: ./backend
-    container_name: mymemorycard-backend
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-mymemorycard}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mymemorycard}
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET}
-      RAWG_API_KEY: ${RAWG_API_KEY}
-      NODE_ENV: production
-      PORT: 3000
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - backend
-      - caddy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: mymemorycard-frontend
-    restart: unless-stopped
-    environment:
-      VITE_API_URL: https://${DOMAIN:-localhost}
-    depends_on:
-      - backend
-    networks:
-      - caddy
-
-volumes:
-  postgres_data:
-  redis_data:
-  caddy_data:
-  caddy_config:
-
-networks:
-  caddy:
-    driver: bridge
-  backend:
-    driver: bridge
-```
-
-### 5. Start Services
+Use the pre-configured production docker-compose file from the `deploy/` directory:
 
 ```bash
-cd /opt/mymemorycard
-sudo docker-compose -f docker-compose.caddy.yml up -d
+cd deploy
+cp .env.example .env
+# Edit .env with your configuration (DOMAIN, ACME_EMAIL required)
+
+docker compose -f docker-compose.caddy.yml up -d
 ```
+
+The `deploy/docker-compose.caddy.yml` file uses pre-built images from GitHub Container Registry with pinned versions. See [`deploy/README.md`](../deploy/README.md) for full configuration options.
+
+Key features of the production configuration:
+- Pre-built multi-platform images (amd64/arm64)
+- Automatic HTTPS via Let's Encrypt
+- HTTP/3 support
+- Health checks for all services
+- Network isolation (internal network for databases)
+
+### 5. Verify Deployment
 
 Caddy will automatically:
 - Obtain SSL certificates from Let's Encrypt
@@ -295,10 +207,8 @@ Caddy will automatically:
 Check logs:
 
 ```bash
-sudo docker-compose -f docker-compose.caddy.yml logs -f caddy
+docker compose -f docker-compose.caddy.yml logs -f caddy
 ```
-
-### 6. Verify Deployment
 
 Test the deployment:
 

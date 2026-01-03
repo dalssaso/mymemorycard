@@ -6,6 +6,21 @@
 
 This guide covers deploying MyMemoryCard with Traefik as a reverse proxy, including automatic SSL/TLS certificate management with Let's Encrypt.
 
+## Image Versions
+
+Production docker-compose files use pinned versions that are auto-updated on each release:
+
+- Backend: `1.1.0` <!-- x-release-please-version -->
+- Frontend: `1.1.0` <!-- x-release-please-version -->
+
+Images are pulled from GitHub Container Registry:
+```bash
+ghcr.io/dalssaso/mymemorycard/backend:1.1.0
+ghcr.io/dalssaso/mymemorycard/frontend:1.1.0
+```
+
+See the [release process documentation](./release-process.md) for more details.
+
 ## Prerequisites
 
 - Ubuntu/Debian server (or similar Linux distribution)
@@ -130,185 +145,35 @@ accessLog:
   filePath: "/var/log/access.log"
 ```
 
-### 4. Create Docker Compose Configuration
+### 4. Use Production Docker Compose
 
-Create production docker-compose file:
-
-```bash
-sudo nano /opt/mymemorycard/docker-compose.traefik.yml
-```
-
-```yaml
-version: '3.8'
-
-services:
-  traefik:
-    image: traefik:v2.10
-    container_name: traefik
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/traefik/traefik.yml:/traefik.yml:ro
-      - /opt/traefik/acme.json:/acme.json
-      - /var/log/traefik:/var/log
-    networks:
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      # Dashboard
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-localhost}`)"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=traefik-auth"
-      # Basic auth for dashboard (user: admin, password: change-this)
-      # Generate with: echo $(htpasswd -nb admin your-password) | sed -e s/\\$/\\$\\$/g
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$xyz$$abc123"
-
-  postgres:
-    image: postgres:16
-    container_name: mymemorycard-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-mymemorycard}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-mymemorycard}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mymemorycard}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - mymemorycard
-
-  redis:
-    image: redis:7-alpine
-    container_name: mymemorycard-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      - mymemorycard
-
-  backend:
-    build: ./backend
-    container_name: mymemorycard-backend
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-mymemorycard}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mymemorycard}
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET}
-      RAWG_API_KEY: ${RAWG_API_KEY}
-      NODE_ENV: production
-      PORT: 3000
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - mymemorycard
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.backend.loadbalancer.server.port=3000"
-      # Security headers
-      - "traefik.http.middlewares.backend-headers.headers.customResponseHeaders.X-Robots-Tag=noindex,nofollow"
-      - "traefik.http.routers.backend.middlewares=backend-headers"
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: mymemorycard-frontend
-    restart: unless-stopped
-    environment:
-      VITE_API_URL: https://${DOMAIN:-localhost}
-    depends_on:
-      - backend
-    networks:
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN:-localhost}`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
-      # Security headers
-      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-Frame-Options=SAMEORIGIN"
-      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-Content-Type-Options=nosniff"
-      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-XSS-Protection=1; mode=block"
-      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.Referrer-Policy=strict-origin-when-cross-origin"
-      - "traefik.http.middlewares.security-headers.headers.sslRedirect=true"
-      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
-      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
-      - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
-      - "traefik.http.routers.frontend.middlewares=security-headers"
-
-volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  traefik-public:
-    external: true
-  mymemorycard:
-    driver: bridge
-```
-
-### 5. Create Traefik Network
+Use the pre-configured production docker-compose file from the `deploy/` directory:
 
 ```bash
-sudo docker network create traefik-public
+cd deploy
+cp .env.example .env
+# Edit .env with your configuration (DOMAIN, ACME_EMAIL required)
+
+docker compose -f docker-compose.traefik.yml up -d
 ```
 
-### 6. Generate Dashboard Password
+The `deploy/docker-compose.traefik.yml` file uses pre-built images from GitHub Container Registry with pinned versions. See [`deploy/README.md`](../deploy/README.md) for full configuration options.
 
-Install apache2-utils:
+Key features of the production configuration:
+- Pre-built multi-platform images (amd64/arm64)
+- Automatic HTTPS via Let's Encrypt
+- Docker-native service discovery via labels
+- Health checks for all services
+- Network isolation (internal network for databases)
+- Security headers middleware
 
-```bash
-sudo apt install apache2-utils -y
-```
-
-Generate password hash:
-
-```bash
-echo $(htpasswd -nb admin your-secure-password) | sed -e s/\\$/\\$\\$/g
-```
-
-Copy the output and update the `traefik-auth` label in docker-compose.traefik.yml.
-
-### 7. Start Services
-
-```bash
-cd /opt/mymemorycard
-sudo docker-compose -f docker-compose.traefik.yml up -d
-```
+### 5. Verify Deployment
 
 Check logs:
 
 ```bash
-sudo docker-compose -f docker-compose.traefik.yml logs -f
+docker compose -f docker-compose.traefik.yml logs -f
 ```
-
-### 8. Verify Deployment
 
 Visit your domain:
 - Main app: `https://games.yourdomain.com`

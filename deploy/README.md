@@ -107,15 +107,25 @@ The relevant settings are:
 
 ## Updating
 
+The docker-compose files are pinned to specific versions that are auto-updated on each release.
+
+**Current versions:**
+- Backend: `1.1.0` <!-- x-release-please-version -->
+- Frontend: `1.1.0` <!-- x-release-please-version -->
+
 ```bash
-# Pull latest images
+# Pull latest images (uses pinned versions in docker-compose files)
 docker compose pull
 
 # Recreate containers
 docker compose up -d
+```
 
-# Or for specific version
-BACKEND_VERSION=1.2.3 FRONTEND_VERSION=1.2.3 docker compose up -d
+To use a different version, edit the image tags in the docker-compose file or override with environment variables:
+
+```bash
+# Override to use latest
+docker compose up -d --pull always
 ```
 
 ## Backup and Restore
