@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.0...backend-v1.2.1) (2026-01-03)
+
+
+### Bug Fixes
+
+* copy drizzle migrations folder in Docker build ([#7](https://github.com/dalssaso/mymemorycard/issues/7)) ([6829ea0](https://github.com/dalssaso/mymemorycard/commit/6829ea03d9e1f0ee6a1970f1ecf4025182120746))
+
 ## [1.2.0](https://github.com/dalssaso/mymemorycard/compare/backend-v1.1.0...backend-v1.2.0) (2026-01-03)
 
 
