@@ -1,33 +1,35 @@
 # MyMemoryCard Deployment Guide
 
-This directory contains production-ready Docker Compose configurations for deploying MyMemoryCard.
+This directory contains production-ready Docker Compose configuration for deploying MyMemoryCard.
 
 ## Quick Start
 
-1. **Choose your reverse proxy:**
-   - `docker-compose.yml` - Nginx (default, requires manual SSL setup)
-   - `docker-compose.caddy.yml` - Caddy (automatic HTTPS, recommended)
-   - `docker-compose.traefik.yml` - Traefik (automatic HTTPS, Docker-native)
-
-2. **Configure environment:**
+1. **Download docker-compose.yml:**
    ```bash
+   mkdir mymemorycard && cd mymemorycard
+   curl -O https://raw.githubusercontent.com/dalssaso/MyMemoryCard/main/deploy/docker-compose.yml
+   ```
+
+2. **Create nginx.conf** (see [Nginx Configuration](#nginx-configuration) below)
+
+3. **Set up SSL certificates** (see [SSL Certificates](#ssl-certificates) below)
+
+4. **Configure environment and deploy:**
+   ```bash
+   # Option A: Using .env file
+   curl -O https://raw.githubusercontent.com/dalssaso/MyMemoryCard/main/deploy/.env.example
    cp .env.example .env
    nano .env  # Edit with your values
-   ```
-
-3. **Deploy:**
-   ```bash
-   # Nginx (default) - requires SSL certificates in ./certs/
    docker compose up -d
 
-   # Caddy (recommended for automatic HTTPS)
-   docker compose -f docker-compose.caddy.yml up -d
-
-   # Traefik
-   docker compose -f docker-compose.traefik.yml up -d
+   # Option B: Inline environment variables
+   DB_PASSWORD=your-secure-password \
+   JWT_SECRET=your-32-char-secret-key-here \
+   DOMAIN=games.example.com \
+   docker compose up -d
    ```
 
-4. **Verify:**
+5. **Verify:**
    ```bash
    curl https://your-domain.com/api/health
    ```
@@ -41,51 +43,39 @@ This directory contains production-ready Docker Compose configurations for deplo
 | `DB_PASSWORD` | PostgreSQL password | `secure-random-password` |
 | `JWT_SECRET` | JWT signing secret (32+ chars) | `your-super-secret-key-min-32-chars` |
 | `DOMAIN` | Your domain name | `games.example.com` |
-| `ACME_EMAIL` | Email for Let's Encrypt (Caddy/Traefik) | `admin@example.com` |
 
 ### Optional
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `RAWG_API_KEY` | RAWG API key for game metadata | (none) |
-| `BACKEND_VERSION` | Backend image version | `latest` |
-| `FRONTEND_VERSION` | Frontend image version | `latest` |
 | `POSTGRES_USER` | Database username | `mymemorycard` |
 | `POSTGRES_DB` | Database name | `mymemorycard` |
 
-## Reverse Proxy Comparison
+## SSL Certificates
 
-| Feature | Nginx | Caddy | Traefik |
-|---------|-------|-------|---------|
-| Automatic HTTPS | No | Yes | Yes |
-| Config complexity | Medium | Low | Medium |
-| Performance | Highest | High | High |
-| Docker integration | Manual | Manual | Native |
-| HTTP/3 support | No | Yes | Yes |
+### Using Certbot with DNS Validation
 
-## SSL Certificate Setup
+DNS validation is recommended as it doesn't require the server to be publicly accessible:
 
-### Caddy and Traefik (Automatic)
-
-SSL certificates are automatically obtained from Let's Encrypt. Just ensure:
-- Port 80 is accessible from the internet (for ACME challenge)
-- `DOMAIN` and `ACME_EMAIL` are configured in `.env`
-
-### Nginx (Manual)
-
-**Option 1: Use certbot**
 ```bash
+# Install certbot
 sudo apt install certbot
-sudo certbot certonly --standalone -d your-domain.com
 
-# Copy certificates to deploy/certs/
+# Get certificate using DNS validation
+sudo certbot certonly --preferred-challenges dns -d your-domain.com
+
+# Follow prompts to add TXT record to your DNS
+
+# Copy certificates to your deploy directory
 mkdir -p certs
 sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem certs/
 sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem certs/
 sudo chown $USER:$USER certs/*.pem
 ```
 
-**Option 2: Use existing certificates**
+### Using Existing Certificates
+
 ```bash
 mkdir -p certs
 # Place your certificates:
@@ -93,39 +83,178 @@ mkdir -p certs
 # - certs/privkey.pem
 ```
 
-## Timeouts for AI Features
+## Nginx Configuration
 
-All reverse proxy configurations include extended timeouts (5 minutes) to support:
-- AI Curator recommendations (can take 60-120+ seconds)
-- Bulk import operations
-- Large file uploads (up to 50MB)
+Create `nginx.conf` in your deploy directory with the following content:
 
-The relevant settings are:
-- **Nginx:** `proxy_read_timeout 300s`
-- **Caddy:** `response_header_timeout 300s`
-- **Traefik:** `readTimeout: 300s`
+```nginx
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log warn;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access.log main;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript
+               application/json application/javascript application/xml+rss
+               application/rss+xml font/truetype font/opentype
+               application/vnd.ms-fontobject image/svg+xml;
+
+    # File upload size limit (for game covers, etc.)
+    client_max_body_size 50M;
+    client_body_timeout 120s;
+    client_header_timeout 60s;
+
+    # Rate limiting zone
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=30r/s;
+
+    # Upstream definitions
+    upstream backend {
+        server backend:3000;
+        keepalive 32;
+    }
+
+    upstream frontend {
+        server frontend:80;
+        keepalive 16;
+    }
+
+    # HTTP - Redirect to HTTPS
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    # HTTPS Server
+    server {
+        listen 443 ssl http2;
+        server_name _;
+
+        # SSL certificates
+        ssl_certificate /etc/nginx/certs/fullchain.pem;
+        ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+        # SSL configuration
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+        ssl_prefer_server_ciphers off;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 1d;
+
+        # Security headers
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+        # Backend API
+        location /api {
+            limit_req zone=api_limit burst=50 nodelay;
+
+            proxy_pass http://backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+
+            # Extended timeouts for AI responses (can take 60-120+ seconds)
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 300s;
+            proxy_read_timeout 300s;
+            send_timeout 300s;
+
+            # Buffering settings for large responses
+            proxy_buffering on;
+            proxy_buffer_size 128k;
+            proxy_buffers 4 256k;
+            proxy_busy_buffers_size 256k;
+        }
+
+        # AI endpoint with streaming support
+        location /api/ai {
+            proxy_pass http://backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+
+            # Extended timeout for AI responses (5 minutes)
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 300s;
+            proxy_read_timeout 300s;
+
+            # Disable buffering for streaming responses
+            proxy_buffering off;
+            proxy_cache off;
+        }
+
+        # Frontend (SPA)
+        location / {
+            proxy_pass http://frontend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        # Static asset caching
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            proxy_pass http://frontend;
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+    }
+}
+```
 
 ## Updating
 
-The docker-compose files are pinned to specific versions that are auto-updated on each release.
+The docker-compose file uses pinned versions that are auto-updated on each release.
 
 **Current versions:**
 - Backend: `1.1.0` <!-- x-release-please-version -->
 - Frontend: `1.1.0` <!-- x-release-please-version -->
 
 ```bash
-# Pull latest images (uses pinned versions in docker-compose files)
+# Pull latest images
 docker compose pull
 
 # Recreate containers
 docker compose up -d
-```
-
-To use a different version, edit the image tags in the docker-compose file or override with environment variables:
-
-```bash
-# Override to use latest
-docker compose up -d --pull always
 ```
 
 ## Backup and Restore
@@ -157,23 +286,12 @@ docker run --rm -v mymemorycard_redis_data:/data -v $(pwd):/backup alpine tar cz
 docker compose ps
 docker compose logs backend
 docker compose logs frontend
-docker compose logs nginx  # or caddy/traefik
+docker compose logs nginx
 ```
 
 ### Test backend directly
 ```bash
 docker exec mymemorycard-backend wget -qO- http://localhost:3000/api/health
-```
-
-### Check certificate status (Caddy)
-```bash
-docker exec mymemorycard-caddy caddy list-certificates
-```
-
-### Check Traefik dashboard (if enabled)
-```bash
-# Enable dashboard in traefik.yml first
-docker exec mymemorycard-traefik traefik healthcheck
 ```
 
 ### Database connection issues
@@ -201,9 +319,8 @@ docker compose up -d
                        |
                        v
               +----------------+
-              | Reverse Proxy  |
-              | (nginx/caddy/  |
-              |   traefik)     |
+              |     Nginx      |
+              | (reverse proxy)|
               +-------+--------+
                       |
          +------------+------------+
