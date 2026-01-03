@@ -12,6 +12,7 @@ RUN bun install
 # Copy source code
 COPY src ./src
 COPY tsconfig.json ./
+COPY drizzle ./drizzle
 
 EXPOSE 3000
 
