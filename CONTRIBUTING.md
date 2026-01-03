@@ -10,6 +10,7 @@ Thank you for considering contributing to MyMemoryCard! This document provides g
 - [Code Style Guidelines](#code-style-guidelines)
 - [Testing Requirements](#testing-requirements)
 - [Commit Guidelines](#commit-guidelines)
+- [Linear Git History](#linear-git-history)
 - [Pull Request Process](#pull-request-process)
 - [Releases](#releases)
 
@@ -108,12 +109,20 @@ npm run typecheck
 
 6. **Commit your changes** (pre-commit hooks will run automatically)
 
-7. **Push to your fork:**
+7. **Rebase on latest main before pushing:**
 ```bash
-git push origin feature/your-feature-name
+git fetch upstream
+git rebase upstream/main
 ```
 
-8. **Open a Pull Request** on GitHub
+8. **Push to your fork:**
+```bash
+git push origin feature/your-feature-name
+# If you rebased, you may need:
+git push --force-with-lease origin feature/your-feature-name
+```
+
+9. **Open a Pull Request** on GitHub
 
 ## Code Style Guidelines
 
@@ -293,8 +302,9 @@ Longer description if needed (optional)
 
 ### Types
 
-- `feat` - New feature
-- `fix` - Bug fix
+- `feat` - New feature (triggers minor version bump)
+- `fix` - Bug fix (triggers patch version bump)
+- `feat!` or `fix!` - Breaking change (triggers major version bump)
 - `refactor` - Code refactoring (no behavior change)
 - `test` - Adding or updating tests
 - `docs` - Documentation changes
@@ -308,13 +318,32 @@ Longer description if needed (optional)
 # Good
 git commit -m "feat: add favorites filter to library page"
 git commit -m "fix: resolve race condition in game import"
+git commit -m "feat!: change API response format for games endpoint"
 git commit -m "test: add coverage for custom fields endpoint"
 
 # Bad
-git commit -m "✨ Add new feature"  # No emojis
-git commit -m "fixed stuff"         # Too vague
-git commit -m "WIP"                 # Don't commit WIP
+git commit -m "feat: Add new feature"  # No emojis
+git commit -m "fixed stuff"            # Too vague
+git commit -m "WIP"                    # Don't commit WIP
 ```
+
+### Multiple Changes in One Commit
+
+When your PR contains multiple distinct changes, use commit footers to generate separate changelog entries:
+
+```
+feat: add v2 game import API
+
+This adds support for the new import format.
+
+fix(import): handle missing cover images gracefully
+  PiperOrigin-RevId: 123456
+
+feat(export): add CSV export option
+  BREAKING-CHANGE: JSON export format changed
+```
+
+The additional messages must be at the bottom of the commit message. Each generates a separate changelog entry.
 
 ### Rules
 
@@ -323,11 +352,102 @@ git commit -m "WIP"                 # Don't commit WIP
 - Keep first line under 72 characters
 - Reference issue numbers when applicable: `fix: resolve #123`
 - Don't commit directly to `main` - use feature branches
+- Use `!` suffix for breaking changes: `feat!:`, `fix!:`, `refactor!:`
+
+## Linear Git History
+
+This project maintains a **linear git history** using **squash-merge**. This is required for [release-please](https://github.com/googleapis/release-please) to work correctly and provides several benefits.
+
+### Why Linear History with Squash-Merge?
+
+1. **Release-please compatibility** - Commits are analyzed in merge order; squash-merge ensures clean changelog generation
+2. **Easier to read** - `git log --oneline` shows a clear, chronological story of changes
+3. **Simpler bisecting** - `git bisect` works reliably since commits aren't mixed between PRs
+4. **Clean reverts** - Reverting changes is straightforward with no merge commit complications
+5. **No broken states on main** - Every commit on main represents a complete, tested PR
+6. **Intermediate fixes don't clutter history** - Bug fixes for issues introduced within the same PR are squashed away (they never reached production)
+
+### How to Maintain Linear History
+
+#### Always Rebase Before Opening a PR
+
+```bash
+# Fetch latest changes from upstream
+git fetch upstream
+
+# Rebase your branch on top of main
+git rebase upstream/main
+
+# If you have conflicts, resolve them and continue
+git rebase --continue
+
+# Force push to update your fork (safe for feature branches)
+git push --force-with-lease origin feature/your-feature
+```
+
+#### Squash Commits When Appropriate
+
+Keep commits atomic and meaningful. Since PRs are squash-merged, focus on writing a good PR title and description - these become the final commit message.
+
+For local cleanup before opening a PR:
+
+```bash
+# Interactive rebase to squash last N commits
+git rebase -i HEAD~N
+
+# In the editor, change 'pick' to 'squash' (or 's') for commits to combine
+# Keep the first commit as 'pick'
+```
+
+**Note:** Individual commits within a PR don't need to be perfect since they'll be squashed. However, the PR title must follow conventional commit format (`feat:`, `fix:`, etc.) as it becomes the squashed commit message.
+
+#### Keep Feature Branches Short-Lived
+
+- Merge PRs promptly to avoid large rebases
+- Break large features into smaller, incremental PRs
+- Sync with main frequently during long-running work
+
+### Common Rebase Scenarios
+
+#### Updating Your Branch with Latest Main
+
+```bash
+git fetch upstream
+git rebase upstream/main
+# Resolve any conflicts
+git push --force-with-lease origin feature/your-feature
+```
+
+#### Fixing a Commit Message
+
+```bash
+# For the most recent commit
+git commit --amend -m "fix: correct commit message"
+
+# For older commits
+git rebase -i HEAD~N
+# Change 'pick' to 'reword' for the commit to fix
+```
+
+#### Removing a Commit from History
+
+```bash
+git rebase -i HEAD~N
+# Delete the line with the commit to remove (or change to 'drop')
+```
+
+### Important Notes
+
+- **Never rebase shared branches** (like `main`)
+- **Use `--force-with-lease`** instead of `--force` for safety
+- **Communicate with collaborators** if you need to force-push a shared branch
 
 ## Pull Request Process
 
 ### Before Opening a PR
 
+- [ ] Branch is rebased on latest `main` (no merge commits)
+- [ ] Commits are squashed into logical units
 - [ ] All tests pass locally
 - [ ] Code coverage is 90% or higher
 - [ ] TypeScript type checking passes
@@ -365,7 +485,8 @@ Describe how you tested your changes
 2. At least one maintainer approval required
 3. Address all review comments
 4. Keep PR scope focused - one feature/fix per PR
-5. Rebase on main before merging if needed
+5. Rebase on main if your branch is behind (maintainers will request this)
+6. PRs are merged using **squash and merge** (preferred) to maintain linear history and clean changelogs
 
 ### After PR is Merged
 

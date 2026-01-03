@@ -145,7 +145,11 @@ make db-studio        # Open Drizzle Studio GUI
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines including:
+- Code style and testing requirements
+- Linear git history practices (rebase workflow)
+- Commit message format
+- Pull request process
 
 ## Acknowledgments
 
