@@ -92,3 +92,7 @@ docs/_build/
 *.pptx
 
 .playwright-mcp/
+
+# Local agent instructions (not tracked)
+CLAUDE.local.md
+AGENTS.override.md
