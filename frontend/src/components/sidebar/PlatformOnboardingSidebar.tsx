@@ -49,7 +49,12 @@ export function PlatformOnboardingSidebar({
             title="Add Custom Platform"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </button>
           <Link
@@ -58,7 +63,12 @@ export function PlatformOnboardingSidebar({
             title="Go to Import"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </Link>
         </div>
@@ -73,9 +83,7 @@ export function PlatformOnboardingSidebar({
         <p className="text-xs text-ctp-subtext0">
           Choose the platforms you use before importing games.
         </p>
-        <div className="mt-3 text-sm text-ctp-teal">
-          {selectedCount} selected
-        </div>
+        <div className="mt-3 text-sm text-ctp-teal">{selectedCount} selected</div>
       </div>
 
       <Link

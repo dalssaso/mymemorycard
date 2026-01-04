@@ -1,196 +1,196 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { BackButton, PageLayout } from "@/components/layout";
-import { ImportSidebar } from "@/components/sidebar";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { ScrollFade } from "@/components/ui/ScrollFade";
-import { useToast } from "@/components/ui/Toast";
-import { importAPI, userPlatformsAPI } from "@/lib/api";
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { BackButton, PageLayout } from '@/components/layout'
+import { ImportSidebar } from '@/components/sidebar'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { ScrollFade } from '@/components/ui/ScrollFade'
+import { useToast } from '@/components/ui/Toast'
+import { importAPI, userPlatformsAPI } from '@/lib/api'
 
 interface UserPlatform {
-  id: string;
-  platform_id: string;
-  name: string;
-  display_name: string;
-  platform_type: string | null;
+  id: string
+  platform_id: string
+  name: string
+  display_name: string
+  platform_type: string | null
 }
 
 interface ImportedGame {
   game: {
-    id: string;
-    name: string;
-    cover_art_url: string | null;
-  };
+    id: string
+    name: string
+    cover_art_url: string | null
+  }
   display?: {
-    name: string;
-    cover_art_url: string | null;
-  } | null;
-  source: "exact" | "selected";
+    name: string
+    cover_art_url: string | null
+  } | null
+  source: 'exact' | 'selected'
 }
 
 interface NeedsReview {
-  searchTerm: string;
+  searchTerm: string
   candidates: Array<{
-    id: number;
-    name: string;
-    background_image: string | null;
-    released: string | null;
-  }>;
-  error?: string;
+    id: number
+    name: string
+    background_image: string | null
+    released: string | null
+  }>
+  error?: string
 }
 
 interface ImportResult {
-  imported: ImportedGame[];
-  needsReview: NeedsReview[];
+  imported: ImportedGame[]
+  needsReview: NeedsReview[]
 }
 
 export function Import() {
-  const [gameNames, setGameNames] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
-  const [results, setResults] = useState<ImportResult | null>(null);
-  const [selectedCandidates, setSelectedCandidates] = useState<number[]>([]);
-  const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
-  const [activeSelectionId, setActiveSelectionId] = useState<number | null>(null);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const { showToast } = useToast();
+  const [gameNames, setGameNames] = useState('')
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('')
+  const [results, setResults] = useState<ImportResult | null>(null)
+  const [selectedCandidates, setSelectedCandidates] = useState<number[]>([])
+  const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false)
+  const [activeSelectionId, setActiveSelectionId] = useState<number | null>(null)
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { showToast } = useToast()
   const refreshDashboardData = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["games"] }),
-      queryClient.invalidateQueries({ queryKey: ["achievementStats"] }),
-      queryClient.refetchQueries({ queryKey: ["games"], type: "all" }),
-      queryClient.refetchQueries({ queryKey: ["achievementStats"], type: "all" }),
-    ]);
-  };
+      queryClient.invalidateQueries({ queryKey: ['games'] }),
+      queryClient.invalidateQueries({ queryKey: ['achievementStats'] }),
+      queryClient.refetchQueries({ queryKey: ['games'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['achievementStats'], type: 'all' }),
+    ])
+  }
 
   // Fetch platforms
   const { data: platformsData } = useQuery({
-    queryKey: ["user-platforms"],
+    queryKey: ['user-platforms'],
     queryFn: async () => {
-      const response = await userPlatformsAPI.getAll();
-      return response.data as { platforms: UserPlatform[] };
+      const response = await userPlatformsAPI.getAll()
+      return response.data as { platforms: UserPlatform[] }
     },
-  });
+  })
 
   const platforms = (platformsData?.platforms || []).map((platform) => ({
     id: platform.platform_id,
     name: platform.name,
     display_name: platform.display_name,
     platform_type: platform.platform_type,
-  }));
+  }))
 
   // Set default platform to steam (first PC platform) when platforms load
   if (platforms.length > 0 && !selectedPlatform) {
-    const steamPlatform = platforms.find((p) => p.name === "steam");
-    setSelectedPlatform(steamPlatform?.id || platforms[0].id);
+    const steamPlatform = platforms.find((p) => p.name === 'steam')
+    setSelectedPlatform(steamPlatform?.id || platforms[0].id)
   }
 
   const importMutation = useMutation({
     mutationFn: ({ names, platformId }: { names: string[]; platformId?: string }) =>
       importAPI.bulk(names, platformId),
     onSuccess: async (response) => {
-      setResults(response.data);
-      setSelectedCandidates([]);
-      const result = response.data as ImportResult;
+      setResults(response.data)
+      setSelectedCandidates([])
+      const result = response.data as ImportResult
 
       // Refresh dashboard data so achievements sync without a full reload
-      await refreshDashboardData();
+      await refreshDashboardData()
 
       // Invalidate individual game caches for imported games
       // This ensures game detail pages show updated platform info
       result.imported.forEach((item) => {
-        queryClient.invalidateQueries({ queryKey: ["game", item.game.id] });
-      });
+        queryClient.invalidateQueries({ queryKey: ['game', item.game.id] })
+      })
 
       // Show success toast
       if (result.imported.length > 0) {
-        showToast(`Successfully imported ${result.imported.length} game(s)`, "success");
+        showToast(`Successfully imported ${result.imported.length} game(s)`, 'success')
       }
 
       // Show warning if there are items needing review
       if (result.needsReview.length > 0) {
-        showToast(`${result.needsReview.length} game(s) need review`, "warning");
-        setIsSelectionModalOpen(true);
+        showToast(`${result.needsReview.length} game(s) need review`, 'warning')
+        setIsSelectionModalOpen(true)
       }
 
       // If all games were imported successfully (no review needed), navigate to library
       if (result.needsReview.length === 0 && result.imported.length > 0) {
         setTimeout(() => {
-          navigate({ to: "/library" });
-        }, 2000);
+          navigate({ to: '/library' })
+        }, 2000)
       }
     },
     onError: () => {
-      showToast("Failed to import games", "error");
+      showToast('Failed to import games', 'error')
     },
-  });
+  })
 
   const selectMutation = useMutation({
     mutationFn: ({ rawgId, platformId }: { rawgId: number; platformId?: string }) =>
       importAPI.single(rawgId, platformId),
     onSuccess: async (response, variables) => {
       const importedGame = response.data as {
-        game: ImportedGame["game"];
-        source: string;
-        display?: ImportedGame["display"];
-      };
+        game: ImportedGame['game']
+        source: string
+        display?: ImportedGame['display']
+      }
 
       // Update results to move item from needsReview to imported
       setResults((prev) => {
-        if (!prev) return prev;
+        if (!prev) return prev
 
         // Find and remove the needsReview item that contained this candidate
         const updatedNeedsReview = prev.needsReview.filter(
           (item) => !item.candidates.some((c) => c.id === variables.rawgId)
-        );
+        )
 
         return {
           imported: [
             ...prev.imported,
-            { game: importedGame.game, display: importedGame.display, source: "selected" as const },
+            { game: importedGame.game, display: importedGame.display, source: 'selected' as const },
           ],
           needsReview: updatedNeedsReview,
-        };
-      });
+        }
+      })
 
-      setSelectedCandidates((prev) => prev.filter((id) => id !== variables.rawgId));
+      setSelectedCandidates((prev) => prev.filter((id) => id !== variables.rawgId))
 
       // Refresh dashboard data so achievements sync without a full reload
-      await refreshDashboardData();
-      queryClient.invalidateQueries({ queryKey: ["game", importedGame.game.id] });
+      await refreshDashboardData()
+      queryClient.invalidateQueries({ queryKey: ['game', importedGame.game.id] })
 
-      showToast(`Imported ${importedGame.game.name}`, "success");
+      showToast(`Imported ${importedGame.game.name}`, 'success')
     },
     onError: () => {
-      showToast("Failed to import game", "error");
+      showToast('Failed to import game', 'error')
     },
     onSettled: () => {
-      setActiveSelectionId(null);
+      setActiveSelectionId(null)
     },
-  });
+  })
 
   const bulkSelectMutation = useMutation({
     mutationFn: async ({ rawgIds, platformId }: { rawgIds: number[]; platformId?: string }) => {
       const responses = await Promise.all(
         rawgIds.map(async (rawgId) => {
-          const response = await importAPI.single(rawgId, platformId);
+          const response = await importAPI.single(rawgId, platformId)
           return response.data as {
-            game: ImportedGame["game"];
-            source: string;
-            display?: ImportedGame["display"];
-          };
+            game: ImportedGame['game']
+            source: string
+            display?: ImportedGame['display']
+          }
         })
-      );
-      return responses;
+      )
+      return responses
     },
     onSuccess: async (importedGames, variables) => {
       setResults((prev) => {
-        if (!prev) return prev;
-        const selectedIds = new Set(variables.rawgIds);
+        if (!prev) return prev
+        const selectedIds = new Set(variables.rawgIds)
         const updatedNeedsReview = prev.needsReview.filter(
           (item) => !item.candidates.some((candidate) => selectedIds.has(candidate.id))
-        );
+        )
 
         return {
           imported: [
@@ -198,65 +198,65 @@ export function Import() {
             ...importedGames.map((game) => ({
               game: game.game,
               display: game.display,
-              source: "selected" as const,
+              source: 'selected' as const,
             })),
           ],
           needsReview: updatedNeedsReview,
-        };
-      });
+        }
+      })
 
-      setSelectedCandidates([]);
-      setIsSelectionModalOpen(false);
-      await refreshDashboardData();
+      setSelectedCandidates([])
+      setIsSelectionModalOpen(false)
+      await refreshDashboardData()
       importedGames.forEach((game) => {
-        queryClient.invalidateQueries({ queryKey: ["game", game.game.id] });
-      });
+        queryClient.invalidateQueries({ queryKey: ['game', game.game.id] })
+      })
 
-      showToast(`Imported ${importedGames.length} game(s)`, "success");
-      navigate({ to: "/dashboard" });
+      showToast(`Imported ${importedGames.length} game(s)`, 'success')
+      navigate({ to: '/dashboard' })
     },
     onError: () => {
-      showToast("Failed to import selected games", "error");
+      showToast('Failed to import selected games', 'error')
     },
-  });
+  })
 
   const toggleCandidateSelection = (rawgId: number) => {
     setSelectedCandidates((prev) =>
       prev.includes(rawgId) ? prev.filter((id) => id !== rawgId) : [...prev, rawgId]
-    );
-  };
+    )
+  }
 
   const handleImport = () => {
     const names = gameNames
-      .split("\n")
+      .split('\n')
       .map((n) => n.trim())
-      .filter((n) => n.length > 0);
+      .filter((n) => n.length > 0)
 
     if (names.length === 0) {
-      return;
+      return
     }
 
     if (!selectedPlatform) {
-      return;
+      return
     }
 
-    setResults(null);
+    setResults(null)
     importMutation.mutate({
       names,
       platformId: selectedPlatform,
-    });
-  };
+    })
+  }
 
   const handleImportSelected = () => {
     if (selectedCandidates.length === 0 || !selectedPlatform) {
-      return;
+      return
     }
 
     bulkSelectMutation.mutate({
       rawgIds: selectedCandidates,
       platformId: selectedPlatform,
-    });
-  };
+    })
+  }
 
   const getSelectionList = (needsReview: NeedsReview[]) => {
     const entries = needsReview.flatMap((item) =>
@@ -264,19 +264,19 @@ export function Import() {
         searchTerm: item.searchTerm,
         candidate,
       }))
-    );
+    )
 
     return entries.sort((a, b) => {
-      const aSelected = selectedCandidates.includes(a.candidate.id);
-      const bSelected = selectedCandidates.includes(b.candidate.id);
+      const aSelected = selectedCandidates.includes(a.candidate.id)
+      const bSelected = selectedCandidates.includes(b.candidate.id)
 
       if (aSelected !== bSelected) {
-        return aSelected ? -1 : 1;
+        return aSelected ? -1 : 1
       }
 
-      return a.candidate.name.localeCompare(b.candidate.name);
-    });
-  };
+      return a.candidate.name.localeCompare(b.candidate.name)
+    })
+  }
 
   const sidebarContent = (
     <ImportSidebar
@@ -285,7 +285,7 @@ export function Import() {
       onPlatformSelect={setSelectedPlatform}
       isImporting={importMutation.isPending}
     />
-  );
+  )
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
@@ -326,8 +326,8 @@ export function Import() {
                   disabled={importMutation.isPending}
                   className={`px-4 py-2 rounded border transition-all ${
                     selectedPlatform === platform.id
-                      ? "bg-ctp-mauve border-ctp-mauve text-ctp-base shadow-glow-purple"
-                      : "bg-ctp-mantle border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
+                      ? 'bg-ctp-mauve border-ctp-mauve text-ctp-base shadow-glow-purple'
+                      : 'bg-ctp-mantle border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text'
                   }`}
                 >
                   {platform.display_name}
@@ -336,7 +336,7 @@ export function Import() {
             </div>
             {selectedPlatform && (
               <p className="text-xs text-ctp-teal mt-2">
-                Games will be imported to{" "}
+                Games will be imported to{' '}
                 {platforms.find((p) => p.id === selectedPlatform)?.display_name}
               </p>
             )}
@@ -350,7 +350,7 @@ export function Import() {
             value={gameNames}
             onChange={(e) => setGameNames(e.target.value)}
             className="input w-full min-h-[300px] font-mono text-sm"
-            placeholder={"The Witcher 3\nGod of War\nHalo Infinite\nCyberpunk 2077\nElden Ring"}
+            placeholder={'The Witcher 3\nGod of War\nHalo Infinite\nCyberpunk 2077\nElden Ring'}
             disabled={importMutation.isPending}
           />
 
@@ -360,7 +360,7 @@ export function Import() {
               disabled={importMutation.isPending || !gameNames.trim() || !selectedPlatform}
               className="btn btn-primary"
             >
-              {importMutation.isPending ? "Importing..." : "Import Games"}
+              {importMutation.isPending ? 'Importing...' : 'Import Games'}
             </button>
 
             {results && results.imported.length > 0 && results.needsReview.length === 0 && (
@@ -372,10 +372,10 @@ export function Import() {
             {results && (
               <button
                 onClick={() => {
-                  setGameNames("");
-                  setResults(null);
-                  setSelectedCandidates([]);
-                  setIsSelectionModalOpen(false);
+                  setGameNames('')
+                  setResults(null)
+                  setSelectedCandidates([])
+                  setIsSelectionModalOpen(false)
                 }}
                 className="btn btn-secondary"
               >
@@ -427,7 +427,7 @@ export function Import() {
                       <div className="flex-1">
                         <h3 className="font-medium">{item.display?.name || item.game.name}</h3>
                         <p className="text-sm text-ctp-overlay1">
-                          {item.source === "exact" ? "Exact match" : "Selected"}
+                          {item.source === 'exact' ? 'Exact match' : 'Selected'}
                         </p>
                       </div>
                       <div className="text-ctp-green">
@@ -508,14 +508,14 @@ export function Import() {
                 </div>
               ) : (
                 getSelectionList(results.needsReview).map(({ candidate, searchTerm }) => {
-                  const isSelected = selectedCandidates.includes(candidate.id);
+                  const isSelected = selectedCandidates.includes(candidate.id)
                   return (
                     <div
                       key={`${searchTerm}-${candidate.id}`}
                       className={`flex items-center gap-3 p-3 rounded border transition-colors ${
                         isSelected
-                          ? "border-ctp-mauve bg-ctp-mauve/10"
-                          : "border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1"
+                          ? 'border-ctp-mauve bg-ctp-mauve/10'
+                          : 'border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1'
                       }`}
                     >
                       <Checkbox
@@ -544,11 +544,11 @@ export function Import() {
                       </div>
                       <button
                         onClick={() => {
-                          setActiveSelectionId(candidate.id);
+                          setActiveSelectionId(candidate.id)
                           selectMutation.mutate({
                             rawgId: candidate.id,
                             platformId: selectedPlatform,
-                          });
+                          })
                         }}
                         disabled={
                           bulkSelectMutation.isPending ||
@@ -557,11 +557,11 @@ export function Import() {
                         className="btn btn-primary text-sm px-3 py-1"
                       >
                         {selectMutation.isPending && activeSelectionId === candidate.id
-                          ? "Importing..."
-                          : "Select"}
+                          ? 'Importing...'
+                          : 'Select'}
                       </button>
                     </div>
-                  );
+                  )
                 })
               )}
             </ScrollFade>
@@ -587,7 +587,7 @@ export function Import() {
                   className="btn btn-primary"
                 >
                   {bulkSelectMutation.isPending
-                    ? "Importing..."
+                    ? 'Importing...'
                     : `Import selected (${selectedCandidates.length})`}
                 </button>
               </div>
@@ -596,5 +596,5 @@ export function Import() {
         </div>
       )}
     </PageLayout>
-  );
+  )
 }

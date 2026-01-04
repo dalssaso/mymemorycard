@@ -5,7 +5,7 @@
     "cd backend && bun run typecheck"
   ],
   "frontend/**/*.{ts,tsx,js,jsx}": [
-    "prettier --write",
+    "cd frontend && npx prettier --write --ignore-path .prettierignore",
     "cd frontend && npx eslint --fix --config eslint.config.mjs"
   ],
   "*.{json,md}": ["prettier --write"]

@@ -1,34 +1,34 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
 
     try {
-      await login(username, password);
-      navigate({ to: "/dashboard" });
+      await login(username, password)
+      navigate({ to: '/dashboard' })
     } catch (err: unknown) {
       const message =
-        err && typeof err === "object" && "response" in err
+        err && typeof err === 'object' && 'response' in err
           ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null;
-      setError(message ?? "Failed to login");
+          : null
+      setError(message ?? 'Failed to login')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -73,17 +73,17 @@ export function Login() {
           </div>
 
           <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
         <p className="text-center mt-4 text-zinc-400">
-          Don&apos;t have an account?{" "}
+          Don&apos;t have an account?{' '}
           <Link to="/register" className="text-ctp-teal hover:text-cyan-400 transition-colors">
             Register
           </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }

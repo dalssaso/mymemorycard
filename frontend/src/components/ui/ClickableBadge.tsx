@@ -6,7 +6,13 @@ interface ClickableBadgeProps {
   className?: string
 }
 
-export function ClickableBadge({ label, percentage, color, onClick, className = '' }: ClickableBadgeProps) {
+export function ClickableBadge({
+  label,
+  percentage,
+  color,
+  onClick,
+  className = '',
+}: ClickableBadgeProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()

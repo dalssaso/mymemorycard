@@ -1,56 +1,56 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { gamesAPI } from "@/lib/api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AddToCollection } from "./AddToCollection";
-import { PlatformIcons } from "./PlatformIcon";
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
+import { gamesAPI } from '@/lib/api'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { AddToCollection } from './AddToCollection'
+import { PlatformIcons } from './PlatformIcon'
 
 interface GameCardProps {
-  id: string;
-  name: string;
-  cover_art_url: string | null;
+  id: string
+  name: string
+  cover_art_url: string | null
   platforms: {
-    id: string;
-    name: string;
-    displayName: string;
-    iconUrl?: string | null;
-    colorPrimary: string;
-  }[];
-  status: string;
-  metacritic_score: number | null;
-  user_rating: number | null;
-  total_minutes: number;
-  is_favorite: boolean;
-  series_name?: string | null;
+    id: string
+    name: string
+    displayName: string
+    iconUrl?: string | null
+    colorPrimary: string
+  }[]
+  status: string
+  metacritic_score: number | null
+  user_rating: number | null
+  total_minutes: number
+  is_favorite: boolean
+  series_name?: string | null
 }
 
 const STATUS_STYLES: Record<string, React.CSSProperties> = {
   backlog: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)",
+    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)',
   },
   playing: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-teal) 65%, transparent)",
+    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 45%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-teal) 65%, transparent)',
   },
   finished: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-green) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-green) 65%, transparent)",
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 45%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-green) 65%, transparent)',
   },
   dropped: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-red) 55%, transparent)",
+    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-red) 55%, transparent)',
   },
   completed: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-green) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-green) 65%, transparent)",
+    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 45%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--ctp-green) 65%, transparent)',
   },
-};
+}
 
 const FRANCHISE_STYLE: React.CSSProperties = {
-  backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 45%, transparent)",
-  borderColor: "color-mix(in srgb, var(--ctp-mauve) 65%, transparent)",
-};
+  backgroundColor: 'color-mix(in srgb, var(--ctp-mauve) 45%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--ctp-mauve) 65%, transparent)',
+}
 
 export function GameCard({
   id,
@@ -64,31 +64,31 @@ export function GameCard({
   is_favorite: isFavoriteProp,
   series_name: seriesName,
 }: GameCardProps) {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = useState(isFavoriteProp);
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const [isFavorite, setIsFavorite] = useState(isFavoriteProp)
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: (newFavorite: boolean) =>
-      gamesAPI.toggleFavorite(id, platforms[0]?.id || "", newFavorite),
+      gamesAPI.toggleFavorite(id, platforms[0]?.id || '', newFavorite),
     onMutate: async (newFavorite) => {
-      setIsFavorite(newFavorite);
+      setIsFavorite(newFavorite)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["games"] });
+      queryClient.invalidateQueries({ queryKey: ['games'] })
     },
     onError: () => {
-      setIsFavorite(!isFavorite);
+      setIsFavorite(!isFavorite)
     },
-  });
+  })
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleFavoriteMutation.mutate(!isFavorite);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    toggleFavoriteMutation.mutate(!isFavorite)
+  }
 
   return (
     <Link
@@ -117,12 +117,12 @@ export function GameCard({
         <button
           onClick={handleFavoriteClick}
           className="absolute top-2 right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           <svg
             className="w-5 h-5"
             viewBox="0 0 24 24"
-            fill={isFavorite ? "currentColor" : "none"}
+            fill={isFavorite ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth={2}
           >
@@ -148,12 +148,12 @@ export function GameCard({
           <button
             onClick={handleFavoriteClick}
             className="absolute -top-2 -right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <svg
               className="w-5 h-5"
               viewBox="0 0 24 24"
-              fill={isFavorite ? "currentColor" : "none"}
+              fill={isFavorite ? 'currentColor' : 'none'}
               stroke="currentColor"
               strokeWidth={2}
             >
@@ -183,9 +183,9 @@ export function GameCard({
               <button
                 type="button"
                 onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate({ to: "/franchises/$seriesName", params: { seriesName } });
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate({ to: '/franchises/$seriesName', params: { seriesName } })
                 }}
                 className="badge border text-ctp-text hover:opacity-90 transition-colors"
                 style={FRANCHISE_STYLE}
@@ -227,5 +227,5 @@ export function GameCard({
         </div>
       </div>
     </Link>
-  );
+  )
 }

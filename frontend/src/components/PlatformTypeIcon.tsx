@@ -18,7 +18,12 @@ const SIZE_CLASSES = {
   lg: 'text-lg',
 }
 
-export function PlatformTypeIcon({ type, size = 'sm', showLabel = false, color }: PlatformTypeIconProps) {
+export function PlatformTypeIcon({
+  type,
+  size = 'sm',
+  showLabel = false,
+  color,
+}: PlatformTypeIconProps) {
   const config = PLATFORM_TYPE_CONFIG[type]
   const containerClasses = color
     ? 'inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-white'
@@ -26,10 +31,7 @@ export function PlatformTypeIcon({ type, size = 'sm', showLabel = false, color }
   const textClasses = !color ? 'text-ctp-subtext0' : ''
 
   return (
-    <div
-      className={containerClasses}
-      style={color ? { backgroundColor: color } : undefined}
-    >
+    <div className={containerClasses} style={color ? { backgroundColor: color } : undefined}>
       <span className={`material-symbols-outlined ${SIZE_CLASSES[size]} ${textClasses}`}>
         {config.icon}
       </span>

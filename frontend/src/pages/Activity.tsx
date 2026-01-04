@@ -53,9 +53,12 @@ export function Activity() {
 
   const games = useMemo(() => gamesData?.games || [], [gamesData?.games])
 
-  const goToPage = useCallback((page: number) => {
-    navigate({ to: '/activity', search: { page } })
-  }, [navigate])
+  const goToPage = useCallback(
+    (page: number) => {
+      navigate({ to: '/activity', search: { page } })
+    },
+    [navigate]
+  )
 
   useEffect(() => {
     if (total > 0 && currentPage > totalPages) {
@@ -95,7 +98,9 @@ export function Activity() {
           ) : feed.length === 0 ? (
             <div className="text-center py-10 text-ctp-overlay1">
               <p>No recent activity</p>
-              <p className="text-sm mt-1">Start tracking sessions, achievements, or completion updates</p>
+              <p className="text-sm mt-1">
+                Start tracking sessions, achievements, or completion updates
+              </p>
               <div className="mt-4">
                 <Link to="/library" className="text-sm text-ctp-teal hover:text-ctp-mauve">
                   Go to library
@@ -109,13 +114,23 @@ export function Activity() {
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6">
-            <Button variant="ghost" size="sm" onClick={() => goToPage(currentPage - 1)} disabled={!canGoBack}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={!canGoBack}
+            >
               Previous
             </Button>
             <div className="text-sm text-ctp-subtext1">
               Page {currentPage} of {totalPages}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => goToPage(currentPage + 1)} disabled={!canGoForward}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={!canGoForward}
+            >
               Next
             </Button>
           </div>

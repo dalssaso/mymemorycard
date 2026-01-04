@@ -1,44 +1,42 @@
-import axios from 'axios';
+import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token')
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`
   }
-  return config;
-});
+  return config
+})
 
 // Handle auth errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
     }
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default api;
+export default api
 
 // Auth API
 export const authAPI = {
-  register: (data: { username: string; password: string }) =>
-    api.post('/auth/register', data),
-  login: (data: { username: string; password: string }) =>
-    api.post('/auth/login', data),
+  register: (data: { username: string; password: string }) => api.post('/auth/register', data),
+  login: (data: { username: string; password: string }) => api.post('/auth/login', data),
   me: () => api.get('/auth/me'),
-};
+}
 
 // Games API
 export const gamesAPI = {
@@ -63,12 +61,12 @@ export const gamesAPI = {
     return api.get(`/games?${searchParams.toString()}`)
   },
   getGenreStats: () => api.get('/games/stats/genres'),
-  export: (format: 'json' | 'csv') => api.get(`/games/export?format=${format}`, { responseType: 'blob' }),
+  export: (format: 'json' | 'csv') =>
+    api.get(`/games/export?format=${format}`, { responseType: 'blob' }),
   getOne: (id: string) => api.get(`/games/${id}`),
   delete: (id: string, platformId: string) =>
     api.delete(`/games/${id}`, { params: { platform_id: platformId } }),
-  bulkDelete: (gameIds: string[]) =>
-    api.post('/games/bulk-delete', { gameIds }),
+  bulkDelete: (gameIds: string[]) => api.post('/games/bulk-delete', { gameIds }),
   updateStatus: (id: string, platformId: string, status: string) =>
     api.patch(`/games/${id}/status`, { platform_id: platformId, status }),
   updateRating: (id: string, platformId: string, rating: number) =>
@@ -79,29 +77,38 @@ export const gamesAPI = {
     api.put(`/games/${id}/favorite`, { platform_id: platformId, is_favorite: isFavorite }),
   getCustomFields: (id: string, platformId: string) =>
     api.get(`/games/${id}/custom-fields`, { params: { platform_id: platformId } }),
-  updateCustomFields: (id: string, platformId: string, fields: {
-    estimated_completion_hours?: number | null
-    actual_playtime_hours?: number | null
-    completion_percentage?: number | null
-    difficulty_rating?: number | null
-    achievements_total?: number | null
-    achievements_earned?: number | null
-    replay_value?: number | null
-  }) =>
-    api.put(`/games/${id}/custom-fields`, { platform_id: platformId, ...fields }),
+  updateCustomFields: (
+    id: string,
+    platformId: string,
+    fields: {
+      estimated_completion_hours?: number | null
+      actual_playtime_hours?: number | null
+      completion_percentage?: number | null
+      difficulty_rating?: number | null
+      achievements_total?: number | null
+      achievements_earned?: number | null
+      replay_value?: number | null
+    }
+  ) => api.put(`/games/${id}/custom-fields`, { platform_id: platformId, ...fields }),
   getAchievements: (id: string, platformId: string) =>
     api.get(`/games/${id}/achievements`, { params: { platform_id: platformId } }),
   updateAchievement: (id: string, platformId: string, achievementId: string, completed: boolean) =>
     api.put(`/games/${id}/achievements/${achievementId}`, { completed, platform_id: platformId }),
-  createManualAchievement: (id: string, platformId: string, data: { name: string; description?: string }) =>
-    api.post(`/games/${id}/achievements/manual`, { platform_id: platformId, ...data }),
+  createManualAchievement: (
+    id: string,
+    platformId: string,
+    data: { name: string; description?: string }
+  ) => api.post(`/games/${id}/achievements/manual`, { platform_id: platformId, ...data }),
   deleteManualAchievements: (id: string, platformId: string, achievementIds: string[]) =>
-    api.post(`/games/${id}/achievements/manual/bulk-delete`, { platform_id: platformId, achievementIds }),
+    api.post(`/games/${id}/achievements/manual/bulk-delete`, {
+      platform_id: platformId,
+      achievementIds,
+    }),
   updateFromRawg: (id: string, options: { rawgId?: number; rawgSlug?: string }) =>
     api.post(`/games/${id}/update-from-rawg`, options),
   addToPlatform: (id: string, platformId: string) =>
     api.post(`/games/${id}/platforms`, { platformId }),
-};
+}
 
 // Import API
 export const importAPI = {
@@ -116,7 +123,7 @@ export const platformsAPI = {
   getAll: () => api.get('/platforms'),
   create: (data: { displayName: string; platformType?: string | null }) =>
     api.post('/platforms', data),
-};
+}
 
 // Removed rawgPlatformsAPI - platforms are now accessed via platformsAPI
 
@@ -140,30 +147,36 @@ export const userPlatformsAPI = {
 // Preferences API
 export const preferencesAPI = {
   get: () => api.get('/preferences'),
-  update: (prefs: {
-    default_view?: 'grid' | 'table'
-    items_per_page?: number
-    theme?: string
-  }) => api.put('/preferences', prefs),
+  update: (prefs: { default_view?: 'grid' | 'table'; items_per_page?: number; theme?: string }) =>
+    api.put('/preferences', prefs),
 }
 
 // Sessions API
 export const sessionsAPI = {
-  getAll: (gameId: string, params?: { limit?: number; offset?: number; startDate?: string; endDate?: string }) =>
-    api.get(`/games/${gameId}/sessions`, { params }),
-  create: (gameId: string, data: {
-    platformId: string
-    startedAt: string
-    endedAt?: string | null
-    durationMinutes?: number | null
-    notes?: string | null
-  }) => api.post(`/games/${gameId}/sessions`, data),
-  update: (gameId: string, sessionId: string, data: {
-    startedAt?: string
-    endedAt?: string | null
-    durationMinutes?: number | null
-    notes?: string | null
-  }) => api.patch(`/games/${gameId}/sessions/${sessionId}`, data),
+  getAll: (
+    gameId: string,
+    params?: { limit?: number; offset?: number; startDate?: string; endDate?: string }
+  ) => api.get(`/games/${gameId}/sessions`, { params }),
+  create: (
+    gameId: string,
+    data: {
+      platformId: string
+      startedAt: string
+      endedAt?: string | null
+      durationMinutes?: number | null
+      notes?: string | null
+    }
+  ) => api.post(`/games/${gameId}/sessions`, data),
+  update: (
+    gameId: string,
+    sessionId: string,
+    data: {
+      startedAt?: string
+      endedAt?: string | null
+      durationMinutes?: number | null
+      notes?: string | null
+    }
+  ) => api.patch(`/games/${gameId}/sessions/${sessionId}`, data),
   delete: (gameId: string, sessionId: string) =>
     api.delete(`/games/${gameId}/sessions/${sessionId}`),
   getActive: () => api.get('/sessions/active'),
@@ -173,15 +186,26 @@ export const sessionsAPI = {
 export type CompletionType = 'main' | 'dlc' | 'full' | 'completionist'
 
 export const completionLogsAPI = {
-  getAll: (gameId: string, params?: { limit?: number; offset?: number; type?: CompletionType; dlcId?: string; platform_id?: string }) =>
-    api.get(`/games/${gameId}/completion-logs`, { params }),
-  create: (gameId: string, data: {
-    platformId: string
-    percentage: number
-    completionType?: CompletionType
-    dlcId?: string | null
-    notes?: string | null
-  }) => api.post(`/games/${gameId}/completion-logs`, data),
+  getAll: (
+    gameId: string,
+    params?: {
+      limit?: number
+      offset?: number
+      type?: CompletionType
+      dlcId?: string
+      platform_id?: string
+    }
+  ) => api.get(`/games/${gameId}/completion-logs`, { params }),
+  create: (
+    gameId: string,
+    data: {
+      platformId: string
+      percentage: number
+      completionType?: CompletionType
+      dlcId?: string | null
+      notes?: string | null
+    }
+  ) => api.post(`/games/${gameId}/completion-logs`, data),
   delete: (gameId: string, logId: string) =>
     api.delete(`/games/${gameId}/completion-logs/${logId}`),
   recalculate: (gameId: string, platformId: string) =>
@@ -210,10 +234,12 @@ export interface GameAddition {
 export const additionsAPI = {
   getAll: (gameId: string, platformId?: string) =>
     api.get(`/games/${gameId}/additions`, { params: { platform_id: platformId } }),
-  update: (gameId: string, additionId: string, data: { weight?: number; requiredForFull?: boolean }) =>
-    api.put(`/games/${gameId}/additions/${additionId}`, data),
-  sync: (gameId: string) =>
-    api.post(`/games/${gameId}/additions/sync`),
+  update: (
+    gameId: string,
+    additionId: string,
+    data: { weight?: number; requiredForFull?: boolean }
+  ) => api.put(`/games/${gameId}/additions/${additionId}`, data),
+  sync: (gameId: string) => api.post(`/games/${gameId}/additions/sync`),
 }
 
 // Game Ownership API
@@ -275,15 +301,17 @@ export interface DisplayEditionData {
 export const displayEditionAPI = {
   get: (gameId: string, platformId: string) =>
     api.get(`/games/${gameId}/display-edition`, { params: { platform_id: platformId } }),
-  set: (gameId: string, data: {
-    platformId: string
-    rawgEditionId: number
-    editionName: string
-    coverArtUrl: string | null
-    backgroundImageUrl: string | null
-    description: string | null
-  }) =>
-    api.put(`/games/${gameId}/display-edition`, data),
+  set: (
+    gameId: string,
+    data: {
+      platformId: string
+      rawgEditionId: number
+      editionName: string
+      coverArtUrl: string | null
+      backgroundImageUrl: string | null
+      description: string | null
+    }
+  ) => api.put(`/games/${gameId}/display-edition`, data),
   reset: (gameId: string, platformId: string) =>
     api.delete(`/games/${gameId}/display-edition`, { params: { platform_id: platformId } }),
 }
@@ -351,30 +379,30 @@ export interface ActivityFeedParams {
 }
 
 export const statsAPI = {
-  getActivityHeatmap: (year?: number) =>
-    api.get('/stats/activity-heatmap', { params: { year } }),
+  getActivityHeatmap: (year?: number) => api.get('/stats/activity-heatmap', { params: { year } }),
   getCompletionHeatmap: (year?: number) =>
     api.get('/stats/completion-heatmap', { params: { year } }),
   getAchievementHeatmap: (year?: number) =>
     api.get('/stats/achievement-heatmap', { params: { year } }),
   getCombinedHeatmap: (year?: number) =>
-    api.get<{ data: CombinedHeatmapDay[]; summary: CombinedHeatmapSummary }>('/stats/combined-heatmap', { params: { year } }),
+    api.get<{ data: CombinedHeatmapDay[]; summary: CombinedHeatmapSummary }>(
+      '/stats/combined-heatmap',
+      { params: { year } }
+    ),
   getActivityFeed: (params?: number | ActivityFeedParams) => {
     if (typeof params === 'number') {
       return api.get('/stats/activity-feed', { params: { limit: params } })
     }
     return api.get('/stats/activity-feed', { params })
   },
-  getAchievementStats: () =>
-    api.get<AchievementStats>('/stats/achievements'),
+  getAchievementStats: () => api.get<AchievementStats>('/stats/achievements'),
 }
 
 // Collections API
 export const collectionsAPI = {
   getAll: () => api.get('/collections'),
   getOne: (id: string) => api.get(`/collections/${id}/games`),
-  create: (name: string, description?: string) =>
-    api.post('/collections', { name, description }),
+  create: (name: string, description?: string) => api.post('/collections', { name, description }),
   update: (id: string, name: string, description?: string) =>
     api.put(`/collections/${id}`, { name, description }),
   delete: (id: string) => api.delete(`/collections/${id}`),
@@ -395,7 +423,7 @@ export const collectionsAPI = {
     })
   },
   deleteCover: (id: string) => api.delete(`/collections/${id}/cover`),
-};
+}
 
 // Franchises API
 export interface FranchiseSummary {
@@ -433,10 +461,13 @@ export const franchisesAPI = {
   getAll: () => api.get<{ franchises: FranchiseSummary[] }>('/franchises'),
   getOne: (seriesName: string) =>
     api.get<FranchiseDetail>(`/franchises/${encodeURIComponent(seriesName)}`),
-  sync: () => api.post<{ success: boolean; games_checked: number; games_updated: number }>('/franchises/sync'),
+  sync: () =>
+    api.post<{ success: boolean; games_checked: number; games_updated: number }>(
+      '/franchises/sync'
+    ),
   importGame: (rawgId: number, platformId: string, seriesName: string) =>
     api.post<{ success: boolean }>('/franchises/import', { rawgId, platformId, seriesName }),
-};
+}
 
 // AI API
 export interface AiProviderConfig {
@@ -497,7 +528,9 @@ export interface ModelsResponse {
 
 export const aiAPI = {
   getSettings: () =>
-    api.get<{ providers: AiProviderConfig[]; activeProvider: AiProviderConfig | null }>('/ai/settings'),
+    api.get<{ providers: AiProviderConfig[]; activeProvider: AiProviderConfig | null }>(
+      '/ai/settings'
+    ),
   updateSettings: (data: {
     provider: string
     baseUrl?: string | null
@@ -512,23 +545,35 @@ export const aiAPI = {
   setActiveProvider: (provider: string) => api.post('/ai/set-active-provider', { provider }),
   getModels: (provider: string) => api.get<ModelsResponse>(`/ai/models/${provider}`),
   suggestCollections: (theme?: string) =>
-    api.post<{ collections: CollectionSuggestion[]; cost: number }>('/ai/suggest-collections', { theme }, {
-      timeout: 120000,
-    }),
+    api.post<{ collections: CollectionSuggestion[]; cost: number }>(
+      '/ai/suggest-collections',
+      { theme },
+      {
+        timeout: 120000,
+      }
+    ),
   suggestNextGame: (userInput?: string) =>
-    api.post<{ suggestion: NextGameSuggestion; cost: number }>('/ai/suggest-next-game', { userInput }, {
-      timeout: 120000,
-    }),
+    api.post<{ suggestion: NextGameSuggestion; cost: number }>(
+      '/ai/suggest-next-game',
+      { userInput },
+      {
+        timeout: 120000,
+      }
+    ),
   generateCover: (collectionName: string, collectionDescription: string, collectionId: string) =>
-    api.post<{ imageUrl: string; cost: number }>('/ai/generate-cover', {
-      collectionName,
-      collectionDescription,
-      collectionId,
-    }, {
-      timeout: 180000,
-    }),
+    api.post<{ imageUrl: string; cost: number }>(
+      '/ai/generate-cover',
+      {
+        collectionName,
+        collectionDescription,
+        collectionId,
+      },
+      {
+        timeout: 180000,
+      }
+    ),
   getActivity: (limit?: number) =>
     api.get<{ logs: AiActivityLog[] }>('/ai/activity', { params: { limit } }),
   estimateCost: (actionType: string) =>
     api.post<{ estimatedCostUsd: number }>('/ai/estimate-cost', { actionType }),
-};
+}

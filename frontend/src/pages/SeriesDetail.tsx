@@ -74,19 +74,12 @@ export function SeriesDetail() {
         {/* Games Grid */}
         {games.length === 0 ? (
           <Card>
-            <p className="text-ctp-subtext0 text-center py-8">
-              No games found in this series.
-            </p>
+            <p className="text-ctp-subtext0 text-center py-8">No games found in this series.</p>
           </Card>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {games.map((game) => (
-              <Link
-                key={game.id}
-                to="/library/$id"
-                params={{ id: game.id }}
-                className="group"
-              >
+              <Link key={game.id} to="/library/$id" params={{ id: game.id }} className="group">
                 <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
                   {game.cover_art_url ? (
                     <img

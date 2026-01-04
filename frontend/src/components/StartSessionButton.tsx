@@ -30,7 +30,11 @@ function formatElapsedTime(seconds: number): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
-export function StartSessionButton({ gameId, platformId, onSessionChange }: StartSessionButtonProps) {
+export function StartSessionButton({
+  gameId,
+  platformId,
+  onSessionChange,
+}: StartSessionButtonProps) {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
@@ -131,9 +135,7 @@ export function StartSessionButton({ gameId, platformId, onSessionChange }: Star
   if (activeSession && !isActiveForThisGame) {
     return (
       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
-        <div className="text-xs text-yellow-400">
-          Active session on: {activeSession.game_name}
-        </div>
+        <div className="text-xs text-yellow-400">Active session on: {activeSession.game_name}</div>
       </div>
     )
   }
@@ -144,8 +146,17 @@ export function StartSessionButton({ gameId, platformId, onSessionChange }: Star
       disabled={startSessionMutation.isPending}
       className="w-full py-2.5 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-        <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className="w-4 h-4"
+      >
+        <path
+          fillRule="evenodd"
+          d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+          clipRule="evenodd"
+        />
       </svg>
       {startSessionMutation.isPending ? 'Starting...' : 'Start Session'}
     </button>

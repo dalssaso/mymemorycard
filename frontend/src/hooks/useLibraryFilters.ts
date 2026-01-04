@@ -29,9 +29,21 @@ export function useLibraryFilters(): UseLibraryFiltersResult {
       platform: searchParams.platform || '',
       status: searchParams.status || '',
       favorites: searchParams.favorites || false,
-      genre: searchParams.genre ? (Array.isArray(searchParams.genre) ? searchParams.genre : [searchParams.genre]) : [],
-      collection: searchParams.collection ? (Array.isArray(searchParams.collection) ? searchParams.collection : [searchParams.collection]) : [],
-      franchise: searchParams.franchise ? (Array.isArray(searchParams.franchise) ? searchParams.franchise : [searchParams.franchise]) : [],
+      genre: searchParams.genre
+        ? Array.isArray(searchParams.genre)
+          ? searchParams.genre
+          : [searchParams.genre]
+        : [],
+      collection: searchParams.collection
+        ? Array.isArray(searchParams.collection)
+          ? searchParams.collection
+          : [searchParams.collection]
+        : [],
+      franchise: searchParams.franchise
+        ? Array.isArray(searchParams.franchise)
+          ? searchParams.franchise
+          : [searchParams.franchise]
+        : [],
       sort: searchParams.sort || '',
     }),
     [searchParams]
@@ -56,7 +68,7 @@ export function useLibraryFilters(): UseLibraryFiltersResult {
       navigate({
         search: (prev) => ({
           ...prev,
-          [key]: Array.isArray(value) ? (value.length > 0 ? value : undefined) : (value || undefined),
+          [key]: Array.isArray(value) ? (value.length > 0 ? value : undefined) : value || undefined,
         }),
       })
     },

@@ -1,14 +1,14 @@
-import { useState, type FormEvent } from "react";
-import validator from "validator";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, type FormEvent } from 'react'
+import validator from 'validator'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function Register() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const isPasswordStrong =
     password.length > 0 &&
@@ -18,52 +18,52 @@ export function Register() {
       minUppercase: 1,
       minNumbers: 1,
       minSymbols: 1,
-    });
-  const showPasswordFeedback = password.length > 0;
-  const showConfirmFeedback = confirmPassword.length > 0;
-  const passwordsMatch = password === confirmPassword;
+    })
+  const showPasswordFeedback = password.length > 0
+  const showConfirmFeedback = confirmPassword.length > 0
+  const passwordsMatch = password === confirmPassword
   const canSubmit =
     !!username &&
     !!password &&
     !!confirmPassword &&
     passwordsMatch &&
     isPasswordStrong &&
-    !isLoading;
+    !isLoading
 
-  const { register } = useAuth();
-  const navigate = useNavigate();
+  const { register } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError('')
 
     if (!passwordsMatch) {
-      setError("Passwords do not match");
-      return;
+      setError('Passwords do not match')
+      return
     }
 
     if (!isPasswordStrong) {
       setError(
-        "Password must be at least 8 characters and include upper, lower, number, and symbol"
-      );
-      return;
+        'Password must be at least 8 characters and include upper, lower, number, and symbol'
+      )
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
-      await register(username, password);
-      navigate({ to: "/platforms/onboarding" });
+      await register(username, password)
+      navigate({ to: '/platforms/onboarding' })
     } catch (err: unknown) {
       const message =
-        err && typeof err === "object" && "response" in err
+        err && typeof err === 'object' && 'response' in err
           ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null;
-      setError(message ?? "Failed to register");
+          : null
+      setError(message ?? 'Failed to register')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -106,10 +106,10 @@ export function Register() {
               required
             />
             {showPasswordFeedback && (
-              <p className={`mt-2 text-xs ${isPasswordStrong ? "text-ctp-green" : "text-ctp-red"}`}>
+              <p className={`mt-2 text-xs ${isPasswordStrong ? 'text-ctp-green' : 'text-ctp-red'}`}>
                 {isPasswordStrong
-                  ? "Password looks strong"
-                  : "Use 8+ characters with upper, lower, number, and symbol"}
+                  ? 'Password looks strong'
+                  : 'Use 8+ characters with upper, lower, number, and symbol'}
               </p>
             )}
           </div>
@@ -128,24 +128,24 @@ export function Register() {
               required
             />
             {showConfirmFeedback && (
-              <p className={`mt-2 text-xs ${passwordsMatch ? "text-ctp-green" : "text-ctp-red"}`}>
-                {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+              <p className={`mt-2 text-xs ${passwordsMatch ? 'text-ctp-green' : 'text-ctp-red'}`}>
+                {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
               </p>
             )}
           </div>
 
           <button type="submit" className="btn btn-primary w-full" disabled={!canSubmit}>
-            {isLoading ? "Creating account..." : "Register"}
+            {isLoading ? 'Creating account...' : 'Register'}
           </button>
         </form>
 
         <p className="text-center mt-4 text-zinc-400">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link to="/login" className="text-ctp-teal hover:text-cyan-400 transition-colors">
             Login
           </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }

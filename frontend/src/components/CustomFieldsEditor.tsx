@@ -64,7 +64,10 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
       <div className="border-t border-ctp-surface1" />
 
       <div>
-        <span className="block text-sm font-medium text-ctp-subtext0 mb-2" id="difficulty-rating-label">
+        <span
+          className="block text-sm font-medium text-ctp-subtext0 mb-2"
+          id="difficulty-rating-label"
+        >
           Difficulty Rating (1-10)
         </span>
         <div className="flex gap-1" role="group" aria-labelledby="difficulty-rating-label">

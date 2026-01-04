@@ -64,7 +64,8 @@ jobs:
         run: npm run lint
 
       - name: Prettier check
-        run: npm run format:check:frontend
+        working-directory: ./frontend
+        run: npm run format:check
 
       - name: Build frontend
         working-directory: ./frontend

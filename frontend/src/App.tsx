@@ -1,16 +1,16 @@
-import { useState } from "react";
-import "./index.css";
+import { useState } from 'react'
+import './index.css'
 
 function App() {
-  const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState('')
+  const [isLogin, setIsLogin] = useState(true)
+  const [username, setUsername] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     // TODO: Implement auth with TanStack Query
-    console.log(isLogin ? "Login" : "Register", { password, username });
-  };
+    console.log(isLogin ? 'Login' : 'Register', { password, username })
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -49,22 +49,22 @@ function App() {
           </div>
 
           <button type="submit" className="btn btn-primary w-full">
-            {isLogin ? "Login" : "Register"}
+            {isLogin ? 'Login' : 'Register'}
           </button>
         </form>
 
         <p className="text-center mt-4 text-zinc-400">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          {isLogin ? "Don't have an account? " : 'Already have an account? '}
           <button
             onClick={() => setIsLogin(!isLogin)}
             className="text-ctp-teal hover:text-cyan-400 transition-colors"
           >
-            {isLogin ? "Register" : "Login"}
+            {isLogin ? 'Register' : 'Login'}
           </button>
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

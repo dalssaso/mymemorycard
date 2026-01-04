@@ -1,75 +1,75 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { gamesAPI } from "@/lib/api";
-import { useToast } from "@/components/ui/Toast";
+import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { gamesAPI } from '@/lib/api'
+import { useToast } from '@/components/ui/Toast'
 
 interface RawgIdCorrectionProps {
-  gameId: string;
-  currentRawgId: number | null;
-  gameName: string;
+  gameId: string
+  currentRawgId: number | null
+  gameName: string
 }
 
 export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorrectionProps) {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [rawgInput, setRawgInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [rawgInput, setRawgInput] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const updateMutation = useMutation({
     mutationFn: (options: { rawgId?: number; rawgSlug?: string }) =>
       gamesAPI.updateFromRawg(gameId, options),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
-      queryClient.invalidateQueries({ queryKey: ["games"] });
-      showToast("Game metadata updated from RAWG", "success");
-      setIsExpanded(false);
-      setRawgInput("");
-      setError(null);
+      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
+      queryClient.invalidateQueries({ queryKey: ['games'] })
+      showToast('Game metadata updated from RAWG', 'success')
+      setIsExpanded(false)
+      setRawgInput('')
+      setError(null)
     },
     onError: (err: { response?: { data?: { error?: string } } }) => {
-      const message = err.response?.data?.error || "Failed to update game metadata";
-      setError(message);
-      showToast(message, "error");
+      const message = err.response?.data?.error || 'Failed to update game metadata'
+      setError(message)
+      showToast(message, 'error')
     },
-  });
+  })
 
   const handleSubmit = () => {
-    setError(null);
-    const input = rawgInput.trim();
+    setError(null)
+    const input = rawgInput.trim()
 
     if (!input) {
-      setError("Please enter a RAWG URL or slug");
-      return;
+      setError('Please enter a RAWG URL or slug')
+      return
     }
 
     // Check if it's a numeric ID
-    const numericId = parseInt(input, 10);
+    const numericId = parseInt(input, 10)
     if (!isNaN(numericId) && numericId > 0 && String(numericId) === input) {
-      updateMutation.mutate({ rawgId: numericId });
-      return;
+      updateMutation.mutate({ rawgId: numericId })
+      return
     }
 
     // Otherwise treat it as a slug
-    updateMutation.mutate({ rawgSlug: input });
-  };
+    updateMutation.mutate({ rawgSlug: input })
+  }
 
   const extractRawgSlug = (input: string): string => {
     // Extract slug from URL like https://rawg.io/games/god-of-war-2
-    const urlMatch = input.match(/rawg\.io\/games\/([^/\s?#]+)/);
+    const urlMatch = input.match(/rawg\.io\/games\/([^/\s?#]+)/)
     if (urlMatch) {
-      return urlMatch[1];
+      return urlMatch[1]
     }
 
     // Already a slug or ID
-    return input;
-  };
+    return input
+  }
 
   const handleInputChange = (value: string) => {
-    setError(null);
-    const extracted = extractRawgSlug(value.trim());
-    setRawgInput(extracted);
-  };
+    setError(null)
+    const extracted = extractRawgSlug(value.trim())
+    setRawgInput(extracted)
+  }
 
   return (
     <div className="space-y-3">
@@ -91,7 +91,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
@@ -110,7 +110,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
             <p className="text-sm text-ctp-teal font-medium mb-2">How to find the correct game:</p>
             <ol className="text-xs text-ctp-subtext1 space-y-1.5 list-decimal list-inside">
               <li>
-                Go to{" "}
+                Go to{' '}
                 <a
                   href={`https://rawg.io/search?query=${encodeURIComponent(gameName)}`}
                   target="_blank"
@@ -122,7 +122,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
               </li>
               <li>Click on the correct game in the results</li>
               <li>
-                Copy the URL from your browser (e.g.,{" "}
+                Copy the URL from your browser (e.g.,{' '}
                 <code className="bg-ctp-surface0 px-1 rounded">
                   rawg.io/games/<strong>god-of-war-2</strong>
                 </code>
@@ -153,13 +153,13 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
               disabled={updateMutation.isPending || !rawgInput}
               className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg font-semibold transition-all disabled:opacity-50"
             >
-              {updateMutation.isPending ? "Updating..." : "Update Metadata"}
+              {updateMutation.isPending ? 'Updating...' : 'Update Metadata'}
             </button>
             <button
               onClick={() => {
-                setIsExpanded(false);
-                setRawgInput("");
-                setError(null);
+                setIsExpanded(false)
+                setRawgInput('')
+                setError(null)
               }}
               className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 rounded-lg transition-all"
             >
@@ -174,5 +174,5 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
         </div>
       )}
     </div>
-  );
+  )
 }

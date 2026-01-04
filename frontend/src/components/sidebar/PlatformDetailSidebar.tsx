@@ -7,8 +7,7 @@ interface PlatformDetailSidebarProps {
   username: string | null
 }
 
-const PROFILE_ICON =
-  'M15.75 6a3 3 0 11-6 0 3 3 0 016 0zM4.5 20.25a7.5 7.5 0 0115 0'
+const PROFILE_ICON = 'M15.75 6a3 3 0 11-6 0 3 3 0 016 0zM4.5 20.25a7.5 7.5 0 0115 0'
 const NOTES_ICON = 'M4 6h16M4 12h16m-7 6h7'
 const BACK_ICON = 'M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18'
 const INFO_ICON = [
@@ -49,12 +48,7 @@ export function PlatformDetailSidebar({
             title="Back to Platforms"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={BACK_ICON}
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={BACK_ICON} />
             </svg>
           </Link>
         </div>
@@ -161,12 +155,7 @@ export function PlatformDetailSidebar({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d={INFO_ICON}
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={INFO_ICON} />
           </svg>
           Platform Info
         </h3>
@@ -179,9 +168,7 @@ export function PlatformDetailSidebar({
           </div>
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
             <div className="text-xs text-ctp-subtext0 mb-1">Type</div>
-            <div className="text-sm text-ctp-text font-medium">
-              {platformType || 'platform'}
-            </div>
+            <div className="text-sm text-ctp-text font-medium">{platformType || 'platform'}</div>
           </div>
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
             <div className="text-xs text-ctp-subtext0 mb-1">Username</div>

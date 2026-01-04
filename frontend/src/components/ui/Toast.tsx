@@ -1,58 +1,58 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 
-export type ToastType = "success" | "error" | "info" | "warning";
+export type ToastType = 'success' | 'error' | 'info' | 'warning'
 
 export interface Toast {
-  id: string;
-  message: string;
-  type: ToastType;
+  id: string
+  message: string
+  type: ToastType
 }
 
 interface ToastContextType {
-  toasts: Toast[];
-  showToast: (message: string, type?: ToastType) => void;
-  removeToast: (id: string) => void;
+  toasts: Toast[]
+  showToast: (message: string, type?: ToastType) => void
+  removeToast: (id: string) => void
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+const ToastContext = createContext<ToastContextType | undefined>(undefined)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<Toast[]>([])
 
-  const showToast = useCallback((message: string, type: ToastType = "info") => {
-    const id = Math.random().toString(36).substring(7);
-    const newToast = { id, message, type };
+  const showToast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = Math.random().toString(36).substring(7)
+    const newToast = { id, message, type }
 
-    setToasts((prev) => [...prev, newToast]);
+    setToasts((prev) => [...prev, newToast])
 
     // Auto-remove after 3 seconds
     setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
-  }, []);
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 3000)
+  }, [])
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
 
   return (
     <ToastContext.Provider value={{ toasts, showToast, removeToast }}>
       {children}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </ToastContext.Provider>
-  );
+  )
 }
 
 export function useToast() {
-  const context = useContext(ToastContext);
+  const context = useContext(ToastContext)
   if (!context) {
-    throw new Error("useToast must be used within ToastProvider");
+    throw new Error('useToast must be used within ToastProvider')
   }
-  return context;
+  return context
 }
 
 function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: string) => void }) {
-  if (toasts.length === 0) return null;
+  if (toasts.length === 0) return null
 
   return (
     <div
@@ -66,16 +66,16 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
     </div>
-  );
+  )
 }
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) => void }) {
   const typeStyles = {
-    success: "bg-ctp-green/20 border-ctp-green text-ctp-green",
-    error: "bg-ctp-red/20 border-ctp-red text-ctp-red",
-    warning: "bg-ctp-yellow/20 border-ctp-yellow text-ctp-yellow",
-    info: "bg-ctp-teal/20 border-ctp-teal text-ctp-teal",
-  };
+    success: 'bg-ctp-green/20 border-ctp-green text-ctp-green',
+    error: 'bg-ctp-red/20 border-ctp-red text-ctp-red',
+    warning: 'bg-ctp-yellow/20 border-ctp-yellow text-ctp-yellow',
+    info: 'bg-ctp-teal/20 border-ctp-teal text-ctp-teal',
+  }
 
   const icons = {
     success: (
@@ -113,7 +113,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
         />
       </svg>
     ),
-  };
+  }
 
   return (
     <div
@@ -146,5 +146,5 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
         </svg>
       </button>
     </div>
-  );
+  )
 }

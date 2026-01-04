@@ -1,32 +1,32 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { ScrollFade } from "@/components/ui";
-import { franchisesAPI, type OwnedGame } from "@/lib/api";
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
+import { ScrollFade } from '@/components/ui'
+import { franchisesAPI, type OwnedGame } from '@/lib/api'
 
 interface FranchisePreviewProps {
-  seriesName: string;
-  currentGameId: string;
+  seriesName: string
+  currentGameId: string
 }
 
 export function FranchisePreview({ seriesName, currentGameId }: FranchisePreviewProps) {
   const { data, isLoading } = useQuery({
-    queryKey: ["franchise", seriesName],
+    queryKey: ['franchise', seriesName],
     queryFn: async () => {
-      const response = await franchisesAPI.getOne(seriesName);
-      return response.data;
+      const response = await franchisesAPI.getOne(seriesName)
+      return response.data
     },
     enabled: !!seriesName,
-  });
+  })
 
   if (isLoading) {
-    return <div className="animate-pulse h-24 bg-ctp-surface1 rounded-lg" />;
+    return <div className="animate-pulse h-24 bg-ctp-surface1 rounded-lg" />
   }
 
   if (!data || data.owned_games.length === 0) {
-    return null;
+    return null
   }
 
-  const displayGames = data.owned_games.slice(0, 5);
+  const displayGames = data.owned_games.slice(0, 5)
 
   return (
     <div className="bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg p-3">
@@ -38,7 +38,7 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
             key={game.id}
             to="/library/$id"
             params={{ id: game.id }}
-            className={`shrink-0 group ${game.id === currentGameId ? "ring-2 ring-ctp-mauve rounded" : ""}`}
+            className={`shrink-0 group ${game.id === currentGameId ? 'ring-2 ring-ctp-mauve rounded' : ''}`}
           >
             {game.cover_art_url ? (
               <img
@@ -78,5 +78,5 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
         </span>
       </div>
     </div>
-  );
+  )
 }

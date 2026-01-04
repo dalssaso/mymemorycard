@@ -1,140 +1,140 @@
-import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Checkbox, ScrollFade } from "@/components/ui";
-import { useToast } from "@/components/ui/Toast";
-import { ownershipAPI, type OwnershipData, completionLogsAPI } from "@/lib/api";
+import { useState, useEffect, useRef } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Checkbox, ScrollFade } from '@/components/ui'
+import { useToast } from '@/components/ui/Toast'
+import { ownershipAPI, type OwnershipData, completionLogsAPI } from '@/lib/api'
 
 interface EditionOwnershipProps {
-  gameId: string;
-  platformId: string;
+  gameId: string
+  platformId: string
 }
 
 export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-  const [selectedEditionId, setSelectedEditionId] = useState<string | null>(null);
-  const [selectedDlcIds, setSelectedDlcIds] = useState<Set<string>>(new Set());
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isEditionOpen, setIsEditionOpen] = useState(false);
-  const editionButtonRef = useRef<HTMLButtonElement | null>(null);
-  const editionListRef = useRef<HTMLDivElement | null>(null);
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  const [selectedEditionId, setSelectedEditionId] = useState<string | null>(null)
+  const [selectedDlcIds, setSelectedDlcIds] = useState<Set<string>>(new Set())
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [isEditionOpen, setIsEditionOpen] = useState(false)
+  const editionButtonRef = useRef<HTMLButtonElement | null>(null)
+  const editionListRef = useRef<HTMLDivElement | null>(null)
 
   const { data, isLoading } = useQuery({
-    queryKey: ["ownership", gameId, platformId],
+    queryKey: ['ownership', gameId, platformId],
     queryFn: async () => {
-      const response = await ownershipAPI.get(gameId, platformId);
-      return response.data as OwnershipData;
+      const response = await ownershipAPI.get(gameId, platformId)
+      return response.data as OwnershipData
     },
     enabled: !!platformId,
-  });
+  })
 
   useEffect(() => {
     if (data && !isInitialized) {
-      setSelectedEditionId(data.editionId);
-      setSelectedDlcIds(new Set(data.ownedDlcIds));
-      setIsInitialized(true);
+      setSelectedEditionId(data.editionId)
+      setSelectedDlcIds(new Set(data.ownedDlcIds))
+      setIsInitialized(true)
     }
-  }, [data, isInitialized]);
+  }, [data, isInitialized])
 
   const updateEditionMutation = useMutation({
     mutationFn: async (editionId: string | null) => {
-      await ownershipAPI.setEdition(gameId, platformId, editionId);
-      await completionLogsAPI.recalculate(gameId, platformId);
+      await ownershipAPI.setEdition(gameId, platformId, editionId)
+      await completionLogsAPI.recalculate(gameId, platformId)
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["ownership", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["additions", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["game", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["games"] }),
-        queryClient.invalidateQueries({ queryKey: ["customFields", gameId, platformId] }),
-      ]);
-      showToast("Edition updated", "success");
+        queryClient.invalidateQueries({ queryKey: ['ownership', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['additions', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['game', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['games'] }),
+        queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] }),
+      ])
+      showToast('Edition updated', 'success')
     },
     onError: () => {
-      showToast("Failed to update edition", "error");
+      showToast('Failed to update edition', 'error')
     },
-  });
+  })
 
   const updateDlcsMutation = useMutation({
     mutationFn: async (dlcIds: string[]) => {
-      await ownershipAPI.setDlcs(gameId, platformId, dlcIds);
-      await completionLogsAPI.recalculate(gameId, platformId);
+      await ownershipAPI.setDlcs(gameId, platformId, dlcIds)
+      await completionLogsAPI.recalculate(gameId, platformId)
     },
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["ownership", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["additions", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["game", gameId] }),
-        queryClient.invalidateQueries({ queryKey: ["games"] }),
-        queryClient.invalidateQueries({ queryKey: ["customFields", gameId, platformId] }),
-      ]);
-      showToast("DLC ownership updated", "success");
+        queryClient.invalidateQueries({ queryKey: ['ownership', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['additions', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['game', gameId] }),
+        queryClient.invalidateQueries({ queryKey: ['games'] }),
+        queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] }),
+      ])
+      showToast('DLC ownership updated', 'success')
     },
     onError: () => {
-      showToast("Failed to update DLC ownership", "error");
+      showToast('Failed to update DLC ownership', 'error')
     },
-  });
+  })
 
   const handleEditionChange = (editionId: string | null) => {
-    setSelectedEditionId(editionId);
-    updateEditionMutation.mutate(editionId);
-    setIsEditionOpen(false);
-  };
+    setSelectedEditionId(editionId)
+    updateEditionMutation.mutate(editionId)
+    setIsEditionOpen(false)
+  }
 
   useEffect(() => {
     if (!isEditionOpen) {
-      return;
+      return
     }
 
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
+      const target = event.target as Node
       if (editionButtonRef.current?.contains(target) || editionListRef.current?.contains(target)) {
-        return;
+        return
       }
-      setIsEditionOpen(false);
-    };
+      setIsEditionOpen(false)
+    }
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsEditionOpen(false);
-        editionButtonRef.current?.focus();
+      if (event.key === 'Escape') {
+        setIsEditionOpen(false)
+        editionButtonRef.current?.focus()
       }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isEditionOpen]);
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isEditionOpen])
 
   const handleDlcToggle = (dlcId: string) => {
-    const newSet = new Set(selectedDlcIds);
+    const newSet = new Set(selectedDlcIds)
     if (newSet.has(dlcId)) {
-      newSet.delete(dlcId);
+      newSet.delete(dlcId)
     } else {
-      newSet.add(dlcId);
+      newSet.add(dlcId)
     }
-    setSelectedDlcIds(newSet);
-    updateDlcsMutation.mutate(Array.from(newSet));
-  };
+    setSelectedDlcIds(newSet)
+    updateDlcsMutation.mutate(Array.from(newSet))
+  }
 
   const handleSelectAllDlcs = () => {
-    if (!data) return;
-    const allDlcIds = data.dlcs.map((d) => d.id);
-    setSelectedDlcIds(new Set(allDlcIds));
-    updateDlcsMutation.mutate(allDlcIds);
-  };
+    if (!data) return
+    const allDlcIds = data.dlcs.map((d) => d.id)
+    setSelectedDlcIds(new Set(allDlcIds))
+    updateDlcsMutation.mutate(allDlcIds)
+  }
 
   const handleDeselectAllDlcs = () => {
-    setSelectedDlcIds(new Set());
-    updateDlcsMutation.mutate([]);
-  };
+    setSelectedDlcIds(new Set())
+    updateDlcsMutation.mutate([])
+  }
 
   if (isLoading) {
     return (
@@ -143,24 +143,24 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
         <div className="h-10 bg-ctp-surface1 rounded" />
         <div className="h-24 bg-ctp-surface1 rounded" />
       </div>
-    );
+    )
   }
 
   if (!data) {
-    return null;
+    return null
   }
 
-  const hasEditions = data.editions.length > 0;
-  const hasDlcs = data.dlcs.length > 0;
-  const selectedEdition = data.editions.find((e) => e.id === selectedEditionId);
-  const isCompleteEdition = selectedEdition?.is_complete_edition || false;
+  const hasEditions = data.editions.length > 0
+  const hasDlcs = data.dlcs.length > 0
+  const selectedEdition = data.editions.find((e) => e.id === selectedEditionId)
+  const isCompleteEdition = selectedEdition?.is_complete_edition || false
 
   if (!hasEditions && !hasDlcs) {
     return (
       <div className="text-sm text-ctp-overlay1 italic">
         No editions or DLCs found for this game.
       </div>
-    );
+    )
   }
 
   return (
@@ -186,11 +186,11 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
             >
               <span className="text-sm text-ctp-text truncate">
                 {selectedEdition
-                  ? `${selectedEdition.name}${selectedEdition.is_complete_edition ? " (includes all DLCs)" : ""}`
-                  : "Standard Edition (no DLCs included)"}
+                  ? `${selectedEdition.name}${selectedEdition.is_complete_edition ? ' (includes all DLCs)' : ''}`
+                  : 'Standard Edition (no DLCs included)'}
               </span>
               <svg
-                className={`w-4 h-4 text-ctp-subtext0 transition-transform ${isEditionOpen ? "rotate-180" : ""}`}
+                className={`w-4 h-4 text-ctp-subtext0 transition-transform ${isEditionOpen ? 'rotate-180' : ''}`}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -212,8 +212,8 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                     onClick={() => handleEditionChange(null)}
                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                       !selectedEditionId
-                        ? "bg-ctp-mauve/20 text-ctp-mauve"
-                        : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                        ? 'bg-ctp-mauve/20 text-ctp-mauve'
+                        : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
                     }`}
                     role="option"
                     aria-selected={!selectedEditionId}
@@ -227,8 +227,8 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                       onClick={() => handleEditionChange(edition.id)}
                       className={`w-full text-left px-3 py-2 text-sm transition-colors ${
                         selectedEditionId === edition.id
-                          ? "bg-ctp-mauve/20 text-ctp-mauve"
-                          : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                          ? 'bg-ctp-mauve/20 text-ctp-mauve'
+                          : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
                       }`}
                       role="option"
                       aria-selected={selectedEditionId === edition.id}
@@ -255,7 +255,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-ctp-subtext0">
-              DLCs You Own {isCompleteEdition && "(all included)"}
+              DLCs You Own {isCompleteEdition && '(all included)'}
             </span>
             {!isCompleteEdition && (
               <div className="flex gap-2">
@@ -279,15 +279,15 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
           </div>
           <ScrollFade axis="y" className="space-y-2 max-h-60 overflow-y-auto">
             {data.dlcs.map((dlc) => {
-              const isOwned = isCompleteEdition || selectedDlcIds.has(dlc.id);
+              const isOwned = isCompleteEdition || selectedDlcIds.has(dlc.id)
               return (
                 <label
                   key={dlc.id}
                   className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
                     isOwned
-                      ? "border-ctp-mauve bg-ctp-mauve/10"
-                      : "border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-surface2"
-                  } ${isCompleteEdition ? "opacity-75 cursor-not-allowed" : ""}`}
+                      ? 'border-ctp-mauve bg-ctp-mauve/10'
+                      : 'border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-surface2'
+                  } ${isCompleteEdition ? 'opacity-75 cursor-not-allowed' : ''}`}
                 >
                   <Checkbox
                     checked={isOwned}
@@ -301,7 +301,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                     )}
                   </div>
                 </label>
-              );
+              )
             })}
           </ScrollFade>
           {!isCompleteEdition && selectedDlcIds.size > 0 && (
@@ -312,5 +312,5 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
         </div>
       )}
     </div>
-  );
+  )
 }
