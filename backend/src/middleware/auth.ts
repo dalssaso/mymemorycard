@@ -3,10 +3,22 @@ import type { JWTPayload, User } from '@/types'
 import { queryOne } from '@/services/db'
 import { config } from '@/config'
 
+/**
+ * Generates a JWT token for the given payload.
+ *
+ * @param payload - The JWT payload containing userId and username
+ * @returns Signed JWT token string valid for 7 days
+ */
 export function generateToken(payload: JWTPayload): string {
   return jwt.sign(payload, config.jwt.secret, { expiresIn: '7d' })
 }
 
+/**
+ * Verifies and decodes a JWT token.
+ *
+ * @param token - The JWT token string to verify
+ * @returns The decoded payload if valid, null otherwise
+ */
 export function verifyToken(token: string): JWTPayload | null {
   try {
     return jwt.verify(token, config.jwt.secret) as JWTPayload
@@ -15,6 +27,12 @@ export function verifyToken(token: string): JWTPayload | null {
   }
 }
 
+/**
+ * Authenticates a request by extracting and verifying the Bearer token.
+ *
+ * @param req - The incoming HTTP request
+ * @returns The authenticated User if valid, null otherwise
+ */
 export async function authenticate(req: Request): Promise<User | null> {
   const authHeader = req.headers.get('Authorization')
 
@@ -35,6 +53,13 @@ export async function authenticate(req: Request): Promise<User | null> {
   return user
 }
 
+/**
+ * Higher-order function that wraps a route handler to require authentication.
+ * Returns 401 Unauthorized if the request is not authenticated.
+ *
+ * @param handler - The route handler that requires an authenticated user
+ * @returns A wrapped handler that performs authentication before calling the original
+ */
 export function requireAuth(
   handler: (req: Request, user: User, params?: Record<string, string>) => Promise<Response>
 ) {
