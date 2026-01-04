@@ -9,7 +9,6 @@
 # Environment can be passed inline: DB_PASSWORD=xxx JWT_SECRET=yyy docker compose up -d
 
 name: mymemorycard
-
 services:
   # ===========================================
   # REVERSE PROXY - NGINX
@@ -60,7 +59,7 @@ services:
       - mymemorycard-public
       - mymemorycard-internal
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "curl", "-s", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -73,7 +72,7 @@ services:
     networks:
       - mymemorycard-public
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "curl", "-s", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
