@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useCallback } from "react";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { Button } from "@/components/ui";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { collectionsAPI, franchisesAPI, type FranchiseSummary } from "@/lib/api";
 
@@ -144,8 +145,10 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
         </div>
 
         <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
-          <button
+          <Button
             onClick={() => navigateToLibrary({})}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Total Games"
           >
@@ -157,9 +160,11 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigateToLibrary({ status: "playing" })}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Playing"
           >
@@ -177,9 +182,11 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigateToLibrary({ status: "completed" })}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-green hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Completed"
           >
@@ -191,9 +198,11 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigateToLibrary({ status: "backlog" })}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Backlog"
           >
@@ -205,9 +214,11 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigateToLibrary({ status: "dropped" })}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-red hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Dropped"
           >
@@ -219,16 +230,18 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigateToLibrary({ favorites: true })}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-red hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Favorites"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -267,9 +280,10 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
           Quick Stats
         </h3>
         <div className="space-y-2">
-          <button
+          <Button
             onClick={() => navigateToLibrary({})}
-            className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
+            variant="ghost"
+            className="h-auto flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.total}
           >
             <div className="flex items-center gap-2">
@@ -291,11 +305,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
               {animatedTotal}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => navigateToLibrary({ status: "playing" })}
-            className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
+            variant="ghost"
+            className="h-auto flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.playing}
           >
             <div className="flex items-center gap-2">
@@ -323,11 +338,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
               {animatedPlaying}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => navigateToLibrary({ status: "completed" })}
-            className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
+            variant="ghost"
+            className="h-auto flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.completed}
           >
             <div className="flex items-center gap-2">
@@ -349,11 +365,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
               {animatedCompleted}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => navigateToLibrary({ status: "backlog" })}
-            className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
+            variant="ghost"
+            className="h-auto flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.backlog}
           >
             <div className="flex items-center gap-2">
@@ -375,11 +392,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
               {animatedBacklog}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => navigateToLibrary({ status: "dropped" })}
-            className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
+            variant="ghost"
+            className="h-auto flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.dropped}
           >
             <div className="flex items-center gap-2">
@@ -401,11 +419,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
               {animatedDropped}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => navigateToLibrary({ favorites: true })}
-            className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
+            variant="ghost"
+            className="h-auto flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.favorites}
           >
             <div className="flex items-center gap-2">
@@ -417,7 +436,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
               {animatedFavorites}
             </span>
-          </button>
+          </Button>
         </div>
       </div>
 

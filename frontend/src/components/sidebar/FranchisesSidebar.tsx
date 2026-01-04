@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { Button } from "@/components/ui";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { franchisesAPI, collectionsAPI, type FranchiseSummary } from "@/lib/api";
 
@@ -122,9 +123,11 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
         </div>
         <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           {onSync && (
-            <button
+            <Button
               onClick={onSync}
               disabled={isSyncing}
+              variant="ghost"
+              size="icon"
               className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all disabled:opacity-50"
               title={isSyncing ? "Syncing Franchises" : "Sync Franchises"}
             >
@@ -141,7 +144,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-            </button>
+            </Button>
           )}
           <Link
             to="/collections"
@@ -273,10 +276,11 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
           Quick Actions
         </h3>
         {onSync && (
-          <button
+          <Button
             onClick={onSync}
             disabled={isSyncing}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2 disabled:opacity-50"
+            variant="ghost"
+            className="h-auto w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2 disabled:opacity-50"
           >
             <svg
               className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
@@ -292,7 +296,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
               />
             </svg>
             {isSyncing ? "Syncing..." : "Sync Franchises"}
-          </button>
+          </Button>
         )}
         <Link
           to="/collections"

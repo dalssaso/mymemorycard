@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Button } from "@/components/ui";
 
 interface FilterSectionProps {
   title: string;
@@ -24,9 +25,10 @@ export function FilterSection({
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-3">
-        <button
+        <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider cursor-pointer hover:text-ctp-text transition-colors"
+          variant="ghost"
+          className="h-auto p-0 flex items-center gap-2 text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider cursor-pointer hover:text-ctp-text transition-colors"
           aria-expanded={isOpen}
         >
           <svg
@@ -39,14 +41,15 @@ export function FilterSection({
           </svg>
           <span className={iconColor}>{icon}</span>
           {title}
-        </button>
+        </Button>
         {onClear && hasSelection && (
-          <button
+          <Button
             onClick={onClear}
-            className="text-xs text-ctp-subtext1 hover:text-ctp-text transition-colors px-2 py-0.5"
+            variant="ghost"
+            className="h-auto px-2 py-0.5 text-xs text-ctp-subtext1 hover:text-ctp-text transition-colors"
           >
             Clear
-          </button>
+          </Button>
         )}
       </div>
       {isOpen && <div className="mt-2">{children}</div>}

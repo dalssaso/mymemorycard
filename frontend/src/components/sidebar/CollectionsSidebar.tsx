@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -121,8 +122,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
         </div>
         {onCreateCollection && (
           <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
-            <button
+            <Button
               onClick={onCreateCollection}
+              variant="ghost"
+              size="icon"
               className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
               title="Create Collection"
             >
@@ -134,7 +137,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-            </button>
+            </Button>
             <Link
               to="/franchises"
               className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
@@ -266,9 +269,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             </svg>
             Quick Actions
           </h3>
-          <button
+          <Button
             onClick={onCreateCollection}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"
+            variant="ghost"
+            className="h-auto w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -279,7 +283,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
               />
             </svg>
             Create Collection
-          </button>
+          </Button>
           <Link
             to="/franchises"
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"

@@ -1,4 +1,5 @@
 import { useSidebar } from "@/contexts/SidebarContext";
+import { Button } from "@/components/ui";
 
 interface PlatformsSidebarProps {
   platformCount: number;
@@ -20,9 +21,11 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
           </div>
         </div>
         <div className="flex justify-center pt-2 border-t border-ctp-surface0">
-          <button
+          <Button
             type="button"
             onClick={onAddCustomPlatform}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Add Custom Platform"
           >
@@ -34,7 +37,7 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
                 d="M12 4v16m8-8H4"
               />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -50,9 +53,10 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
         <div className="mt-3 text-sm text-ctp-teal">{platformCount} saved</div>
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={onAddCustomPlatform}
+        variant="ghost"
         className={[
           "flex items-center justify-center gap-2 w-full px-4 py-2.5",
           "bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal",
@@ -63,7 +67,7 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         Add Custom Platform
-      </button>
+      </Button>
 
       <div>
         <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3">

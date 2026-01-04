@@ -1,4 +1,4 @@
-import { ScrollFade } from "@/components/ui";
+import { Button, ScrollFade } from "@/components/ui";
 
 interface Collection {
   id: string;
@@ -34,10 +34,11 @@ export function CollectionFilter({
       {collections.map((collection) => {
         const isSelected = selectedCollections.includes(collection.id);
         return (
-          <button
+          <Button
             key={collection.id}
             onClick={() => toggleCollection(collection.id)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2 border ${
+            variant="ghost"
+            className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2 border ${
               isSelected
                 ? "bg-ctp-mauve/20 text-ctp-mauve border-ctp-mauve"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
@@ -45,7 +46,7 @@ export function CollectionFilter({
           >
             <span className="truncate">{collection.name}</span>
             <span className="text-xs text-ctp-subtext1 flex-shrink-0">{collection.game_count}</span>
-          </button>
+          </Button>
         );
       })}
     </ScrollFade>

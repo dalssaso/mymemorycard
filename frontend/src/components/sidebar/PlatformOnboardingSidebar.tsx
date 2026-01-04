@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PlatformOnboardingSidebarProps {
@@ -42,9 +43,11 @@ export function PlatformOnboardingSidebar({
         </div>
 
         <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
-          <button
+          <Button
             type="button"
             onClick={onAddCustomPlatform}
+            variant="ghost"
+            size="icon"
             className="p-2 rounded-lg text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Add Custom Platform"
           >
@@ -56,7 +59,7 @@ export function PlatformOnboardingSidebar({
                 d="M12 4v16m8-8H4"
               />
             </svg>
-          </button>
+          </Button>
           <Link
             to="/import"
             className="p-2 rounded-lg text-ctp-mauve hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
@@ -105,9 +108,10 @@ export function PlatformOnboardingSidebar({
         Manage Platforms
       </Link>
 
-      <button
+      <Button
         type="button"
         onClick={onAddCustomPlatform}
+        variant="ghost"
         className={[
           "flex items-center justify-center gap-2 w-full px-4 py-2.5",
           "bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal",
@@ -118,7 +122,7 @@ export function PlatformOnboardingSidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         Add Custom Platform
-      </button>
+      </Button>
 
       <div>
         <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3">

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 interface Platform {
@@ -43,10 +44,12 @@ export function ImportSidebar({
         </div>
         <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           {platforms.map((platform) => (
-            <button
+            <Button
               key={platform.id}
               onClick={() => onPlatformSelect(platform.id)}
               disabled={isImporting}
+              variant="ghost"
+              size="icon"
               className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
                   ? "bg-ctp-mauve/20 text-ctp-mauve ring-2 ring-ctp-mauve"
@@ -55,7 +58,7 @@ export function ImportSidebar({
               title={platform.display_name}
             >
               {platform.display_name.trim().charAt(0).toUpperCase() || "?"}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -98,18 +101,19 @@ export function ImportSidebar({
         </h3>
         <div className="space-y-1">
           {platforms.map((platform) => (
-            <button
+            <Button
               key={platform.id}
               onClick={() => onPlatformSelect(platform.id)}
               disabled={isImporting}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all disabled:opacity-50 ${
+              variant="ghost"
+              className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
                   ? "bg-ctp-mauve/20 text-ctp-mauve border border-ctp-mauve/30"
                   : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
             >
               {platform.display_name}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { Checkbox, ScrollFade } from "@/components/ui";
+import { Button, Checkbox, ScrollFade } from "@/components/ui";
 import {
   FilterSection,
   GenreFilter,
@@ -111,13 +111,15 @@ export function LibrarySidebar({
 
         {/* View Mode Icons */}
         <div className="flex flex-col items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setViewMode("grid")}
-            className={`p-2 rounded-lg transition-all ${
+            className={
               viewMode === "grid"
-                ? "bg-ctp-mauve text-ctp-base"
+                ? "bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90 hover:text-ctp-base"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
-            }`}
+            }
             title="Grid View"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,14 +130,16 @@ export function LibrarySidebar({
                 d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
               />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setViewMode("table")}
-            className={`p-2 rounded-lg transition-all ${
+            className={
               viewMode === "table"
-                ? "bg-ctp-mauve text-ctp-base"
+                ? "bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90 hover:text-ctp-base"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
-            }`}
+            }
             title="Table View"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,18 +150,20 @@ export function LibrarySidebar({
                 d="M4 6h16M4 10h16M4 14h16M4 18h16"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Favorites Toggle */}
         <div className="flex justify-center pt-2 border-t border-ctp-surface0">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setFilter("favorites", !filters.favorites)}
-            className={`p-2 rounded-lg transition-all ${
+            className={
               filters.favorites
-                ? "bg-ctp-red/20 text-ctp-red"
+                ? "bg-ctp-red/20 text-ctp-red hover:bg-ctp-red/30 hover:text-ctp-red"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
-            }`}
+            }
             title={filters.favorites ? "Showing Favorites Only" : "Show Favorites Only"}
           >
             <svg
@@ -173,15 +179,17 @@ export function LibrarySidebar({
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Clear Filters */}
         {hasActiveFilters && (
           <div className="flex justify-center pt-2 border-t border-ctp-surface0">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onClearFilters}
-              className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               title="Clear All Filters"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +200,7 @@ export function LibrarySidebar({
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -250,12 +258,13 @@ export function LibrarySidebar({
           View
         </h3>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="outline"
             onClick={() => setViewMode("grid")}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 ${
               viewMode === "grid"
-                ? "bg-ctp-mauve border border-ctp-mauve text-ctp-base"
-                : "bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text"
+                ? "bg-ctp-mauve border-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90 hover:text-ctp-base"
+                : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text"
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,13 +276,14 @@ export function LibrarySidebar({
               />
             </svg>
             Grid
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setViewMode("table")}
-            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 ${
               viewMode === "table"
-                ? "bg-ctp-mauve border border-ctp-mauve text-ctp-base"
-                : "bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text"
+                ? "bg-ctp-mauve border-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90 hover:text-ctp-base"
+                : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text"
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +295,7 @@ export function LibrarySidebar({
               />
             </svg>
             Table
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -307,31 +317,33 @@ export function LibrarySidebar({
           Status
         </h3>
         <div className="space-y-1">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setFilter("status", "")}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`w-full justify-start ${
               filters.status === ""
-                ? "bg-ctp-teal/20 text-ctp-teal"
+                ? "bg-ctp-teal/20 text-ctp-teal hover:bg-ctp-teal/30 hover:text-ctp-teal"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             All Statuses
-          </button>
+          </Button>
           {uniqueStatuses.map((status) => (
-            <button
+            <Button
               key={status}
+              variant="ghost"
               onClick={() => setFilter("status", status)}
               style={
                 filters.status === status
                   ? STATUS_ACTIVE_STYLES[status] || undefined
                   : STATUS_BG_STYLES[status] || undefined
               }
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all text-ctp-text hover:opacity-90 ${
+              className={`w-full justify-start text-ctp-text hover:opacity-90 ${
                 filters.status === status ? "border" : ""
               }`}
             >
               {STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -354,29 +366,31 @@ export function LibrarySidebar({
           Platform
         </h3>
         <ScrollFade axis="y" className="space-y-1 max-h-48 overflow-y-auto">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setFilter("platform", "")}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+            className={`w-full justify-start ${
               filters.platform === ""
-                ? "bg-ctp-mauve/20 text-ctp-mauve"
+                ? "bg-ctp-mauve/20 text-ctp-mauve hover:bg-ctp-mauve/30 hover:text-ctp-mauve"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             All Platforms
-          </button>
+          </Button>
           {uniquePlatforms.map((platform) => (
-            <button
+            <Button
               key={platform}
+              variant="ghost"
               onClick={() => setFilter("platform", platform)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all truncate ${
+              className={`w-full justify-start truncate ${
                 filters.platform === platform
-                  ? "bg-ctp-mauve/20 text-ctp-mauve"
+                  ? "bg-ctp-mauve/20 text-ctp-mauve hover:bg-ctp-mauve/30 hover:text-ctp-mauve"
                   : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
               title={platform}
             >
               {platform}
-            </button>
+            </Button>
           ))}
         </ScrollFade>
       </div>
@@ -466,7 +480,7 @@ export function LibrarySidebar({
           <Checkbox
             id="filters-favorites"
             checked={filters.favorites}
-            onChange={(e) => setFilter("favorites", e.target.checked)}
+            onCheckedChange={(checked) => setFilter("favorites", checked === true)}
           />
           <label htmlFor="filters-favorites" className="text-sm text-ctp-subtext1 cursor-pointer">
             Favorites Only
@@ -475,12 +489,13 @@ export function LibrarySidebar({
       </div>
 
       {hasActiveFilters && (
-        <button
+        <Button
+          variant="outline"
           onClick={onClearFilters}
-          className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text hover:border-ctp-surface2 rounded-lg transition-colors text-sm"
+          className="w-full bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text hover:border-ctp-surface2"
         >
           Clear All Filters
-        </button>
+        </Button>
       )}
     </div>
   );

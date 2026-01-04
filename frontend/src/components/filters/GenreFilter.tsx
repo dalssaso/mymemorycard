@@ -1,25 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { gamesAPI } from "@/lib/api";
-import { ScrollFade } from "@/components/ui";
+import { Button, ScrollFade } from "@/components/ui";
+import { useGenreStats } from "@/hooks/useGenreStats";
 
 interface GenreFilterProps {
   selectedGenres: string[];
   onGenresChange: (genres: string[]) => void;
 }
 
-interface GenreStat {
-  name: string;
-  count: number;
-}
-
 export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["genreStats"],
-    queryFn: async () => {
-      const response = await gamesAPI.getGenreStats();
-      return response.data as { genres: GenreStat[] };
-    },
-  });
+  const { data, isLoading } = useGenreStats();
 
   const genres = data?.genres || [];
 
@@ -44,10 +32,11 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
       {genres.map((genre) => {
         const isSelected = selectedGenres.includes(genre.name);
         return (
-          <button
+          <Button
             key={genre.name}
             onClick={() => toggleGenre(genre.name)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between border ${
+            variant="ghost"
+            className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between border ${
               isSelected
                 ? "bg-ctp-peach/20 text-ctp-peach border-ctp-peach"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
@@ -55,7 +44,7 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
           >
             <span>{genre.name}</span>
             <span className="text-xs text-ctp-subtext1">{genre.count}</span>
-          </button>
+          </Button>
         );
       })}
     </ScrollFade>

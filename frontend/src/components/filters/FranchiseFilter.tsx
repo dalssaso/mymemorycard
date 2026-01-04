@@ -1,26 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { franchisesAPI } from "@/lib/api";
-import { ScrollFade } from "@/components/ui";
+import { Button, ScrollFade } from "@/components/ui";
+import { useFranchises } from "@/hooks/useFranchises";
 
 interface FranchiseFilterProps {
   selectedFranchises: string[];
   onFranchisesChange: (seriesNames: string[]) => void;
 }
 
-interface FranchiseData {
-  series_name: string;
-  game_count: number;
-  cover_art_url: string | null;
-}
-
 export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: FranchiseFilterProps) {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["franchises"],
-    queryFn: async () => {
-      const response = await franchisesAPI.getAll();
-      return response.data as { franchises: FranchiseData[] };
-    },
-  });
+  const { data, isLoading, error } = useFranchises();
 
   const franchises = data?.franchises || [];
 
@@ -50,10 +37,11 @@ export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: Fran
       {franchises.map((franchise) => {
         const isSelected = selectedFranchises.includes(franchise.series_name);
         return (
-          <button
+          <Button
             key={franchise.series_name}
             onClick={() => toggleFranchise(franchise.series_name)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2 border ${
+            variant="ghost"
+            className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2 border ${
               isSelected
                 ? "bg-ctp-teal/20 text-ctp-teal border-ctp-teal"
                 : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
@@ -61,7 +49,7 @@ export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: Fran
           >
             <span className="truncate">{franchise.series_name}</span>
             <span className="text-xs text-ctp-subtext1 flex-shrink-0">{franchise.game_count}</span>
-          </button>
+          </Button>
         );
       })}
     </ScrollFade>

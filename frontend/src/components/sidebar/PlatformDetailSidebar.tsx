@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PlatformDetailSidebarProps {
@@ -75,9 +76,11 @@ export function PlatformDetailSidebar({
 
         <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
           {SECTIONS.map((section) => (
-            <button
+            <Button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
+              variant="ghost"
+              size="icon"
               className={[
                 "p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0",
                 "hover:text-ctp-text transition-all",
@@ -92,7 +95,7 @@ export function PlatformDetailSidebar({
                   d={section.icon}
                 />
               </svg>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -203,9 +206,10 @@ export function PlatformDetailSidebar({
         </h3>
         <div className="space-y-1">
           {SECTIONS.map((section) => (
-            <button
+            <Button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
+              variant="ghost"
               className={[
                 "w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0",
                 "hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2",
@@ -220,7 +224,7 @@ export function PlatformDetailSidebar({
                 />
               </svg>
               {section.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import type { LibraryFilters } from "@/hooks/useLibraryFilters";
+import { Button } from "@/components/ui";
 
 interface ActiveFilterPillsProps {
   filters: LibraryFilters;
@@ -124,9 +125,11 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
           <span className="max-w-[200px] truncate">
             {pill.label}: {pill.value}
           </span>
-          <button
+          <Button
             onClick={() => handleRemove(pill)}
-            className="hover:opacity-70 transition-opacity flex-shrink-0"
+            variant="ghost"
+            size="icon"
+            className="h-auto w-auto hover:opacity-70 transition-opacity flex-shrink-0"
             aria-label={`Remove ${pill.label} filter`}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,16 +140,17 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </Button>
         </div>
       ))}
       {pills.length > 1 && (
-        <button
+        <Button
           onClick={onClearAll}
-          className="text-xs text-ctp-subtext0 hover:text-ctp-text underline transition-colors"
+          variant="link"
+          className="h-auto p-0 text-xs text-ctp-subtext0 hover:text-ctp-text underline transition-colors"
         >
           Clear all
-        </button>
+        </Button>
       )}
     </div>
   );
