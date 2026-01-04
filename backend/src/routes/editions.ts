@@ -1,6 +1,6 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
-import { queryMany, query, queryOne } from '@/services/db'
+import { query, queryOne } from '@/services/db'
 import { corsHeaders } from '@/middleware/cors'
 import { getGameDetails, getGameAdditions } from '@/services/rawg'
 
@@ -55,7 +55,7 @@ router.get(
         [gameId]
       )
 
-      let availableEditions: RawgEditionOption[] = []
+      const availableEditions: RawgEditionOption[] = []
 
       if (game?.rawg_id) {
         const additions = await getGameAdditions(game.rawg_id)
@@ -124,13 +124,23 @@ router.put(
         description: string | null
       }
 
-      const { platformId, rawgEditionId, editionName, coverArtUrl, backgroundImageUrl, description } = body
+      const {
+        platformId,
+        rawgEditionId,
+        editionName,
+        coverArtUrl,
+        backgroundImageUrl,
+        description,
+      } = body
 
       if (!platformId || !editionName) {
-        return new Response(JSON.stringify({ error: 'Platform ID and edition name are required' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+        return new Response(
+          JSON.stringify({ error: 'Platform ID and edition name are required' }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+          }
+        )
       }
 
       await query(
@@ -144,13 +154,22 @@ router.put(
            background_image_url = EXCLUDED.background_image_url,
            description = EXCLUDED.description,
            updated_at = NOW()`,
-        [user.id, gameId, platformId, rawgEditionId, editionName, coverArtUrl, backgroundImageUrl, description]
+        [
+          user.id,
+          gameId,
+          platformId,
+          rawgEditionId,
+          editionName,
+          coverArtUrl,
+          backgroundImageUrl,
+          description,
+        ]
       )
 
-      return new Response(
-        JSON.stringify({ message: 'Display edition updated', editionName }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ message: 'Display edition updated', editionName }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Set display edition error:', error)
       return new Response(JSON.stringify({ error: 'Internal server error' }), {
@@ -188,10 +207,10 @@ router.delete(
         [user.id, gameId, platformId]
       )
 
-      return new Response(
-        JSON.stringify({ message: 'Display edition reset to base game' }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ message: 'Display edition reset to base game' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Reset display edition error:', error)
       return new Response(JSON.stringify({ error: 'Internal server error' }), {

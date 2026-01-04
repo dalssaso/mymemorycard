@@ -63,7 +63,7 @@ router.get(
         is_active: settings.is_active,
       }))
 
-      const activeProvider = providers.find((p: typeof providers[0]) => p.is_active) || null
+      const activeProvider = providers.find((p: (typeof providers)[0]) => p.is_active) || null
 
       return new Response(JSON.stringify({ providers, activeProvider }), {
         status: 200,
@@ -428,7 +428,8 @@ router.post(
     } catch (error) {
       console.error('Generate cover error:', error)
       const message = error instanceof Error ? error.message : 'Internal server error'
-      const status = message.includes('not enabled') || message.includes('only supported') ? 400 : 500
+      const status =
+        message.includes('not enabled') || message.includes('only supported') ? 400 : 500
 
       return new Response(JSON.stringify({ error: message }), {
         status,
@@ -469,7 +470,9 @@ router.post(
       const body = (await req.json()) as { actionType: string }
       const { actionType } = body
 
-      if (!['suggest_collections', 'suggest_next_game', 'generate_cover_image'].includes(actionType)) {
+      if (
+        !['suggest_collections', 'suggest_next_game', 'generate_cover_image'].includes(actionType)
+      ) {
         return new Response(JSON.stringify({ error: 'Invalid action type' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json', ...corsHeaders() },

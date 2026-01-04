@@ -69,7 +69,7 @@ router.get(
       const franchiseFilter = url.searchParams.get('franchise')
       const sortBy = url.searchParams.get('sort') || 'name'
 
-      const params: any[] = [user.id]
+      const params: (string | number | boolean | null)[] = [user.id]
       let paramIndex = 2
       const whereClauses: string[] = ['ug.user_id = $1']
 
@@ -107,7 +107,8 @@ router.get(
       }
 
       // Helper to get display name for sorting (repeat subquery since aliases aren't available in ORDER BY with GROUP BY)
-      const displayNameExpr = `COALESCE((SELECT ugde2.edition_name FROM user_game_display_editions ugde2 WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1), g.name)`
+      const displayNameExpr =
+        'COALESCE((SELECT ugde2.edition_name FROM user_game_display_editions ugde2 WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1), g.name)'
 
       let orderByClause = `ORDER BY ${displayNameExpr} ASC`
       if (sortBy === 'playtime_desc') {
@@ -273,7 +274,7 @@ router.get(
       )
 
       // Apply display edition overlay
-      const gamesWithOverlay = games.map(g => {
+      const gamesWithOverlay = games.map((g) => {
         if (g.display_edition_name) {
           return {
             ...g,
@@ -284,16 +285,16 @@ router.get(
         return g
       })
 
-      return new Response(
-        JSON.stringify({ games: gamesWithOverlay }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ games: gamesWithOverlay }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get games error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -380,15 +381,15 @@ router.get(
           headers: {
             'Content-Type': 'text/csv',
             'Content-Disposition': `attachment; filename="mymemorycard-export-${new Date().toISOString().split('T')[0]}.csv"`,
-            ...corsHeaders()
-          }
+            ...corsHeaders(),
+          },
         })
       } else {
         // JSON format
         const jsonData = {
           exported_at: new Date().toISOString(),
           total_games: games.length,
-          games: games
+          games: games,
         }
 
         return new Response(JSON.stringify(jsonData, null, 2), {
@@ -396,16 +397,16 @@ router.get(
           headers: {
             'Content-Type': 'application/json',
             'Content-Disposition': `attachment; filename="mymemorycard-export-${new Date().toISOString().split('T')[0]}.json"`,
-            ...corsHeaders()
-          }
+            ...corsHeaders(),
+          },
         })
       }
     } catch (error) {
       console.error('Export error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -427,16 +428,16 @@ router.get(
         [user.id]
       )
 
-      return new Response(
-        JSON.stringify({ genres: genreStats }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ genres: genreStats }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get genre stats error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -448,18 +449,20 @@ router.get(
     try {
       const gameId = params?.id
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
-      const game = await queryMany<UserGameWithDetails & { 
-        display_edition_name: string | null
-        display_cover_art_url: string | null
-        display_background_image_url: string | null
-        display_description: string | null
-      }>(
+      const game = await queryMany<
+        UserGameWithDetails & {
+          display_edition_name: string | null
+          display_cover_art_url: string | null
+          display_background_image_url: string | null
+          display_description: string | null
+        }
+      >(
         `SELECT 
           g.*,
           p.id as platform_id,
@@ -489,14 +492,14 @@ router.get(
       )
 
       if (game.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Apply display edition overlay if set
-      const platforms = game.map(g => {
+      const platforms = game.map((g) => {
         if (g.display_edition_name) {
           return {
             ...g,
@@ -521,19 +524,19 @@ router.get(
       )
 
       return new Response(
-        JSON.stringify({ 
-          game: platforms[0], 
+        JSON.stringify({
+          game: platforms[0],
           platforms,
-          genres: genres.map(g => g.name)
+          genres: genres.map((g) => g.name),
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
       )
     } catch (error) {
       console.error('Get game error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -544,22 +547,22 @@ router.patch(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json() as { platform_id?: string; status?: string }
+      const body = (await req.json()) as { platform_id?: string; status?: string }
       const { platform_id, status } = body
 
       if (!gameId || !platform_id || !status) {
-        return new Response(
-          JSON.stringify({ error: 'Missing required fields' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const validStatuses = ['backlog', 'playing', 'finished', 'dropped', 'completed']
       if (!validStatuses.includes(status)) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid status' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Invalid status' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -567,12 +570,12 @@ router.patch(
         'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
         [user.id, gameId, platform_id]
       )
-      
+
       if (ownership.rowCount === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Automatically set started_at and completed_at based on status changes
@@ -591,16 +594,16 @@ router.patch(
         [user.id, gameId, platform_id, status]
       )
 
-      return new Response(
-        JSON.stringify({ success: true, status }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, status }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Update status error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -611,22 +614,22 @@ router.put(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json() as { platform_id?: string; rating?: number }
+      const body = (await req.json()) as { platform_id?: string; rating?: number }
       const { platform_id, rating } = body
 
       if (!gameId || !platform_id || rating === undefined) {
-        return new Response(
-          JSON.stringify({ error: 'Missing required fields' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const numRating = Number(rating)
       if (isNaN(numRating) || numRating < 1 || numRating > 10) {
-        return new Response(
-          JSON.stringify({ error: 'Rating must be between 1 and 10' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Rating must be between 1 and 10' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -634,12 +637,12 @@ router.put(
         'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
         [user.id, gameId, platform_id]
       )
-      
+
       if (ownership.rowCount === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query(
@@ -650,16 +653,16 @@ router.put(
         [user.id, gameId, platform_id, numRating]
       )
 
-      return new Response(
-        JSON.stringify({ success: true, rating: numRating }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, rating: numRating }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Update rating error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -670,14 +673,14 @@ router.post(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json() as { platform_id?: string; notes?: string }
+      const body = (await req.json()) as { platform_id?: string; notes?: string }
       const { platform_id, notes } = body
 
       if (!gameId || !platform_id || notes === undefined) {
-        return new Response(
-          JSON.stringify({ error: 'Missing required fields' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -685,12 +688,12 @@ router.post(
         'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
         [user.id, gameId, platform_id]
       )
-      
+
       if (ownership.rowCount === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query(
@@ -701,16 +704,16 @@ router.post(
         [user.id, gameId, platform_id, notes]
       )
 
-      return new Response(
-        JSON.stringify({ success: true, notes }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, notes }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Update notes error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -721,14 +724,14 @@ router.put(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json() as { platform_id?: string; is_favorite?: boolean }
+      const body = (await req.json()) as { platform_id?: string; is_favorite?: boolean }
       const { platform_id, is_favorite } = body
 
       if (!gameId || !platform_id || is_favorite === undefined) {
-        return new Response(
-          JSON.stringify({ error: 'Missing required fields' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -736,12 +739,12 @@ router.put(
         'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
         [user.id, gameId, platform_id]
       )
-      
+
       if (ownership.rowCount === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query(
@@ -752,16 +755,16 @@ router.put(
         [user.id, gameId, platform_id, is_favorite]
       )
 
-      return new Response(
-        JSON.stringify({ success: true, is_favorite }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, is_favorite }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Toggle favorite error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -776,17 +779,17 @@ router.get(
       const platformId = url.searchParams.get('platform_id')
 
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'platform_id query parameter is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'platform_id query parameter is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const customFields = await queryOne(
@@ -799,16 +802,16 @@ router.get(
         [user.id, gameId, platformId]
       )
 
-      return new Response(
-        JSON.stringify({ customFields: customFields || {} }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ customFields: customFields || {} }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get custom fields error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -828,10 +831,10 @@ router.put(
       const { platform_id, completion_percentage, difficulty_rating } = body
 
       if (!gameId || !platform_id) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and platform ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and platform ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -841,10 +844,10 @@ router.put(
       )
 
       if (ownership.rowCount === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Validate ranges
@@ -882,16 +885,16 @@ router.put(
         [user.id, gameId, platform_id, completion_percentage, difficulty_rating]
       )
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Update custom fields error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -906,10 +909,10 @@ router.delete(
       const platformId = url.searchParams.get('platform_id')
 
       if (!gameId || !platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and platform_id are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and platform_id are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -919,10 +922,10 @@ router.delete(
       )
 
       if (!ownership) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Delete related user data (cascading from user_games deletion handles most)
@@ -982,16 +985,16 @@ router.delete(
         [user.id, gameId, platformId]
       )
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Delete game error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -1005,10 +1008,10 @@ router.post(
       const { gameIds } = body
 
       if (!gameIds || !Array.isArray(gameIds) || gameIds.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'gameIds array is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'gameIds array is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (gameIds.length > 100) {
@@ -1067,16 +1070,16 @@ router.post(
         }
       }
 
-      return new Response(
-        JSON.stringify({ success: true, deletedCount }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, deletedCount }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Bulk delete games error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -1091,17 +1094,17 @@ router.post(
       const { rawgId, rawgSlug } = body
 
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!rawgId && !rawgSlug) {
-        return new Response(
-          JSON.stringify({ error: 'Either rawgId or rawgSlug is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Either rawgId or rawgSlug is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game
@@ -1111,10 +1114,10 @@ router.post(
       )
 
       if (!ownership) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Fetch game details from RAWG (by ID or slug)
@@ -1126,10 +1129,10 @@ router.post(
       }
 
       if (!rawgGame) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in RAWG database' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in RAWG database' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Check if another game already uses this RAWG ID
@@ -1193,10 +1196,9 @@ router.post(
 
         // Insert new genres
         for (const genre of rawgGame.genres) {
-          let genreRecord = await client.query(
-            'SELECT id FROM genres WHERE rawg_id = $1',
-            [genre.id]
-          )
+          let genreRecord = await client.query('SELECT id FROM genres WHERE rawg_id = $1', [
+            genre.id,
+          ])
 
           if (genreRecord.rows.length === 0) {
             genreRecord = await client.query(
@@ -1227,10 +1229,10 @@ router.post(
       )
     } catch (error) {
       console.error('Update from RAWG error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -1241,27 +1243,24 @@ router.post(
   requireAuth(async (req, user, params) => {
     try {
       const gameId = params?.id
-      const body = await req.json() as { platformId?: string }
+      const body = (await req.json()) as { platformId?: string }
       const { platformId } = body
 
       if (!gameId || !platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and platformId are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and platformId are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify the game exists
-      const game = await queryOne<{ id: string }>(
-        'SELECT id FROM games WHERE id = $1',
-        [gameId]
-      )
+      const game = await queryOne<{ id: string }>('SELECT id FROM games WHERE id = $1', [gameId])
 
       if (!game) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns the game on at least one platform
@@ -1271,10 +1270,10 @@ router.post(
       )
 
       if (!existingOwnership) {
-        return new Response(
-          JSON.stringify({ error: 'Game not in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify the platform exists and user has it in their profile
@@ -1284,10 +1283,10 @@ router.post(
       )
 
       if (!userPlatform) {
-        return new Response(
-          JSON.stringify({ error: 'Platform not in your profile' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform not in your profile' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Check if user already owns the game on this platform
@@ -1317,16 +1316,16 @@ router.post(
         [user.id, gameId, platformId]
       )
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 201, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Add game to platform error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

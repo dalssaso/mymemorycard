@@ -18,8 +18,7 @@ import pg from 'pg'
 
 const { Pool } = pg
 
-export const API_BASE_URL =
-  process.env.API_BASE_URL || 'http://localhost:3000'
+export const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'
 
 /**
  * Test database connection pool.
@@ -61,7 +60,7 @@ export async function fetchWithAuth(
  */
 export async function createTestUser(
   email: string,
-  password: string = 'password123'
+  password = 'password123'
 ): Promise<{ token: string; userId: string }> {
   const username = email.split('@')[0]
 
@@ -87,10 +86,7 @@ export async function createTestUser(
 /**
  * Wait for the backend to be ready
  */
-export async function waitForBackend(
-  maxRetries: number = 30,
-  delayMs: number = 1000
-): Promise<boolean> {
+export async function waitForBackend(maxRetries = 30, delayMs = 1000): Promise<boolean> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetch(`${API_BASE_URL}/api/health`)

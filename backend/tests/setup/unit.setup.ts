@@ -27,16 +27,11 @@ mock.module('@/services/db', () => {
     return null
   }
 
-  const mockQueryMany = async <T = unknown>(
-    _text: string,
-    _params?: unknown[]
-  ): Promise<T[]> => {
+  const mockQueryMany = async <T = unknown>(_text: string, _params?: unknown[]): Promise<T[]> => {
     return []
   }
 
-  const mockWithTransaction = async <T>(
-    callback: (client: unknown) => Promise<T>
-  ): Promise<T> => {
+  const mockWithTransaction = async <T>(callback: (client: unknown) => Promise<T>): Promise<T> => {
     const mockClient = {
       query: mockQuery,
     }

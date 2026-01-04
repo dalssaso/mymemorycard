@@ -172,7 +172,7 @@ async function getOwnedDlcIds(
 
     if (edition?.is_complete_edition) {
       const allDlcs = await queryMany<{ id: string }>(
-        `SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'`,
+        "SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'",
         [gameId]
       )
       return new Set(allDlcs.map((d) => d.id))
@@ -191,7 +191,13 @@ async function calculateDerivedProgress(
   userId: string,
   gameId: string,
   platformId: string
-): Promise<{ full: number; completionist: number; main: number; achievementPercentage: number; hasDlcs: boolean }> {
+): Promise<{
+  full: number
+  completionist: number
+  main: number
+  achievementPercentage: number
+  hasDlcs: boolean
+}> {
   const achievementStats = await queryOne<{ total: number; completed: number }>(
     `SELECT
        (SELECT COUNT(*) FROM game_rawg_achievements WHERE game_id = $1) +
@@ -337,10 +343,10 @@ router.get(
     try {
       const gameId = params?.gameId
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const url = new URL(req.url)
@@ -380,14 +386,7 @@ router.get(
       const logs = await queryMany<CompletionLogWithGame>(logsQuery, queryParams)
 
       const totalResult = await queryOne<{ count: number }>(
-        `SELECT COUNT(*) as count FROM completion_logs WHERE user_id = $1 AND game_id = $2`,
-        [user.id, gameId]
-      )
-
-      const mainPct = await queryOne<{ percentage: number }>(
-        `SELECT percentage FROM completion_logs 
-         WHERE user_id = $1 AND game_id = $2 AND completion_type = 'main'
-         ORDER BY logged_at DESC LIMIT 1`,
+        'SELECT COUNT(*) as count FROM completion_logs WHERE user_id = $1 AND game_id = $2',
         [user.id, gameId]
       )
 
@@ -404,7 +403,13 @@ router.get(
         ownedDlcIds = await getOwnedDlcIds(user.id, gameId, activePlatformId)
       }
 
-      let derived = { full: 0, completionist: 0, main: 0, achievementPercentage: 100, hasDlcs: false }
+      let derived = {
+        full: 0,
+        completionist: 0,
+        main: 0,
+        achievementPercentage: 100,
+        hasDlcs: false,
+      }
 
       if (activePlatformId) {
         derived = await calculateDerivedProgress(user.id, gameId, activePlatformId)
@@ -467,10 +472,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get completion logs error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -481,10 +486,10 @@ router.post(
     try {
       const gameId = params?.gameId
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const body = (await req.json()) as {
@@ -498,24 +503,24 @@ router.post(
       const { platformId, percentage, completionType = 'main', dlcId, notes } = body
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (percentage === undefined || percentage === null) {
-        return new Response(
-          JSON.stringify({ error: 'Percentage is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Percentage is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (percentage < 0 || percentage > 100) {
-        return new Response(
-          JSON.stringify({ error: 'Percentage must be between 0 and 100' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Percentage must be between 0 and 100' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (completionType === 'full' || completionType === 'completionist') {
@@ -553,10 +558,10 @@ router.post(
       )
 
       if (!ownership) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (dlcId) {
@@ -565,10 +570,10 @@ router.post(
           [dlcId, gameId]
         )
         if (!dlcExists) {
-          return new Response(
-            JSON.stringify({ error: 'DLC not found for this game' }),
-            { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-          )
+          return new Response(JSON.stringify({ error: 'DLC not found for this game' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+          })
         }
       }
 
@@ -647,10 +652,10 @@ router.post(
       )
     } catch (error) {
       console.error('Create completion log error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -663,10 +668,10 @@ router.delete(
       const logId = params?.logId
 
       if (!gameId || !logId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and Log ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and Log ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const existingLog = await queryOne<CompletionLog>(
@@ -675,10 +680,10 @@ router.delete(
       )
 
       if (!existingLog) {
-        return new Response(
-          JSON.stringify({ error: 'Completion log not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Completion log not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query('DELETE FROM completion_logs WHERE id = $1 AND user_id = $2', [logId, user.id])
@@ -712,7 +717,13 @@ router.delete(
 
       const derived = await calculateDerivedProgress(user.id, gameId, existingLog.platform_id)
       await logDerivedProgress(user.id, gameId, existingLog.platform_id, 'full', derived.full)
-      await logDerivedProgress(user.id, gameId, existingLog.platform_id, 'completionist', derived.completionist)
+      await logDerivedProgress(
+        user.id,
+        gameId,
+        existingLog.platform_id,
+        'completionist',
+        derived.completionist
+      )
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -720,10 +731,10 @@ router.delete(
       })
     } catch (error) {
       console.error('Delete completion log error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -734,26 +745,26 @@ router.post(
     try {
       const gameId = params?.gameId
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const body = (await req.json()) as { platformId?: string }
       const { platformId } = body
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const derived = await calculateDerivedProgress(user.id, gameId, platformId)
 
       const allDlcs = await queryMany<{ id: string }>(
-        `SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'`,
+        "SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'",
         [gameId]
       )
 
@@ -808,10 +819,10 @@ router.post(
       )
     } catch (error) {
       console.error('Recalculate progress error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

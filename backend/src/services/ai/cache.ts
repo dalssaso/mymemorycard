@@ -56,10 +56,7 @@ export async function getCachedModels(provider: string): Promise<ModelsResponse 
   }
 }
 
-export async function setCachedModels(
-  provider: string,
-  models: ModelsResponse
-): Promise<void> {
+export async function setCachedModels(provider: string, models: ModelsResponse): Promise<void> {
   try {
     const key = `${MODELS_CACHE_KEY_PREFIX}${provider}`
     const dataWithTimestamp = {

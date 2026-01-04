@@ -171,10 +171,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get combined heatmap error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -240,7 +240,9 @@ router.get(
         } else {
           const prevDate = new Date(sortedDates[i - 1])
           const currDate = new Date(sortedDates[i])
-          const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24))
+          const diffDays = Math.round(
+            (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
 
           if (diffDays === 1) {
             tempStreak++
@@ -268,10 +270,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get activity heatmap error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -329,10 +331,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get completion heatmap error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -406,10 +408,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get achievement heatmap error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -488,19 +490,23 @@ router.get(
       )
 
       const totalAchievements = stats.reduce((sum, g) => sum + Number(g.total_achievements), 0)
-      const completedAchievements = stats.reduce((sum, g) => sum + Number(g.completed_achievements), 0)
-      const overallPercentage = totalAchievements > 0 
-        ? Math.round((completedAchievements / totalAchievements) * 100) 
-        : 0
+      const completedAchievements = stats.reduce(
+        (sum, g) => sum + Number(g.completed_achievements),
+        0
+      )
+      const overallPercentage =
+        totalAchievements > 0 ? Math.round((completedAchievements / totalAchievements) * 100) : 0
 
       const gamesWithAchievements = stats.length
-      const perfectGames = stats.filter(g => Number(g.completed_achievements) === Number(g.total_achievements)).length
+      const perfectGames = stats.filter(
+        (g) => Number(g.completed_achievements) === Number(g.total_achievements)
+      ).length
 
       const rarestUnlocked = stats
-        .filter(g => g.rarest_achievement_rarity !== null)
+        .filter((g) => g.rarest_achievement_rarity !== null)
         .sort((a, b) => (a.rarest_achievement_rarity ?? 100) - (b.rarest_achievement_rarity ?? 100))
         .slice(0, 5)
-        .map(g => ({
+        .map((g) => ({
           gameName: g.game_name,
           coverArtUrl: g.cover_art_url,
           achievementName: g.rarest_achievement_name,
@@ -515,7 +521,10 @@ router.get(
       }
 
       for (const game of stats) {
-        const achievementDetails = await queryMany<{ rarity_percent: number | null; completed: boolean }>(
+        const achievementDetails = await queryMany<{
+          rarity_percent: number | null
+          completed: boolean
+        }>(
           `SELECT gra.rarity_percent, COALESCE(ura.completed, false) as completed
            FROM game_rawg_achievements gra
            LEFT JOIN user_rawg_achievements ura ON gra.game_id = ura.game_id 
@@ -534,15 +543,16 @@ router.get(
         }
       }
 
-      const gameStats = stats.map(g => ({
+      const gameStats = stats.map((g) => ({
         gameId: g.game_id,
         gameName: g.game_name,
         coverArtUrl: g.cover_art_url,
         total: Number(g.total_achievements),
         completed: Number(g.completed_achievements),
-        percentage: Number(g.total_achievements) > 0 
-          ? Math.round((Number(g.completed_achievements) / Number(g.total_achievements)) * 100)
-          : 0,
+        percentage:
+          Number(g.total_achievements) > 0
+            ? Math.round((Number(g.completed_achievements) / Number(g.total_achievements)) * 100)
+            : 0,
       }))
 
       return new Response(
@@ -562,10 +572,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get achievement stats error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -722,9 +732,10 @@ router.get(
           (SELECT COUNT(*) FROM user_achievements WHERE user_id = $1 AND unlocked = true AND unlock_date IS NOT NULL) as count`,
         [user.id]
       )
-      const total = (sessionCount?.count ? parseInt(sessionCount.count, 10) : 0)
-        + (completionCount?.count ? parseInt(completionCount.count, 10) : 0)
-        + (achievementCount?.count ? parseInt(achievementCount.count, 10) : 0)
+      const total =
+        (sessionCount?.count ? parseInt(sessionCount.count, 10) : 0) +
+        (completionCount?.count ? parseInt(completionCount.count, 10) : 0) +
+        (achievementCount?.count ? parseInt(achievementCount.count, 10) : 0)
 
       return new Response(JSON.stringify({ feed, total, page: safePage, pageSize: safePageSize }), {
         status: 200,
@@ -732,10 +743,10 @@ router.get(
       })
     } catch (error) {
       console.error('Get activity feed error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

@@ -3,7 +3,6 @@ import { config } from '@/config'
 
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 16
-const AUTH_TAG_LENGTH = 16
 
 // Derive 32-byte key from JWT secret using scrypt
 const KEY = crypto.scryptSync(config.jwt.secret, 'salt', 32)

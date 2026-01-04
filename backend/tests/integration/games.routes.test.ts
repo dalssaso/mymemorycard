@@ -45,9 +45,7 @@ describe('Games Routes (integration)', () => {
     ])
     userId = userRes.rows[0].id
 
-    let platformRes = await testPool.query(
-      "SELECT id FROM platforms WHERE name = 'steam'"
-    )
+    let platformRes = await testPool.query("SELECT id FROM platforms WHERE name = 'steam'")
     if (platformRes.rows.length === 0) {
       platformRes = await testPool.query(
         "INSERT INTO platforms (name, display_name, platform_type) VALUES ('steam', 'Steam', 'pc') RETURNING id"
@@ -74,20 +72,17 @@ describe('Games Routes (integration)', () => {
 
   describe('PATCH /api/games/:id/status', () => {
     it('should update game status', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            status: 'playing',
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          status: 'playing',
+        }),
+      })
 
       expect(response.status).toBe(200)
       const data = (await response.json()) as { success: boolean }
@@ -102,20 +97,17 @@ describe('Games Routes (integration)', () => {
     })
 
     it('should fail with invalid status', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            status: 'invalid_status',
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          status: 'invalid_status',
+        }),
+      })
       expect(response.status).toBe(400)
     })
 
@@ -127,36 +119,12 @@ describe('Games Routes (integration)', () => {
       )
 
       if (otherGameRes.rows.length === 0) {
-        const existingGame = await testPool.query(
-          'SELECT id FROM games WHERE rawg_id = $1',
-          [randomId]
-        )
+        const existingGame = await testPool.query('SELECT id FROM games WHERE rawg_id = $1', [
+          randomId,
+        ])
         const otherGameId = existingGame.rows[0].id
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/games/${otherGameId}/status`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              platform_id: platformId,
-              status: 'playing',
-            }),
-          }
-        )
-
-        expect(response.status).toBe(404)
-        return
-      }
-
-      const otherGameId = otherGameRes.rows[0].id
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${otherGameId}/status`,
-        {
+        const response = await fetch(`${API_BASE_URL}/api/games/${otherGameId}/status`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -166,8 +134,25 @@ describe('Games Routes (integration)', () => {
             platform_id: platformId,
             status: 'playing',
           }),
-        }
-      )
+        })
+
+        expect(response.status).toBe(404)
+        return
+      }
+
+      const otherGameId = otherGameRes.rows[0].id
+
+      const response = await fetch(`${API_BASE_URL}/api/games/${otherGameId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          status: 'playing',
+        }),
+      })
 
       expect(response.status).toBe(404)
       const data = (await response.json()) as { error: string }
@@ -179,20 +164,17 @@ describe('Games Routes (integration)', () => {
 
   describe('PUT /api/games/:id/rating', () => {
     it('should update game rating', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/rating`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            rating: 9,
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/rating`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          rating: 9,
+        }),
+      })
 
       expect(response.status).toBe(200)
 
@@ -204,20 +186,17 @@ describe('Games Routes (integration)', () => {
     })
 
     it('should fail with invalid rating', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/rating`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            rating: 11,
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/rating`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          rating: 11,
+        }),
+      })
       expect(response.status).toBe(400)
     })
   })
@@ -249,20 +228,17 @@ describe('Games Routes (integration)', () => {
 
   describe('PUT /api/games/:id/favorite', () => {
     it('should mark game as favorite', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/favorite`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            is_favorite: true,
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/favorite`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          is_favorite: true,
+        }),
+      })
 
       expect(response.status).toBe(200)
       const data = (await response.json()) as {
@@ -280,20 +256,17 @@ describe('Games Routes (integration)', () => {
     })
 
     it('should unmark game as favorite', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/favorite`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            is_favorite: false,
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/favorite`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          is_favorite: false,
+        }),
+      })
 
       expect(response.status).toBe(200)
       const data = (await response.json()) as {
@@ -313,15 +286,12 @@ describe('Games Routes (integration)', () => {
 
   describe('GET /api/games/:id/custom-fields', () => {
     it('should return 400 when platform_id is missing', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/custom-fields`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/custom-fields`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       expect(response.status).toBe(400)
       const data = (await response.json()) as { error: string }
@@ -360,17 +330,14 @@ describe('Games Routes (integration)', () => {
         replay_value: 4,
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/custom-fields`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(customFields),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/custom-fields`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(customFields),
+      })
 
       expect(response.status).toBe(200)
       const data = (await response.json()) as { success: boolean }
@@ -392,17 +359,14 @@ describe('Games Routes (integration)', () => {
         replay_value: 5,
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/custom-fields`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(updatedFields),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/custom-fields`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedFields),
+      })
 
       expect(response.status).toBe(200)
 
@@ -415,39 +379,33 @@ describe('Games Routes (integration)', () => {
     })
 
     it('should fail with invalid difficulty rating', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/custom-fields`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            difficulty_rating: 11,
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/custom-fields`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          difficulty_rating: 11,
+        }),
+      })
 
       expect(response.status).toBe(400)
     })
 
     it('should fail with invalid completion percentage', async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/api/games/${gameId}/custom-fields`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            platform_id: platformId,
-            completion_percentage: 150,
-          }),
-        }
-      )
+      const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/custom-fields`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          platform_id: platformId,
+          completion_percentage: 150,
+        }),
+      })
 
       expect(response.status).toBe(400)
     })

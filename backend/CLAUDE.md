@@ -67,19 +67,19 @@ Migrations run automatically on backend startup.
 
 Key tables in `src/db/schema.ts`:
 
-| Table | Description |
-|-------|-------------|
-| users | User accounts |
-| games | Game metadata (from RAWG) |
-| userGames | User's library entries (ownership per platform) |
-| userGameProgress | Status, rating, completion, favorites |
-| playSessions | Play session tracking |
-| completionLogs | Completion percentage history |
-| collections | User-created game collections |
-| platforms | Gaming platforms (Steam, PSN, etc.) |
-| userPlatforms | User's connected platforms |
-| achievements | Game achievements |
-| gameAdditions | DLC and editions |
+| Table            | Description                                     |
+| ---------------- | ----------------------------------------------- |
+| users            | User accounts                                   |
+| games            | Game metadata (from RAWG)                       |
+| userGames        | User's library entries (ownership per platform) |
+| userGameProgress | Status, rating, completion, favorites           |
+| playSessions     | Play session tracking                           |
+| completionLogs   | Completion percentage history                   |
+| collections      | User-created game collections                   |
+| platforms        | Gaming platforms (Steam, PSN, etc.)             |
+| userPlatforms    | User's connected platforms                      |
+| achievements     | Game achievements                               |
+| gameAdditions    | DLC and editions                                |
 
 ### Drizzle ORM Patterns
 
@@ -110,7 +110,7 @@ Custom lightweight router in `lib/router.ts`:
 import { router } from '@/lib/router'
 
 // Define routes with path parameters
-router.get('/api/games/:id', getGameHandler, true)  // true = requires auth
+router.get('/api/games/:id', getGameHandler, true) // true = requires auth
 router.post('/api/games', createGameHandler, true)
 router.delete('/api/games/:id', deleteGameHandler, true)
 
@@ -142,6 +142,7 @@ async function handler(req: Request, params: Record<string, string>, user?: JWTP
 Backend tests are currently disabled due to stability issues.
 
 Verify changes with:
+
 ```bash
 bun run typecheck
 ```
@@ -150,14 +151,14 @@ And manual testing against the running server.
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| DATABASE_URL | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection |
-| REDIS_URL | `redis://localhost:6380` | Redis connection |
-| JWT_SECRET | `dev-jwt-secret-change-in-production` | JWT signing key |
-| RAWG_API_KEY | - | RAWG API for game metadata |
-| PORT | `3000` | Server port |
-| ORIGIN | - | Additional CORS origin |
+| Variable     | Default                                        | Description                |
+| ------------ | ---------------------------------------------- | -------------------------- |
+| DATABASE_URL | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection      |
+| REDIS_URL    | `redis://localhost:6380`                       | Redis connection           |
+| JWT_SECRET   | `dev-jwt-secret-change-in-production`          | JWT signing key            |
+| RAWG_API_KEY | -                                              | RAWG API for game metadata |
+| PORT         | `3000`                                         | Server port                |
+| ORIGIN       | -                                              | Additional CORS origin     |
 
 ## API Response Patterns
 

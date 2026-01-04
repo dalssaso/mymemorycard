@@ -26,16 +26,16 @@ router.get(
         theme: 'dark',
       }
 
-      return new Response(
-        JSON.stringify({ preferences: prefs || defaultPrefs }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ preferences: prefs || defaultPrefs }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get preferences error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -48,10 +48,10 @@ router.put(
       const { default_view, items_per_page, theme } = body
 
       if (default_view && !['grid', 'table'].includes(default_view)) {
-        return new Response(
-          JSON.stringify({ error: 'default_view must be "grid" or "table"' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'default_view must be "grid" or "table"' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (items_per_page && ![10, 25, 50, 100].includes(items_per_page)) {
@@ -62,10 +62,10 @@ router.put(
       }
 
       if (theme && !['light', 'dark', 'auto'].includes(theme)) {
-        return new Response(
-          JSON.stringify({ error: 'theme must be "light", "dark", or "auto"' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'theme must be "light", "dark", or "auto"' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query(
@@ -93,16 +93,16 @@ router.put(
         [user.id]
       )
 
-      return new Response(
-        JSON.stringify({ preferences: updated }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ preferences: updated }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Update preferences error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

@@ -60,7 +60,10 @@ async function startServer() {
             headers,
           })
         } catch (error) {
-          console.error('Route handler error:', error instanceof Error ? error.message : 'Unknown error')
+          console.error(
+            'Route handler error:',
+            error instanceof Error ? error.message : 'Unknown error'
+          )
           return new Response(JSON.stringify({ error: 'Internal server error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json', ...corsHeaders() },

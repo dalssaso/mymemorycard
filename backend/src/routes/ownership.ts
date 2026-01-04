@@ -134,7 +134,7 @@ router.put(
 
       if (editionId) {
         const edition = await queryOne<GameAddition>(
-          `SELECT * FROM game_additions WHERE id = $1 AND game_id = $2 AND addition_type = 'edition'`,
+          "SELECT * FROM game_additions WHERE id = $1 AND game_id = $2 AND addition_type = 'edition'",
           [editionId, gameId]
         )
 
@@ -211,7 +211,7 @@ router.put(
       }
 
       const allDlcs = await queryMany<GameAddition>(
-        `SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'`,
+        "SELECT id FROM game_additions WHERE game_id = $1 AND addition_type = 'dlc'",
         [gameId]
       )
 

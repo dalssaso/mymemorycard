@@ -4,7 +4,9 @@ export const config = {
   port: Number(process.env.PORT) || 3000,
 
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard',
+    url:
+      process.env.DATABASE_URL ||
+      'postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard',
   },
 
   redis: {
@@ -21,11 +23,9 @@ export const config = {
 
   cors: {
     origin: process.env.ORIGIN,
-    allowedOrigins: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      process.env.ORIGIN,
-    ].filter(Boolean) as string[],
+    allowedOrigins: ['http://localhost:5173', 'http://localhost:3000', process.env.ORIGIN].filter(
+      Boolean
+    ) as string[],
   },
 
   isProduction,

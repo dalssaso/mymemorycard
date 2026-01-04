@@ -16,39 +16,38 @@ export function verifyToken(token: string): JWTPayload | null {
 }
 
 export async function authenticate(req: Request): Promise<User | null> {
-  const authHeader = req.headers.get('Authorization');
-  
+  const authHeader = req.headers.get('Authorization')
+
   if (!authHeader?.startsWith('Bearer ')) {
-    return null;
+    return null
   }
 
-  const token = authHeader.slice(7);
-  const payload = verifyToken(token);
-  
+  const token = authHeader.slice(7)
+  const payload = verifyToken(token)
+
   if (!payload) {
-    return null;
+    return null
   }
 
   // Fetch user from database
-  const user = await queryOne<User>(
-    'SELECT * FROM users WHERE id = $1',
-    [payload.userId]
-  );
+  const user = await queryOne<User>('SELECT * FROM users WHERE id = $1', [payload.userId])
 
-  return user;
+  return user
 }
 
-export function requireAuth(handler: (req: Request, user: User, params?: Record<string, string>) => Promise<Response>) {
+export function requireAuth(
+  handler: (req: Request, user: User, params?: Record<string, string>) => Promise<Response>
+) {
   return async (req: Request, params?: Record<string, string>): Promise<Response> => {
-    const user = await authenticate(req);
-    
+    const user = await authenticate(req)
+
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },
-      });
+      })
     }
 
-    return handler(req, user, params);
-  };
+    return handler(req, user, params)
+  }
 }

@@ -15,9 +15,7 @@ describe('Import Routes (integration)', () => {
   let userId: string
 
   beforeAll(async () => {
-    await pool.query('DELETE FROM users WHERE email LIKE $1', [
-      '%@import-test.com',
-    ])
+    await pool.query('DELETE FROM users WHERE email LIKE $1', ['%@import-test.com'])
 
     const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',

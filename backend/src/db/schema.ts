@@ -31,7 +31,10 @@ export const users = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
-  (table) => [index('idx_users_email').on(table.email), index('idx_users_username').on(table.username)]
+  (table) => [
+    index('idx_users_email').on(table.email),
+    index('idx_users_username').on(table.username),
+  ]
 )
 
 export const webauthnCredentials = pgTable(
@@ -373,7 +376,10 @@ export const userPlaytime = pgTable(
     totalMinutes: integer('total_minutes').default(0),
     lastPlayed: timestamp('last_played', { withTimezone: true }),
   },
-  (table) => [unique().on(table.userId, table.gameId, table.platformId), index('idx_user_playtime_user').on(table.userId)]
+  (table) => [
+    unique().on(table.userId, table.gameId, table.platformId),
+    index('idx_user_playtime_user').on(table.userId),
+  ]
 )
 
 export const userGameProgress = pgTable(
@@ -402,7 +408,10 @@ export const userGameProgress = pgTable(
     index('idx_user_progress_user').on(table.userId),
     index('idx_user_progress_status').on(table.status),
     index('idx_user_favorites').on(table.userId, table.isFavorite),
-    check('status_check', sql`status IN ('backlog', 'playing', 'finished', 'dropped', 'completed')`),
+    check(
+      'status_check',
+      sql`status IN ('backlog', 'playing', 'finished', 'dropped', 'completed')`
+    ),
     check('user_rating_check', sql`user_rating >= 1 AND user_rating <= 10`),
   ]
 )
@@ -565,7 +574,10 @@ export const collectionGames = pgTable(
       .notNull()
       .references(() => games.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.collectionId, table.gameId), index('idx_collection_games_collection').on(table.collectionId)]
+  (table) => [
+    unique().on(table.collectionId, table.gameId),
+    index('idx_collection_games_collection').on(table.collectionId),
+  ]
 )
 
 // ============================================================================
@@ -593,7 +605,10 @@ export const userGameCustomFields = pgTable(
   (table) => [
     unique().on(table.userId, table.gameId, table.platformId),
     index('idx_custom_fields_user_game').on(table.userId, table.gameId),
-    check('completion_percentage_check', sql`completion_percentage >= 0 AND completion_percentage <= 100`),
+    check(
+      'completion_percentage_check',
+      sql`completion_percentage >= 0 AND completion_percentage <= 100`
+    ),
     check('difficulty_rating_check', sql`difficulty_rating >= 1 AND difficulty_rating <= 10`),
   ]
 )
@@ -641,7 +656,7 @@ export const userPreferences = pgTable(
     theme: varchar('theme', { length: 20 }).default('dark'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
-  (table) => [
+  () => [
     check('default_view_check', sql`default_view IN ('grid', 'table')`),
     check('items_per_page_check', sql`items_per_page IN (10, 25, 50, 100)`),
   ]

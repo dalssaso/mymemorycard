@@ -26,17 +26,17 @@ router.get(
       const platformId = url.searchParams.get('platform_id')
 
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const game = await queryOne<{ rawg_id: number | null }>(
@@ -45,10 +45,10 @@ router.get(
       )
 
       if (!game) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const manualAchievements = await queryMany<{
@@ -90,7 +90,8 @@ router.get(
         return new Response(
           JSON.stringify({
             achievements: manualMapped,
-            message: manualMapped.length === 0 ? 'No achievements available for this game' : undefined,
+            message:
+              manualMapped.length === 0 ? 'No achievements available for this game' : undefined,
           }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
@@ -118,7 +119,14 @@ router.get(
               `INSERT INTO game_rawg_achievements (game_id, rawg_achievement_id, name, description, image_url, rarity_percent)
                VALUES ($1, $2, $3, $4, $5, $6)
                ON CONFLICT (game_id, rawg_achievement_id) DO NOTHING`,
-              [gameId, ach.id, ach.name, ach.description, ach.image, parseFloat(ach.percent) || null]
+              [
+                gameId,
+                ach.id,
+                ach.name,
+                ach.description,
+                ach.image,
+                parseFloat(ach.percent) || null,
+              ]
             )
           }
         }
@@ -132,9 +140,7 @@ router.get(
           [user.id, gameId, platformId]
         )
 
-        const progressMap = new Map(
-          userProgress.map((p) => [p.rawg_achievement_id, p])
-        )
+        const progressMap = new Map(userProgress.map((p) => [p.rawg_achievement_id, p]))
 
         achievements = rawgAchievements.map((ach) => {
           const progress = progressMap.get(ach.id)
@@ -160,9 +166,7 @@ router.get(
           [user.id, gameId, platformId]
         )
 
-        const progressMap = new Map(
-          userProgress.map((p) => [p.rawg_achievement_id, p])
-        )
+        const progressMap = new Map(userProgress.map((p) => [p.rawg_achievement_id, p]))
 
         achievements = cachedAchievements.map((ach) => {
           const progress = progressMap.get(ach.rawg_achievement_id)
@@ -180,16 +184,16 @@ router.get(
         })
       }
 
-      return new Response(
-        JSON.stringify({ achievements: [...manualMapped, ...achievements] }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ achievements: [...manualMapped, ...achievements] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get achievements error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -207,24 +211,24 @@ router.post(
       const { platform_id: platformId, name, description } = body
 
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!name || !name.trim()) {
-        return new Response(
-          JSON.stringify({ error: 'Achievement name is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Achievement name is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const ownership = await queryOne<{ id: string }>(
@@ -240,7 +244,11 @@ router.post(
       }
 
       const achievementId = `manual_${randomUUID()}`
-      const created = await queryOne<{ id: string; name: string | null; description: string | null }>(
+      const created = await queryOne<{
+        id: string
+        name: string | null
+        description: string | null
+      }>(
         `INSERT INTO achievements (game_id, platform_id, achievement_id, name, description)
          VALUES ($1, $2, $3, $4, $5)
          RETURNING id, name, description`,
@@ -248,10 +256,10 @@ router.post(
       )
 
       if (!created) {
-        return new Response(
-          JSON.stringify({ error: 'Failed to create achievement' }),
-          { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Failed to create achievement' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query(
@@ -279,10 +287,10 @@ router.post(
       )
     } catch (error) {
       console.error('Create manual achievement error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -296,32 +304,32 @@ router.post(
       const { platform_id: platformId, achievementIds } = body
 
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!achievementIds || achievementIds.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'Achievement IDs are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Achievement IDs are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const validIds = achievementIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id))
       if (validIds.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'No valid achievement IDs provided' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'No valid achievement IDs provided' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const deleted = await queryMany<{ id: string }>(
@@ -336,16 +344,16 @@ router.post(
         [user.id, gameId, platformId, validIds]
       )
 
-      return new Response(
-        JSON.stringify({ deletedIds: deleted.map((row) => row.id) }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ deletedIds: deleted.map((row) => row.id) }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Bulk delete manual achievements error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -360,24 +368,24 @@ router.put(
       const { completed, platform_id: platformId } = body
 
       if (!gameId || !achievementId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and achievement ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and achievement ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (completed === undefined) {
-        return new Response(
-          JSON.stringify({ error: 'completed field is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'completed field is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const ownership = await query(
@@ -405,10 +413,10 @@ router.put(
         )
 
         if (!achievement) {
-          return new Response(
-            JSON.stringify({ error: 'Achievement not found' }),
-            { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-          )
+          return new Response(JSON.stringify({ error: 'Achievement not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+          })
         }
 
         await query(
@@ -455,7 +463,11 @@ router.put(
         }
 
         return new Response(
-          JSON.stringify({ success: true, completed, completed_at: completed ? completedAt : null }),
+          JSON.stringify({
+            success: true,
+            completed,
+            completed_at: completed ? completedAt : null,
+          }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
         )
       }
@@ -509,10 +521,10 @@ router.put(
       )
     } catch (error) {
       console.error('Update achievement error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

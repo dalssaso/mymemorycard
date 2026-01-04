@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import type OpenAI from 'openai'
 
 export interface ModelCapability {
   id: string
@@ -19,12 +19,7 @@ export interface ModelsResponse {
   imageModels: ModelCapability[]
 }
 
-const OPENAI_TEXT_MODEL_RANKING = [
-  'gpt-5-nano',
-  'gpt-5-mini',
-  'gpt-4o-mini',
-  'gpt-5',
-]
+const OPENAI_TEXT_MODEL_RANKING = ['gpt-5-nano', 'gpt-5-mini', 'gpt-4o-mini', 'gpt-5']
 
 const OPENAI_MODEL_PRICING: Record<string, { input: number; output: number }> = {
   'gpt-5': { input: 1.25, output: 10 },
@@ -176,7 +171,10 @@ export async function discoverOpenRouterModels(apiKey: string): Promise<ModelsRe
         m.id.includes('dream') ||
         m.id.includes('dall-e')
     )
-    console.log('Available OpenRouter image models:', availableImageModels.map((m) => m.id))
+    console.log(
+      'Available OpenRouter image models:',
+      availableImageModels.map((m) => m.id)
+    )
 
     for (const modelId of OPENROUTER_IMAGE_MODELS) {
       const model = modelsMap.get(modelId)

@@ -102,7 +102,9 @@ export function buildNextGameSuggestionPrompt(
   const backlog = library
     .filter((g) => g.status === 'backlog')
     .slice(0, 50)
-    .map((g) => `${g.name} (${g.genres.join(', ')})${g.seriesName ? ` [Series: ${g.seriesName}]` : ''}`)
+    .map(
+      (g) => `${g.name} (${g.genres.join(', ')})${g.seriesName ? ` [Series: ${g.seriesName}]` : ''}`
+    )
     .join('\n')
 
   const playing = library
@@ -139,7 +141,10 @@ Guidelines:
 - Estimated hours should be realistic (can be null if unknown)`
 }
 
-export function buildCoverImagePrompt(collectionName: string, collectionDescription: string): string {
+export function buildCoverImagePrompt(
+  collectionName: string,
+  collectionDescription: string
+): string {
   return `Create a cover image for a video game collection titled "${collectionName}".
 
 Description: ${collectionDescription}

@@ -12,40 +12,28 @@ describe('CORS Middleware', () => {
     it('should return CORS headers with allowed origin', () => {
       const headers = corsHeaders('http://localhost:5173')
 
-      expect(headers['Access-Control-Allow-Origin']).toBe(
-        'http://localhost:5173'
-      )
-      expect(headers['Access-Control-Allow-Methods']).toBe(
-        'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-      )
-      expect(headers['Access-Control-Allow-Headers']).toBe(
-        'Content-Type, Authorization'
-      )
+      expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:5173')
+      expect(headers['Access-Control-Allow-Methods']).toBe('GET, POST, PUT, PATCH, DELETE, OPTIONS')
+      expect(headers['Access-Control-Allow-Headers']).toBe('Content-Type, Authorization')
       expect(headers['Access-Control-Allow-Credentials']).toBe('true')
     })
 
     it('should return first allowed origin for unknown origin', () => {
       const headers = corsHeaders('http://unknown.com')
 
-      expect(headers['Access-Control-Allow-Origin']).toBe(
-        'http://localhost:5173'
-      )
+      expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:5173')
     })
 
     it('should return first allowed origin when no origin provided', () => {
       const headers = corsHeaders()
 
-      expect(headers['Access-Control-Allow-Origin']).toBe(
-        'http://localhost:5173'
-      )
+      expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:5173')
     })
 
     it('should allow localhost:3000', () => {
       const headers = corsHeaders('http://localhost:3000')
 
-      expect(headers['Access-Control-Allow-Origin']).toBe(
-        'http://localhost:3000'
-      )
+      expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:3000')
     })
   })
 
@@ -74,9 +62,7 @@ describe('CORS Middleware', () => {
 
       const response = handleCors(request)
 
-      expect(response?.headers.get('Access-Control-Allow-Origin')).toBe(
-        'http://localhost:5173'
-      )
+      expect(response?.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:5173')
       expect(response?.headers.get('Access-Control-Allow-Methods')).toBe(
         'GET, POST, PUT, PATCH, DELETE, OPTIONS'
       )

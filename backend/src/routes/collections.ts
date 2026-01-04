@@ -32,7 +32,7 @@ router.get(
             'SELECT COUNT(*) as count FROM collection_games WHERE collection_id = $1',
             [collection.id]
           )
-          
+
           // Get cover art from the highest-rated or most recent game (with display edition support)
           const coverResult = await queryOne<{ cover_art_url: string | null }>(
             `SELECT COALESCE(ugde.cover_art_url, g.cover_art_url) as cover_art_url
@@ -47,7 +47,7 @@ router.get(
              LIMIT 1`,
             [collection.id, user.id]
           )
-          
+
           return {
             ...collection,
             game_count: countResult?.count || 0,
@@ -56,16 +56,16 @@ router.get(
         })
       )
 
-      return new Response(
-        JSON.stringify({ collections: collectionsWithCounts }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ collections: collectionsWithCounts }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get collections error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -77,10 +77,10 @@ router.get(
     try {
       const collectionId = params?.id
       if (!collectionId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this collection
@@ -90,10 +90,10 @@ router.get(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Get cover art from the highest-rated or most recent game (with display edition support)
@@ -151,10 +151,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get collection games error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -164,14 +164,14 @@ router.post(
   '/api/collections',
   requireAuth(async (req, user) => {
     try {
-      const body = await req.json() as { name?: string; description?: string }
+      const body = (await req.json()) as { name?: string; description?: string }
       const { name, description } = body
 
       if (!name || !name.trim()) {
-        return new Response(
-          JSON.stringify({ error: 'Collection name is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection name is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const result = await query<Collection>(
@@ -181,16 +181,16 @@ router.post(
         [user.id, name.trim(), description?.trim() || null]
       )
 
-      return new Response(
-        JSON.stringify({ collection: result.rows[0] }),
-        { status: 201, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ collection: result.rows[0] }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Create collection error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -201,34 +201,34 @@ router.put(
   requireAuth(async (req, user, params) => {
     try {
       const collectionId = params?.id
-      const body = await req.json() as { name?: string; description?: string }
+      const body = (await req.json()) as { name?: string; description?: string }
       const { name, description } = body
 
       if (!collectionId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!name || !name.trim()) {
-        return new Response(
-          JSON.stringify({ error: 'Collection name is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection name is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify ownership
-      const existing = await queryOne(
-        'SELECT 1 FROM collections WHERE id = $1 AND user_id = $2',
-        [collectionId, user.id]
-      )
+      const existing = await queryOne('SELECT 1 FROM collections WHERE id = $1 AND user_id = $2', [
+        collectionId,
+        user.id,
+      ])
 
       if (!existing) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const result = await query<Collection>(
@@ -239,16 +239,16 @@ router.put(
         [name.trim(), description?.trim() || null, collectionId, user.id]
       )
 
-      return new Response(
-        JSON.stringify({ collection: result.rows[0] }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ collection: result.rows[0] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Update collection error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -260,10 +260,10 @@ router.delete(
     try {
       const collectionId = params?.id
       if (!collectionId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Get collection to find cover filename
@@ -273,17 +273,14 @@ router.delete(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Delete from database
-      await query(
-        'DELETE FROM collections WHERE id = $1 AND user_id = $2',
-        [collectionId, user.id]
-      )
+      await query('DELETE FROM collections WHERE id = $1 AND user_id = $2', [collectionId, user.id])
 
       // Delete cover file if exists
       if (collection.cover_filename) {
@@ -301,16 +298,16 @@ router.delete(
         }
       }
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Delete collection error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -321,14 +318,14 @@ router.post(
   requireAuth(async (req, user, params) => {
     try {
       const collectionId = params?.id
-      const body = await req.json() as { game_id?: string }
+      const body = (await req.json()) as { game_id?: string }
       const { game_id } = body
 
       if (!collectionId || !game_id) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID and game ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID and game ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify ownership
@@ -338,10 +335,10 @@ router.post(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Add game to collection (ignore if already exists)
@@ -352,16 +349,16 @@ router.post(
         [collectionId, game_id]
       )
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Add game to collection error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -375,10 +372,10 @@ router.delete(
       const gameId = params?.gameId
 
       if (!collectionId || !gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID and game ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID and game ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify ownership
@@ -388,27 +385,27 @@ router.delete(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
-      await query(
-        'DELETE FROM collection_games WHERE collection_id = $1 AND game_id = $2',
-        [collectionId, gameId]
-      )
+      await query('DELETE FROM collection_games WHERE collection_id = $1 AND game_id = $2', [
+        collectionId,
+        gameId,
+      ])
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Remove game from collection error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -418,7 +415,11 @@ router.get(
   '/api/collections/series',
   requireAuth(async (req, user) => {
     try {
-      const series = await queryMany<{ series_name: string; owned_count: number; cover_art_url: string | null }>(
+      const series = await queryMany<{
+        series_name: string
+        owned_count: number
+        cover_art_url: string | null
+      }>(
         `SELECT
           g.series_name,
           COUNT(DISTINCT g.id) as owned_count,
@@ -443,16 +444,16 @@ router.get(
         [user.id]
       )
 
-      return new Response(
-        JSON.stringify({ series }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ series }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get series error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -464,10 +465,10 @@ router.get(
     try {
       const seriesName = params?.seriesName
       if (!seriesName) {
-        return new Response(
-          JSON.stringify({ error: 'Series name is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Series name is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const games = await queryMany(
@@ -487,16 +488,16 @@ router.get(
         [user.id, decodeURIComponent(seriesName)]
       )
 
-      return new Response(
-        JSON.stringify({ series_name: seriesName, games }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ series_name: seriesName, games }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get series games error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -511,24 +512,24 @@ router.post(
       const { gameIds } = body
 
       if (!collectionId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!gameIds || !Array.isArray(gameIds) || gameIds.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'gameIds array is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'gameIds array is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (gameIds.length > 100) {
-        return new Response(
-          JSON.stringify({ error: 'Cannot add more than 100 games at once' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Cannot add more than 100 games at once' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const collection = await queryOne(
@@ -537,10 +538,10 @@ router.post(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       let addedCount = 0
@@ -556,16 +557,16 @@ router.post(
         }
       }
 
-      return new Response(
-        JSON.stringify({ success: true, addedCount }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, addedCount }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Bulk add games to collection error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -577,10 +578,10 @@ router.post(
     try {
       const collectionId = params?.id
       if (!collectionId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify ownership
@@ -590,10 +591,10 @@ router.post(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Parse form data
@@ -601,10 +602,10 @@ router.post(
       const file = formData.get('cover') as File
 
       if (!file) {
-        return new Response(
-          JSON.stringify({ error: 'No file provided' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'No file provided' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Validate file type
@@ -619,10 +620,10 @@ router.post(
       // Validate file size (5MB)
       const maxSize = 5 * 1024 * 1024
       if (file.size > maxSize) {
-        return new Response(
-          JSON.stringify({ error: 'Image must be under 5MB' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Image must be under 5MB' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Process image
@@ -660,7 +661,10 @@ router.post(
       }
 
       // Update database
-      await query('UPDATE collections SET cover_filename = $1 WHERE id = $2', [filename, collectionId])
+      await query('UPDATE collections SET cover_filename = $1 WHERE id = $2', [
+        filename,
+        collectionId,
+      ])
 
       return new Response(
         JSON.stringify({
@@ -687,10 +691,10 @@ router.delete(
     try {
       const collectionId = params?.id
       if (!collectionId) {
-        return new Response(
-          JSON.stringify({ error: 'Collection ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Get collection
@@ -700,10 +704,10 @@ router.delete(
       )
 
       if (!collection) {
-        return new Response(
-          JSON.stringify({ error: 'Collection not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Collection not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Delete file if exists
@@ -725,16 +729,16 @@ router.delete(
       // Update database
       await query('UPDATE collections SET cover_filename = NULL WHERE id = $1', [collectionId])
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Delete cover error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Failed to remove cover' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Failed to remove cover' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

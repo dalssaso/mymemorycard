@@ -99,11 +99,7 @@ const OTHER_PATTERNS = [
 ]
 
 const EXCLUDED_SEARCH_GENRES = new Set(['board games', 'card', 'music'])
-const EXCLUDED_SEARCH_NAME_PATTERNS = [
-  /soundtrack/i,
-  /\bost\b/i,
-  /original\s+soundtrack/i,
-]
+const EXCLUDED_SEARCH_NAME_PATTERNS = [/soundtrack/i, /\bost\b/i, /original\s+soundtrack/i]
 
 export function classifyAddition(name: string): { type: AdditionType; isComplete: boolean } {
   const lowerName = name.toLowerCase()
@@ -183,9 +179,7 @@ class RateLimiter {
     const timeSinceLastRequest = now - this.lastRequestTime
 
     if (timeSinceLastRequest < this.minInterval) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, this.minInterval - timeSinceLastRequest)
-      )
+      await new Promise((resolve) => setTimeout(resolve, this.minInterval - timeSinceLastRequest))
     }
 
     const task = this.queue.shift()
@@ -227,19 +221,19 @@ export async function searchGames(query: string, useCache = true): Promise<RAWGG
     console.log(`RAWG API request: search "${query}"`)
     await incrementRAWGRequestCount() // Track API usage
     const response = await fetch(url.toString())
-    
+
     if (!response.ok) {
       throw new Error(`RAWG API error: ${response.status}`)
     }
 
     const data = (await response.json()) as RAWGSearchResponse
     const filteredResults = data.results.filter(isPlatformGameCandidate)
-    
+
     // Cache the results
     if (useCache) {
       await cacheSearch(query, filteredResults)
     }
-    
+
     return filteredResults
   })
 }
@@ -266,7 +260,7 @@ export async function getGameDetails(gameId: number, useCache = true): Promise<R
     console.log(`RAWG API request: game details ${gameId}`)
     await incrementRAWGRequestCount() // Track API usage
     const response = await fetch(url.toString())
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         return null
@@ -275,17 +269,20 @@ export async function getGameDetails(gameId: number, useCache = true): Promise<R
     }
 
     const game = (await response.json()) as RAWGGame
-    
+
     // Cache the results
     if (useCache) {
       await cacheGameDetails(gameId, game)
     }
-    
+
     return game
   })
 }
 
-export async function getGameDetailsBySlug(slug: string, useCache = true): Promise<RAWGGame | null> {
+export async function getGameDetailsBySlug(
+  slug: string,
+  useCache = true
+): Promise<RAWGGame | null> {
   if (!RAWG_API_KEY) {
     console.warn('RAWG API key not configured')
     return null
@@ -307,7 +304,7 @@ export async function getGameDetailsBySlug(slug: string, useCache = true): Promi
     console.log(`RAWG API request: game details by slug ${slug}`)
     await incrementRAWGRequestCount()
     const response = await fetch(url.toString())
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         return null
@@ -316,18 +313,21 @@ export async function getGameDetailsBySlug(slug: string, useCache = true): Promi
     }
 
     const game = (await response.json()) as RAWGGame
-    
+
     // Cache the results by both slug and ID
     if (useCache) {
       await cacheGameDetailsBySlug(slug, game)
       await cacheGameDetails(game.id, game)
     }
-    
+
     return game
   })
 }
 
-export async function getGameAchievements(gameId: number, useCache = true): Promise<RAWGAchievement[]> {
+export async function getGameAchievements(
+  gameId: number,
+  useCache = true
+): Promise<RAWGAchievement[]> {
   if (!RAWG_API_KEY) {
     console.warn('RAWG API key not configured')
     return []
@@ -343,7 +343,8 @@ export async function getGameAchievements(gameId: number, useCache = true): Prom
 
   return rateLimiter.schedule(async () => {
     const allAchievements: RAWGAchievement[] = []
-    let nextUrl: string | null = `${RAWG_BASE_URL}/games/${gameId}/achievements?key=${RAWG_API_KEY}&page_size=40`
+    let nextUrl: string | null =
+      `${RAWG_BASE_URL}/games/${gameId}/achievements?key=${RAWG_API_KEY}&page_size=40`
 
     while (nextUrl) {
       console.log(`RAWG API request: achievements for game ${gameId}`)
@@ -398,7 +399,7 @@ export async function getGameSeries(gameId: number, useCache = true): Promise<st
     console.log(`RAWG API request: game series ${gameId}`)
     await incrementRAWGRequestCount() // Track API usage
     const response = await fetch(url.toString())
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         await cacheGameSeries(gameId, null)
@@ -416,9 +417,7 @@ export async function getGameSeries(gameId: number, useCache = true): Promise<st
     // A game with any series results is considered part of a series
     if (data.results.length > 0) {
       // Fetch the current game's name to include in analysis
-      const currentGameResp = await fetch(
-        `${RAWG_BASE_URL}/games/${gameId}?key=${RAWG_API_KEY}`
-      )
+      const currentGameResp = await fetch(`${RAWG_BASE_URL}/games/${gameId}?key=${RAWG_API_KEY}`)
       let currentGameName: string | null = null
       if (currentGameResp.ok) {
         const currentGame = (await currentGameResp.json()) as { name: string }
@@ -426,9 +425,7 @@ export async function getGameSeries(gameId: number, useCache = true): Promise<st
       }
 
       // Include the current game in the list for better series name detection
-      const allGames = currentGameName
-        ? [{ name: currentGameName }, ...data.results]
-        : data.results
+      const allGames = currentGameName ? [{ name: currentGameName }, ...data.results] : data.results
 
       // Find common prefix from all game names
       const firstGame = allGames[0].name
@@ -449,12 +446,12 @@ export async function getGameSeries(gameId: number, useCache = true): Promise<st
         }
       }
     }
-    
+
     // Cache the results
     if (useCache) {
       await cacheGameSeries(gameId, seriesName)
     }
-    
+
     return seriesName
   })
 }
@@ -481,7 +478,8 @@ export async function getGameSeriesMembers(
 
   return rateLimiter.schedule(async () => {
     const allMembers: SeriesMember[] = []
-    let nextUrl: string | null = `${RAWG_BASE_URL}/games/${gameId}/game-series?key=${RAWG_API_KEY}&page_size=40`
+    let nextUrl: string | null =
+      `${RAWG_BASE_URL}/games/${gameId}/game-series?key=${RAWG_API_KEY}&page_size=40`
 
     while (nextUrl) {
       console.log(`RAWG API request: series members for game ${gameId}`)
@@ -518,9 +516,9 @@ export async function getGameSeriesMembers(
     }
 
     // Derive series name using same logic as getGameSeries
-      // Include the queried game itself for better series name detection
-      let seriesName: string | null = null
-      if (allMembers.length >= 1) {
+    // Include the queried game itself for better series name detection
+    let seriesName: string | null = null
+    if (allMembers.length >= 1) {
       // Fetch the queried game's name to include in analysis
       const queriedGame = await getGameDetails(gameId, useCache)
       const allGamesForAnalysis = queriedGame
@@ -706,7 +704,8 @@ export async function getGameAdditions(gameId: number, useCache = true): Promise
 
   return rateLimiter.schedule(async () => {
     const allAdditions: RAWGAddition[] = []
-    let nextUrl: string | null = `${RAWG_BASE_URL}/games/${gameId}/additions?key=${RAWG_API_KEY}&page_size=40`
+    let nextUrl: string | null =
+      `${RAWG_BASE_URL}/games/${gameId}/additions?key=${RAWG_API_KEY}&page_size=40`
 
     while (nextUrl) {
       console.log(`RAWG API request: additions for game ${gameId}`)
@@ -759,15 +758,20 @@ async function cacheAdditions(gameId: number, additions: RAWGAddition[]): Promis
   }
 }
 
-export type { RAWGGame, RAWGSearchResponse, RAWGGameSeries, RAWGAchievement, RAWGAddition, RAWGSeriesGame }
+export type {
+  RAWGGame,
+  RAWGSearchResponse,
+  RAWGGameSeries,
+  RAWGAchievement,
+  RAWGAddition,
+  RAWGSeriesGame,
+}
 
-function isPlatformGameCandidate(
-  game: {
-    name: string
-    platforms?: RAWGGame['platforms']
-    genres?: RAWGGame['genres']
-  }
-): boolean {
+function isPlatformGameCandidate(game: {
+  name: string
+  platforms?: RAWGGame['platforms']
+  genres?: RAWGGame['genres']
+}): boolean {
   if (EXCLUDED_SEARCH_NAME_PATTERNS.some((pattern) => pattern.test(game.name))) {
     return false
   }

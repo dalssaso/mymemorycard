@@ -8,11 +8,11 @@ export async function incrementRAWGRequestCount(): Promise<number> {
     // Check if we need to reset the counter (monthly)
     const resetTime = await redisClient.get(COUNTER_RESET_KEY)
     const now = new Date()
-    
+
     if (!resetTime || new Date(resetTime) < now) {
       // Reset counter for new month
       await redisClient.set(COUNTER_KEY, '0')
-      
+
       // Set next reset date (first day of next month)
       const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1)
       await redisClient.set(COUNTER_RESET_KEY, nextReset.toISOString())
@@ -20,16 +20,16 @@ export async function incrementRAWGRequestCount(): Promise<number> {
 
     // Increment and return current count
     const count = await redisClient.incr(COUNTER_KEY)
-    
+
     // Log warning if approaching limit
     if (count > 15000) {
       console.warn(`RAWG API usage high: ${count}/20000 requests this month`)
     }
-    
+
     if (count > 19000) {
       console.error(`RAWG API usage critical: ${count}/20000 requests this month`)
     }
-    
+
     return count
   } catch (error) {
     console.error('Failed to increment RAWG request count:', error)
@@ -56,7 +56,7 @@ export async function getRAWGRequestStats(): Promise<{
   try {
     const count = await getRAWGRequestCount()
     const resetTime = await redisClient.get(COUNTER_RESET_KEY)
-    
+
     return {
       count,
       limit: 20000,

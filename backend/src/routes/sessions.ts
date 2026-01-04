@@ -27,10 +27,10 @@ router.get(
     try {
       const gameId = params?.gameId
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const url = new URL(req.url)
@@ -67,7 +67,7 @@ router.get(
       const sessions = await queryMany<PlaySessionWithGame>(queryStr, queryParams)
 
       const totalResult = await queryOne<{ count: number }>(
-        `SELECT COUNT(*) as count FROM play_sessions WHERE user_id = $1 AND game_id = $2`,
+        'SELECT COUNT(*) as count FROM play_sessions WHERE user_id = $1 AND game_id = $2',
         [user.id, gameId]
       )
 
@@ -88,10 +88,10 @@ router.get(
       )
     } catch (error) {
       console.error('Get sessions error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -103,10 +103,10 @@ router.post(
     try {
       const gameId = params?.gameId
       if (!gameId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const body = (await req.json()) as {
@@ -120,17 +120,17 @@ router.post(
       const { platformId, startedAt, endedAt, durationMinutes, notes } = body
 
       if (!platformId) {
-        return new Response(
-          JSON.stringify({ error: 'Platform ID is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       if (!startedAt) {
-        return new Response(
-          JSON.stringify({ error: 'startedAt is required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'startedAt is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify user owns this game on this platform
@@ -140,10 +140,10 @@ router.post(
       )
 
       if (!ownership) {
-        return new Response(
-          JSON.stringify({ error: 'Game not found in your library' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Get progress status from user_game_progress table
@@ -192,7 +192,15 @@ router.post(
         `INSERT INTO play_sessions (user_id, game_id, platform_id, started_at, ended_at, duration_minutes, notes)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [user.id, gameId, platformId, startedAt, endedAt || null, calculatedDuration || null, notes || null]
+        [
+          user.id,
+          gameId,
+          platformId,
+          startedAt,
+          endedAt || null,
+          calculatedDuration || null,
+          notes || null,
+        ]
       )
 
       // If this is a completed session (has endedAt), update user_playtime
@@ -215,10 +223,10 @@ router.post(
       })
     } catch (error) {
       console.error('Create session error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -232,10 +240,10 @@ router.patch(
       const sessionId = params?.sessionId
 
       if (!gameId || !sessionId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and Session ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and Session ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Verify session belongs to user
@@ -245,10 +253,10 @@ router.patch(
       )
 
       if (!existingSession) {
-        return new Response(
-          JSON.stringify({ error: 'Session not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Session not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       const body = (await req.json()) as {
@@ -318,10 +326,10 @@ router.patch(
       })
     } catch (error) {
       console.error('Update session error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -335,10 +343,10 @@ router.delete(
       const sessionId = params?.sessionId
 
       if (!gameId || !sessionId) {
-        return new Response(
-          JSON.stringify({ error: 'Game ID and Session ID are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Game ID and Session ID are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       // Get session before deleting to update playtime
@@ -348,10 +356,10 @@ router.delete(
       )
 
       if (!existingSession) {
-        return new Response(
-          JSON.stringify({ error: 'Session not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Session not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       await query('DELETE FROM play_sessions WHERE id = $1 AND user_id = $2', [sessionId, user.id])
@@ -392,10 +400,10 @@ router.delete(
       })
     } catch (error) {
       console.error('Delete session error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -425,10 +433,10 @@ router.get(
       })
     } catch (error) {
       console.error('Get active session error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

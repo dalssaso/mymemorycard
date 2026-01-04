@@ -70,7 +70,10 @@ router.get(
       const url = new URL(req.url)
       const platformId = url.searchParams.get('platform_id')
 
-      const game = await queryOne<{ rawg_id: number | null }>('SELECT rawg_id FROM games WHERE id = $1', [gameId])
+      const game = await queryOne<{ rawg_id: number | null }>(
+        'SELECT rawg_id FROM games WHERE id = $1',
+        [gameId]
+      )
 
       if (!game) {
         return new Response(JSON.stringify({ error: 'Game not found' }), {
@@ -195,10 +198,10 @@ router.put(
 
       const { weight, requiredForFull } = body
 
-      const addition = await queryOne<GameAddition>('SELECT * FROM game_additions WHERE id = $1 AND game_id = $2', [
-        additionId,
-        gameId,
-      ])
+      const addition = await queryOne<GameAddition>(
+        'SELECT * FROM game_additions WHERE id = $1 AND game_id = $2',
+        [additionId, gameId]
+      )
 
       if (!addition) {
         return new Response(JSON.stringify({ error: 'Addition not found' }), {
@@ -242,7 +245,10 @@ router.post(
         })
       }
 
-      const game = await queryOne<{ rawg_id: number | null }>('SELECT rawg_id FROM games WHERE id = $1', [gameId])
+      const game = await queryOne<{ rawg_id: number | null }>(
+        'SELECT rawg_id FROM games WHERE id = $1',
+        [gameId]
+      )
 
       if (!game || !game.rawg_id) {
         return new Response(JSON.stringify({ error: 'Game not found or no RAWG ID' }), {

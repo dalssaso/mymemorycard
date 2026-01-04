@@ -88,10 +88,7 @@ describe('Router', () => {
     })
 
     it('should extract multiple path parameters', () => {
-      router.get(
-        '/api/users/:userId/games/:gameId',
-        async () => new Response('ok')
-      )
+      router.get('/api/users/:userId/games/:gameId', async () => new Response('ok'))
 
       const match = router.match('/api/users/user1/games/game2', 'GET')
       expect(match).not.toBeNull()

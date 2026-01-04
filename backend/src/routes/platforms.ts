@@ -15,7 +15,7 @@ function toPlatformSlug(displayName: string): string {
 // Get all platforms
 router.get(
   '/api/platforms',
-  requireAuth(async (req, user) => {
+  requireAuth(async (_req, _user) => {
     try {
       const platforms = await queryMany<Platform>(
         `SELECT 
@@ -25,16 +25,16 @@ router.get(
         ORDER BY is_system DESC, sort_order ASC, display_name ASC`
       )
 
-      return new Response(
-        JSON.stringify({ platforms }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ platforms }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Get platforms error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )
@@ -59,7 +59,10 @@ router.post(
         })
       }
 
-      if (!body.platformType || !['pc', 'console', 'mobile', 'physical'].includes(body.platformType)) {
+      if (
+        !body.platformType ||
+        !['pc', 'console', 'mobile', 'physical'].includes(body.platformType)
+      ) {
         return new Response(
           JSON.stringify({ error: 'platformType must be one of: pc, console, mobile, physical' }),
           {

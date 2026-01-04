@@ -1,7 +1,12 @@
 import { router } from '@/lib/router'
 import { requireAuth } from '@/middleware/auth'
 import { query, queryOne, queryMany, withTransaction } from '@/services/db'
-import { getGameSeriesMembers, getGameDetails, getGameSeries, type SeriesMember } from '@/services/rawg'
+import {
+  getGameSeriesMembers,
+  getGameDetails,
+  getGameSeries,
+  type SeriesMember,
+} from '@/services/rawg'
 import { corsHeaders } from '@/middleware/cors'
 import type { Game, Platform } from '@/types'
 
@@ -214,34 +219,39 @@ router.post(
       const { rawgId, platformId, seriesName: providedSeriesName } = body
 
       if (!rawgId || !platformId) {
-        return new Response(
-          JSON.stringify({ error: 'rawgId and platformId are required' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'rawgId and platformId are required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
-      const platform = await queryOne<Platform>('SELECT * FROM platforms WHERE id = $1', [platformId])
+      const platform = await queryOne<Platform>('SELECT * FROM platforms WHERE id = $1', [
+        platformId,
+      ])
       if (!platform) {
-        return new Response(
-          JSON.stringify({ error: 'Platform not found' }),
-          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+        return new Response(JSON.stringify({ error: 'Platform not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        })
       }
 
       let game = await queryOne<Game>('SELECT * FROM games WHERE rawg_id = $1', [rawgId])
 
       if (game && providedSeriesName && !game.series_name) {
-        await query('UPDATE games SET series_name = $1 WHERE id = $2', [providedSeriesName, game.id])
+        await query('UPDATE games SET series_name = $1 WHERE id = $2', [
+          providedSeriesName,
+          game.id,
+        ])
         game.series_name = providedSeriesName
       }
 
       if (!game) {
         const rawgGame = await getGameDetails(rawgId)
         if (!rawgGame) {
-          return new Response(
-            JSON.stringify({ error: 'Game not found in RAWG' }),
-            { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-          )
+          return new Response(JSON.stringify({ error: 'Game not found in RAWG' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+          })
         }
 
         let seriesName: string | null = providedSeriesName || null
@@ -278,7 +288,9 @@ router.post(
           const newGame = result.rows[0]
 
           for (const genre of rawgGame.genres) {
-            let genreRecord = await client.query('SELECT id FROM genres WHERE rawg_id = $1', [genre.id])
+            let genreRecord = await client.query('SELECT id FROM genres WHERE rawg_id = $1', [
+              genre.id,
+            ])
             if (genreRecord.rows.length === 0) {
               genreRecord = await client.query(
                 'INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id',
@@ -309,16 +321,16 @@ router.post(
         [user.id, game.id, platformId]
       )
 
-      return new Response(
-        JSON.stringify({ success: true, game }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ success: true, game }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     } catch (error) {
       console.error('Import franchise game error:', error)
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+      })
     }
   })
 )

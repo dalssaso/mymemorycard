@@ -30,6 +30,18 @@ interface TokenUsage {
   totalTokens: number
 }
 
+// Extended usage type for reasoning models (not in official OpenAI types)
+interface ExtendedUsage {
+  completion_tokens_details?: {
+    reasoning_tokens?: number
+  }
+}
+
+// Extended message type for reasoning models (not in official OpenAI types)
+interface ExtendedMessage {
+  reasoning?: string
+}
+
 const MODEL_COSTS = {
   'gpt-4.1-mini': { input: 0.003, output: 0.012 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
@@ -238,7 +250,7 @@ export async function suggestCollections(
   }
 
   try {
-    const completionParams: any = {
+    const completionParams: Record<string, unknown> = {
       model: settings.model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPTS.organizer },
@@ -252,7 +264,11 @@ export async function suggestCollections(
       completionParams.max_completion_tokens = settings.maxTokens
       completionParams.response_format = { type: 'json_object' }
       // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
-      if (!settings.model.startsWith('gpt-5') && !settings.model.includes('o1') && !settings.model.includes('o3')) {
+      if (
+        !settings.model.startsWith('gpt-5') &&
+        !settings.model.includes('o1') &&
+        !settings.model.includes('o3')
+      ) {
         completionParams.temperature = settings.temperature
       }
     } else {
@@ -264,22 +280,30 @@ export async function suggestCollections(
       }
     }
 
-    const completion = await client.chat.completions.create(completionParams)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
+    const completion = await client.chat.completions.create(completionParams as any)
 
     const message = completion.choices[0]?.message
     const content = message?.content
 
     // Check if we hit token limit
     if (completion.choices[0]?.finish_reason === 'length') {
-      console.warn('Response was truncated due to max_tokens limit. Reasoning tokens:', (completion.usage as any)?.completion_tokens_details?.reasoning_tokens)
-      throw new Error('Response truncated - increase max_tokens to at least 12000 for reasoning models')
+      console.warn(
+        'Response was truncated due to max_tokens limit. Reasoning tokens:',
+        (completion.usage as ExtendedUsage)?.completion_tokens_details?.reasoning_tokens
+      )
+      throw new Error(
+        'Response truncated - increase max_tokens to at least 12000 for reasoning models'
+      )
     }
 
     if (!content) {
       console.error('No content in response. Full completion:', completion)
-      const reasoning = (message as any)?.reasoning
+      const reasoning = (message as ExtendedMessage)?.reasoning
       if (reasoning) {
-        console.error('Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning.')
+        console.error(
+          'Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning.'
+        )
         throw new Error('Model reasoning exhausted max_tokens - increase to at least 12000')
       }
       throw new Error('No response from AI')
@@ -352,7 +376,7 @@ export async function suggestNextGame(
   }
 
   try {
-    const completionParams: any = {
+    const completionParams: Record<string, unknown> = {
       model: settings.model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPTS.curator },
@@ -366,7 +390,11 @@ export async function suggestNextGame(
       completionParams.max_completion_tokens = settings.maxTokens
       completionParams.response_format = { type: 'json_object' }
       // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
-      if (!settings.model.startsWith('gpt-5') && !settings.model.includes('o1') && !settings.model.includes('o3')) {
+      if (
+        !settings.model.startsWith('gpt-5') &&
+        !settings.model.includes('o1') &&
+        !settings.model.includes('o3')
+      ) {
         completionParams.temperature = settings.temperature
       }
     } else {
@@ -378,22 +406,30 @@ export async function suggestNextGame(
       }
     }
 
-    const completion = await client.chat.completions.create(completionParams)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
+    const completion = await client.chat.completions.create(completionParams as any)
 
     const message = completion.choices[0]?.message
     const content = message?.content
 
     // Check if we hit token limit
     if (completion.choices[0]?.finish_reason === 'length') {
-      console.warn('Response was truncated due to max_tokens limit. Reasoning tokens:', (completion.usage as any)?.completion_tokens_details?.reasoning_tokens)
-      throw new Error('Response truncated - increase max_tokens to at least 12000 for reasoning models')
+      console.warn(
+        'Response was truncated due to max_tokens limit. Reasoning tokens:',
+        (completion.usage as ExtendedUsage)?.completion_tokens_details?.reasoning_tokens
+      )
+      throw new Error(
+        'Response truncated - increase max_tokens to at least 12000 for reasoning models'
+      )
     }
 
     if (!content) {
       console.error('No content in next game response. Full completion:', completion)
-      const reasoning = (message as any)?.reasoning
+      const reasoning = (message as ExtendedMessage)?.reasoning
       if (reasoning) {
-        console.error('Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning.')
+        console.error(
+          'Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning.'
+        )
         throw new Error('Model reasoning exhausted max_tokens - increase to at least 12000')
       }
       throw new Error('No response from AI')
@@ -455,7 +491,9 @@ export async function generateCollectionCover(
 
   // Only OpenAI is supported for image generation
   if (provider !== 'openai') {
-    throw new Error('Image generation is only supported with OpenAI (DALL-E models). Please configure an OpenAI provider in Settings.')
+    throw new Error(
+      'Image generation is only supported with OpenAI (DALL-E models). Please configure an OpenAI provider in Settings.'
+    )
   }
 
   const model = settings.imageModel || 'dall-e-3'
@@ -466,7 +504,7 @@ export async function generateCollectionCover(
 
   try {
     // Build image generation params based on model type
-    const imageParams: any = {
+    const imageParams: Record<string, unknown> = {
       model,
       prompt: buildCoverImagePrompt(collectionName, collectionDescription),
       n: 1,
@@ -481,7 +519,8 @@ export async function generateCollectionCover(
       imageParams.quality = 'medium' // Options: 'low', 'medium', 'high', 'auto'
     }
 
-    const response = await client.images.generate(imageParams)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple image providers
+    const response = await client.images.generate(imageParams as any)
 
     if (!response.data || response.data.length === 0) {
       throw new Error('No image data in response')

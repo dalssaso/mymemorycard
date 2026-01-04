@@ -130,10 +130,9 @@ router.post(
         })
       }
 
-      const platform = await queryOne<{ id: string }>(
-        'SELECT id FROM platforms WHERE id = $1',
-        [body.platformId]
-      )
+      const platform = await queryOne<{ id: string }>('SELECT id FROM platforms WHERE id = $1', [
+        body.platformId,
+      ])
 
       if (!platform) {
         return new Response(JSON.stringify({ error: 'Platform not found' }), {
@@ -221,10 +220,10 @@ router.patch(
         })
       }
 
-      const nextUsername = 'username' in body ? body.username ?? null : existing.username
-      const nextIconUrl = 'iconUrl' in body ? body.iconUrl ?? null : existing.icon_url
-      const nextProfileUrl = 'profileUrl' in body ? body.profileUrl ?? null : existing.profile_url
-      const nextNotes = 'notes' in body ? body.notes ?? null : existing.notes
+      const nextUsername = 'username' in body ? (body.username ?? null) : existing.username
+      const nextIconUrl = 'iconUrl' in body ? (body.iconUrl ?? null) : existing.icon_url
+      const nextProfileUrl = 'profileUrl' in body ? (body.profileUrl ?? null) : existing.profile_url
+      const nextNotes = 'notes' in body ? (body.notes ?? null) : existing.notes
 
       await query(
         `UPDATE user_platforms
