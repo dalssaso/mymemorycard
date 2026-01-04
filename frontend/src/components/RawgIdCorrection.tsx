@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { gamesAPI } from "@/lib/api";
+import { Button, Input } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 
 interface RawgIdCorrectionProps {
@@ -80,9 +81,10 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
         )}
       </div>
 
-      <button
+      <Button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full py-2 px-4 bg-ctp-surface0 hover:bg-ctp-surface1 border border-ctp-surface2 rounded-lg text-sm text-ctp-subtext1 transition-colors flex items-center justify-between"
+        variant="outline"
+        className="w-full justify-between border-ctp-surface2 bg-ctp-surface0 text-sm text-ctp-subtext1 hover:bg-ctp-surface1"
       >
         <span>Correct Game Metadata</span>
         <svg
@@ -95,7 +97,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
-      </button>
+      </Button>
 
       {isExpanded && (
         <div className="bg-ctp-mantle/50 border border-ctp-surface1 rounded-lg p-4 space-y-4">
@@ -136,35 +138,35 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
             <label htmlFor="rawg-input" className="block text-sm text-ctp-subtext0 mb-2">
               RAWG URL or Slug
             </label>
-            <input
+            <Input
               id="rawg-input"
               type="text"
               value={rawgInput}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder="e.g., god-of-war-2 or https://rawg.io/games/god-of-war-2"
-              className="w-full bg-ctp-surface0 border border-ctp-surface2 rounded-lg px-3 py-2 text-ctp-text placeholder-ctp-overlay1 focus:outline-none focus:border-ctp-teal"
+              className="bg-ctp-surface0 text-ctp-text placeholder:text-ctp-overlay1 focus-visible:ring-ctp-teal"
             />
             {error && <p className="text-sm text-ctp-red mt-2">{error}</p>}
           </div>
 
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleSubmit}
               disabled={updateMutation.isPending || !rawgInput}
-              className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg font-semibold transition-all disabled:opacity-50"
+              className="flex-1 bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/80"
             >
               {updateMutation.isPending ? "Updating..." : "Update Metadata"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => {
                 setIsExpanded(false);
                 setRawgInput("");
                 setError(null);
               }}
-              className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 rounded-lg transition-all"
             >
               Cancel
-            </button>
+            </Button>
           </div>
 
           <p className="text-xs text-ctp-overlay1">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ScrollFade } from "@/components/ui";
+import { Button, ScrollFade } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { displayEditionAPI, type DisplayEditionData, type RawgEditionOption } from "@/lib/api";
 
@@ -73,13 +73,15 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
     <div className="space-y-3">
       {isUsingEdition && (
         <div className="flex justify-end">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => resetEditionMutation.mutate()}
             disabled={resetEditionMutation.isPending}
-            className="px-3 py-1.5 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg text-xs transition-colors disabled:opacity-50"
+            className="border-ctp-surface1 bg-ctp-surface0 text-xs text-ctp-subtext1 hover:border-ctp-teal hover:bg-ctp-surface1 hover:text-ctp-teal"
           >
             Reset to Base Game
-          </button>
+          </Button>
         </div>
       )}
 
@@ -103,9 +105,10 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
 
       {hasEditions && (
         <>
-          <button
+          <Button
+            variant="outline"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full py-2 px-4 bg-ctp-surface0 hover:bg-ctp-surface1 border border-ctp-surface2 rounded-lg text-sm text-ctp-subtext1 transition-colors flex items-center justify-between"
+            className="w-full justify-between border-ctp-surface2 bg-ctp-surface0 text-sm text-ctp-subtext1 hover:bg-ctp-surface1"
           >
             <span>Switch to Different Edition</span>
             <svg
@@ -118,16 +121,17 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
-          </button>
+          </Button>
 
           {isExpanded && (
             <ScrollFade axis="y" className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {data.availableEditions.map((edition) => (
-                <button
+                <Button
+                  variant="outline"
                   key={edition.rawg_id}
                   onClick={() => setEditionMutation.mutate(edition)}
                   disabled={setEditionMutation.isPending}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg border border-ctp-surface1 hover:border-ctp-mauve bg-ctp-mantle/50 hover:bg-ctp-mantle transition-all text-left disabled:opacity-50"
+                  className="w-full justify-start gap-3 border-ctp-surface1 bg-ctp-mantle/50 p-3 text-left hover:border-ctp-mauve hover:bg-ctp-mantle disabled:opacity-50"
                 >
                   {edition.cover_url && (
                     <img
@@ -144,7 +148,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
                       Click to use this edition&apos;s metadata
                     </div>
                   </div>
-                </button>
+                </Button>
               ))}
             </ScrollFade>
           )}

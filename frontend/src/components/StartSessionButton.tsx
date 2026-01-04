@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sessionsAPI } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 interface PlaySession {
@@ -121,13 +122,14 @@ export function StartSessionButton({
         <div className="text-xl font-mono text-ctp-text mb-2">
           {formatElapsedTime(elapsedSeconds)}
         </div>
-        <button
+        <Button
           onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
           disabled={endSessionMutation.isPending}
-          className="w-full py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+          variant="ghost"
+          className="w-full h-auto py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
         >
           {endSessionMutation.isPending ? "Stopping..." : "Stop Session"}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -141,10 +143,11 @@ export function StartSessionButton({
   }
 
   return (
-    <button
+    <Button
       onClick={() => startSessionMutation.mutate()}
       disabled={startSessionMutation.isPending}
-      className="w-full py-2.5 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+      variant="ghost"
+      className="w-full h-auto py-2.5 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -159,6 +162,6 @@ export function StartSessionButton({
         />
       </svg>
       {startSessionMutation.isPending ? "Starting..." : "Start Session"}
-    </button>
+    </Button>
   );
 }

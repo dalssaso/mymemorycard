@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { ScrollFade } from "@/components/ui";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  ScrollFade,
+} from "@/components/ui";
 import { PlatformIconBadge } from "./PlatformIcon";
 import { PlatformTypeIcon } from "./PlatformTypeIcon";
 
@@ -49,8 +59,6 @@ export function CustomPlatformModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = () => {
     if (!displayName.trim()) {
       setError("Display name is required");
@@ -81,29 +89,24 @@ export function CustomPlatformModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button
-        type="button"
-        aria-label="Close custom platform modal"
-        className="absolute inset-0 bg-ctp-base/60"
-        onClick={onClose}
-      />
-      <ScrollFade
-        axis="y"
-        className="relative w-full max-w-lg bg-ctp-mantle border border-ctp-surface0 rounded-lg p-6 max-h-[90vh] overflow-y-auto"
-      >
-        <h3 className="text-xl font-semibold text-ctp-text mb-2">Add Custom Platform</h3>
-        <p className="text-sm text-ctp-subtext0 mb-4">
-          Create a custom platform for stores or systems not in the default list.
-        </p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-ctp-mantle border-ctp-surface0">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-ctp-text">
+            Add Custom Platform
+          </DialogTitle>
+          <DialogDescription>
+            Create a custom platform for stores or systems not in the default list.
+          </DialogDescription>
+        </DialogHeader>
 
         {error && (
-          <div className="mb-4 bg-ctp-red/20 border border-ctp-red text-ctp-red px-3 py-2 rounded">
+          <div className="bg-ctp-red/20 border border-ctp-red text-ctp-red px-3 py-2 rounded">
             {error}
           </div>
         )}
 
-        <div className="space-y-4">
+        <ScrollFade axis="y" className="space-y-4 max-h-[60vh] overflow-y-auto">
           {/* Display Name */}
           <div>
             <label
@@ -112,11 +115,10 @@ export function CustomPlatformModal({
             >
               Display Name <span className="text-ctp-red">*</span>
             </label>
-            <input
+            <Input
               id="custom-platform-name"
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
-              className="input w-full"
               placeholder="Example: Nintendo Switch"
             />
           </div>
@@ -128,19 +130,20 @@ export function CustomPlatformModal({
             </p>
             <div className="grid grid-cols-2 gap-2">
               {PLATFORM_TYPES.map((type) => (
-                <button
+                <Button
                   key={type.value}
+                  variant="outline"
                   type="button"
                   onClick={() => setPlatformType(type.value)}
-                  className={`px-3 py-2 rounded-lg text-sm border transition-colors flex items-center gap-2 ${
+                  className={`px-3 py-2 h-auto rounded-lg text-sm flex items-center gap-2 ${
                     platformType === type.value
-                      ? "border-ctp-teal bg-ctp-teal/10 text-ctp-teal"
-                      : "border-ctp-surface1 text-ctp-subtext0 hover:border-gray-500"
+                      ? "border-ctp-teal bg-ctp-teal/10 text-ctp-teal hover:bg-ctp-teal/20"
+                      : "border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
                   }`}
                 >
                   <PlatformTypeIcon type={type.value} size="sm" />
                   <span>{type.label}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -153,11 +156,10 @@ export function CustomPlatformModal({
             >
               Website URL
             </label>
-            <input
+            <Input
               id="custom-platform-website"
               value={websiteUrl}
               onChange={(event) => setWebsiteUrl(event.target.value)}
-              className="input w-full"
               type="url"
               placeholder="https://example.com"
             />
@@ -171,11 +173,10 @@ export function CustomPlatformModal({
             >
               Icon URL (SVG only)
             </label>
-            <input
+            <Input
               id="custom-platform-icon"
               value={defaultIconUrl}
               onChange={(event) => setDefaultIconUrl(event.target.value)}
-              className="input w-full"
               type="url"
               placeholder="https://cdn.simpleicons.org/steam/ffffff"
             />
@@ -202,20 +203,21 @@ export function CustomPlatformModal({
               Brand Color
             </label>
             <div className="flex gap-2">
-              <input
+              <Input
                 id="custom-platform-color"
                 value={colorPrimary}
                 onChange={(event) => setColorPrimary(event.target.value)}
-                className="input flex-1"
+                className="flex-1"
                 type="text"
                 placeholder="#6B7280"
                 pattern="^#[0-9A-Fa-f]{6}$"
               />
-              <input
+              <Input
                 value={colorPrimary}
                 onChange={(event) => setColorPrimary(event.target.value)}
-                className="w-12 h-10 rounded cursor-pointer"
+                className="w-12 h-10 rounded cursor-pointer p-0"
                 type="color"
+                aria-label="Pick brand color"
               />
             </div>
             <p className="text-xs text-ctp-overlay1 mt-1">
@@ -240,22 +242,17 @@ export function CustomPlatformModal({
               </div>
             </div>
           )}
-        </div>
+        </ScrollFade>
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn btn-secondary">
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="btn btn-primary"
-          >
+          </Button>
+          <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? "Saving..." : "Save Platform"}
-          </button>
-        </div>
-      </ScrollFade>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

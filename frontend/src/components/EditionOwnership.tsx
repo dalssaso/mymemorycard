@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Checkbox, ScrollFade } from "@/components/ui";
+import { Button, Checkbox, ScrollFade } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { ownershipAPI, type OwnershipData, completionLogsAPI } from "@/lib/api";
 
@@ -174,7 +174,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
             Which edition do you own?
           </label>
           <div className="relative" ref={editionListRef}>
-            <button
+            <Button
               ref={editionButtonRef}
               id="edition-select"
               type="button"
@@ -182,7 +182,8 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
               disabled={updateEditionMutation.isPending}
               aria-haspopup="listbox"
               aria-expanded={isEditionOpen}
-              className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50 flex items-center justify-between gap-3"
+              variant="ghost"
+              className="h-auto w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50 flex items-center justify-between gap-3"
             >
               <span className="text-sm text-ctp-text truncate">
                 {selectedEdition
@@ -203,14 +204,15 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                   d="M19.5 8.25l-7.5 7.5-7.5-7.5"
                 />
               </svg>
-            </button>
+            </Button>
             {isEditionOpen && (
               <div className="absolute z-20 mt-2 w-full rounded-lg border border-ctp-surface1 bg-ctp-mantle shadow-lg">
                 <ScrollFade axis="y" className="max-h-64 overflow-y-auto" role="listbox">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleEditionChange(null)}
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                    variant="ghost"
+                    className={`h-auto w-full text-left px-3 py-2 text-sm transition-colors ${
                       !selectedEditionId
                         ? "bg-ctp-mauve/20 text-ctp-mauve"
                         : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
@@ -219,13 +221,14 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                     aria-selected={!selectedEditionId}
                   >
                     Standard Edition (no DLCs included)
-                  </button>
+                  </Button>
                   {data.editions.map((edition) => (
-                    <button
+                    <Button
                       key={edition.id}
                       type="button"
                       onClick={() => handleEditionChange(edition.id)}
-                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      variant="ghost"
+                      className={`h-auto w-full text-left px-3 py-2 text-sm transition-colors ${
                         selectedEditionId === edition.id
                           ? "bg-ctp-mauve/20 text-ctp-mauve"
                           : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
@@ -237,7 +240,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                       {edition.is_complete_edition && (
                         <span className="block text-xs text-ctp-teal">Includes all DLCs</span>
                       )}
-                    </button>
+                    </Button>
                   ))}
                 </ScrollFade>
               </div>
@@ -259,21 +262,23 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
             </span>
             {!isCompleteEdition && (
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={handleSelectAllDlcs}
                   disabled={updateDlcsMutation.isPending}
-                  className="text-xs text-ctp-teal hover:text-ctp-mauve disabled:opacity-50"
+                  variant="link"
+                  className="h-auto p-0 text-xs text-ctp-teal hover:text-ctp-mauve disabled:opacity-50"
                 >
                   Select All
-                </button>
+                </Button>
                 <span className="text-gray-600">|</span>
-                <button
+                <Button
                   onClick={handleDeselectAllDlcs}
                   disabled={updateDlcsMutation.isPending}
-                  className="text-xs text-ctp-teal hover:text-ctp-mauve disabled:opacity-50"
+                  variant="link"
+                  className="h-auto p-0 text-xs text-ctp-teal hover:text-ctp-mauve disabled:opacity-50"
                 >
                   Deselect All
-                </button>
+                </Button>
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Checkbox, Input, ScrollFade } from "@/components/ui";
+import { Button, Checkbox, Input, Label, ScrollFade, Textarea } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { completionLogsAPI, gamesAPI } from "@/lib/api";
 
@@ -269,10 +269,11 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
 
       <div className="flex gap-2">
         {(["all", "incomplete", "completed"] as const).map((f) => (
-          <button
+          <Button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1 rounded-lg text-sm transition-all ${
+            variant="ghost"
+            className={`h-auto px-3 py-1 rounded-lg text-sm transition-all ${
               filter === f
                 ? "bg-ctp-mauve text-ctp-base"
                 : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1"
@@ -283,7 +284,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
               : f === "completed"
                 ? `Completed (${completedCount})`
                 : `Incomplete (${totalCount - completedCount})`}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -303,12 +304,20 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
           )}
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
-          <Input
-            label="Achievement name"
-            placeholder="Enter a name"
-            value={manualName}
-            onChange={(event) => setManualName(event.target.value)}
-          />
+          <div className="w-full">
+            <Label
+              className="mb-2 block text-sm font-medium text-ctp-subtext0"
+              htmlFor="manual-achievement-name"
+            >
+              Achievement name
+            </Label>
+            <Input
+              id="manual-achievement-name"
+              placeholder="Enter a name"
+              value={manualName}
+              onChange={(event) => setManualName(event.target.value)}
+            />
+          </div>
           <div className="w-full">
             <label
               className="block text-sm font-medium text-ctp-subtext0 mb-2"
@@ -316,9 +325,9 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
             >
               Description (optional)
             </label>
-            <textarea
+            <Textarea
               id="manual-achievement-description"
-              className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text placeholder-ctp-overlay1 focus:outline-none focus:border-ctp-mauve transition-colors min-h-[42px]"
+              className="min-h-[42px] bg-ctp-mantle text-ctp-text placeholder:text-ctp-overlay1 focus-visible:ring-ctp-mauve"
               placeholder="Add a short description"
               value={manualDescription}
               onChange={(event) => setManualDescription(event.target.value)}
@@ -341,7 +350,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
           </Button>
           <Button
             size="sm"
-            variant="danger"
+            variant="destructive"
             onClick={() => bulkDeleteManualMutation.mutate(selectedManualIds)}
             disabled={!canBulkDelete}
           >
@@ -383,18 +392,19 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       showSwipeAction ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
                   >
-                    <button
+                    <Button
                       onClick={(event) => {
                         event.stopPropagation();
                         bulkDeleteManualMutation.mutate([ach.achievement_id]);
                         setSwipedManualId(null);
                       }}
                       disabled={bulkDeleteManualMutation.isPending}
-                      className="text-ctp-base text-sm font-semibold disabled:opacity-60"
+                      variant="ghost"
+                      className="h-auto p-0 text-ctp-base text-sm font-semibold disabled:opacity-60"
                       aria-label="Delete achievement"
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                   <div
                     className={`flex items-center gap-3 w-full p-3 rounded-lg transition-transform cursor-pointer touch-pan-y ${
@@ -506,10 +516,11 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
         ) : (
           <ScrollFade axis="y" className="space-y-2 max-h-96 overflow-y-auto mt-3">
             {filteredRawgAchievements.map((ach) => (
-              <button
+              <Button
                 key={`rawg-${ach.achievement_id}`}
                 type="button"
-                className={`flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer ${
+                variant="ghost"
+                className={`h-auto w-full flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer ${
                   ach.completed
                     ? "bg-ctp-green/10 border border-ctp-green/30"
                     : "bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2"
@@ -584,7 +595,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     />
                   </svg>
                 </div>
-              </button>
+              </Button>
             ))}
           </ScrollFade>
         )}

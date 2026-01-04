@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { statsAPI, type CombinedHeatmapDay, type CombinedHeatmapSummary } from "@/lib/api";
+import { Button } from "@/components/ui";
 
 interface ActivityHeatmapProps {
   type?: "activity" | "completion" | "achievement";
@@ -194,10 +195,12 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
               : "Achievement Activity"}
         </h3>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={() => setYear((y) => y - 1)}
             disabled={year <= 2020}
-            className="p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
+            variant="ghost"
+            size="icon"
+            className="h-auto w-auto p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -209,12 +212,14 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
-          </button>
+          </Button>
           <span className="text-ctp-text font-medium min-w-[60px] text-center">{year}</span>
-          <button
+          <Button
             onClick={() => setYear((y) => y + 1)}
             disabled={year >= currentYear}
-            className="p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
+            variant="ghost"
+            size="icon"
+            className="h-auto w-auto p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +231,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
 

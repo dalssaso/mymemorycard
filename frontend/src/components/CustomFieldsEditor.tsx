@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { gamesAPI } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui";
 import { PlaySessionTracker } from "@/components/PlaySessionTracker";
 import { ProgressHistory } from "@/components/ProgressHistory";
 
@@ -72,27 +73,29 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
         </span>
         <div className="flex gap-1" role="group" aria-labelledby="difficulty-rating-label">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-            <button
+            <Button
               key={rating}
               onClick={() => handleFieldChange("difficulty_rating", rating)}
               aria-pressed={fields.difficulty_rating === rating}
-              className={`flex-1 py-2 rounded transition-all text-sm ${
+              variant="ghost"
+              className={`h-auto flex-1 py-2 rounded transition-all text-sm ${
                 fields.difficulty_rating === rating
                   ? "bg-ctp-red text-ctp-base shadow-lg shadow-ctp-red/50"
                   : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
               }`}
             >
               {rating}
-            </button>
+            </Button>
           ))}
         </div>
         {fields.difficulty_rating && (
-          <button
+          <Button
             onClick={() => handleFieldChange("difficulty_rating", null)}
-            className="mt-2 text-sm text-ctp-overlay1 hover:text-ctp-subtext1"
+            variant="link"
+            className="h-auto p-0 mt-2 text-sm text-ctp-overlay1 hover:text-ctp-subtext1"
           >
             Clear rating
-          </button>
+          </Button>
         )}
       </div>
     </div>

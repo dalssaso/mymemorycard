@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { gamesAPI } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Badge, Button } from "@/components/ui";
 import { AddToCollection } from "./AddToCollection";
 import { PlatformIcons } from "./PlatformIcon";
 
@@ -24,7 +25,7 @@ interface GameCardProps {
   series_name?: string | null;
 }
 
-const STATUS_STYLES: Record<string, React.CSSProperties> = {
+const STATUS_STYLES: Record<string, CSSProperties> = {
   backlog: {
     backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)",
     borderColor: "color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)",
@@ -47,7 +48,7 @@ const STATUS_STYLES: Record<string, React.CSSProperties> = {
   },
 };
 
-const FRANCHISE_STYLE: React.CSSProperties = {
+const FRANCHISE_STYLE: CSSProperties = {
   backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 45%, transparent)",
   borderColor: "color-mix(in srgb, var(--ctp-mauve) 65%, transparent)",
 };
@@ -94,7 +95,7 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="card hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-4"
+      className="rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-4"
     >
       {/* Mobile: Poster-only layout with overlay */}
       <div className="sm:hidden relative aspect-[3/4] overflow-hidden rounded-lg">
@@ -114,8 +115,10 @@ export function GameCard({
             {name}
           </h3>
         </div>
-        <button
+        <Button
           onClick={handleFavoriteClick}
+          variant="ghost"
+          size="icon"
           className="absolute top-2 right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
@@ -132,7 +135,7 @@ export function GameCard({
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>
-        </button>
+        </Button>
       </div>
 
       {/* Desktop: Full card layout */}
@@ -145,8 +148,10 @@ export function GameCard({
               <span className="text-zinc-600 text-xs">No image</span>
             </div>
           )}
-          <button
+          <Button
             onClick={handleFavoriteClick}
+            variant="ghost"
+            size="icon"
             className="absolute -top-2 -right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
@@ -163,7 +168,7 @@ export function GameCard({
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         <div className="flex-1 min-w-0">
@@ -173,25 +178,26 @@ export function GameCard({
 
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
-            <span
-              className="badge border text-ctp-text"
+            <Badge
+              className="border text-ctp-text"
               style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
-            </span>
+            </Badge>
             {seriesName && (
-              <button
+              <Button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   navigate({ to: "/franchises/$seriesName", params: { seriesName } });
                 }}
-                className="badge border text-ctp-text hover:opacity-90 transition-colors"
+                variant="ghost"
+                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-ctp-text hover:opacity-90 transition-colors"
                 style={FRANCHISE_STYLE}
               >
                 {seriesName}
-              </button>
+              </Button>
             )}
           </div>
 

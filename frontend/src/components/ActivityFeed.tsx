@@ -1,10 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { getPlatformColor } from "@/components/PlatformIcon";
-import type { ActivityFeedResponse } from "@/lib/api";
-import { statsAPI } from "@/lib/api";
+import { useActivityFeed } from "@/hooks/useActivityFeed";
 
 export interface FeedItem {
   type: "session" | "completion" | "achievement";
@@ -237,12 +235,8 @@ export function ActivityFeed({
     return () => mediaQuery.removeEventListener("change", update);
   }, []);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["activityFeed", effectiveLimit],
-    queryFn: async () => {
-      const response = await statsAPI.getActivityFeed(effectiveLimit);
-      return response.data as ActivityFeedResponse<FeedItem>;
-    },
+  const { data, isLoading } = useActivityFeed<FeedItem>({
+    limit: effectiveLimit,
     refetchOnMount: "always",
   });
 
