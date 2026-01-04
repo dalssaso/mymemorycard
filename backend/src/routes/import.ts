@@ -1,9 +1,9 @@
-import { router } from '@/lib/router'
-import { requireAuth } from '@/middleware/auth'
-import { queryOne, queryMany, withTransaction } from '@/services/db'
-import { searchGames, getGameDetails, getGameSeries, type RAWGGame } from '@/services/rawg'
-import { corsHeaders } from '@/middleware/cors'
-import type { User, Game, Platform } from '@/types'
+import { router } from "@/lib/router";
+import { requireAuth } from "@/middleware/auth";
+import { queryOne, queryMany, withTransaction } from "@/services/db";
+import { searchGames, getGameDetails, getGameSeries, type RAWGGame } from "@/services/rawg";
+import { corsHeaders } from "@/middleware/cors";
+import type { User, Game, Platform } from "@/types";
 
 const EDITION_PATTERNS = [
   /\s*[-–—:]\s*complete\s*edition/i,
@@ -18,163 +18,165 @@ const EDITION_PATTERNS = [
   /\s*[-–—:]\s*legendary\s*edition/i,
   /\s*[-–—:]\s*special\s*edition/i,
   /\s*[-–—:]\s*anniversary\s*edition/i,
-]
+];
 
 function extractBaseGameName(gameName: string): {
-  baseName: string
-  isEdition: boolean
-  editionSuffix: string | null
+  baseName: string;
+  isEdition: boolean;
+  editionSuffix: string | null;
 } {
   for (const pattern of EDITION_PATTERNS) {
-    const match = gameName.match(pattern)
+    const match = gameName.match(pattern);
     if (match) {
       return {
-        baseName: gameName.replace(pattern, '').trim(),
+        baseName: gameName.replace(pattern, "").trim(),
         isEdition: true,
         editionSuffix: match[0].trim(),
-      }
+      };
     }
   }
-  return { baseName: gameName, isEdition: false, editionSuffix: null }
+  return { baseName: gameName, isEdition: false, editionSuffix: null };
 }
 
 function normalizeForComparison(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[:\-–—]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+    .replace(/[:\-–—]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 async function findBaseGameDetails(
   baseName: string,
   excludeRawgId?: number
 ): Promise<RAWGGame | null> {
-  const searchResults = await searchGames(baseName)
+  const searchResults = await searchGames(baseName);
   if (searchResults.length === 0) {
-    return null
+    return null;
   }
 
-  const normalizedBaseName = normalizeForComparison(baseName)
+  const normalizedBaseName = normalizeForComparison(baseName);
   const candidates = excludeRawgId
     ? searchResults.filter((result) => result.id !== excludeRawgId)
-    : searchResults
+    : searchResults;
 
   const matchedBaseGame =
     candidates.find((result) => {
       const { baseName: candidateBaseName, isEdition: candidateIsEdition } = extractBaseGameName(
         result.name
-      )
-      return !candidateIsEdition && normalizeForComparison(candidateBaseName) === normalizedBaseName
+      );
+      return (
+        !candidateIsEdition && normalizeForComparison(candidateBaseName) === normalizedBaseName
+      );
     }) ||
     candidates.find((result) => {
-      const { baseName: candidateBaseName } = extractBaseGameName(result.name)
-      return normalizeForComparison(candidateBaseName) === normalizedBaseName
-    })
+      const { baseName: candidateBaseName } = extractBaseGameName(result.name);
+      return normalizeForComparison(candidateBaseName) === normalizedBaseName;
+    });
 
   if (!matchedBaseGame) {
-    return null
+    return null;
   }
 
-  return (await getGameDetails(matchedBaseGame.id)) || matchedBaseGame
+  return (await getGameDetails(matchedBaseGame.id)) || matchedBaseGame;
 }
 
 interface BulkImportRequest {
-  gameNames: string[]
-  platformId?: string
+  gameNames: string[];
+  platformId?: string;
 }
 
 interface ImportResult {
   imported: Array<{
-    game: Game
-    source: 'exact' | 'selected'
-  }>
+    game: Game;
+    source: "exact" | "selected";
+  }>;
   needsReview: Array<{
-    searchTerm: string
-    candidates: RAWGGame[]
-    error?: string
-  }>
+    searchTerm: string;
+    candidates: RAWGGame[];
+    error?: string;
+  }>;
 }
 
 router.post(
-  '/api/import/single',
+  "/api/import/single",
   requireAuth(async (req, user) => {
     try {
-      const body = (await req.json()) as { rawgId: number; platformId?: string }
-      const { rawgId, platformId } = body
+      const body = (await req.json()) as { rawgId: number; platformId?: string };
+      const { rawgId, platformId } = body;
 
-      if (!rawgId || typeof rawgId !== 'number') {
-        return new Response(JSON.stringify({ error: 'rawgId is required' }), {
+      if (!rawgId || typeof rawgId !== "number") {
+        return new Response(JSON.stringify({ error: "rawgId is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
-      const fullGameDetails = await getGameDetails(rawgId)
+      const fullGameDetails = await getGameDetails(rawgId);
       if (!fullGameDetails) {
-        return new Response(JSON.stringify({ error: 'Game not found in RAWG' }), {
+        return new Response(JSON.stringify({ error: "Game not found in RAWG" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
-      const game = await importGame(fullGameDetails, user, platformId)
-      const { isEdition } = extractBaseGameName(fullGameDetails.name)
+      const game = await importGame(fullGameDetails, user, platformId);
+      const { isEdition } = extractBaseGameName(fullGameDetails.name);
       const display = isEdition
         ? {
             name: fullGameDetails.name,
             cover_art_url: fullGameDetails.background_image || null,
           }
-        : null
+        : null;
 
-      return new Response(JSON.stringify({ game, source: 'selected', display }), {
+      return new Response(JSON.stringify({ game, source: "selected", display }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Single import error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Single import error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 router.post(
-  '/api/import/bulk',
+  "/api/import/bulk",
   requireAuth(async (req, _user) => {
     try {
-      const body = (await req.json()) as BulkImportRequest
-      const { gameNames } = body
+      const body = (await req.json()) as BulkImportRequest;
+      const { gameNames } = body;
 
       if (!gameNames || !Array.isArray(gameNames) || gameNames.length === 0) {
-        return new Response(JSON.stringify({ error: 'gameNames array is required' }), {
+        return new Response(JSON.stringify({ error: "gameNames array is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       const results: ImportResult = {
         imported: [],
         needsReview: [],
-      }
+      };
 
       for (const gameName of gameNames) {
-        const trimmedName = gameName.trim()
-        if (!trimmedName) continue
+        const trimmedName = gameName.trim();
+        if (!trimmedName) continue;
 
         try {
           // Always search RAWG first to find the correct game by exact match
           // The importGame function will check if game exists in DB by RAWG ID
-          const rawgResults = await searchGames(trimmedName)
+          const rawgResults = await searchGames(trimmedName);
 
           if (rawgResults.length === 0) {
             results.needsReview.push({
               searchTerm: trimmedName,
               candidates: [],
-            })
-            continue
+            });
+            continue;
           }
 
           // Always require user review to select the correct game
@@ -183,35 +185,35 @@ router.post(
           results.needsReview.push({
             searchTerm: trimmedName,
             candidates: rawgResults,
-          })
+          });
         } catch (error) {
-          console.error(`Error processing game "${trimmedName}":`, error)
+          console.error(`Error processing game "${trimmedName}":`, error);
           results.needsReview.push({
             searchTerm: trimmedName,
             candidates: [],
-            error: error instanceof Error ? error.message : 'Unknown error',
-          })
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
         }
       }
 
       return new Response(JSON.stringify(results), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Bulk import error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Bulk import error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): Promise<Game> {
   return withTransaction(async (client) => {
-    const { baseName, isEdition } = extractBaseGameName(rawgGame.name)
-    let existingBaseGame: Game | null = null
+    const { baseName, isEdition } = extractBaseGameName(rawgGame.name);
+    let existingBaseGame: Game | null = null;
 
     if (isEdition && platformId) {
       // Check if user owns the base game (by similar name matching)
@@ -220,53 +222,53 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
          INNER JOIN user_games ug ON ug.game_id = g.id
          WHERE ug.user_id = $1`,
         [user.id]
-      )
+      );
 
       // Find a base game match (normalize names for comparison to handle punctuation differences)
-      const normalizedBaseName = normalizeForComparison(baseName)
+      const normalizedBaseName = normalizeForComparison(baseName);
       existingBaseGame =
         userOwnedGames.find((g) => {
-          const { baseName: existingBaseName } = extractBaseGameName(g.name)
-          return normalizeForComparison(existingBaseName) === normalizedBaseName
-        }) || null
+          const { baseName: existingBaseName } = extractBaseGameName(g.name);
+          return normalizeForComparison(existingBaseName) === normalizedBaseName;
+        }) || null;
     }
 
-    let baseGameDetails: RAWGGame | null = null
+    let baseGameDetails: RAWGGame | null = null;
 
     if (!existingBaseGame && isEdition) {
       try {
-        baseGameDetails = await findBaseGameDetails(baseName, rawgGame.id)
+        baseGameDetails = await findBaseGameDetails(baseName, rawgGame.id);
       } catch (error) {
-        console.warn(`Failed to resolve base game for "${rawgGame.name}":`, error)
+        console.warn(`Failed to resolve base game for "${rawgGame.name}":`, error);
       }
     }
 
-    const primaryDetails = baseGameDetails || rawgGame
+    const primaryDetails = baseGameDetails || rawgGame;
 
     // Check if game already exists by RAWG ID (base if available)
-    let game = existingBaseGame
+    let game = existingBaseGame;
     if (!game) {
-      game = await queryOne<Game>('SELECT * FROM games WHERE rawg_id = $1', [primaryDetails.id])
+      game = await queryOne<Game>("SELECT * FROM games WHERE rawg_id = $1", [primaryDetails.id]);
     }
 
     if (existingBaseGame) {
       // User already owns the base game, add new platform to existing game
-      game = existingBaseGame
-      console.log(`Edition detected: "${rawgGame.name}" mapped to existing game "${game.name}"`)
+      game = existingBaseGame;
+      console.log(`Edition detected: "${rawgGame.name}" mapped to existing game "${game.name}"`);
     } else if (!game) {
-      let shouldInsertGenres = false
+      let shouldInsertGenres = false;
 
       if (baseGameDetails) {
-        const editionGame = await queryOne<Game>('SELECT * FROM games WHERE rawg_id = $1', [
+        const editionGame = await queryOne<Game>("SELECT * FROM games WHERE rawg_id = $1", [
           rawgGame.id,
-        ])
+        ]);
 
         if (editionGame) {
-          let seriesName: string | null = null
+          let seriesName: string | null = null;
           try {
-            seriesName = await getGameSeries(primaryDetails.id)
+            seriesName = await getGameSeries(primaryDetails.id);
           } catch (error) {
-            console.warn(`Failed to fetch series for ${primaryDetails.name}:`, error)
+            console.warn(`Failed to fetch series for ${primaryDetails.name}:`, error);
           }
 
           const result = await client.query<Game>(
@@ -299,20 +301,20 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
               primaryDetails.playtime || null,
               editionGame.id,
             ]
-          )
+          );
 
-          game = result.rows[0]
-          shouldInsertGenres = true
+          game = result.rows[0];
+          shouldInsertGenres = true;
         }
       }
 
       if (!game) {
         // Fetch game series in the background (optional, don't block import)
-        let seriesName: string | null = null
+        let seriesName: string | null = null;
         try {
-          seriesName = await getGameSeries(primaryDetails.id)
+          seriesName = await getGameSeries(primaryDetails.id);
         } catch (error) {
-          console.warn(`Failed to fetch series for ${primaryDetails.name}:`, error)
+          console.warn(`Failed to fetch series for ${primaryDetails.name}:`, error);
         }
 
         // Create new game
@@ -336,31 +338,31 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
             seriesName,
             primaryDetails.playtime || null,
           ]
-        )
-        game = result.rows[0]
-        shouldInsertGenres = true
+        );
+        game = result.rows[0];
+        shouldInsertGenres = true;
       }
 
       if (shouldInsertGenres) {
         // Insert genres
         for (const genre of primaryDetails.genres) {
           // Get or create genre
-          let genreRecord = await client.query('SELECT id FROM genres WHERE rawg_id = $1', [
+          let genreRecord = await client.query("SELECT id FROM genres WHERE rawg_id = $1", [
             genre.id,
-          ])
+          ]);
 
           if (genreRecord.rows.length === 0) {
             genreRecord = await client.query(
-              'INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id',
+              "INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id",
               [genre.id, genre.name]
-            )
+            );
           }
 
           // Link game to genre
           await client.query(
-            'INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            "INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
             [game!.id, genreRecord.rows[0].id]
-          )
+          );
         }
       }
     }
@@ -368,12 +370,12 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
     // Only create user_games and progress if platform is specified
     // If no platform, game is imported but not associated until review
     if (platformId) {
-      const platform = await queryOne<Platform>('SELECT * FROM platforms WHERE id = $1', [
+      const platform = await queryOne<Platform>("SELECT * FROM platforms WHERE id = $1", [
         platformId,
-      ])
+      ]);
 
       if (!platform) {
-        throw new Error('Platform not found')
+        throw new Error("Platform not found");
       }
 
       // Add to user's library
@@ -382,7 +384,7 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
          VALUES ($1, $2, $3, true, 'bulk')
          ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
         [user.id, game!.id, platform.id]
-      )
+      );
 
       // Create initial progress entry
       await client.query(
@@ -390,7 +392,7 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
          VALUES ($1, $2, $3, 'backlog')
          ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
         [user.id, game!.id, platform.id]
-      )
+      );
 
       // If we matched to an existing base game and this is an edition,
       // set the display edition for this platform
@@ -415,10 +417,10 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
             rawgGame.background_image || null,
             rawgGame.description_raw || null,
           ]
-        )
+        );
       }
     }
 
-    return game!
-  })
+    return game!;
+  });
 }

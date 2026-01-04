@@ -5,6 +5,7 @@ This directory contains production-ready Docker Compose configuration for deploy
 ## Quick Start
 
 1. **Download docker-compose.yml:**
+
    ```bash
    mkdir mymemorycard && cd mymemorycard
    curl -O https://raw.githubusercontent.com/dalssaso/MyMemoryCard/main/deploy/docker-compose.yml
@@ -15,6 +16,7 @@ This directory contains production-ready Docker Compose configuration for deploy
 3. **Set up SSL certificates** (see [SSL Certificates](#ssl-certificates) below)
 
 4. **Configure environment and deploy:**
+
    ```bash
    # Option A: Using .env file
    curl -O https://raw.githubusercontent.com/dalssaso/MyMemoryCard/main/deploy/.env.example
@@ -38,19 +40,19 @@ This directory contains production-ready Docker Compose configuration for deploy
 
 ### Required
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DB_PASSWORD` | PostgreSQL password | `secure-random-password` |
-| `JWT_SECRET` | JWT signing secret (32+ chars) | `your-super-secret-key-min-32-chars` |
-| `DOMAIN` | Your domain name | `games.example.com` |
+| Variable      | Description                    | Example                              |
+| ------------- | ------------------------------ | ------------------------------------ |
+| `DB_PASSWORD` | PostgreSQL password            | `secure-random-password`             |
+| `JWT_SECRET`  | JWT signing secret (32+ chars) | `your-super-secret-key-min-32-chars` |
+| `DOMAIN`      | Your domain name               | `games.example.com`                  |
 
 ### Optional
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `RAWG_API_KEY` | RAWG API key for game metadata | (none) |
-| `POSTGRES_USER` | Database username | `mymemorycard` |
-| `POSTGRES_DB` | Database name | `mymemorycard` |
+| Variable        | Description                    | Default        |
+| --------------- | ------------------------------ | -------------- |
+| `RAWG_API_KEY`  | RAWG API key for game metadata | (none)         |
+| `POSTGRES_USER` | Database username              | `mymemorycard` |
+| `POSTGRES_DB`   | Database name                  | `mymemorycard` |
 
 ## SSL Certificates
 
@@ -246,6 +248,7 @@ http {
 The docker-compose file uses pinned versions that are auto-updated on each release.
 
 **Current versions:**
+
 - Backend: `1.1.0` <!-- x-release-please-version -->
 - Frontend: `1.1.0` <!-- x-release-please-version -->
 
@@ -260,16 +263,19 @@ docker compose up -d
 ## Backup and Restore
 
 ### Database Backup
+
 ```bash
 docker exec mymemorycard-postgres pg_dump -U mymemorycard mymemorycard > backup-$(date +%Y%m%d).sql
 ```
 
 ### Database Restore
+
 ```bash
 docker exec -i mymemorycard-postgres psql -U mymemorycard mymemorycard < backup.sql
 ```
 
 ### Volume Backup
+
 ```bash
 # Stop services first
 docker compose down
@@ -282,6 +288,7 @@ docker run --rm -v mymemorycard_redis_data:/data -v $(pwd):/backup alpine tar cz
 ## Troubleshooting
 
 ### Check service health
+
 ```bash
 docker compose ps
 docker compose logs backend
@@ -290,11 +297,13 @@ docker compose logs nginx
 ```
 
 ### Test backend directly
+
 ```bash
 docker exec mymemorycard-backend wget -qO- http://localhost:3000/api/health
 ```
 
 ### Database connection issues
+
 ```bash
 # Check PostgreSQL is healthy
 docker exec mymemorycard-postgres pg_isready -U mymemorycard
@@ -304,6 +313,7 @@ docker compose logs postgres
 ```
 
 ### Reset everything
+
 ```bash
 # Stop and remove containers, volumes, and networks
 docker compose down -v

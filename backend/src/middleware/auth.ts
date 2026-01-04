@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken'
-import type { JWTPayload, User } from '@/types'
-import { queryOne } from '@/services/db'
-import { config } from '@/config'
+import jwt from "jsonwebtoken";
+import type { JWTPayload, User } from "@/types";
+import { queryOne } from "@/services/db";
+import { config } from "@/config";
 
 /**
  * Generates a JWT token for the given payload.
@@ -10,7 +10,7 @@ import { config } from '@/config'
  * @returns Signed JWT token string valid for 7 days
  */
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, config.jwt.secret, { expiresIn: '7d' })
+  return jwt.sign(payload, config.jwt.secret, { expiresIn: "7d" });
 }
 
 /**
@@ -21,9 +21,9 @@ export function generateToken(payload: JWTPayload): string {
  */
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, config.jwt.secret) as JWTPayload
+    return jwt.verify(token, config.jwt.secret) as JWTPayload;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -34,23 +34,23 @@ export function verifyToken(token: string): JWTPayload | null {
  * @returns The authenticated User if valid, null otherwise
  */
 export async function authenticate(req: Request): Promise<User | null> {
-  const authHeader = req.headers.get('Authorization')
+  const authHeader = req.headers.get("Authorization");
 
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null
+  if (!authHeader?.startsWith("Bearer ")) {
+    return null;
   }
 
-  const token = authHeader.slice(7)
-  const payload = verifyToken(token)
+  const token = authHeader.slice(7);
+  const payload = verifyToken(token);
 
   if (!payload) {
-    return null
+    return null;
   }
 
   // Fetch user from database
-  const user = await queryOne<User>('SELECT * FROM users WHERE id = $1', [payload.userId])
+  const user = await queryOne<User>("SELECT * FROM users WHERE id = $1", [payload.userId]);
 
-  return user
+  return user;
 }
 
 /**
@@ -64,15 +64,15 @@ export function requireAuth(
   handler: (req: Request, user: User, params?: Record<string, string>) => Promise<Response>
 ) {
   return async (req: Request, params?: Record<string, string>): Promise<Response> => {
-    const user = await authenticate(req)
+    const user = await authenticate(req);
 
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      })
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    return handler(req, user, params)
-  }
+    return handler(req, user, params);
+  };
 }

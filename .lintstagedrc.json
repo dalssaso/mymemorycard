@@ -1,14 +1,8 @@
 {
   "backend/**/*.{ts,js}": [
     "prettier --write",
-    "eslint --fix --config backend/eslint.config.mjs",
-    "bun run typecheck"
+    "cd backend && bunx eslint --fix --config eslint.config.mjs",
+    "cd backend && bun run typecheck"
   ],
-  "frontend/**/*.{ts,tsx,js,jsx}": [
-    "prettier --write",
-    "eslint --fix"
-  ],
-  "*.{json,md}": [
-    "prettier --write"
-  ]
+  "*.{json,md}": ["prettier --write"]
 }

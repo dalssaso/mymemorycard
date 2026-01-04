@@ -1,7 +1,7 @@
-import pg from 'pg'
-import { config } from '@/config'
+import pg from "pg";
+import { config } from "@/config";
 
-const { Pool } = pg
+const { Pool } = pg;
 
 // Database connection pool
 export const pool = new Pool({
@@ -9,17 +9,17 @@ export const pool = new Pool({
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
-})
+});
 
 // Test connection
-pool.on('connect', () => {
-  console.log('Connected to PostgreSQL')
-})
+pool.on("connect", () => {
+  console.log("Connected to PostgreSQL");
+});
 
-pool.on('error', (err) => {
-  console.error('Unexpected database error:', err)
-  process.exit(-1)
-})
+pool.on("error", (err) => {
+  console.error("Unexpected database error:", err);
+  process.exit(-1);
+});
 
 /**
  * Executes a database query and returns the full result.
@@ -33,15 +33,15 @@ export async function query<T extends pg.QueryResultRow = Record<string, unknown
   text: string,
   params?: unknown[]
 ): Promise<pg.QueryResult<T>> {
-  const start = Date.now()
-  const res = await pool.query<T>(text, params)
-  const duration = Date.now() - start
+  const start = Date.now();
+  const res = await pool.query<T>(text, params);
+  const duration = Date.now() - start;
 
   if (duration > 1000) {
-    console.warn(`Slow query (${duration}ms): ${text}`)
+    console.warn(`Slow query (${duration}ms): ${text}`);
   }
 
-  return res
+  return res;
 }
 
 /**
@@ -55,8 +55,8 @@ export async function queryOne<T extends pg.QueryResultRow = Record<string, unkn
   text: string,
   params?: unknown[]
 ): Promise<T | null> {
-  const result = await query<T>(text, params)
-  return result.rows[0] || null
+  const result = await query<T>(text, params);
+  return result.rows[0] || null;
 }
 
 /**
@@ -70,8 +70,8 @@ export async function queryMany<T extends pg.QueryResultRow = Record<string, unk
   text: string,
   params?: unknown[]
 ): Promise<T[]> {
-  const result = await query<T>(text, params)
-  return result.rows
+  const result = await query<T>(text, params);
+  return result.rows;
 }
 
 /**
@@ -85,19 +85,19 @@ export async function queryMany<T extends pg.QueryResultRow = Record<string, unk
 export async function withTransaction<T>(
   callback: (client: pg.PoolClient) => Promise<T>
 ): Promise<T> {
-  const client = await pool.connect()
+  const client = await pool.connect();
 
   try {
-    await client.query('BEGIN')
-    const result = await callback(client)
-    await client.query('COMMIT')
-    return result
+    await client.query("BEGIN");
+    const result = await callback(client);
+    await client.query("COMMIT");
+    return result;
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query("ROLLBACK");
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }
 
-export default pool
+export default pool;

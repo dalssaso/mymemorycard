@@ -1,46 +1,46 @@
-import { router } from '@/lib/router'
-import { requireAuth } from '@/middleware/auth'
-import { query, queryOne } from '@/services/db'
-import { corsHeaders } from '@/middleware/cors'
-import { getGameDetails, getGameAdditions } from '@/services/rawg'
+import { router } from "@/lib/router";
+import { requireAuth } from "@/middleware/auth";
+import { query, queryOne } from "@/services/db";
+import { corsHeaders } from "@/middleware/cors";
+import { getGameDetails, getGameAdditions } from "@/services/rawg";
 
 interface DisplayEdition {
-  id: string
-  rawg_edition_id: number | null
-  edition_name: string
-  cover_art_url: string | null
-  background_image_url: string | null
-  description: string | null
+  id: string;
+  rawg_edition_id: number | null;
+  edition_name: string;
+  cover_art_url: string | null;
+  background_image_url: string | null;
+  description: string | null;
 }
 
 interface RawgEditionOption {
-  rawg_id: number
-  name: string
-  cover_url: string | null
-  background_url: string | null
-  description: string | null
+  rawg_id: number;
+  name: string;
+  cover_url: string | null;
+  background_url: string | null;
+  description: string | null;
 }
 
 router.get(
-  '/api/games/:gameId/display-edition',
+  "/api/games/:gameId/display-edition",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.gameId
+      const gameId = params?.gameId;
       if (!gameId) {
-        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+        return new Response(JSON.stringify({ error: "Game ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
-      const url = new URL(req.url)
-      const platformId = url.searchParams.get('platform_id')
+      const url = new URL(req.url);
+      const platformId = url.searchParams.get("platform_id");
 
       if (!platformId) {
-        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+        return new Response(JSON.stringify({ error: "Platform ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       const displayEdition = await queryOne<DisplayEdition>(
@@ -48,39 +48,39 @@ router.get(
          FROM user_game_display_editions
          WHERE user_id = $1 AND game_id = $2 AND platform_id = $3`,
         [user.id, gameId, platformId]
-      )
+      );
 
       const game = await queryOne<{ rawg_id: number | null; name: string }>(
-        'SELECT rawg_id, name FROM games WHERE id = $1',
+        "SELECT rawg_id, name FROM games WHERE id = $1",
         [gameId]
-      )
+      );
 
-      const availableEditions: RawgEditionOption[] = []
+      const availableEditions: RawgEditionOption[] = [];
 
       if (game?.rawg_id) {
-        const additions = await getGameAdditions(game.rawg_id)
+        const additions = await getGameAdditions(game.rawg_id);
         const editionAdditions = additions.filter((a) => {
-          const name = a.name.toLowerCase()
+          const name = a.name.toLowerCase();
           return (
-            name.includes('edition') ||
-            name.includes('goty') ||
-            name.includes('game of the year') ||
-            name.includes('complete') ||
-            name.includes('definitive') ||
-            name.includes('ultimate') ||
-            name.includes('legendary')
-          )
-        })
+            name.includes("edition") ||
+            name.includes("goty") ||
+            name.includes("game of the year") ||
+            name.includes("complete") ||
+            name.includes("definitive") ||
+            name.includes("ultimate") ||
+            name.includes("legendary")
+          );
+        });
 
         for (const addition of editionAdditions) {
-          const details = await getGameDetails(addition.id)
+          const details = await getGameDetails(addition.id);
           availableEditions.push({
             rawg_id: addition.id,
             name: addition.name,
             cover_url: details?.background_image || addition.background_image,
             background_url: details?.background_image || addition.background_image,
             description: details?.description_raw || null,
-          })
+          });
         }
       }
 
@@ -91,38 +91,38 @@ router.get(
           availableEditions,
           isUsingEdition: !!displayEdition,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get display edition error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get display edition error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 router.put(
-  '/api/games/:gameId/display-edition',
+  "/api/games/:gameId/display-edition",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.gameId
+      const gameId = params?.gameId;
       if (!gameId) {
-        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+        return new Response(JSON.stringify({ error: "Game ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       const body = (await req.json()) as {
-        platformId: string
-        rawgEditionId: number
-        editionName: string
-        coverArtUrl: string | null
-        backgroundImageUrl: string | null
-        description: string | null
-      }
+        platformId: string;
+        rawgEditionId: number;
+        editionName: string;
+        coverArtUrl: string | null;
+        backgroundImageUrl: string | null;
+        description: string | null;
+      };
 
       const {
         platformId,
@@ -131,16 +131,16 @@ router.put(
         coverArtUrl,
         backgroundImageUrl,
         description,
-      } = body
+      } = body;
 
       if (!platformId || !editionName) {
         return new Response(
-          JSON.stringify({ error: 'Platform ID and edition name are required' }),
+          JSON.stringify({ error: "Platform ID and edition name are required" }),
           {
             status: 400,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+            headers: { "Content-Type": "application/json", ...corsHeaders() },
           }
-        )
+        );
       }
 
       await query(
@@ -164,59 +164,59 @@ router.put(
           backgroundImageUrl,
           description,
         ]
-      )
+      );
 
-      return new Response(JSON.stringify({ message: 'Display edition updated', editionName }), {
+      return new Response(JSON.stringify({ message: "Display edition updated", editionName }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Set display edition error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Set display edition error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 router.delete(
-  '/api/games/:gameId/display-edition',
+  "/api/games/:gameId/display-edition",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.gameId
+      const gameId = params?.gameId;
       if (!gameId) {
-        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+        return new Response(JSON.stringify({ error: "Game ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
-      const url = new URL(req.url)
-      const platformId = url.searchParams.get('platform_id')
+      const url = new URL(req.url);
+      const platformId = url.searchParams.get("platform_id");
 
       if (!platformId) {
-        return new Response(JSON.stringify({ error: 'Platform ID is required' }), {
+        return new Response(JSON.stringify({ error: "Platform ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       await query(
-        'DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
-      return new Response(JSON.stringify({ message: 'Display edition reset to base game' }), {
+      return new Response(JSON.stringify({ message: "Display edition reset to base game" }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Reset display edition error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Reset display edition error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);

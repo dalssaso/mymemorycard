@@ -14,7 +14,11 @@
     "lint:backend": "cd backend && bun run lint",
     "lint:backend:fix": "cd backend && bun run lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:backend": "prettier --write \"backend/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check:backend": "prettier --check \"backend/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:frontend": "prettier --write \"frontend/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check:frontend": "prettier --check \"frontend/**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.0",

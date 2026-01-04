@@ -109,13 +109,13 @@ make dev
 
 The backend uses sensible defaults for local development. No `.env` file is needed.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard` | PostgreSQL connection |
-| `REDIS_URL` | `redis://localhost:6380` | Redis connection |
-| `JWT_SECRET` | `dev-jwt-secret-change-in-production` | JWT signing key |
-| `RAWG_API_KEY` | - | RAWG API for game metadata (optional) |
-| `PORT` | `3000` | Backend server port |
-| `ORIGIN` | - | Additional allowed CORS origin (optional) |
+| Variable       | Default                                                             | Description                               |
+| -------------- | ------------------------------------------------------------------- | ----------------------------------------- |
+| `DATABASE_URL` | `postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard` | PostgreSQL connection                     |
+| `REDIS_URL`    | `redis://localhost:6380`                                            | Redis connection                          |
+| `JWT_SECRET`   | `dev-jwt-secret-change-in-production`                               | JWT signing key                           |
+| `RAWG_API_KEY` | -                                                                   | RAWG API for game metadata (optional)     |
+| `PORT`         | `3000`                                                              | Backend server port                       |
+| `ORIGIN`       | -                                                                   | Additional allowed CORS origin (optional) |
 
 For production, set these via environment variables in `docker-compose.prod.yml`.

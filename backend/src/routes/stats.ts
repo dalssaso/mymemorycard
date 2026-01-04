@@ -1,32 +1,32 @@
-import { router } from '@/lib/router'
-import { requireAuth } from '@/middleware/auth'
-import { queryMany, queryOne } from '@/services/db'
-import { corsHeaders } from '@/middleware/cors'
+import { router } from "@/lib/router";
+import { requireAuth } from "@/middleware/auth";
+import { queryMany, queryOne } from "@/services/db";
+import { corsHeaders } from "@/middleware/cors";
 
 interface HeatmapData {
-  date: string
-  count: number
-  value: number
+  date: string;
+  count: number;
+  value: number;
 }
 
 interface CombinedHeatmapDay {
-  date: string
-  sessions: { count: number; minutes: number }
-  completions: { count: number }
-  achievements: { count: number }
-  total: number
+  date: string;
+  sessions: { count: number; minutes: number };
+  completions: { count: number };
+  achievements: { count: number };
+  total: number;
 }
 
 // Get combined heatmap data (all activity types)
 router.get(
-  '/api/stats/combined-heatmap',
+  "/api/stats/combined-heatmap",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const year = parseInt(url.searchParams.get('year') || new Date().getFullYear().toString())
+      const url = new URL(req.url);
+      const year = parseInt(url.searchParams.get("year") || new Date().getFullYear().toString());
 
-      const startDate = `${year}-01-01`
-      const endDate = `${year}-12-31`
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
 
       // Get sessions data
       const sessionsData = await queryMany<{ date: string; count: number; minutes: number }>(
@@ -41,7 +41,7 @@ router.get(
           AND ended_at IS NOT NULL
         GROUP BY DATE(started_at AT TIME ZONE 'UTC')`,
         [user.id, startDate, endDate]
-      )
+      );
 
       // Get completion data
       const completionsData = await queryMany<{ date: string; count: number }>(
@@ -54,7 +54,7 @@ router.get(
           AND logged_at <= $3
         GROUP BY DATE(logged_at AT TIME ZONE 'UTC')`,
         [user.id, startDate, endDate]
-      )
+      );
 
       // Get achievements data
       const achievementsData = await queryMany<{ date: string; count: number }>(
@@ -82,10 +82,10 @@ router.get(
         FROM all_achievements
         GROUP BY DATE(unlocked_at AT TIME ZONE 'UTC')`,
         [user.id, startDate, endDate]
-      )
+      );
 
       // Combine all data by date
-      const dateMap = new Map<string, CombinedHeatmapDay>()
+      const dateMap = new Map<string, CombinedHeatmapDay>();
 
       for (const s of sessionsData) {
         const existing = dateMap.get(s.date) || {
@@ -94,10 +94,10 @@ router.get(
           completions: { count: 0 },
           achievements: { count: 0 },
           total: 0,
-        }
-        existing.sessions = { count: Number(s.count), minutes: Number(s.minutes) }
-        existing.total += Number(s.count)
-        dateMap.set(s.date, existing)
+        };
+        existing.sessions = { count: Number(s.count), minutes: Number(s.minutes) };
+        existing.total += Number(s.count);
+        dateMap.set(s.date, existing);
       }
 
       for (const c of completionsData) {
@@ -107,10 +107,10 @@ router.get(
           completions: { count: 0 },
           achievements: { count: 0 },
           total: 0,
-        }
-        existing.completions = { count: Number(c.count) }
-        existing.total += Number(c.count)
-        dateMap.set(c.date, existing)
+        };
+        existing.completions = { count: Number(c.count) };
+        existing.total += Number(c.count);
+        dateMap.set(c.date, existing);
       }
 
       for (const a of achievementsData) {
@@ -120,37 +120,37 @@ router.get(
           completions: { count: 0 },
           achievements: { count: 0 },
           total: 0,
-        }
-        existing.achievements = { count: Number(a.count) }
-        existing.total += Number(a.count)
-        dateMap.set(a.date, existing)
+        };
+        existing.achievements = { count: Number(a.count) };
+        existing.total += Number(a.count);
+        dateMap.set(a.date, existing);
       }
 
-      const data = Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date))
+      const data = Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
       // Calculate summary stats
-      const totalSessions = sessionsData.reduce((sum, d) => sum + Number(d.count), 0)
-      const totalMinutes = sessionsData.reduce((sum, d) => sum + Number(d.minutes), 0)
-      const totalCompletions = completionsData.reduce((sum, d) => sum + Number(d.count), 0)
-      const totalAchievements = achievementsData.reduce((sum, d) => sum + Number(d.count), 0)
-      const activeDays = dateMap.size
+      const totalSessions = sessionsData.reduce((sum, d) => sum + Number(d.count), 0);
+      const totalMinutes = sessionsData.reduce((sum, d) => sum + Number(d.minutes), 0);
+      const totalCompletions = completionsData.reduce((sum, d) => sum + Number(d.count), 0);
+      const totalAchievements = achievementsData.reduce((sum, d) => sum + Number(d.count), 0);
+      const activeDays = dateMap.size;
 
       // Calculate current streak (any activity)
-      let currentStreak = 0
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      let currentStreak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      const dateSet = new Set(dateMap.keys())
+      const dateSet = new Set(dateMap.keys());
 
       for (let i = 0; i <= 365; i++) {
-        const checkDate = new Date(today)
-        checkDate.setDate(checkDate.getDate() - i)
-        const dateStr = checkDate.toISOString().split('T')[0]
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - i);
+        const dateStr = checkDate.toISOString().split("T")[0];
 
         if (dateSet.has(dateStr)) {
-          currentStreak++
+          currentStreak++;
         } else if (i > 0) {
-          break
+          break;
         }
       }
 
@@ -167,28 +167,28 @@ router.get(
             currentStreak,
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get combined heatmap error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get combined heatmap error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get activity heatmap data (play sessions)
 router.get(
-  '/api/stats/activity-heatmap',
+  "/api/stats/activity-heatmap",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const year = parseInt(url.searchParams.get('year') || new Date().getFullYear().toString())
+      const url = new URL(req.url);
+      const year = parseInt(url.searchParams.get("year") || new Date().getFullYear().toString());
 
-      const startDate = `${year}-01-01`
-      const endDate = `${year}-12-31`
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
 
       const data = await queryMany<HeatmapData>(
         `SELECT 
@@ -203,56 +203,56 @@ router.get(
         GROUP BY DATE(started_at AT TIME ZONE 'UTC')
         ORDER BY date`,
         [user.id, startDate, endDate]
-      )
+      );
 
       // Calculate summary stats
-      const totalSessions = data.reduce((sum, d) => sum + Number(d.count), 0)
-      const totalMinutes = data.reduce((sum, d) => sum + Number(d.value), 0)
-      const activeDays = data.length
+      const totalSessions = data.reduce((sum, d) => sum + Number(d.count), 0);
+      const totalMinutes = data.reduce((sum, d) => sum + Number(d.value), 0);
+      const activeDays = data.length;
 
       // Calculate current streak
-      let currentStreak = 0
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      let currentStreak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      const dateSet = new Set(data.map((d) => d.date))
+      const dateSet = new Set(data.map((d) => d.date));
 
       for (let i = 0; i <= 365; i++) {
-        const checkDate = new Date(today)
-        checkDate.setDate(checkDate.getDate() - i)
-        const dateStr = checkDate.toISOString().split('T')[0]
+        const checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - i);
+        const dateStr = checkDate.toISOString().split("T")[0];
 
         if (dateSet.has(dateStr)) {
-          currentStreak++
+          currentStreak++;
         } else if (i > 0) {
-          break
+          break;
         }
       }
 
       // Calculate longest streak
-      let longestStreak = 0
-      let tempStreak = 0
-      const sortedDates = Array.from(dateSet).sort()
+      let longestStreak = 0;
+      let tempStreak = 0;
+      const sortedDates = Array.from(dateSet).sort();
 
       for (let i = 0; i < sortedDates.length; i++) {
         if (i === 0) {
-          tempStreak = 1
+          tempStreak = 1;
         } else {
-          const prevDate = new Date(sortedDates[i - 1])
-          const currDate = new Date(sortedDates[i])
+          const prevDate = new Date(sortedDates[i - 1]);
+          const currDate = new Date(sortedDates[i]);
           const diffDays = Math.round(
             (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
-          )
+          );
 
           if (diffDays === 1) {
-            tempStreak++
+            tempStreak++;
           } else {
-            longestStreak = Math.max(longestStreak, tempStreak)
-            tempStreak = 1
+            longestStreak = Math.max(longestStreak, tempStreak);
+            tempStreak = 1;
           }
         }
       }
-      longestStreak = Math.max(longestStreak, tempStreak)
+      longestStreak = Math.max(longestStreak, tempStreak);
 
       return new Response(
         JSON.stringify({
@@ -266,28 +266,28 @@ router.get(
             longestStreak,
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get activity heatmap error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get activity heatmap error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get completion heatmap data
 router.get(
-  '/api/stats/completion-heatmap',
+  "/api/stats/completion-heatmap",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const year = parseInt(url.searchParams.get('year') || new Date().getFullYear().toString())
+      const url = new URL(req.url);
+      const year = parseInt(url.searchParams.get("year") || new Date().getFullYear().toString());
 
-      const startDate = `${year}-01-01`
-      const endDate = `${year}-12-31`
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
 
       const data = await queryMany<HeatmapData>(
         `SELECT 
@@ -301,11 +301,11 @@ router.get(
         GROUP BY DATE(logged_at AT TIME ZONE 'UTC')
         ORDER BY date`,
         [user.id, startDate, endDate]
-      )
+      );
 
       // Calculate summary stats
-      const totalLogs = data.reduce((sum, d) => sum + Number(d.count), 0)
-      const activeDays = data.length
+      const totalLogs = data.reduce((sum, d) => sum + Number(d.count), 0);
+      const activeDays = data.length;
 
       // Count games that reached 100%
       const completedGames = await queryMany<{ game_id: string }>(
@@ -316,7 +316,7 @@ router.get(
            AND logged_at <= $3
            AND percentage = 100`,
         [user.id, startDate, endDate]
-      )
+      );
 
       return new Response(
         JSON.stringify({
@@ -327,28 +327,28 @@ router.get(
             completedGames: completedGames.length,
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get completion heatmap error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get completion heatmap error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get achievement heatmap data
 router.get(
-  '/api/stats/achievement-heatmap',
+  "/api/stats/achievement-heatmap",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const year = parseInt(url.searchParams.get('year') || new Date().getFullYear().toString())
+      const url = new URL(req.url);
+      const year = parseInt(url.searchParams.get("year") || new Date().getFullYear().toString());
 
-      const startDate = `${year}-01-01`
-      const endDate = `${year}-12-31`
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
 
       const data = await queryMany<HeatmapData>(
         `WITH all_achievements AS (
@@ -377,10 +377,10 @@ router.get(
         GROUP BY DATE(unlocked_at AT TIME ZONE 'UTC')
         ORDER BY date`,
         [user.id, startDate, endDate]
-      )
+      );
 
-      const totalAchievements = data.reduce((sum, d) => sum + Number(d.count), 0)
-      const activeDays = data.length
+      const totalAchievements = data.reduce((sum, d) => sum + Number(d.count), 0);
+      const activeDays = data.length;
 
       const rareAchievements = await queryMany<{ count: number }>(
         `SELECT COUNT(*) as count
@@ -393,7 +393,7 @@ router.get(
            AND ura.completed_at <= $3
            AND gra.rarity_percent < 15`,
         [user.id, startDate, endDate]
-      )
+      );
 
       return new Response(
         JSON.stringify({
@@ -404,32 +404,32 @@ router.get(
             rareAchievements: Number(rareAchievements[0]?.count || 0),
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get achievement heatmap error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get achievement heatmap error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get global achievement stats
 router.get(
-  '/api/stats/achievements',
+  "/api/stats/achievements",
   requireAuth(async (_req, user) => {
     try {
       const stats = await queryMany<{
-        game_id: string
-        game_name: string
-        cover_art_url: string | null
-        total_achievements: number
-        completed_achievements: number
-        avg_rarity: number | null
-        rarest_achievement_name: string | null
-        rarest_achievement_rarity: number | null
+        game_id: string;
+        game_name: string;
+        cover_art_url: string | null;
+        total_achievements: number;
+        completed_achievements: number;
+        avg_rarity: number | null;
+        rarest_achievement_name: string | null;
+        rarest_achievement_rarity: number | null;
       }>(
         `WITH game_achievement_stats AS (
           SELECT 
@@ -487,20 +487,20 @@ router.get(
         LEFT JOIN rarest_achievements ra ON gas.game_id = ra.game_id
         ORDER BY completed_achievements DESC`,
         [user.id]
-      )
+      );
 
-      const totalAchievements = stats.reduce((sum, g) => sum + Number(g.total_achievements), 0)
+      const totalAchievements = stats.reduce((sum, g) => sum + Number(g.total_achievements), 0);
       const completedAchievements = stats.reduce(
         (sum, g) => sum + Number(g.completed_achievements),
         0
-      )
+      );
       const overallPercentage =
-        totalAchievements > 0 ? Math.round((completedAchievements / totalAchievements) * 100) : 0
+        totalAchievements > 0 ? Math.round((completedAchievements / totalAchievements) * 100) : 0;
 
-      const gamesWithAchievements = stats.length
+      const gamesWithAchievements = stats.length;
       const perfectGames = stats.filter(
         (g) => Number(g.completed_achievements) === Number(g.total_achievements)
-      ).length
+      ).length;
 
       const rarestUnlocked = stats
         .filter((g) => g.rarest_achievement_rarity !== null)
@@ -511,19 +511,19 @@ router.get(
           coverArtUrl: g.cover_art_url,
           achievementName: g.rarest_achievement_name,
           rarity: g.rarest_achievement_rarity,
-        }))
+        }));
 
       const rarityBuckets = {
         legendary: 0,
         rare: 0,
         uncommon: 0,
         common: 0,
-      }
+      };
 
       for (const game of stats) {
         const achievementDetails = await queryMany<{
-          rarity_percent: number | null
-          completed: boolean
+          rarity_percent: number | null;
+          completed: boolean;
         }>(
           `SELECT gra.rarity_percent, COALESCE(ura.completed, false) as completed
            FROM game_rawg_achievements gra
@@ -532,14 +532,14 @@ router.get(
              AND ura.user_id = $1
            WHERE gra.game_id = $2 AND COALESCE(ura.completed, false) = true`,
           [user.id, game.game_id]
-        )
+        );
 
         for (const ach of achievementDetails) {
-          const rarity = ach.rarity_percent ?? 50
-          if (rarity < 5) rarityBuckets.legendary++
-          else if (rarity < 15) rarityBuckets.rare++
-          else if (rarity < 35) rarityBuckets.uncommon++
-          else rarityBuckets.common++
+          const rarity = ach.rarity_percent ?? 50;
+          if (rarity < 5) rarityBuckets.legendary++;
+          else if (rarity < 15) rarityBuckets.rare++;
+          else if (rarity < 35) rarityBuckets.uncommon++;
+          else rarityBuckets.common++;
         }
       }
 
@@ -553,7 +553,7 @@ router.get(
           Number(g.total_achievements) > 0
             ? Math.round((Number(g.completed_achievements) / Number(g.total_achievements)) * 100)
             : 0,
-      }))
+      }));
 
       return new Response(
         JSON.stringify({
@@ -568,42 +568,42 @@ router.get(
           rarestUnlocked,
           gameStats,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get achievement stats error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get achievement stats error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get recent activity feed
 router.get(
-  '/api/stats/activity-feed',
+  "/api/stats/activity-feed",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const limit = parseInt(url.searchParams.get('limit') || '20')
-      const page = parseInt(url.searchParams.get('page') || '1')
-      const pageSizeParam = url.searchParams.get('pageSize')
-      const pageSize = pageSizeParam ? parseInt(pageSizeParam) : limit
-      const safePage = Number.isFinite(page) && page > 0 ? page : 1
-      const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20
-      const fetchLimit = safePage * safePageSize
-      const offset = (safePage - 1) * safePageSize
+      const url = new URL(req.url);
+      const limit = parseInt(url.searchParams.get("limit") || "20");
+      const page = parseInt(url.searchParams.get("page") || "1");
+      const pageSizeParam = url.searchParams.get("pageSize");
+      const pageSize = pageSizeParam ? parseInt(pageSizeParam) : limit;
+      const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+      const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20;
+      const fetchLimit = safePage * safePageSize;
+      const offset = (safePage - 1) * safePageSize;
 
       // Get recent sessions
       const sessions = await queryMany<{
-        type: string
-        id: string
-        game_id: string
-        game_name: string
-        platform_name: string
-        timestamp: string
-        duration_minutes: number | null
+        type: string;
+        id: string;
+        game_id: string;
+        game_name: string;
+        platform_name: string;
+        timestamp: string;
+        duration_minutes: number | null;
       }>(
         `SELECT 
           'session' as type,
@@ -620,19 +620,19 @@ router.get(
         ORDER BY ps.ended_at DESC
         LIMIT $2`,
         [user.id, fetchLimit]
-      )
+      );
 
       // Get recent completion logs
       const completions = await queryMany<{
-        type: string
-        id: string
-        game_id: string
-        game_name: string
-        platform_name: string
-        timestamp: string
-        percentage: number
-        completion_type: string
-        dlc_id: string | null
+        type: string;
+        id: string;
+        game_id: string;
+        game_name: string;
+        platform_name: string;
+        timestamp: string;
+        percentage: number;
+        completion_type: string;
+        dlc_id: string | null;
       }>(
         `SELECT 
           'completion' as type,
@@ -651,18 +651,18 @@ router.get(
         ORDER BY cl.logged_at DESC
         LIMIT $2`,
         [user.id, fetchLimit]
-      )
+      );
 
       // Get recent achievement unlocks
       const achievements = await queryMany<{
-        type: string
-        id: string
-        game_id: string
-        game_name: string
-        platform_name: string
-        timestamp: string
-        achievement_name: string
-        rarity_percent: number | null
+        type: string;
+        id: string;
+        game_id: string;
+        game_name: string;
+        platform_name: string;
+        timestamp: string;
+        achievement_name: string;
+        rarity_percent: number | null;
       }>(
         `SELECT 
           'achievement' as type,
@@ -682,17 +682,17 @@ router.get(
         ORDER BY ura.completed_at DESC
         LIMIT $2`,
         [user.id, fetchLimit]
-      )
+      );
 
       const manualAchievements = await queryMany<{
-        type: string
-        id: string
-        game_id: string
-        game_name: string
-        platform_name: string
-        timestamp: string
-        achievement_name: string
-        rarity_percent: number | null
+        type: string;
+        id: string;
+        game_id: string;
+        game_name: string;
+        platform_name: string;
+        timestamp: string;
+        achievement_name: string;
+        rarity_percent: number | null;
       }>(
         `SELECT 
           'achievement' as type,
@@ -711,42 +711,42 @@ router.get(
         ORDER BY ua.unlock_date DESC
         LIMIT $2`,
         [user.id, fetchLimit]
-      )
+      );
 
       // Combine and sort
       const feed = [...sessions, ...completions, ...achievements, ...manualAchievements]
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(offset, offset + safePageSize)
+        .slice(offset, offset + safePageSize);
 
       const sessionCount = await queryOne<{ count: string }>(
-        'SELECT COUNT(*) FROM play_sessions WHERE user_id = $1 AND ended_at IS NOT NULL',
+        "SELECT COUNT(*) FROM play_sessions WHERE user_id = $1 AND ended_at IS NOT NULL",
         [user.id]
-      )
+      );
       const completionCount = await queryOne<{ count: string }>(
-        'SELECT COUNT(*) FROM completion_logs WHERE user_id = $1',
+        "SELECT COUNT(*) FROM completion_logs WHERE user_id = $1",
         [user.id]
-      )
+      );
       const achievementCount = await queryOne<{ count: string }>(
         `SELECT 
           (SELECT COUNT(*) FROM user_rawg_achievements WHERE user_id = $1 AND completed = true AND completed_at IS NOT NULL) +
           (SELECT COUNT(*) FROM user_achievements WHERE user_id = $1 AND unlocked = true AND unlock_date IS NOT NULL) as count`,
         [user.id]
-      )
+      );
       const total =
         (sessionCount?.count ? parseInt(sessionCount.count, 10) : 0) +
         (completionCount?.count ? parseInt(completionCount.count, 10) : 0) +
-        (achievementCount?.count ? parseInt(achievementCount.count, 10) : 0)
+        (achievementCount?.count ? parseInt(achievementCount.count, 10) : 0);
 
       return new Response(JSON.stringify({ feed, total, page: safePage, pageSize: safePageSize }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Get activity feed error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get activity feed error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);

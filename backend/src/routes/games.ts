@@ -1,82 +1,82 @@
-import { router } from '@/lib/router'
-import { requireAuth } from '@/middleware/auth'
-import { queryMany, query, queryOne, withTransaction } from '@/services/db'
-import { corsHeaders } from '@/middleware/cors'
-import { getGameDetails, getGameDetailsBySlug, getGameSeries } from '@/services/rawg'
-import type { Game } from '@/types'
+import { router } from "@/lib/router";
+import { requireAuth } from "@/middleware/auth";
+import { queryMany, query, queryOne, withTransaction } from "@/services/db";
+import { corsHeaders } from "@/middleware/cors";
+import { getGameDetails, getGameDetailsBySlug, getGameSeries } from "@/services/rawg";
+import type { Game } from "@/types";
 
 interface PlatformInfo {
-  id: string
-  name: string
-  displayName: string
-  iconUrl: string | null
-  colorPrimary: string
+  id: string;
+  name: string;
+  displayName: string;
+  iconUrl: string | null;
+  colorPrimary: string;
 }
 
 interface AggregatedUserGame extends Game {
-  platforms: PlatformInfo[]
-  status: string
-  max_user_rating: number | null
-  total_minutes_sum: number
-  latest_last_played: string | null
-  is_favorite_any: boolean
-  display_edition_name: string | null
-  display_cover_art_url: string | null
-  genres: string[] | null
-  max_completion_percentage: number | null
-  max_achievement_count: number | null
+  platforms: PlatformInfo[];
+  status: string;
+  max_user_rating: number | null;
+  total_minutes_sum: number;
+  latest_last_played: string | null;
+  is_favorite_any: boolean;
+  display_edition_name: string | null;
+  display_cover_art_url: string | null;
+  genres: string[] | null;
+  max_completion_percentage: number | null;
+  max_achievement_count: number | null;
 }
 
 interface UserGameWithDetails extends Game {
-  platform_id: string
-  platform_name: string
-  platform_display_name: string
-  status: string
-  user_rating: number | null
-  total_minutes: number
-  last_played: string | null
-  is_favorite: boolean
+  platform_id: string;
+  platform_name: string;
+  platform_display_name: string;
+  status: string;
+  user_rating: number | null;
+  total_minutes: number;
+  last_played: string | null;
+  is_favorite: boolean;
 }
 
 interface ExportedGame {
-  name: string
-  release_date: string | null
-  description: string | null
-  metacritic_score: number | null
-  esrb_rating: string | null
-  series_name: string | null
-  platform: string
-  status: string | null
-  user_rating: number | null
-  notes: string | null
-  is_favorite: boolean
-  playtime_minutes: number | null
-  difficulty_rating: number | null
-  completion_percentage: number | null
+  name: string;
+  release_date: string | null;
+  description: string | null;
+  metacritic_score: number | null;
+  esrb_rating: string | null;
+  series_name: string | null;
+  platform: string;
+  status: string | null;
+  user_rating: number | null;
+  notes: string | null;
+  is_favorite: boolean;
+  playtime_minutes: number | null;
+  difficulty_rating: number | null;
+  completion_percentage: number | null;
 }
 
 // Get user's game library
 router.get(
-  '/api/games',
+  "/api/games",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const platformFilter = url.searchParams.get('platform')
-      const statusFilter = url.searchParams.get('status')
-      const favoritesFilter = url.searchParams.get('favorites') === 'true'
-      const genreFilter = url.searchParams.get('genre')
-      const collectionFilter = url.searchParams.get('collection')
-      const franchiseFilter = url.searchParams.get('franchise')
-      const sortBy = url.searchParams.get('sort') || 'name'
+      const url = new URL(req.url);
+      const platformFilter = url.searchParams.get("platform");
+      const statusFilter = url.searchParams.get("status");
+      const favoritesFilter = url.searchParams.get("favorites") === "true";
+      const genreFilter = url.searchParams.get("genre");
+      const collectionFilter = url.searchParams.get("collection");
+      const franchiseFilter = url.searchParams.get("franchise");
+      const sortBy = url.searchParams.get("sort") || "name";
 
-      const params: (string | number | boolean | null)[] = [user.id]
-      let paramIndex = 2
-      const whereClauses: string[] = ['ug.user_id = $1']
+      const params: (string | number | boolean | null)[] = [user.id];
+      let paramIndex = 2;
+      const whereClauses: string[] = ["ug.user_id = $1"];
 
       if (platformFilter) {
-        whereClauses.push(`p.display_name = $${paramIndex}`)
-        params.push(platformFilter)
-        paramIndex++
+        whereClauses.push(`p.display_name = $${paramIndex}`);
+        params.push(platformFilter);
+        paramIndex++;
       }
 
       // Status and favorites filtering moved to HAVING clause (after GROUP BY)
@@ -86,55 +86,55 @@ router.get(
           SELECT 1 FROM game_genres gg
           INNER JOIN genres gen ON gg.genre_id = gen.id
           WHERE gg.game_id = g.id AND gen.name = $${paramIndex}
-        )`)
-        params.push(genreFilter)
-        paramIndex++
+        )`);
+        params.push(genreFilter);
+        paramIndex++;
       }
 
       if (collectionFilter) {
         whereClauses.push(`EXISTS (
           SELECT 1 FROM collection_games cg
           WHERE cg.game_id = g.id AND cg.collection_id = $${paramIndex}
-        )`)
-        params.push(collectionFilter)
-        paramIndex++
+        )`);
+        params.push(collectionFilter);
+        paramIndex++;
       }
 
       if (franchiseFilter) {
-        whereClauses.push(`g.series_name = $${paramIndex}`)
-        params.push(franchiseFilter)
-        paramIndex++
+        whereClauses.push(`g.series_name = $${paramIndex}`);
+        params.push(franchiseFilter);
+        paramIndex++;
       }
 
       // Helper to get display name for sorting (repeat subquery since aliases aren't available in ORDER BY with GROUP BY)
       const displayNameExpr =
-        'COALESCE((SELECT ugde2.edition_name FROM user_game_display_editions ugde2 WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1), g.name)'
+        "COALESCE((SELECT ugde2.edition_name FROM user_game_display_editions ugde2 WHERE ugde2.game_id = g.id AND ugde2.user_id = $1 LIMIT 1), g.name)";
 
-      let orderByClause = `ORDER BY ${displayNameExpr} ASC`
-      if (sortBy === 'playtime_desc') {
-        orderByClause = `ORDER BY total_minutes_sum DESC, ${displayNameExpr} ASC`
-      } else if (sortBy === 'playtime_asc') {
-        orderByClause = `ORDER BY total_minutes_sum ASC, ${displayNameExpr} ASC`
-      } else if (sortBy === 'completion_high') {
-        orderByClause = `ORDER BY max_completion_percentage DESC, ${displayNameExpr} ASC`
-      } else if (sortBy === 'completion_low') {
-        orderByClause = `ORDER BY max_completion_percentage ASC, ${displayNameExpr} ASC`
-      } else if (sortBy === 'achievement_high') {
-        orderByClause = `ORDER BY max_achievement_count DESC NULLS LAST, ${displayNameExpr} ASC`
-      } else if (sortBy === 'achievement_low') {
-        orderByClause = `ORDER BY max_achievement_count ASC NULLS LAST, ${displayNameExpr} ASC`
-      } else if (sortBy === 'rating_high') {
-        orderByClause = `ORDER BY max_user_rating DESC NULLS LAST, ${displayNameExpr} ASC`
-      } else if (sortBy === 'rating_low') {
-        orderByClause = `ORDER BY max_user_rating ASC NULLS LAST, ${displayNameExpr} ASC`
-      } else if (sortBy === 'last_played_recent') {
-        orderByClause = `ORDER BY latest_last_played DESC NULLS LAST, ${displayNameExpr} ASC`
-      } else if (sortBy === 'last_played_oldest') {
-        orderByClause = `ORDER BY latest_last_played ASC NULLS LAST, ${displayNameExpr} ASC`
+      let orderByClause = `ORDER BY ${displayNameExpr} ASC`;
+      if (sortBy === "playtime_desc") {
+        orderByClause = `ORDER BY total_minutes_sum DESC, ${displayNameExpr} ASC`;
+      } else if (sortBy === "playtime_asc") {
+        orderByClause = `ORDER BY total_minutes_sum ASC, ${displayNameExpr} ASC`;
+      } else if (sortBy === "completion_high") {
+        orderByClause = `ORDER BY max_completion_percentage DESC, ${displayNameExpr} ASC`;
+      } else if (sortBy === "completion_low") {
+        orderByClause = `ORDER BY max_completion_percentage ASC, ${displayNameExpr} ASC`;
+      } else if (sortBy === "achievement_high") {
+        orderByClause = `ORDER BY max_achievement_count DESC NULLS LAST, ${displayNameExpr} ASC`;
+      } else if (sortBy === "achievement_low") {
+        orderByClause = `ORDER BY max_achievement_count ASC NULLS LAST, ${displayNameExpr} ASC`;
+      } else if (sortBy === "rating_high") {
+        orderByClause = `ORDER BY max_user_rating DESC NULLS LAST, ${displayNameExpr} ASC`;
+      } else if (sortBy === "rating_low") {
+        orderByClause = `ORDER BY max_user_rating ASC NULLS LAST, ${displayNameExpr} ASC`;
+      } else if (sortBy === "last_played_recent") {
+        orderByClause = `ORDER BY latest_last_played DESC NULLS LAST, ${displayNameExpr} ASC`;
+      } else if (sortBy === "last_played_oldest") {
+        orderByClause = `ORDER BY latest_last_played ASC NULLS LAST, ${displayNameExpr} ASC`;
       }
 
       // Build HAVING clause for filters that need to check aggregated values
-      const havingClauses: string[] = []
+      const havingClauses: string[] = [];
 
       if (statusFilter) {
         // Filter on the aggregated status (calculated via subquery in SELECT)
@@ -156,17 +156,17 @@ router.get(
               ELSE 6
             END
           LIMIT 1
-        ), 'backlog') = $${paramIndex}`)
-        params.push(statusFilter)
-        paramIndex++
+        ), 'backlog') = $${paramIndex}`);
+        params.push(statusFilter);
+        paramIndex++;
       }
 
       if (favoritesFilter) {
         // Filter on the aggregated is_favorite (using BOOL_OR)
-        havingClauses.push('BOOL_OR(COALESCE(ugp.is_favorite, FALSE)) = TRUE')
+        havingClauses.push("BOOL_OR(COALESCE(ugp.is_favorite, FALSE)) = TRUE");
       }
 
-      const havingClause = havingClauses.length > 0 ? `HAVING ${havingClauses.join(' AND ')}` : ''
+      const havingClause = havingClauses.length > 0 ? `HAVING ${havingClauses.join(" AND ")}` : "";
 
       const games = await queryMany<AggregatedUserGame>(
         `SELECT
@@ -266,12 +266,12 @@ router.get(
         LEFT JOIN user_game_custom_fields ucf ON g.id = ucf.game_id
           AND ug.platform_id = ucf.platform_id
           AND ucf.user_id = $1
-        WHERE ${whereClauses.join(' AND ')}
+        WHERE ${whereClauses.join(" AND ")}
         GROUP BY g.id
         ${havingClause}
         ${orderByClause}`,
         params
-      )
+      );
 
       // Apply display edition overlay
       const gamesWithOverlay = games.map((g) => {
@@ -280,32 +280,32 @@ router.get(
             ...g,
             name: g.display_edition_name,
             cover_art_url: g.display_cover_art_url || g.cover_art_url,
-          }
+          };
         }
-        return g
-      })
+        return g;
+      });
 
       return new Response(JSON.stringify({ games: gamesWithOverlay }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Get games error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get games error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Export user's library to JSON/CSV
 router.get(
-  '/api/games/export',
+  "/api/games/export",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url)
-      const format = url.searchParams.get('format') || 'json'
+      const url = new URL(req.url);
+      const format = url.searchParams.get("format") || "json";
 
       // Fetch all user's games with full details
       const games = await queryMany<ExportedGame>(
@@ -333,87 +333,87 @@ router.get(
          WHERE ug.user_id = $1
          ORDER BY g.name ASC`,
         [user.id]
-      )
+      );
 
-      if (format === 'csv') {
+      if (format === "csv") {
         // Generate CSV
         const headers = [
-          'Name',
-          'Platform',
-          'Status',
-          'Rating',
-          'Favorite',
-          'Release Date',
-          'Metacritic Score',
-          'ESRB Rating',
-          'Series',
-          'Playtime (hours)',
-          'Difficulty',
-          'Completion %',
-          'Notes',
-        ]
+          "Name",
+          "Platform",
+          "Status",
+          "Rating",
+          "Favorite",
+          "Release Date",
+          "Metacritic Score",
+          "ESRB Rating",
+          "Series",
+          "Playtime (hours)",
+          "Difficulty",
+          "Completion %",
+          "Notes",
+        ];
 
         const csvRows = [
-          headers.join(','),
+          headers.join(","),
           ...games.map((game) =>
             [
               `"${game.name.replace(/"/g, '""')}"`,
               game.platform,
-              game.status || 'backlog',
-              game.user_rating || '',
-              game.is_favorite ? 'Yes' : 'No',
-              game.release_date || '',
-              game.metacritic_score || '',
-              game.esrb_rating || '',
-              game.series_name || '',
-              game.playtime_minutes ? Math.round(game.playtime_minutes / 60) : '',
-              game.difficulty_rating || '',
-              game.completion_percentage || '',
-              `"${(game.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
-            ].join(',')
+              game.status || "backlog",
+              game.user_rating || "",
+              game.is_favorite ? "Yes" : "No",
+              game.release_date || "",
+              game.metacritic_score || "",
+              game.esrb_rating || "",
+              game.series_name || "",
+              game.playtime_minutes ? Math.round(game.playtime_minutes / 60) : "",
+              game.difficulty_rating || "",
+              game.completion_percentage || "",
+              `"${(game.notes || "").replace(/"/g, '""').replace(/\n/g, " ")}"`,
+            ].join(",")
           ),
-        ]
+        ];
 
-        const csv = csvRows.join('\n')
+        const csv = csvRows.join("\n");
 
         return new Response(csv, {
           status: 200,
           headers: {
-            'Content-Type': 'text/csv',
-            'Content-Disposition': `attachment; filename="mymemorycard-export-${new Date().toISOString().split('T')[0]}.csv"`,
+            "Content-Type": "text/csv",
+            "Content-Disposition": `attachment; filename="mymemorycard-export-${new Date().toISOString().split("T")[0]}.csv"`,
             ...corsHeaders(),
           },
-        })
+        });
       } else {
         // JSON format
         const jsonData = {
           exported_at: new Date().toISOString(),
           total_games: games.length,
           games: games,
-        }
+        };
 
         return new Response(JSON.stringify(jsonData, null, 2), {
           status: 200,
           headers: {
-            'Content-Type': 'application/json',
-            'Content-Disposition': `attachment; filename="mymemorycard-export-${new Date().toISOString().split('T')[0]}.json"`,
+            "Content-Type": "application/json",
+            "Content-Disposition": `attachment; filename="mymemorycard-export-${new Date().toISOString().split("T")[0]}.json"`,
             ...corsHeaders(),
           },
-        })
+        });
       }
     } catch (error) {
-      console.error('Export error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Export error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get genre statistics for user's library
 router.get(
-  '/api/games/stats/genres',
+  "/api/games/stats/genres",
   requireAuth(async (req, user) => {
     try {
       const genreStats = await queryMany<{ name: string; count: number }>(
@@ -426,41 +426,41 @@ router.get(
          ORDER BY count DESC
          LIMIT 10`,
         [user.id]
-      )
+      );
 
       return new Response(JSON.stringify({ genres: genreStats }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Get genre stats error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get genre stats error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get single game details
 router.get(
-  '/api/games/:id',
+  "/api/games/:id",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
+      const gameId = params?.id;
       if (!gameId) {
-        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+        return new Response(JSON.stringify({ error: "Game ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       const game = await queryMany<
         UserGameWithDetails & {
-          display_edition_name: string | null
-          display_cover_art_url: string | null
-          display_background_image_url: string | null
-          display_description: string | null
+          display_edition_name: string | null;
+          display_cover_art_url: string | null;
+          display_background_image_url: string | null;
+          display_description: string | null;
         }
       >(
         `SELECT 
@@ -489,13 +489,13 @@ router.get(
         LEFT JOIN user_game_display_editions ugde ON g.id = ugde.game_id AND ug.platform_id = ugde.platform_id AND ugde.user_id = $1
         WHERE g.id = $2`,
         [user.id, gameId]
-      )
+      );
 
       if (game.length === 0) {
-        return new Response(JSON.stringify({ error: 'Game not found' }), {
+        return new Response(JSON.stringify({ error: "Game not found" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Apply display edition overlay if set
@@ -508,10 +508,10 @@ router.get(
             background_image_url: g.display_background_image_url || g.background_image_url,
             description: g.display_description || g.description,
             is_using_display_edition: true,
-          }
+          };
         }
-        return { ...g, is_using_display_edition: false }
-      })
+        return { ...g, is_using_display_edition: false };
+      });
 
       // Fetch genres for this game
       const genres = await queryMany<{ name: string }>(
@@ -521,7 +521,7 @@ router.get(
          WHERE gg.game_id = $1
          ORDER BY g.name`,
         [gameId]
-      )
+      );
 
       return new Response(
         JSON.stringify({
@@ -529,120 +529,120 @@ router.get(
           platforms,
           genres: genres.map((g) => g.name),
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Get game error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get game error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Update game status
 router.patch(
-  '/api/games/:id/status',
+  "/api/games/:id/status",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const body = (await req.json()) as { platform_id?: string; status?: string }
-      const { platform_id, status } = body
+      const gameId = params?.id;
+      const body = (await req.json()) as { platform_id?: string; status?: string };
+      const { platform_id, status } = body;
 
       if (!gameId || !platform_id || !status) {
-        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
-      const validStatuses = ['backlog', 'playing', 'finished', 'dropped', 'completed']
+      const validStatuses = ["backlog", "playing", "finished", "dropped", "completed"];
       if (!validStatuses.includes(status)) {
-        return new Response(JSON.stringify({ error: 'Invalid status' }), {
+        return new Response(JSON.stringify({ error: "Invalid status" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game on this platform
       const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platform_id]
-      )
+      );
 
       if (ownership.rowCount === 0) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Automatically set started_at and completed_at based on status changes
-      let dateUpdate = ''
-      if (status === 'playing') {
-        dateUpdate = ', started_at = COALESCE(user_game_progress.started_at, NOW())'
-      } else if (status === 'finished' || status === 'completed') {
-        dateUpdate = ', completed_at = COALESCE(user_game_progress.completed_at, NOW())'
+      let dateUpdate = "";
+      if (status === "playing") {
+        dateUpdate = ", started_at = COALESCE(user_game_progress.started_at, NOW())";
+      } else if (status === "finished" || status === "completed") {
+        dateUpdate = ", completed_at = COALESCE(user_game_progress.completed_at, NOW())";
       }
 
       await query(
-        `INSERT INTO user_game_progress (user_id, game_id, platform_id, status${status === 'playing' ? ', started_at' : ''}${['finished', 'completed'].includes(status) ? ', completed_at' : ''})
-         VALUES ($1, $2, $3, $4${status === 'playing' ? ', NOW()' : ''}${['finished', 'completed'].includes(status) ? ', NOW()' : ''})
+        `INSERT INTO user_game_progress (user_id, game_id, platform_id, status${status === "playing" ? ", started_at" : ""}${["finished", "completed"].includes(status) ? ", completed_at" : ""})
+         VALUES ($1, $2, $3, $4${status === "playing" ? ", NOW()" : ""}${["finished", "completed"].includes(status) ? ", NOW()" : ""})
          ON CONFLICT (user_id, game_id, platform_id)
          DO UPDATE SET status = $4${dateUpdate}`,
         [user.id, gameId, platform_id, status]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true, status }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Update status error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Update status error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Update game rating
 router.put(
-  '/api/games/:id/rating',
+  "/api/games/:id/rating",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const body = (await req.json()) as { platform_id?: string; rating?: number }
-      const { platform_id, rating } = body
+      const gameId = params?.id;
+      const body = (await req.json()) as { platform_id?: string; rating?: number };
+      const { platform_id, rating } = body;
 
       if (!gameId || !platform_id || rating === undefined) {
-        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
-      const numRating = Number(rating)
+      const numRating = Number(rating);
       if (isNaN(numRating) || numRating < 1 || numRating > 10) {
-        return new Response(JSON.stringify({ error: 'Rating must be between 1 and 10' }), {
+        return new Response(JSON.stringify({ error: "Rating must be between 1 and 10" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game on this platform
       const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platform_id]
-      )
+      );
 
       if (ownership.rowCount === 0) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       await query(
@@ -651,49 +651,49 @@ router.put(
          ON CONFLICT (user_id, game_id, platform_id)
          DO UPDATE SET user_rating = $4`,
         [user.id, gameId, platform_id, numRating]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true, rating: numRating }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Update rating error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Update rating error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Update game notes
 router.post(
-  '/api/games/:id/notes',
+  "/api/games/:id/notes",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const body = (await req.json()) as { platform_id?: string; notes?: string }
-      const { platform_id, notes } = body
+      const gameId = params?.id;
+      const body = (await req.json()) as { platform_id?: string; notes?: string };
+      const { platform_id, notes } = body;
 
       if (!gameId || !platform_id || notes === undefined) {
-        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game on this platform
       const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platform_id]
-      )
+      );
 
       if (ownership.rowCount === 0) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       await query(
@@ -702,49 +702,49 @@ router.post(
          ON CONFLICT (user_id, game_id, platform_id)
          DO UPDATE SET notes = $4`,
         [user.id, gameId, platform_id, notes]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true, notes }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Update notes error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Update notes error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Toggle favorite status
 router.put(
-  '/api/games/:id/favorite',
+  "/api/games/:id/favorite",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const body = (await req.json()) as { platform_id?: string; is_favorite?: boolean }
-      const { platform_id, is_favorite } = body
+      const gameId = params?.id;
+      const body = (await req.json()) as { platform_id?: string; is_favorite?: boolean };
+      const { platform_id, is_favorite } = body;
 
       if (!gameId || !platform_id || is_favorite === undefined) {
-        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game on this platform
       const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platform_id]
-      )
+      );
 
       if (ownership.rowCount === 0) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       await query(
@@ -753,43 +753,43 @@ router.put(
          ON CONFLICT (user_id, game_id, platform_id)
          DO UPDATE SET is_favorite = $4`,
         [user.id, gameId, platform_id, is_favorite]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true, is_favorite }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Toggle favorite error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Toggle favorite error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Get custom fields for a game
 router.get(
-  '/api/games/:id/custom-fields',
+  "/api/games/:id/custom-fields",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const url = new URL(req.url)
-      const platformId = url.searchParams.get('platform_id')
+      const gameId = params?.id;
+      const url = new URL(req.url);
+      const platformId = url.searchParams.get("platform_id");
 
       if (!gameId) {
-        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+        return new Response(JSON.stringify({ error: "Game ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       if (!platformId) {
-        return new Response(JSON.stringify({ error: 'platform_id query parameter is required' }), {
+        return new Response(JSON.stringify({ error: "platform_id query parameter is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       const customFields = await queryOne(
@@ -800,72 +800,72 @@ router.get(
          FROM user_game_custom_fields
          WHERE user_id = $1 AND game_id = $2 AND platform_id = $3`,
         [user.id, gameId, platformId]
-      )
+      );
 
       return new Response(JSON.stringify({ customFields: customFields || {} }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Get custom fields error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Get custom fields error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Update custom fields for a game
 router.put(
-  '/api/games/:id/custom-fields',
+  "/api/games/:id/custom-fields",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
+      const gameId = params?.id;
       const body = (await req.json()) as {
-        platform_id?: string
-        completion_percentage?: number | null
-        difficulty_rating?: number | null
-      }
+        platform_id?: string;
+        completion_percentage?: number | null;
+        difficulty_rating?: number | null;
+      };
 
-      const { platform_id, completion_percentage, difficulty_rating } = body
+      const { platform_id, completion_percentage, difficulty_rating } = body;
 
       if (!gameId || !platform_id) {
-        return new Response(JSON.stringify({ error: 'Game ID and platform ID are required' }), {
+        return new Response(JSON.stringify({ error: "Game ID and platform ID are required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game on this platform
       const ownership = await query(
-        'SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platform_id]
-      )
+      );
 
       if (ownership.rowCount === 0) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Validate ranges
       if (completion_percentage !== null && completion_percentage !== undefined) {
         if (completion_percentage < 0 || completion_percentage > 100) {
           return new Response(
-            JSON.stringify({ error: 'Completion percentage must be between 0 and 100' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-          )
+            JSON.stringify({ error: "Completion percentage must be between 0 and 100" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+          );
         }
       }
 
       if (difficulty_rating !== null && difficulty_rating !== undefined) {
         if (difficulty_rating < 1 || difficulty_rating > 10) {
           return new Response(
-            JSON.stringify({ error: 'Difficulty rating must be between 1 and 10' }),
-            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-          )
+            JSON.stringify({ error: "Difficulty rating must be between 1 and 10" }),
+            { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+          );
         }
       }
 
@@ -883,49 +883,49 @@ router.put(
            difficulty_rating = COALESCE($5, user_game_custom_fields.difficulty_rating),
            updated_at = NOW()`,
         [user.id, gameId, platform_id, completion_percentage, difficulty_rating]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Update custom fields error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Update custom fields error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Delete game from user's library (for a specific platform)
 router.delete(
-  '/api/games/:id',
+  "/api/games/:id",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const url = new URL(req.url)
-      const platformId = url.searchParams.get('platform_id')
+      const gameId = params?.id;
+      const url = new URL(req.url);
+      const platformId = url.searchParams.get("platform_id");
 
       if (!gameId || !platformId) {
-        return new Response(JSON.stringify({ error: 'Game ID and platform_id are required' }), {
+        return new Response(JSON.stringify({ error: "Game ID and platform_id are required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game on this platform
       const ownership = await queryOne<{ id: string }>(
-        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       if (!ownership) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Delete related user data (cascading from user_games deletion handles most)
@@ -933,229 +933,229 @@ router.delete(
 
       // Delete play sessions
       await query(
-        'DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete completion logs
       await query(
-        'DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete user playtime
       await query(
-        'DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete user game progress
       await query(
-        'DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete custom fields
       await query(
-        'DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete display edition preference
       await query(
-        'DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete edition ownership
       await query(
-        'DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Delete DLC ownership
       await query(
-        'DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       // Finally delete the user_games entry
       await query(
-        'DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Delete game error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Delete game error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Bulk delete games
 router.post(
-  '/api/games/bulk-delete',
+  "/api/games/bulk-delete",
   requireAuth(async (req, user) => {
     try {
-      const body = (await req.json()) as { gameIds?: string[] }
-      const { gameIds } = body
+      const body = (await req.json()) as { gameIds?: string[] };
+      const { gameIds } = body;
 
       if (!gameIds || !Array.isArray(gameIds) || gameIds.length === 0) {
-        return new Response(JSON.stringify({ error: 'gameIds array is required' }), {
+        return new Response(JSON.stringify({ error: "gameIds array is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       if (gameIds.length > 100) {
         return new Response(
-          JSON.stringify({ error: 'Cannot delete more than 100 games at once' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+          JSON.stringify({ error: "Cannot delete more than 100 games at once" }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+        );
       }
 
-      let deletedCount = 0
+      let deletedCount = 0;
 
       for (const gameId of gameIds) {
         const userGames = await queryMany<{ platform_id: string }>(
-          'SELECT platform_id FROM user_games WHERE user_id = $1 AND game_id = $2',
+          "SELECT platform_id FROM user_games WHERE user_id = $1 AND game_id = $2",
           [user.id, gameId]
-        )
+        );
 
         for (const { platform_id: platformId } of userGames) {
           await query(
-            'DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
+          );
           await query(
-            'DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+            "DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
             [user.id, gameId, platformId]
-          )
-          deletedCount++
+          );
+          deletedCount++;
         }
       }
 
       return new Response(JSON.stringify({ success: true, deletedCount }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Bulk delete games error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Bulk delete games error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Update game metadata from RAWG ID or slug
 router.post(
-  '/api/games/:id/update-from-rawg',
+  "/api/games/:id/update-from-rawg",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const body = (await req.json()) as { rawgId?: number; rawgSlug?: string }
-      const { rawgId, rawgSlug } = body
+      const gameId = params?.id;
+      const body = (await req.json()) as { rawgId?: number; rawgSlug?: string };
+      const { rawgId, rawgSlug } = body;
 
       if (!gameId) {
-        return new Response(JSON.stringify({ error: 'Game ID is required' }), {
+        return new Response(JSON.stringify({ error: "Game ID is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       if (!rawgId && !rawgSlug) {
-        return new Response(JSON.stringify({ error: 'Either rawgId or rawgSlug is required' }), {
+        return new Response(JSON.stringify({ error: "Either rawgId or rawgSlug is required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns this game
       const ownership = await queryOne<{ id: string }>(
-        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2',
+        "SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2",
         [user.id, gameId]
-      )
+      );
 
       if (!ownership) {
-        return new Response(JSON.stringify({ error: 'Game not found in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not found in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Fetch game details from RAWG (by ID or slug)
-      let rawgGame = null
+      let rawgGame = null;
       if (rawgId) {
-        rawgGame = await getGameDetails(rawgId)
+        rawgGame = await getGameDetails(rawgId);
       } else if (rawgSlug) {
-        rawgGame = await getGameDetailsBySlug(rawgSlug)
+        rawgGame = await getGameDetailsBySlug(rawgSlug);
       }
 
       if (!rawgGame) {
-        return new Response(JSON.stringify({ error: 'Game not found in RAWG database' }), {
+        return new Response(JSON.stringify({ error: "Game not found in RAWG database" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Check if another game already uses this RAWG ID
       const existingGame = await queryOne<{ id: string; name: string }>(
-        'SELECT id, name FROM games WHERE rawg_id = $1 AND id != $2',
+        "SELECT id, name FROM games WHERE rawg_id = $1 AND id != $2",
         [rawgGame.id, gameId]
-      )
+      );
 
       if (existingGame) {
         return new Response(
           JSON.stringify({
             error: `Another game already uses this RAWG ID: "${existingGame.name}". You may want to merge these entries instead.`,
           }),
-          { status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+          { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+        );
       }
 
       // Fetch series info
-      let seriesName: string | null = null
+      let seriesName: string | null = null;
       try {
-        seriesName = await getGameSeries(rawgGame.id)
+        seriesName = await getGameSeries(rawgGame.id);
       } catch (error) {
-        console.warn(`Failed to fetch series for RAWG ID ${rawgGame.id}:`, error)
+        console.warn(`Failed to fetch series for RAWG ID ${rawgGame.id}:`, error);
       }
 
       // Update the game metadata
@@ -1189,30 +1189,30 @@ router.post(
             rawgGame.playtime || null,
             gameId,
           ]
-        )
+        );
 
         // Update genres - first remove old ones
-        await client.query('DELETE FROM game_genres WHERE game_id = $1', [gameId])
+        await client.query("DELETE FROM game_genres WHERE game_id = $1", [gameId]);
 
         // Insert new genres
         for (const genre of rawgGame.genres) {
-          let genreRecord = await client.query('SELECT id FROM genres WHERE rawg_id = $1', [
+          let genreRecord = await client.query("SELECT id FROM genres WHERE rawg_id = $1", [
             genre.id,
-          ])
+          ]);
 
           if (genreRecord.rows.length === 0) {
             genreRecord = await client.query(
-              'INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id',
+              "INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id",
               [genre.id, genre.name]
-            )
+            );
           }
 
           await client.query(
-            'INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            "INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
             [gameId, genreRecord.rows[0].id]
-          )
+          );
         }
-      })
+      });
 
       return new Response(
         JSON.stringify({
@@ -1225,81 +1225,81 @@ router.post(
             description: rawgGame.description_raw,
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-      )
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+      );
     } catch (error) {
-      console.error('Update from RAWG error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Update from RAWG error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);
 
 // Add game to a new platform (for games already in user's library)
 router.post(
-  '/api/games/:id/platforms',
+  "/api/games/:id/platforms",
   requireAuth(async (req, user, params) => {
     try {
-      const gameId = params?.id
-      const body = (await req.json()) as { platformId?: string }
-      const { platformId } = body
+      const gameId = params?.id;
+      const body = (await req.json()) as { platformId?: string };
+      const { platformId } = body;
 
       if (!gameId || !platformId) {
-        return new Response(JSON.stringify({ error: 'Game ID and platformId are required' }), {
+        return new Response(JSON.stringify({ error: "Game ID and platformId are required" }), {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify the game exists
-      const game = await queryOne<{ id: string }>('SELECT id FROM games WHERE id = $1', [gameId])
+      const game = await queryOne<{ id: string }>("SELECT id FROM games WHERE id = $1", [gameId]);
 
       if (!game) {
-        return new Response(JSON.stringify({ error: 'Game not found' }), {
+        return new Response(JSON.stringify({ error: "Game not found" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify user owns the game on at least one platform
       const existingOwnership = await queryOne<{ id: string }>(
-        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2',
+        "SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2",
         [user.id, gameId]
-      )
+      );
 
       if (!existingOwnership) {
-        return new Response(JSON.stringify({ error: 'Game not in your library' }), {
+        return new Response(JSON.stringify({ error: "Game not in your library" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Verify the platform exists and user has it in their profile
       const userPlatform = await queryOne<{ platform_id: string }>(
-        'SELECT platform_id FROM user_platforms WHERE user_id = $1 AND platform_id = $2',
+        "SELECT platform_id FROM user_platforms WHERE user_id = $1 AND platform_id = $2",
         [user.id, platformId]
-      )
+      );
 
       if (!userPlatform) {
-        return new Response(JSON.stringify({ error: 'Platform not in your profile' }), {
+        return new Response(JSON.stringify({ error: "Platform not in your profile" }), {
           status: 404,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-        })
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
       }
 
       // Check if user already owns the game on this platform
       const alreadyOwned = await queryOne<{ id: string }>(
-        'SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3',
+        "SELECT id FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
         [user.id, gameId, platformId]
-      )
+      );
 
       if (alreadyOwned) {
         return new Response(
-          JSON.stringify({ error: 'You already own this game on this platform' }),
-          { status: 409, headers: { 'Content-Type': 'application/json', ...corsHeaders() } }
-        )
+          JSON.stringify({ error: "You already own this game on this platform" }),
+          { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders() } }
+        );
       }
 
       // Add the game to the platform
@@ -1307,25 +1307,25 @@ router.post(
         `INSERT INTO user_games (user_id, game_id, platform_id, owned, import_source)
          VALUES ($1, $2, $3, true, 'add_platform')`,
         [user.id, gameId, platformId]
-      )
+      );
 
       // Create initial progress entry with 'backlog' status
       await query(
         `INSERT INTO user_game_progress (user_id, game_id, platform_id, status)
          VALUES ($1, $2, $3, 'backlog')`,
         [user.id, gameId, platformId]
-      )
+      );
 
       return new Response(JSON.stringify({ success: true }), {
         status: 201,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     } catch (error) {
-      console.error('Add game to platform error:', error)
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Add game to platform error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      })
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
     }
   })
-)
+);

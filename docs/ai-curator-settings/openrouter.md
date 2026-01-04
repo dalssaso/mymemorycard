@@ -3,6 +3,7 @@
 OpenRouter provides access to multiple AI models through a single API with competitive pricing.
 
 **IMPORTANT:**
+
 - OpenRouter model names require a provider prefix (e.g., `openai/gpt-4.1-mini`, `anthropic/claude-3.5-sonnet`). See the [Models page](https://openrouter.ai/models) for the complete list.
 - **Image generation is not supported** with OpenRouter. Only text-based features (collection suggestions and next game recommendations) are available. For AI-generated cover images, please use the OpenAI provider.
 
@@ -31,6 +32,7 @@ OpenRouter provides access to multiple AI models through a single API with compe
 ## Pricing
 
 OpenRouter pricing varies by model. Popular choices:
+
 - **mistralai/mistral-small-3.2**: $0.10/M input tokens, $0.30/M output tokens
 - google/gemini-flash-1.5: $0.075/M input tokens, $0.30/M output tokens
 - openai/gpt-4.1-mini: $0.003/1K input tokens (same as OpenAI)
@@ -45,6 +47,7 @@ View all models and pricing: [OpenRouter Models](https://openrouter.ai/models)
 - Credits system (can add funds to account)
 
 **Supported AI Curator Features:**
+
 - ✅ Collection Suggestions
 - ✅ Next Game Recommendations
 - ❌ Cover Image Generation (OpenAI only)
@@ -54,14 +57,17 @@ View all models and pricing: [OpenRouter Models](https://openrouter.ai/models)
 Choose based on your needs:
 
 ### Quality-Focused
+
 - `openai/gpt-4.1-mini`: Best overall quality
 - `anthropic/claude-3.5-sonnet`: Excellent reasoning
 
 ### Budget-Friendly
+
 - `google/gemini-flash-1.5`: Very cheap, good quality
 - `meta-llama/llama-3.2-3b-instruct`: Ultra-cheap
 
 ### Balanced
+
 - `mistralai/mistral-small-3.2`: Recommended, good value
 
 ## Monitoring Usage
@@ -73,11 +79,13 @@ Choose based on your needs:
 ## Troubleshooting
 
 ### "Failed to generate suggestions"
+
 - Verify API key is correct
 - Ensure you have credits in your account
 - Check model name is correct (case-sensitive)
 
 ### Model not available
+
 - Try a different model
 - Check [OpenRouter Status](https://status.openrouter.ai/)
 - OpenRouter will automatically try fallback models if configured
