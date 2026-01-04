@@ -1,10 +1,11 @@
 import { type ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { ScrollFade } from "@/components/ui";
-import { useQuery } from "@tanstack/react-query";
+import { Button, ScrollFade } from "@/components/ui";
 import { Link } from "@tanstack/react-router";
-import { gamesAPI, collectionsAPI, franchisesAPI } from "@/lib/api";
+import { useCollections } from "@/hooks/useCollections";
+import { useFranchises } from "@/hooks/useFranchises";
+import { useGameSummaries } from "@/hooks/useGameSummaries";
 import { BackButton } from "./BackButton";
 
 const quickStatStyles = {
@@ -28,11 +29,6 @@ export interface SidebarProps {
   showBackButton?: boolean;
 }
 
-interface GameSummary {
-  status: string;
-  is_favorite?: boolean;
-}
-
 export function Sidebar({
   children,
   customCollapsed = false,
@@ -41,34 +37,9 @@ export function Sidebar({
   const { user } = useAuth();
   const { isCollapsed, toggleSidebar } = useSidebar();
 
-  // Fetch games for stats
-  const { data } = useQuery({
-    queryKey: ["games"],
-    queryFn: async () => {
-      const response = await gamesAPI.getAll();
-      return response.data as { games: GameSummary[] };
-    },
-  });
-
-  // Fetch collections
-  const { data: collectionsData } = useQuery({
-    queryKey: ["collections"],
-    queryFn: async () => {
-      const response = await collectionsAPI.getAll();
-      return response.data as {
-        collections: Array<{ id: string; name: string; game_count: number }>;
-      };
-    },
-  });
-
-  // Fetch franchises
-  const { data: franchisesData } = useQuery({
-    queryKey: ["franchises"],
-    queryFn: async () => {
-      const response = await franchisesAPI.getAll();
-      return response.data;
-    },
-  });
+  const { data } = useGameSummaries();
+  const { data: collectionsData } = useCollections();
+  const { data: franchisesData } = useFranchises();
 
   const games = data?.games || [];
   const totalGames = games.length;
@@ -83,8 +54,10 @@ export function Sidebar({
   return (
     <>
       {/* Collapse Toggle Button - positioned outside sidebar to avoid overflow clipping */}
-      <button
+      <Button
         onClick={toggleSidebar}
+        variant="ghost"
+        size="icon"
         className={`hidden md:flex fixed top-20 z-20 w-6 h-6 bg-ctp-surface0 border border-ctp-surface1 rounded-full items-center justify-center hover:bg-ctp-surface1 hover:border-ctp-surface2 transition-all duration-300 ${
           isCollapsed ? "left-[52px]" : "left-[228px]"
         }`}
@@ -98,7 +71,7 @@ export function Sidebar({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-      </button>
+      </Button>
 
       <aside
         className={`hidden md:block fixed left-0 top-16 bottom-0 bg-ctp-mantle border-r border-ctp-surface0 transition-all duration-300 ${
