@@ -22,6 +22,8 @@ npm test              # Run vitest tests
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report (90% threshold)
 npm run typecheck     # TypeScript checking
+npm run lint          # ESLint with zero warnings allowed
+npm run lint:fix      # ESLint with auto-fix
 ```
 
 ## After Every Code Change
@@ -29,7 +31,7 @@ npm run typecheck     # TypeScript checking
 Run these commands after any modifications:
 
 ```bash
-npm run typecheck
+npm run lint && npm run typecheck
 ```
 
 Fix any type errors before committing.

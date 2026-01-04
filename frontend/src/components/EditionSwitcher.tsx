@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ScrollFade } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { displayEditionAPI, DisplayEditionData, RawgEditionOption } from '@/lib/api'
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ScrollFade } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { displayEditionAPI, type DisplayEditionData, type RawgEditionOption } from "@/lib/api";
 
 interface EditionSwitcherProps {
-  gameId: string
-  platformId: string
+  gameId: string;
+  platformId: string;
 }
 
 export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const [isExpanded, setIsExpanded] = useState(false)
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['displayEdition', gameId, platformId],
+    queryKey: ["displayEdition", gameId, platformId],
     queryFn: async () => {
-      const response = await displayEditionAPI.get(gameId, platformId)
-      return response.data as DisplayEditionData
+      const response = await displayEditionAPI.get(gameId, platformId);
+      return response.data as DisplayEditionData;
     },
     enabled: !!platformId,
-  })
+  });
 
   const setEditionMutation = useMutation({
     mutationFn: (edition: RawgEditionOption) =>
@@ -34,41 +34,39 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
         description: edition.description,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['displayEdition', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      showToast('Display edition updated', 'success')
-      setIsExpanded(false)
+      queryClient.invalidateQueries({ queryKey: ["displayEdition", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      showToast("Display edition updated", "success");
+      setIsExpanded(false);
     },
     onError: () => {
-      showToast('Failed to update display edition', 'error')
+      showToast("Failed to update display edition", "error");
     },
-  })
+  });
 
   const resetEditionMutation = useMutation({
     mutationFn: () => displayEditionAPI.reset(gameId, platformId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['displayEdition', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      showToast('Reset to base game', 'success')
+      queryClient.invalidateQueries({ queryKey: ["displayEdition", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      showToast("Reset to base game", "success");
     },
     onError: () => {
-      showToast('Failed to reset edition', 'error')
+      showToast("Failed to reset edition", "error");
     },
-  })
+  });
 
   if (isLoading) {
-    return (
-      <div className="animate-pulse h-10 bg-ctp-surface1 rounded" />
-    )
+    return <div className="animate-pulse h-10 bg-ctp-surface1 rounded" />;
   }
 
-  const hasEditions = data && data.availableEditions.length > 0
-  const isUsingEdition = data?.isUsingEdition
+  const hasEditions = data && data.availableEditions.length > 0;
+  const isUsingEdition = data?.isUsingEdition;
 
   if (!data) {
-    return null
+    return null;
   }
 
   return (
@@ -116,7 +114,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
@@ -143,7 +141,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
                       {edition.name}
                     </div>
                     <div className="text-xs text-ctp-teal mt-2">
-                      Click to use this edition's metadata
+                      Click to use this edition&apos;s metadata
                     </div>
                   </div>
                 </button>
@@ -154,8 +152,9 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
       )}
 
       <p className="text-xs text-ctp-overlay1">
-        Switching editions changes the displayed name, cover art, and description. Achievements are always from the base game.
+        Switching editions changes the displayed name, cover art, and description. Achievements are
+        always from the base game.
       </p>
     </div>
-  )
+  );
 }

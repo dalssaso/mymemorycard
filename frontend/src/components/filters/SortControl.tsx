@@ -1,23 +1,23 @@
-import { Select, type SelectOption } from '@/components/ui'
+import { Select, type SelectOption } from "@/components/ui";
 
 interface SortControlProps {
-  currentSort: string
-  onSortChange: (sort: string) => void
+  currentSort: string;
+  onSortChange: (sort: string) => void;
 }
 
 const SORT_OPTIONS: SelectOption[] = [
-  { value: '', label: 'Default (A-Z)' },
-  { value: 'playtime_desc', label: 'Most Played' },
-  { value: 'playtime_asc', label: 'Least Played' },
-  { value: 'completion_high', label: 'Completion % (High to Low)' },
-  { value: 'completion_low', label: 'Completion % (Low to High)' },
-  { value: 'achievement_high', label: 'Most Achievements' },
-  { value: 'achievement_low', label: 'Least Achievements' },
-  { value: 'rating_high', label: 'Rating (High to Low)' },
-  { value: 'rating_low', label: 'Rating (Low to High)' },
-  { value: 'last_played_recent', label: 'Last Played (Recent)' },
-  { value: 'last_played_oldest', label: 'Last Played (Oldest)' },
-]
+  { value: "", label: "Default (A-Z)" },
+  { value: "playtime_desc", label: "Most Played" },
+  { value: "playtime_asc", label: "Least Played" },
+  { value: "completion_high", label: "Completion % (High to Low)" },
+  { value: "completion_low", label: "Completion % (Low to High)" },
+  { value: "achievement_high", label: "Most Achievements" },
+  { value: "achievement_low", label: "Least Achievements" },
+  { value: "rating_high", label: "Rating (High to Low)" },
+  { value: "rating_low", label: "Rating (Low to High)" },
+  { value: "last_played_recent", label: "Last Played (Recent)" },
+  { value: "last_played_oldest", label: "Last Played (Oldest)" },
+];
 
 export function SortControl({ currentSort, onSortChange }: SortControlProps) {
   return (
@@ -34,5 +34,5 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps) {
         className="w-[240px] text-sm"
       />
     </div>
-  )
+  );
 }

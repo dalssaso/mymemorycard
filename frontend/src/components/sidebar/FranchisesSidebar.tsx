@@ -1,52 +1,55 @@
-import { Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { useAnimatedNumber } from '@/hooks/use-animated-number'
-import { franchisesAPI, collectionsAPI, FranchiseSummary } from '@/lib/api'
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
+import { franchisesAPI, collectionsAPI, type FranchiseSummary } from "@/lib/api";
 
 interface Collection {
-  id: string
-  name: string
-  game_count: number
+  id: string;
+  name: string;
+  game_count: number;
 }
 
 interface FranchisesSidebarProps {
-  onSync?: () => void
-  isSyncing?: boolean
+  onSync?: () => void;
+  isSyncing?: boolean;
 }
 
 export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
   const { data: franchisesData } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
-      return response.data
+      const response = await franchisesAPI.getAll();
+      return response.data;
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
-      return response.data as { collections: Collection[] }
+      const response = await collectionsAPI.getAll();
+      return response.data as { collections: Collection[] };
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
-  const franchises = franchisesData?.franchises || []
-  const collections = collectionsData?.collections || []
+  const franchises = useMemo(() => franchisesData?.franchises ?? [], [franchisesData?.franchises]);
+  const collections = useMemo(
+    () => collectionsData?.collections ?? [],
+    [collectionsData?.collections]
+  );
 
   const stats = useMemo(() => {
-    const totalFranchises = franchises.length
-    const totalCollections = collections.length
+    const totalFranchises = franchises.length;
+    const totalCollections = collections.length;
 
-    return { totalFranchises, totalCollections }
-  }, [franchises, collections])
-  const animatedFranchises = useAnimatedNumber(stats.totalFranchises)
-  const animatedCollections = useAnimatedNumber(stats.totalCollections)
+    return { totalFranchises, totalCollections };
+  }, [franchises, collections]);
+  const animatedFranchises = useAnimatedNumber(stats.totalFranchises);
+  const animatedCollections = useAnimatedNumber(stats.totalCollections);
 
   if (isCollapsed) {
     return (
@@ -58,7 +61,12 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             title="Import Games"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </Link>
         </div>
@@ -79,7 +87,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
           </Link>
         </div>
         <div className="flex flex-col items-center gap-2 pt-2 border-t border-ctp-surface0">
-          <div className="flex flex-col items-center gap-1" title={`Franchises: ${animatedFranchises}`}>
+          <div
+            className="flex flex-col items-center gap-1"
+            title={`Franchises: ${animatedFranchises}`}
+          >
             <div className="p-2 rounded-lg text-ctp-mauve">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -92,7 +103,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             </div>
             <span className="text-xs text-ctp-overlay1">{animatedFranchises}</span>
           </div>
-          <div className="flex flex-col items-center gap-1" title={`Collections: ${animatedCollections}`}>
+          <div
+            className="flex flex-col items-center gap-1"
+            title={`Collections: ${animatedCollections}`}
+          >
             <div className="p-2 rounded-lg text-ctp-teal">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -112,10 +126,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
               onClick={onSync}
               disabled={isSyncing}
               className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all disabled:opacity-50"
-              title={isSyncing ? 'Syncing Franchises' : 'Sync Franchises'}
+              title={isSyncing ? "Syncing Franchises" : "Sync Franchises"}
             >
               <svg
-                className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`}
+                className={`w-5 h-5 ${isSyncing ? "animate-spin" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -145,7 +159,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -265,7 +279,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2 disabled:opacity-50"
           >
             <svg
-              className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`}
+              className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -277,19 +291,14 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            {isSyncing ? 'Syncing...' : 'Sync Franchises'}
+            {isSyncing ? "Syncing..." : "Sync Franchises"}
           </button>
         )}
         <Link
           to="/collections"
           className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -360,7 +369,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                       {franchise.series_name}
                     </p>
                     <p className="text-xs text-ctp-overlay1">
-                      {franchise.game_count} {franchise.game_count === 1 ? 'game' : 'games'}
+                      {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                     </p>
                   </div>
                 </Link>
@@ -416,7 +425,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                     {collection.name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {collection.game_count} {collection.game_count === 1 ? 'game' : 'games'}
+                    {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -433,5 +442,5 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
         </div>
       )}
     </div>
-  )
+  );
 }

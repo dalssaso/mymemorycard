@@ -1,30 +1,30 @@
-import { useQuery } from '@tanstack/react-query'
-import { useParams, Link } from '@tanstack/react-router'
-import { BackButton, PageLayout } from '@/components/layout'
-import { Card } from '@/components/ui'
-import { collectionsAPI } from '@/lib/api'
+import { useQuery } from "@tanstack/react-query";
+import { useParams, Link } from "@tanstack/react-router";
+import { BackButton, PageLayout } from "@/components/layout";
+import { Card } from "@/components/ui";
+import { collectionsAPI } from "@/lib/api";
 
 interface Game {
-  id: string
-  name: string
-  cover_art_url: string | null
-  platform_display_name: string
-  status: string
-  user_rating: number | null
-  is_favorite: boolean
-  release_date: string | null
+  id: string;
+  name: string;
+  cover_art_url: string | null;
+  platform_display_name: string;
+  status: string;
+  user_rating: number | null;
+  is_favorite: boolean;
+  release_date: string | null;
 }
 
 export function SeriesDetail() {
-  const { seriesName } = useParams({ from: '/collections/series/$seriesName' })
+  const { seriesName } = useParams({ from: "/collections/series/$seriesName" });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['series', seriesName],
+    queryKey: ["series", seriesName],
     queryFn: async () => {
-      const response = await collectionsAPI.getSeriesGames(seriesName)
-      return response.data as { series_name: string; games: Game[] }
+      const response = await collectionsAPI.getSeriesGames(seriesName);
+      return response.data as { series_name: string; games: Game[] };
     },
-  })
+  });
 
   if (isLoading) {
     return (
@@ -33,7 +33,7 @@ export function SeriesDetail() {
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   if (!data) {
@@ -43,10 +43,10 @@ export function SeriesDetail() {
           <div className="text-ctp-red">Series not found</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
-  const { games } = data
+  const { games } = data;
 
   return (
     <PageLayout>
@@ -67,26 +67,19 @@ export function SeriesDetail() {
             <h1 className="text-4xl font-bold text-ctp-text">{seriesName} Series</h1>
           </div>
           <p className="text-sm text-ctp-teal">
-            {games.length} {games.length === 1 ? 'game' : 'games'}
+            {games.length} {games.length === 1 ? "game" : "games"}
           </p>
         </div>
 
         {/* Games Grid */}
         {games.length === 0 ? (
           <Card>
-            <p className="text-ctp-subtext0 text-center py-8">
-              No games found in this series.
-            </p>
+            <p className="text-ctp-subtext0 text-center py-8">No games found in this series.</p>
           </Card>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {games.map((game) => (
-              <Link
-                key={game.id}
-                to="/library/$id"
-                params={{ id: game.id }}
-                className="group"
-              >
+              <Link key={game.id} to="/library/$id" params={{ id: game.id }} className="group">
                 <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
                   {game.cover_art_url ? (
                     <img
@@ -132,5 +125,5 @@ export function SeriesDetail() {
         )}
       </div>
     </PageLayout>
-  )
+  );
 }

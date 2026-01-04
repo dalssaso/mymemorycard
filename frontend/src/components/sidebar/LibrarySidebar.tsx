@@ -1,75 +1,80 @@
-import { Link } from '@tanstack/react-router'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { Checkbox, ScrollFade } from '@/components/ui'
-import { FilterSection, GenreFilter, CollectionFilter, FranchiseFilter } from '@/components/filters'
-import type { LibraryFilters } from '@/hooks/useLibraryFilters'
+import { Link } from "@tanstack/react-router";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { Checkbox, ScrollFade } from "@/components/ui";
+import {
+  FilterSection,
+  GenreFilter,
+  CollectionFilter,
+  FranchiseFilter,
+} from "@/components/filters";
+import type { LibraryFilters } from "@/hooks/useLibraryFilters";
 
 interface Collection {
-  id: string
-  name: string
-  game_count: number
+  id: string;
+  name: string;
+  game_count: number;
 }
 
 interface LibrarySidebarProps {
-  filters: LibraryFilters
-  setFilter: <K extends keyof LibraryFilters>(key: K, value: LibraryFilters[K]) => void
-  viewMode: 'grid' | 'table'
-  setViewMode: (value: 'grid' | 'table') => void
-  uniquePlatforms: string[]
-  uniqueStatuses: string[]
-  collections: Collection[]
-  onClearFilters: () => void
-  hasActiveFilters: boolean
+  filters: LibraryFilters;
+  setFilter: <K extends keyof LibraryFilters>(key: K, value: LibraryFilters[K]) => void;
+  viewMode: "grid" | "table";
+  setViewMode: (value: "grid" | "table") => void;
+  uniquePlatforms: string[];
+  uniqueStatuses: string[];
+  collections: Collection[];
+  onClearFilters: () => void;
+  hasActiveFilters: boolean;
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  backlog: 'Backlog',
-  playing: 'Playing',
-  finished: 'Finished',
-  completed: 'Completed',
-  dropped: 'Dropped',
-}
+  backlog: "Backlog",
+  playing: "Playing",
+  finished: "Finished",
+  completed: "Completed",
+  dropped: "Dropped",
+};
 
 const STATUS_BG_STYLES: Record<string, React.CSSProperties> = {
   backlog: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)",
   },
   playing: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 35%, transparent)",
   },
   finished: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-green) 35%, transparent)",
   },
   completed: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-green) 35%, transparent)",
   },
   dropped: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
   },
-}
+};
 
 const STATUS_ACTIVE_STYLES: Record<string, React.CSSProperties> = {
   backlog: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)',
-    borderColor: 'color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)",
+    borderColor: "color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)",
   },
   playing: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 35%, transparent)',
-    borderColor: 'color-mix(in srgb, var(--ctp-teal) 55%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 35%, transparent)",
+    borderColor: "color-mix(in srgb, var(--ctp-teal) 55%, transparent)",
   },
   finished: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
-    borderColor: 'color-mix(in srgb, var(--ctp-green) 55%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-green) 35%, transparent)",
+    borderColor: "color-mix(in srgb, var(--ctp-green) 55%, transparent)",
   },
   completed: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
-    borderColor: 'color-mix(in srgb, var(--ctp-green) 55%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-green) 35%, transparent)",
+    borderColor: "color-mix(in srgb, var(--ctp-green) 55%, transparent)",
   },
   dropped: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
-    borderColor: 'color-mix(in srgb, var(--ctp-red) 55%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
+    borderColor: "color-mix(in srgb, var(--ctp-red) 55%, transparent)",
   },
-}
+};
 
 export function LibrarySidebar({
   filters,
@@ -82,7 +87,7 @@ export function LibrarySidebar({
   onClearFilters,
   hasActiveFilters,
 }: LibrarySidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   if (isCollapsed) {
     return (
@@ -107,29 +112,39 @@ export function LibrarySidebar({
         {/* View Mode Icons */}
         <div className="flex flex-col items-center gap-2">
           <button
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode("grid")}
             className={`p-2 rounded-lg transition-all ${
-              viewMode === 'grid'
-                ? 'bg-ctp-mauve text-ctp-base'
-                : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+              viewMode === "grid"
+                ? "bg-ctp-mauve text-ctp-base"
+                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
             title="Grid View"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+              />
             </svg>
           </button>
           <button
-            onClick={() => setViewMode('table')}
+            onClick={() => setViewMode("table")}
             className={`p-2 rounded-lg transition-all ${
-              viewMode === 'table'
-                ? 'bg-ctp-mauve text-ctp-base'
-                : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+              viewMode === "table"
+                ? "bg-ctp-mauve text-ctp-base"
+                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
             title="Table View"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
@@ -137,16 +152,26 @@ export function LibrarySidebar({
         {/* Favorites Toggle */}
         <div className="flex justify-center pt-2 border-t border-ctp-surface0">
           <button
-            onClick={() => setFilter('favorites', !filters.favorites)}
+            onClick={() => setFilter("favorites", !filters.favorites)}
             className={`p-2 rounded-lg transition-all ${
               filters.favorites
-                ? 'bg-ctp-red/20 text-ctp-red'
-                : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+                ? "bg-ctp-red/20 text-ctp-red"
+                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
-            title={filters.favorites ? 'Showing Favorites Only' : 'Show Favorites Only'}
+            title={filters.favorites ? "Showing Favorites Only" : "Show Favorites Only"}
           >
-            <svg className="w-5 h-5" fill={filters.favorites ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <svg
+              className="w-5 h-5"
+              fill={filters.favorites ? "currentColor" : "none"}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
             </svg>
           </button>
         </div>
@@ -160,13 +185,18 @@ export function LibrarySidebar({
               title="Clear All Filters"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
         )}
       </div>
-    )
+    );
   }
 
   return (
@@ -221,28 +251,38 @@ export function LibrarySidebar({
         </h3>
         <div className="flex gap-2">
           <button
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode("grid")}
             className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
-              viewMode === 'grid'
-                ? 'bg-ctp-mauve border border-ctp-mauve text-ctp-base'
-                : 'bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text'
+              viewMode === "grid"
+                ? "bg-ctp-mauve border border-ctp-mauve text-ctp-base"
+                : "bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text"
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+              />
             </svg>
             Grid
           </button>
           <button
-            onClick={() => setViewMode('table')}
+            onClick={() => setViewMode("table")}
             className={`flex-1 px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2 ${
-              viewMode === 'table'
-                ? 'bg-ctp-mauve border border-ctp-mauve text-ctp-base'
-                : 'bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text'
+              viewMode === "table"
+                ? "bg-ctp-mauve border border-ctp-mauve text-ctp-base"
+                : "bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text"
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+              />
             </svg>
             Table
           </button>
@@ -268,11 +308,11 @@ export function LibrarySidebar({
         </h3>
         <div className="space-y-1">
           <button
-            onClick={() => setFilter('status', '')}
+            onClick={() => setFilter("status", "")}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-              filters.status === ''
-                ? 'bg-ctp-teal/20 text-ctp-teal'
-                : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+              filters.status === ""
+                ? "bg-ctp-teal/20 text-ctp-teal"
+                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             All Statuses
@@ -280,16 +320,14 @@ export function LibrarySidebar({
           {uniqueStatuses.map((status) => (
             <button
               key={status}
-              onClick={() => setFilter('status', status)}
+              onClick={() => setFilter("status", status)}
               style={
                 filters.status === status
                   ? STATUS_ACTIVE_STYLES[status] || undefined
                   : STATUS_BG_STYLES[status] || undefined
               }
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all text-ctp-text hover:opacity-90 ${
-                filters.status === status
-                  ? 'border'
-                  : ''
+                filters.status === status ? "border" : ""
               }`}
             >
               {STATUS_LABELS[status] || status.charAt(0).toUpperCase() + status.slice(1)}
@@ -317,11 +355,11 @@ export function LibrarySidebar({
         </h3>
         <ScrollFade axis="y" className="space-y-1 max-h-48 overflow-y-auto">
           <button
-            onClick={() => setFilter('platform', '')}
+            onClick={() => setFilter("platform", "")}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-              filters.platform === ''
-                ? 'bg-ctp-mauve/20 text-ctp-mauve'
-                : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+              filters.platform === ""
+                ? "bg-ctp-mauve/20 text-ctp-mauve"
+                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             All Platforms
@@ -329,11 +367,11 @@ export function LibrarySidebar({
           {uniquePlatforms.map((platform) => (
             <button
               key={platform}
-              onClick={() => setFilter('platform', platform)}
+              onClick={() => setFilter("platform", platform)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all truncate ${
                 filters.platform === platform
-                  ? 'bg-ctp-mauve/20 text-ctp-mauve'
-                  : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+                  ? "bg-ctp-mauve/20 text-ctp-mauve"
+                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
               title={platform}
             >
@@ -347,33 +385,40 @@ export function LibrarySidebar({
         title="Genres"
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+            />
           </svg>
         }
         iconColor="text-ctp-peach"
-        onClear={() => setFilter('genre', [])}
+        onClear={() => setFilter("genre", [])}
         hasSelection={filters.genre.length > 0}
       >
-        <GenreFilter
-          selectedGenres={filters.genre}
-          onGenresChange={(g) => setFilter('genre', g)}
-        />
+        <GenreFilter selectedGenres={filters.genre} onGenresChange={(g) => setFilter("genre", g)} />
       </FilterSection>
 
       <FilterSection
         title="Collections"
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
           </svg>
         }
         iconColor="text-ctp-sapphire"
-        onClear={() => setFilter('collection', [])}
+        onClear={() => setFilter("collection", [])}
         hasSelection={filters.collection.length > 0}
       >
         <CollectionFilter
           selectedCollections={filters.collection}
-          onCollectionsChange={(c) => setFilter('collection', c)}
+          onCollectionsChange={(c) => setFilter("collection", c)}
           collections={collections}
         />
       </FilterSection>
@@ -382,16 +427,21 @@ export function LibrarySidebar({
         title="Franchises"
         icon={
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+            />
           </svg>
         }
         iconColor="text-ctp-lavender"
-        onClear={() => setFilter('franchise', [])}
+        onClear={() => setFilter("franchise", [])}
         hasSelection={filters.franchise.length > 0}
       >
         <FranchiseFilter
           selectedFranchises={filters.franchise}
-          onFranchisesChange={(f) => setFilter('franchise', f)}
+          onFranchisesChange={(f) => setFilter("franchise", f)}
         />
       </FilterSection>
 
@@ -412,13 +462,16 @@ export function LibrarySidebar({
           </svg>
           Filters
         </h3>
-        <label className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-ctp-surface0 transition-colors">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-ctp-surface0 transition-colors">
           <Checkbox
+            id="filters-favorites"
             checked={filters.favorites}
-            onChange={(e) => setFilter('favorites', e.target.checked)}
+            onChange={(e) => setFilter("favorites", e.target.checked)}
           />
-          <span className="text-sm text-ctp-subtext1">Favorites Only</span>
-        </label>
+          <label htmlFor="filters-favorites" className="text-sm text-ctp-subtext1 cursor-pointer">
+            Favorites Only
+          </label>
+        </div>
       </div>
 
       {hasActiveFilters && (
@@ -430,5 +483,5 @@ export function LibrarySidebar({
         </button>
       )}
     </div>
-  )
+  );
 }

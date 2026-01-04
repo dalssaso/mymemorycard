@@ -1,11 +1,11 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Import } from '@/pages/Import'
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Import } from "@/pages/Import";
 
-export const Route = createFileRoute('/import')({
+export const Route = createFileRoute("/import")({
   beforeLoad: ({ context }) => {
     if (!context.auth.token) {
-      throw redirect({ to: '/login' })
+      throw redirect({ to: "/login" });
     }
   },
   component: Import,
-})
+});

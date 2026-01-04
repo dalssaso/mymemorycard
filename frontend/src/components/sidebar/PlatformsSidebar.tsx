@@ -1,12 +1,12 @@
-import { useSidebar } from '@/contexts/SidebarContext'
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PlatformsSidebarProps {
-  platformCount: number
-  onAddCustomPlatform: () => void
+  platformCount: number;
+  onAddCustomPlatform: () => void;
 }
 
 export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: PlatformsSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   if (isCollapsed) {
     return (
@@ -27,12 +27,17 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
             title="Add Custom Platform"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -42,19 +47,17 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
         <p className="text-xs text-ctp-subtext0">
           Keep your platform list current for accurate imports.
         </p>
-        <div className="mt-3 text-sm text-ctp-teal">
-          {platformCount} saved
-        </div>
+        <div className="mt-3 text-sm text-ctp-teal">{platformCount} saved</div>
       </div>
 
       <button
         type="button"
         onClick={onAddCustomPlatform}
         className={[
-          'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal',
-          'rounded-lg transition-colors font-medium',
-        ].join(' ')}
+          "flex items-center justify-center gap-2 w-full px-4 py-2.5",
+          "bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal",
+          "rounded-lg transition-colors font-medium",
+        ].join(" ")}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -75,12 +78,10 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
           </div>
           <div className="p-3 bg-ctp-surface0/50 rounded-lg">
             <p className="font-medium text-ctp-subtext1 mb-1">Keep notes updated</p>
-            <p className="text-xs">
-              Add usernames or links to help you remember account details.
-            </p>
+            <p className="text-xs">Add usernames or links to help you remember account details.</p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -41,6 +41,7 @@ make dev-frontend             # Start frontend (separate terminal)
 | `npm run format`        | Prettier all files        |
 | `npm run format:check`  | Check formatting          |
 | `npm run lint:backend`  | Run ESLint on backend     |
+| `npm run lint:frontend` | Run ESLint on frontend    |
 | `npm test`              | Run frontend tests        |
 | `make help`             | Show all make commands    |
 
@@ -53,10 +54,11 @@ Run these commands after any `feat`, `fix`, `refactor`, or `chore` modifications
 cd backend && bun run lint && bun run typecheck
 
 # Frontend changes
-cd frontend && npm run typecheck
+cd frontend && npm run lint && npm run typecheck
 
 # Or from root for both
 npm run lint:backend && npm run typecheck
+npm run lint:frontend && npm run typecheck
 npm run format:check
 ```
 

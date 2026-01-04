@@ -13,6 +13,8 @@
     "typecheck:frontend": "cd frontend && npm run typecheck",
     "lint:backend": "cd backend && bun run lint",
     "lint:backend:fix": "cd backend && bun run lint:fix",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:frontend:fix": "cd frontend && npm run lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:backend": "prettier --write \"backend/**/*.{ts,tsx,js,jsx,json,md}\"",

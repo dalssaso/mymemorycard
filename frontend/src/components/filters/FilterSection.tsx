@@ -1,13 +1,13 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from "react";
 
 interface FilterSectionProps {
-  title: string
-  icon: ReactNode
-  iconColor: string
-  defaultOpen?: boolean
-  children: ReactNode
-  onClear?: () => void
-  hasSelection?: boolean
+  title: string;
+  icon: ReactNode;
+  iconColor: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+  onClear?: () => void;
+  hasSelection?: boolean;
 }
 
 export function FilterSection({
@@ -19,7 +19,7 @@ export function FilterSection({
   onClear,
   hasSelection = false,
 }: FilterSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
     <div>
@@ -30,7 +30,7 @@ export function FilterSection({
           aria-expanded={isOpen}
         >
           <svg
-            className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+            className={`w-3 h-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -51,5 +51,5 @@ export function FilterSection({
       </div>
       {isOpen && <div className="mt-2">{children}</div>}
     </div>
-  )
+  );
 }

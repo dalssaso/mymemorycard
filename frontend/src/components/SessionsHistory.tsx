@@ -1,210 +1,210 @@
-import { useRef, useState } from 'react'
-import type { PointerEvent } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ScrollFade } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { sessionsAPI } from '@/lib/api'
+import { useRef, useState } from "react";
+import type { PointerEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ScrollFade } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { sessionsAPI } from "@/lib/api";
 
 interface PlaySession {
-  id: string
-  user_id: string
-  game_id: string
-  platform_id: string
-  started_at: string
-  ended_at: string | null
-  duration_minutes: number | null
-  notes: string | null
-  created_at: string
-  game_name?: string
-  platform_name?: string
+  id: string;
+  user_id: string;
+  game_id: string;
+  platform_id: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_minutes: number | null;
+  notes: string | null;
+  created_at: string;
+  game_name?: string;
+  platform_name?: string;
 }
 
 interface SessionsHistoryProps {
-  gameId: string
-  platformId: string
-  onSessionChange?: () => void
+  gameId: string;
+  platformId: string;
+  onSessionChange?: () => void;
 }
 
 function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 }
 
 function toLocalDateTimeString(isoString: string): string {
-  const date = new Date(isoString)
-  const offset = date.getTimezoneOffset()
-  const localDate = new Date(date.getTime() - offset * 60000)
-  return localDate.toISOString().slice(0, 16)
+  const date = new Date(isoString);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60000);
+  return localDate.toISOString().slice(0, 16);
 }
 
 export function SessionsHistory({ gameId, platformId, onSessionChange }: SessionsHistoryProps) {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const swipeStartXRef = useRef(0)
-  const swipeStartYRef = useRef(0)
-  const swipeStartOffsetRef = useRef(0)
-  const [isManualMode, setIsManualMode] = useState(false)
-  const [manualDuration, setManualDuration] = useState('')
-  const [manualDate, setManualDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [sessionNotes, setSessionNotes] = useState('')
-  const [editingSession, setEditingSession] = useState<PlaySession | null>(null)
-  const [editStartedAt, setEditStartedAt] = useState('')
-  const [editEndedAt, setEditEndedAt] = useState('')
-  const [editNotes, setEditNotes] = useState('')
-  const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null)
-  const [activeSwipeOffset, setActiveSwipeOffset] = useState(0)
-  const [swipedSessionId, setSwipedSessionId] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const swipeStartXRef = useRef(0);
+  const swipeStartYRef = useRef(0);
+  const swipeStartOffsetRef = useRef(0);
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [manualDuration, setManualDuration] = useState("");
+  const [manualDate, setManualDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [sessionNotes, setSessionNotes] = useState("");
+  const [editingSession, setEditingSession] = useState<PlaySession | null>(null);
+  const [editStartedAt, setEditStartedAt] = useState("");
+  const [editEndedAt, setEditEndedAt] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [activeSwipeId, setActiveSwipeId] = useState<string | null>(null);
+  const [activeSwipeOffset, setActiveSwipeOffset] = useState(0);
+  const [swipedSessionId, setSwipedSessionId] = useState<string | null>(null);
 
   const { data: sessionsData, isLoading: loadingSessions } = useQuery({
-    queryKey: ['sessions', gameId],
+    queryKey: ["sessions", gameId],
     queryFn: async () => {
-      const response = await sessionsAPI.getAll(gameId, { limit: 20 })
+      const response = await sessionsAPI.getAll(gameId, { limit: 20 });
       return response.data as {
-        sessions: PlaySession[]
-        total: number
-        totalMinutes: number
-      }
+        sessions: PlaySession[];
+        total: number;
+        totalMinutes: number;
+      };
     },
-  })
+  });
 
   const addManualSessionMutation = useMutation({
     mutationFn: () => {
-      const durationMinutes = parseInt(manualDuration)
+      const durationMinutes = parseInt(manualDuration);
       if (isNaN(durationMinutes) || durationMinutes <= 0) {
-        throw new Error('Invalid duration')
+        throw new Error("Invalid duration");
       }
-      const startedAt = new Date(manualDate)
-      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000)
+      const startedAt = new Date(manualDate);
+      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000);
       return sessionsAPI.create(gameId, {
         platformId,
         startedAt: startedAt.toISOString(),
         endedAt: endedAt.toISOString(),
         durationMinutes,
         notes: sessionNotes || null,
-      })
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      setManualDuration('')
-      setSessionNotes('')
-      setIsManualMode(false)
-      showToast('Session added', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      setManualDuration("");
+      setSessionNotes("");
+      setIsManualMode(false);
+      showToast("Session added", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to add session', 'error')
+      showToast("Failed to add session", "error");
     },
-  })
+  });
 
   const updateSessionMutation = useMutation({
-    mutationFn: (data: { sessionId: string; startedAt: string; endedAt: string; notes: string | null }) => {
+    mutationFn: (data: {
+      sessionId: string;
+      startedAt: string;
+      endedAt: string;
+      notes: string | null;
+    }) => {
       return sessionsAPI.update(gameId, data.sessionId, {
         startedAt: data.startedAt,
         endedAt: data.endedAt,
         notes: data.notes,
-      })
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      setEditingSession(null)
-      showToast('Session updated', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      setEditingSession(null);
+      showToast("Session updated", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to update session', 'error')
+      showToast("Failed to update session", "error");
     },
-  })
+  });
 
   const deleteSessionMutation = useMutation({
     mutationFn: (sessionId: string) => sessionsAPI.delete(gameId, sessionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      showToast('Session deleted', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      showToast("Session deleted", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to delete session', 'error')
+      showToast("Failed to delete session", "error");
     },
-  })
+  });
 
   const handleEditClick = (session: PlaySession) => {
-    setEditingSession(session)
-    setEditStartedAt(toLocalDateTimeString(session.started_at))
-    setEditEndedAt(session.ended_at ? toLocalDateTimeString(session.ended_at) : '')
-    setEditNotes(session.notes || '')
-  }
+    setEditingSession(session);
+    setEditStartedAt(toLocalDateTimeString(session.started_at));
+    setEditEndedAt(session.ended_at ? toLocalDateTimeString(session.ended_at) : "");
+    setEditNotes(session.notes || "");
+  };
 
   const handleEditSave = () => {
-    if (!editingSession || !editStartedAt || !editEndedAt) return
+    if (!editingSession || !editStartedAt || !editEndedAt) return;
     updateSessionMutation.mutate({
       sessionId: editingSession.id,
       startedAt: new Date(editStartedAt).toISOString(),
       endedAt: new Date(editEndedAt).toISOString(),
       notes: editNotes || null,
-    })
-  }
+    });
+  };
 
-  const sessions = sessionsData?.sessions || []
-  const totalMinutes = sessionsData?.totalMinutes || 0
-  const maxSwipeOffset = 72
+  const sessions = sessionsData?.sessions || [];
+  const totalMinutes = sessionsData?.totalMinutes || 0;
+  const maxSwipeOffset = 72;
 
   const handlePointerDown = (sessionId: string) => (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return
-    swipeStartXRef.current = event.clientX
-    swipeStartYRef.current = event.clientY
-    swipeStartOffsetRef.current = swipedSessionId === sessionId ? -maxSwipeOffset : 0
-    setActiveSwipeId(sessionId)
-    setActiveSwipeOffset(swipeStartOffsetRef.current)
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    swipeStartXRef.current = event.clientX;
+    swipeStartYRef.current = event.clientY;
+    swipeStartOffsetRef.current = swipedSessionId === sessionId ? -maxSwipeOffset : 0;
+    setActiveSwipeId(sessionId);
+    setActiveSwipeOffset(swipeStartOffsetRef.current);
     if (swipedSessionId && swipedSessionId !== sessionId) {
-      setSwipedSessionId(null)
+      setSwipedSessionId(null);
     }
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
 
   const handlePointerMove = (sessionId: string) => (event: PointerEvent<HTMLDivElement>) => {
-    if (activeSwipeId !== sessionId) return
-    const currentX = event.clientX
-    const currentY = event.clientY
-    const deltaX = currentX - swipeStartXRef.current
-    const deltaY = currentY - swipeStartYRef.current
-    if (Math.abs(deltaX) < 4 && Math.abs(deltaY) < 4) return
-    if (Math.abs(deltaX) < Math.abs(deltaY)) return
+    if (activeSwipeId !== sessionId) return;
+    const currentX = event.clientX;
+    const currentY = event.clientY;
+    const deltaX = currentX - swipeStartXRef.current;
+    const deltaY = currentY - swipeStartYRef.current;
+    if (Math.abs(deltaX) < 4 && Math.abs(deltaY) < 4) return;
+    if (Math.abs(deltaX) < Math.abs(deltaY)) return;
 
-    const nextOffset = Math.max(
-      -maxSwipeOffset,
-      Math.min(0, swipeStartOffsetRef.current + deltaX)
-    )
-    setActiveSwipeOffset(nextOffset)
-  }
+    const nextOffset = Math.max(-maxSwipeOffset, Math.min(0, swipeStartOffsetRef.current + deltaX));
+    setActiveSwipeOffset(nextOffset);
+  };
 
   const handlePointerEnd = (sessionId: string) => (event: PointerEvent<HTMLDivElement>) => {
-    if (activeSwipeId !== sessionId) return
-    const shouldOpen = activeSwipeOffset <= -maxSwipeOffset / 2
-    setSwipedSessionId(shouldOpen ? sessionId : null)
-    setActiveSwipeId(null)
-    setActiveSwipeOffset(0)
-    event.currentTarget.releasePointerCapture(event.pointerId)
-  }
+    if (activeSwipeId !== sessionId) return;
+    const shouldOpen = activeSwipeOffset <= -maxSwipeOffset / 2;
+    setSwipedSessionId(shouldOpen ? sessionId : null);
+    setActiveSwipeId(null);
+    setActiveSwipeOffset(0);
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-ctp-text">Sessions History</h3>
-          <div className="text-sm text-ctp-subtext0">
-            Total: {formatDuration(totalMinutes)}
-          </div>
+          <div className="text-sm text-ctp-subtext0">Total: {formatDuration(totalMinutes)}</div>
         </div>
         <button
           onClick={() => setIsManualMode(!isManualMode)}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             isManualMode
-              ? 'bg-ctp-mauve text-ctp-base'
-              : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
+              ? "bg-ctp-mauve text-ctp-base"
+              : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
           }`}
         >
           + Add Manual
@@ -227,7 +227,10 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               />
             </div>
             <div>
-              <label htmlFor="manual-duration-history" className="block text-sm text-ctp-subtext0 mb-1">
+              <label
+                htmlFor="manual-duration-history"
+                className="block text-sm text-ctp-subtext0 mb-1"
+              >
                 Duration (minutes)
               </label>
               <input
@@ -260,13 +263,13 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               disabled={addManualSessionMutation.isPending || !manualDuration}
               className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
-              {addManualSessionMutation.isPending ? 'Adding...' : 'Add Session'}
+              {addManualSessionMutation.isPending ? "Adding..." : "Add Session"}
             </button>
             <button
               onClick={() => {
-                setIsManualMode(false)
-                setManualDuration('')
-                setSessionNotes('')
+                setIsManualMode(false);
+                setManualDuration("");
+                setSessionNotes("");
               }}
               className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-colors"
             >
@@ -324,7 +327,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               disabled={updateSessionMutation.isPending || !editStartedAt || !editEndedAt}
               className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
-              {updateSessionMutation.isPending ? 'Saving...' : 'Save Changes'}
+              {updateSessionMutation.isPending ? "Saving..." : "Save Changes"}
             </button>
             <button
               onClick={() => setEditingSession(null)}
@@ -341,38 +344,36 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       ) : sessions.length > 0 ? (
         <ScrollFade axis="y" className="space-y-2 max-h-96 overflow-y-auto">
           {sessions.map((session) => {
-            const isSwiped = swipedSessionId === session.id
-            const isDragging = activeSwipeId === session.id
-            const translateX = isDragging
-              ? activeSwipeOffset
-              : isSwiped
-                ? -maxSwipeOffset
-                : 0
+            const isSwiped = swipedSessionId === session.id;
+            const isDragging = activeSwipeId === session.id;
+            const translateX = isDragging ? activeSwipeOffset : isSwiped ? -maxSwipeOffset : 0;
 
-            const showSwipeAction = isSwiped || isDragging
+            const showSwipeAction = isSwiped || isDragging;
 
             return (
               <div key={session.id} className="relative overflow-hidden rounded-lg">
                 <div
                   className={`absolute inset-y-0 right-0 w-[72px] bg-ctp-red md:hidden flex items-center justify-center transition-opacity ${
-                    showSwipeAction ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    showSwipeAction ? "opacity-100" : "opacity-0 pointer-events-none"
                   }`}
                 >
                   <button
                     onClick={() => {
-                      deleteSessionMutation.mutate(session.id)
-                      setSwipedSessionId(null)
+                      deleteSessionMutation.mutate(session.id);
+                      setSwipedSessionId(null);
                     }}
                     disabled={deleteSessionMutation.isPending || !session.ended_at}
                     className="text-ctp-base text-sm font-semibold disabled:opacity-60"
-                    aria-label={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
+                    aria-label={
+                      session.ended_at ? "Delete session" : "Cannot delete active session"
+                    }
                   >
                     Delete
                   </button>
                 </div>
                 <div
                   className={`flex items-center justify-between w-full bg-ctp-surface0 rounded-lg p-3 touch-pan-y transition-transform ${
-                    isDragging ? '' : 'duration-200 ease-out'
+                    isDragging ? "" : "duration-200 ease-out"
                   }`}
                   style={{ transform: `translateX(${translateX}px)` }}
                   onPointerDown={handlePointerDown(session.id)}
@@ -385,15 +386,15 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                       <span className="text-ctp-text font-medium">
                         {session.ended_at
                           ? formatDuration(session.duration_minutes || 0)
-                          : 'In progress'}
+                          : "In progress"}
                       </span>
                       <span className="text-ctp-overlay1 text-sm">
                         {new Date(session.started_at).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
@@ -416,7 +417,11 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                           stroke="currentColor"
                           className="w-4 h-4"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                          />
                         </svg>
                       </button>
                     )}
@@ -424,16 +429,27 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                       onClick={() => deleteSessionMutation.mutate(session.id)}
                       disabled={deleteSessionMutation.isPending || !session.ended_at}
                       className="hidden md:inline-flex p-2 text-ctp-overlay1 hover:text-ctp-red transition-colors disabled:opacity-50"
-                      title={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
+                      title={session.ended_at ? "Delete session" : "Cannot delete active session"}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-4 h-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                        />
                       </svg>
                     </button>
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </ScrollFade>
       ) : (
@@ -442,5 +458,5 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
         </div>
       )}
     </div>
-  )
+  );
 }
