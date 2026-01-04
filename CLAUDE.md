@@ -1,15 +1,18 @@
 # CLAUDE.md
 
 Project-wide instructions for Claude Code. See also:
+
 - [frontend/CLAUDE.md](frontend/CLAUDE.md) - Frontend-specific guidance
 - [backend/CLAUDE.md](backend/CLAUDE.md) - Backend-specific guidance
 - [docs/CLAUDE.md](docs/CLAUDE.md) - Documentation guidance
 
 ## Project Overview
 
-MyMemoryCard is a self-hosted game library aggregator for tracking your gaming collection across platforms.
+MyMemoryCard is a self-hosted game library aggregator for tracking your gaming collection across
+platforms.
 
 **Tech Stack:**
+
 - **Backend**: Bun, TypeScript, PostgreSQL 16+, Redis, Drizzle ORM
 - **Frontend**: React 18, Vite, TanStack (Router, Query, Table), Tailwind CSS
 
@@ -32,27 +35,62 @@ make dev-frontend             # Start frontend (separate terminal)
 
 ## Commands Reference
 
-| Command | Description |
-|---------|-------------|
-| `npm run typecheck` | Type check both projects |
-| `npm run format` | Prettier all files |
-| `npm test` | Run frontend tests |
-| `make help` | Show all make commands |
+| Command                 | Description               |
+| ----------------------- | ------------------------- |
+| `npm run typecheck`     | Type check both projects  |
+| `npm run format`        | Prettier all files        |
+| `npm run format:check`  | Check formatting          |
+| `npm run lint:backend`  | Run ESLint on backend     |
+| `npm test`              | Run frontend tests        |
+| `make help`             | Show all make commands    |
+
+## After Every Code Change
+
+Run these commands after any `feat`, `fix`, `refactor`, or `chore` modifications:
+
+```bash
+# Backend changes
+cd backend && bun run lint && bun run typecheck
+
+# Frontend changes
+cd frontend && npm run typecheck
+
+# Or from root for both
+npm run lint:backend && npm run typecheck
+npm run format:check
+```
+
+Fix any lint/type errors before committing.
 
 ## Code Style
 
-### Critical Rules
+### Prettier (enforced)
+
+- 2 spaces, no tabs
+- No semicolons
+- 100 character line width
+- Trailing commas (ES5)
+- Arrow function parens: always `(x) => x`
+
+### TypeScript (enforced by ESLint)
 
 - **NO EMOJIS** in code, logs, console output, error messages, or commits
-- **No semicolons** (Prettier config)
-- **Single quotes**, 2 spaces, 100 char line width
-- **TypeScript strict mode** - no `any` without justification
+- **No `any`** - use proper types or `unknown`
+- **Explicit return types** on all functions
+- **Type imports** must use `import type { X }` or `import { type X }`
 
-### Naming
+### Naming Conventions (enforced by ESLint)
 
-- PascalCase: types, interfaces, components
-- camelCase: variables, functions
-- SCREAMING_SNAKE_CASE: constants
+| Element    | Convention                                        |
+| ---------- | ------------------------------------------------- |
+| Variables  | `camelCase`, `UPPER_CASE`, `snake_case`           |
+| Parameters | `camelCase` (leading `_` allowed for unused)      |
+| Functions  | `camelCase`                                       |
+| Types      | `PascalCase`                                      |
+| Interfaces | `PascalCase`                                      |
+| Components | `PascalCase`                                      |
+| Constants  | `SCREAMING_SNAKE_CASE`                            |
+| Properties | `camelCase`, `snake_case` (or any with `-` `/`)   |
 
 ### Imports Order
 
@@ -60,7 +98,7 @@ make dev-frontend             # Start frontend (separate terminal)
 import { describe } from 'bun:test'        // Test framework
 import externalLib from 'external-package' // External
 import { router } from '@/lib/router'      // Internal (@/ alias)
-import type { Game } from '@/types'        // Type imports with 'type'
+import { type Game } from '@/types'        // Type imports inline
 ```
 
 ### Path Alias
@@ -99,11 +137,21 @@ Migrations run automatically on backend startup.
 
 ```
 type: short description
-
-Optional longer description
 ```
 
-Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`
+Rules (enforced by commitlint):
+
+- **Types**: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`
+- **Subject**: lowercase, no period at end
+- **Header max length**: 100 characters
+
+Examples:
+
+```
+feat: add user authentication
+fix: resolve null pointer in game search
+refactor: extract api client to separate module
+```
 
 Releases are automated via release-please based on conventional commits.
 

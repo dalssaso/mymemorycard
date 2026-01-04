@@ -17,11 +17,25 @@ Backend-specific instructions for Claude Code. See also the root [CLAUDE.md](../
 bun run dev           # Dev server with hot reload on :3000
 bun run start         # Production start
 bun run typecheck     # TypeScript checking
+bun run lint          # ESLint with zero warnings allowed
+bun run lint:fix      # ESLint with auto-fix
+bun run format        # Prettier format
+bun run format:check  # Check formatting
 bun run db:generate   # Generate migration from schema changes
 bun run db:migrate    # Apply pending migrations
 bun run db:push       # Push schema directly (dev only)
 bun run db:studio     # Open Drizzle Studio GUI
 ```
+
+## After Every Code Change
+
+Run these commands after any modifications:
+
+```bash
+bun run lint && bun run typecheck
+```
+
+Fix any errors before committing. The lint command runs with `--max-warnings=0`.
 
 ## Directory Structure
 
@@ -144,7 +158,7 @@ Backend tests are currently disabled due to stability issues.
 Verify changes with:
 
 ```bash
-bun run typecheck
+bun run lint && bun run typecheck
 ```
 
 And manual testing against the running server.
