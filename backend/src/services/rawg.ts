@@ -168,7 +168,7 @@ class RateLimiter {
     })
   }
 
-  private async processQueue() {
+  private async processQueue(): Promise<void> {
     if (this.queue.length === 0) {
       this.processing = false
       return

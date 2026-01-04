@@ -24,7 +24,7 @@ import '@/routes/franchises'
 import '@/routes/user-platforms'
 import '@/routes/ai'
 
-async function startServer() {
+async function startServer(): Promise<void> {
   await runMigrations()
   await seedPlatforms()
   await closeMigrationConnection()

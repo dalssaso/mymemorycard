@@ -189,7 +189,7 @@ const systemPlatforms: PlatformSeed[] = [
   },
 ]
 
-export async function seedPlatforms() {
+export async function seedPlatforms(): Promise<void> {
   console.log('Seeding system platforms...')
 
   for (const platform of systemPlatforms) {

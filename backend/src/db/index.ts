@@ -12,14 +12,14 @@ const queryClient = postgres(connectionString)
 
 export const db = drizzle(queryClient, { schema })
 
-export async function runMigrations() {
+export async function runMigrations(): Promise<void> {
   console.log('Running database migrations...')
   const migrationDb = drizzle(migrationClient)
   await migrate(migrationDb, { migrationsFolder: './drizzle' })
   console.log('Migrations completed successfully')
 }
 
-export async function closeMigrationConnection() {
+export async function closeMigrationConnection(): Promise<void> {
   await migrationClient.end()
 }
 

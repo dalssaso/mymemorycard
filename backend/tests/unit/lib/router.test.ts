@@ -16,7 +16,7 @@ describe('Router', () => {
 
   describe('add', () => {
     it('should add a route', () => {
-      const handler = async () => new Response('ok')
+      const handler = async (): Promise<Response> => new Response('ok')
       router.add('GET', '/test', handler)
 
       const match = router.match('/test', 'GET')
@@ -25,7 +25,7 @@ describe('Router', () => {
     })
 
     it('should add route with auth requirement', () => {
-      const handler = async () => new Response('ok')
+      const handler = async (): Promise<Response> => new Response('ok')
       router.add('GET', '/protected', handler, true)
 
       const match = router.match('/protected', 'GET')
@@ -106,8 +106,8 @@ describe('Router', () => {
     })
 
     it('should match first registered route', () => {
-      const handler1 = async () => new Response('first')
-      const handler2 = async () => new Response('second')
+      const handler1 = async (): Promise<Response> => new Response('first')
+      const handler2 = async (): Promise<Response> => new Response('second')
 
       router.get('/test', handler1)
       router.get('/test', handler2)
