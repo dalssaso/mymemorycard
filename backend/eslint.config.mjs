@@ -52,7 +52,7 @@ export default defineConfig(
       ],
       // Explicit return types
       '@typescript-eslint/explicit-function-return-type': [
-        'warn',
+        'error',
         {
           allowExpressions: true,
           allowTypedFunctionExpressions: true,
@@ -71,7 +71,7 @@ export default defineConfig(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/member-ordering': 'warn',
+      '@typescript-eslint/member-ordering': 'error',
       // Import rules
       'import/no-unresolved': ['error', { ignore: ['^bun:'] }],
       'import/default': 'off',
