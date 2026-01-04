@@ -1,113 +1,110 @@
-import { Link, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo, useCallback } from 'react'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { useAnimatedNumber } from '@/hooks/use-animated-number'
-import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useCallback } from "react";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
+import { collectionsAPI, franchisesAPI, type FranchiseSummary } from "@/lib/api";
 
 interface Game {
-  id: string
-  name: string
-  cover_art_url: string | null
-  last_played: string | null
-  status: string
-  is_favorite?: boolean
+  id: string;
+  name: string;
+  cover_art_url: string | null;
+  last_played: string | null;
+  status: string;
+  is_favorite?: boolean;
 }
 
 interface DashboardSidebarProps {
-  games: Game[]
+  games: Game[];
 }
 
 interface Collection {
-  id: string
-  name: string
-  game_count: number
+  id: string;
+  name: string;
+  game_count: number;
 }
 
 const quickStatStyles = {
   total: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-mauve) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 35%, transparent)",
   },
   playing: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 35%, transparent)",
   },
   completed: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-green) 35%, transparent)",
   },
   backlog: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 30%, transparent)",
   },
   dropped: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
   },
   favorites: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
   },
-}
+};
 
 export function DashboardSidebar({ games }: DashboardSidebarProps) {
-  const navigate = useNavigate()
-  const { isCollapsed } = useSidebar()
+  const navigate = useNavigate();
+  const { isCollapsed } = useSidebar();
 
   const navigateToLibrary = useCallback(
     (params: { status?: string; favorites?: boolean }) => {
       navigate({
-        to: '/library' as const,
+        to: "/library" as const,
         search: params as Record<string, string | boolean | undefined>,
-      })
+      });
     },
     [navigate]
-  )
+  );
 
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
-      return response.data as { collections: Collection[] }
+      const response = await collectionsAPI.getAll();
+      return response.data as { collections: Collection[] };
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
   const { data: franchisesData } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
-      return response.data
+      const response = await franchisesAPI.getAll();
+      return response.data;
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
-  const collections = collectionsData?.collections || []
-  const franchises = franchisesData?.franchises || []
+  const collections = collectionsData?.collections || [];
+  const franchises = franchisesData?.franchises || [];
 
   const recentlyPlayed = useMemo(() => {
     return games
       .filter((g) => g.last_played)
-      .sort(
-        (a, b) =>
-          new Date(b.last_played!).getTime() - new Date(a.last_played!).getTime()
-      )
-      .slice(0, 5)
-  }, [games])
+      .sort((a, b) => new Date(b.last_played!).getTime() - new Date(a.last_played!).getTime())
+      .slice(0, 5);
+  }, [games]);
 
   const stats = useMemo(() => {
-    const total = games.length
-    const playing = games.filter((g) => g.status === 'playing').length
+    const total = games.length;
+    const playing = games.filter((g) => g.status === "playing").length;
     const completed = games.filter(
-      (g) => g.status === 'completed' || g.status === 'finished'
-    ).length
-    const backlog = games.filter((g) => g.status === 'backlog').length
-    const dropped = games.filter((g) => g.status === 'dropped').length
-    const favorites = games.filter((g) => g.is_favorite).length
+      (g) => g.status === "completed" || g.status === "finished"
+    ).length;
+    const backlog = games.filter((g) => g.status === "backlog").length;
+    const dropped = games.filter((g) => g.status === "dropped").length;
+    const favorites = games.filter((g) => g.is_favorite).length;
 
-    return { total, playing, completed, backlog, dropped, favorites }
-  }, [games])
-  const animatedTotal = useAnimatedNumber(stats.total)
-  const animatedPlaying = useAnimatedNumber(stats.playing)
-  const animatedCompleted = useAnimatedNumber(stats.completed)
-  const animatedBacklog = useAnimatedNumber(stats.backlog)
-  const animatedDropped = useAnimatedNumber(stats.dropped)
-  const animatedFavorites = useAnimatedNumber(stats.favorites)
+    return { total, playing, completed, backlog, dropped, favorites };
+  }, [games]);
+  const animatedTotal = useAnimatedNumber(stats.total);
+  const animatedPlaying = useAnimatedNumber(stats.playing);
+  const animatedCompleted = useAnimatedNumber(stats.completed);
+  const animatedBacklog = useAnimatedNumber(stats.backlog);
+  const animatedDropped = useAnimatedNumber(stats.dropped);
+  const animatedFavorites = useAnimatedNumber(stats.favorites);
 
   if (isCollapsed) {
     return (
@@ -119,7 +116,12 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             title="Import Games"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </Link>
         </div>
@@ -157,7 +159,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             </svg>
           </button>
           <button
-            onClick={() => navigateToLibrary({ status: 'playing' })}
+            onClick={() => navigateToLibrary({ status: "playing" })}
             className="p-2 rounded-lg text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Playing"
           >
@@ -177,7 +179,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             </svg>
           </button>
           <button
-            onClick={() => navigateToLibrary({ status: 'completed' })}
+            onClick={() => navigateToLibrary({ status: "completed" })}
             className="p-2 rounded-lg text-ctp-green hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Completed"
           >
@@ -191,7 +193,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             </svg>
           </button>
           <button
-            onClick={() => navigateToLibrary({ status: 'backlog' })}
+            onClick={() => navigateToLibrary({ status: "backlog" })}
             className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Backlog"
           >
@@ -205,7 +207,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             </svg>
           </button>
           <button
-            onClick={() => navigateToLibrary({ status: 'dropped' })}
+            onClick={() => navigateToLibrary({ status: "dropped" })}
             className="p-2 rounded-lg text-ctp-red hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
             title="Dropped"
           >
@@ -229,7 +231,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -286,11 +288,13 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-ctp-subtext0">Total Games</span>
             </div>
-            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">{animatedTotal}</span>
+            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
+              {animatedTotal}
+            </span>
           </button>
 
           <button
-            onClick={() => navigateToLibrary({ status: 'playing' })}
+            onClick={() => navigateToLibrary({ status: "playing" })}
             className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.playing}
           >
@@ -316,11 +320,13 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-ctp-subtext0">Playing</span>
             </div>
-            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">{animatedPlaying}</span>
+            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
+              {animatedPlaying}
+            </span>
           </button>
 
           <button
-            onClick={() => navigateToLibrary({ status: 'completed' })}
+            onClick={() => navigateToLibrary({ status: "completed" })}
             className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.completed}
           >
@@ -340,11 +346,13 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-ctp-subtext0">Completed</span>
             </div>
-            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">{animatedCompleted}</span>
+            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
+              {animatedCompleted}
+            </span>
           </button>
 
           <button
-            onClick={() => navigateToLibrary({ status: 'backlog' })}
+            onClick={() => navigateToLibrary({ status: "backlog" })}
             className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.backlog}
           >
@@ -364,11 +372,13 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-ctp-subtext0">Backlog</span>
             </div>
-            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">{animatedBacklog}</span>
+            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
+              {animatedBacklog}
+            </span>
           </button>
 
           <button
-            onClick={() => navigateToLibrary({ status: 'dropped' })}
+            onClick={() => navigateToLibrary({ status: "dropped" })}
             className="flex items-center justify-between text-sm w-full px-2 py-1.5 rounded hover:brightness-110 transition text-left"
             style={quickStatStyles.dropped}
           >
@@ -388,7 +398,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-ctp-subtext0">Dropped</span>
             </div>
-            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">{animatedDropped}</span>
+            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
+              {animatedDropped}
+            </span>
           </button>
 
           <button
@@ -402,7 +414,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
               </svg>
               <span className="text-ctp-subtext0">Favorites</span>
             </div>
-            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">{animatedFavorites}</span>
+            <span className="text-ctp-text font-semibold min-w-[2rem] text-right">
+              {animatedFavorites}
+            </span>
           </button>
         </div>
       </div>
@@ -518,7 +532,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                     {franchise.series_name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {franchise.game_count} {franchise.game_count === 1 ? 'game' : 'games'}
+                    {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -582,7 +596,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                     {collection.name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {collection.game_count} {collection.game_count === 1 ? 'game' : 'games'}
+                    {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -651,5 +665,5 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

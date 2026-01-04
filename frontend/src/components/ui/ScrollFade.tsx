@@ -1,82 +1,76 @@
-import { ReactNode, useEffect, useRef, type HTMLAttributes } from 'react'
+import { type ReactNode, useEffect, useRef, type HTMLAttributes } from "react";
 
-type ScrollFadeAxis = 'x' | 'y'
+type ScrollFadeAxis = "x" | "y";
 
 interface ScrollFadeProps extends HTMLAttributes<HTMLDivElement> {
-  axis?: ScrollFadeAxis
-  children: ReactNode
+  axis?: ScrollFadeAxis;
+  children: ReactNode;
 }
 
-export function ScrollFade({ axis = 'y', className = '', children, ...props }: ScrollFadeProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
+export function ScrollFade({ axis = "y", className = "", children, ...props }: ScrollFadeProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const element = containerRef.current
+    const element = containerRef.current;
     if (!element) {
-      return
+      return;
     }
 
-    let frameId = 0
-    const fadeSize = 24
+    let frameId = 0;
+    const fadeSize = 24;
 
     const applyFadeState = () => {
-      frameId = 0
-      const {
-        scrollTop,
-        scrollLeft,
-        scrollHeight,
-        scrollWidth,
-        clientHeight,
-        clientWidth,
-      } = element
+      frameId = 0;
+      const { scrollTop, scrollLeft, scrollHeight, scrollWidth, clientHeight, clientWidth } =
+        element;
 
-      const hasVerticalOverflow = scrollHeight - clientHeight > 1
-      const hasHorizontalOverflow = scrollWidth - clientWidth > 1
+      const hasVerticalOverflow = scrollHeight - clientHeight > 1;
+      const hasHorizontalOverflow = scrollWidth - clientWidth > 1;
 
-      if (axis === 'y') {
-        const topFade = hasVerticalOverflow && scrollTop > 1 ? fadeSize : 0
+      if (axis === "y") {
+        const topFade = hasVerticalOverflow && scrollTop > 1 ? fadeSize : 0;
         const bottomFade =
-          hasVerticalOverflow && scrollTop + clientHeight < scrollHeight - 1 ? fadeSize : 0
+          hasVerticalOverflow && scrollTop + clientHeight < scrollHeight - 1 ? fadeSize : 0;
 
-        element.style.setProperty('--scroll-fade-top', `${topFade}px`)
-        element.style.setProperty('--scroll-fade-bottom', `${bottomFade}px`)
+        element.style.setProperty("--scroll-fade-top", `${topFade}px`);
+        element.style.setProperty("--scroll-fade-bottom", `${bottomFade}px`);
       } else {
-        const leftFade = hasHorizontalOverflow && scrollLeft > 1 ? fadeSize : 0
+        const leftFade = hasHorizontalOverflow && scrollLeft > 1 ? fadeSize : 0;
         const rightFade =
-          hasHorizontalOverflow && scrollLeft + clientWidth < scrollWidth - 1 ? fadeSize : 0
+          hasHorizontalOverflow && scrollLeft + clientWidth < scrollWidth - 1 ? fadeSize : 0;
 
-        element.style.setProperty('--scroll-fade-left', `${leftFade}px`)
-        element.style.setProperty('--scroll-fade-right', `${rightFade}px`)
+        element.style.setProperty("--scroll-fade-left", `${leftFade}px`);
+        element.style.setProperty("--scroll-fade-right", `${rightFade}px`);
       }
-    }
+    };
 
     const scheduleUpdate = () => {
       if (frameId) {
-        return
+        return;
       }
-      frameId = requestAnimationFrame(applyFadeState)
-    }
+      frameId = requestAnimationFrame(applyFadeState);
+    };
 
-    applyFadeState()
-    element.addEventListener('scroll', scheduleUpdate, { passive: true })
+    applyFadeState();
+    element.addEventListener("scroll", scheduleUpdate, { passive: true });
 
-    const resizeObserver = new ResizeObserver(scheduleUpdate)
-    resizeObserver.observe(element)
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    resizeObserver.observe(element);
 
     if (element.firstElementChild instanceof HTMLElement) {
-      resizeObserver.observe(element.firstElementChild)
+      resizeObserver.observe(element.firstElementChild);
     }
 
     return () => {
       if (frameId) {
-        cancelAnimationFrame(frameId)
+        cancelAnimationFrame(frameId);
       }
-      element.removeEventListener('scroll', scheduleUpdate)
-      resizeObserver.disconnect()
-    }
-  }, [axis])
+      element.removeEventListener("scroll", scheduleUpdate);
+      resizeObserver.disconnect();
+    };
+  }, [axis]);
 
-  const axisClass = axis === 'y' ? 'scroll-fade-y' : 'scroll-fade-x'
+  const axisClass = axis === "y" ? "scroll-fade-y" : "scroll-fade-x";
 
   return (
     <div
@@ -86,5 +80,5 @@ export function ScrollFade({ axis = 'y', className = '', children, ...props }: S
     >
       {children}
     </div>
-  )
+  );
 }

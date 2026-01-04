@@ -1,51 +1,54 @@
-import { Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { useAnimatedNumber } from '@/hooks/use-animated-number'
-import { collectionsAPI, franchisesAPI, FranchiseSummary } from '@/lib/api'
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
+import { collectionsAPI, franchisesAPI, type FranchiseSummary } from "@/lib/api";
 
 interface Collection {
-  id: string
-  name: string
-  game_count: number
+  id: string;
+  name: string;
+  game_count: number;
 }
 
 interface CollectionsSidebarProps {
-  onCreateCollection?: () => void
+  onCreateCollection?: () => void;
 }
 
 export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
-      return response.data as { collections: Collection[] }
+      const response = await collectionsAPI.getAll();
+      return response.data as { collections: Collection[] };
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
   const { data: franchisesData } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
-      return response.data
+      const response = await franchisesAPI.getAll();
+      return response.data;
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
-  const collections = collectionsData?.collections || []
-  const franchises = franchisesData?.franchises || []
+  const collections = useMemo(
+    () => collectionsData?.collections ?? [],
+    [collectionsData?.collections]
+  );
+  const franchises = useMemo(() => franchisesData?.franchises ?? [], [franchisesData?.franchises]);
 
   const stats = useMemo(() => {
-    const totalCollections = collections.length
-    const totalFranchises = franchises.length
+    const totalCollections = collections.length;
+    const totalFranchises = franchises.length;
 
-    return { totalCollections, totalFranchises }
-  }, [collections, franchises])
-  const animatedCollections = useAnimatedNumber(stats.totalCollections)
-  const animatedFranchises = useAnimatedNumber(stats.totalFranchises)
+    return { totalCollections, totalFranchises };
+  }, [collections, franchises]);
+  const animatedCollections = useAnimatedNumber(stats.totalCollections);
+  const animatedFranchises = useAnimatedNumber(stats.totalFranchises);
 
   if (isCollapsed) {
     return (
@@ -57,7 +60,12 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             title="Import Games"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </Link>
         </div>
@@ -78,7 +86,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
           </Link>
         </div>
         <div className="flex flex-col items-center gap-2 pt-2 border-t border-ctp-surface0">
-          <div className="flex flex-col items-center gap-1" title={`Collections: ${animatedCollections}`}>
+          <div
+            className="flex flex-col items-center gap-1"
+            title={`Collections: ${animatedCollections}`}
+          >
             <div className="p-2 rounded-lg text-ctp-teal">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -91,7 +102,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             </div>
             <span className="text-xs text-ctp-overlay1">{animatedCollections}</span>
           </div>
-          <div className="flex flex-col items-center gap-1" title={`Franchises: ${animatedFranchises}`}>
+          <div
+            className="flex flex-col items-center gap-1"
+            title={`Franchises: ${animatedFranchises}`}
+          >
             <div className="p-2 rounded-lg text-ctp-mauve">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -113,7 +127,12 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
               title="Create Collection"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
             </button>
             <Link
@@ -133,7 +152,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
           </div>
         )}
       </div>
-    )
+    );
   }
 
   return (
@@ -225,7 +244,6 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
               {animatedFranchises}
             </span>
           </div>
-
         </div>
       </div>
 
@@ -252,12 +270,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             onClick={onCreateCollection}
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -271,12 +284,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             to="/franchises"
             className="w-full text-left px-3 py-2 rounded-lg text-sm text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all flex items-center gap-2"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -336,7 +344,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                     {collection.name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {collection.game_count} {collection.game_count === 1 ? 'game' : 'games'}
+                    {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -405,7 +413,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                     {franchise.series_name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {franchise.game_count} {franchise.game_count === 1 ? 'game' : 'games'}
+                    {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -422,5 +430,5 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
         </div>
       )}
     </div>
-  )
+  );
 }

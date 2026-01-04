@@ -1,200 +1,225 @@
-import { useEffect, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
-import { useSearch, useNavigate } from '@tanstack/react-router'
-import { ScrollFade } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { completionLogsAPI, additionsAPI, CompletionType, GameAddition } from '@/lib/api'
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { useSearch, useNavigate } from "@tanstack/react-router";
+import { ScrollFade } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { completionLogsAPI, additionsAPI, type CompletionType, type GameAddition } from "@/lib/api";
 
 interface CompletionLog {
-  id: string
-  user_id: string
-  game_id: string
-  platform_id: string
-  completion_type: CompletionType
-  dlc_id: string | null
-  percentage: number
-  logged_at: string
-  notes: string | null
-  game_name?: string
-  platform_name?: string
-  dlc_name?: string
+  id: string;
+  user_id: string;
+  game_id: string;
+  platform_id: string;
+  completion_type: CompletionType;
+  dlc_id: string | null;
+  percentage: number;
+  logged_at: string;
+  notes: string | null;
+  game_name?: string;
+  platform_name?: string;
+  dlc_name?: string;
 }
 
 interface DLCSummary {
-  dlcId: string
-  name: string
-  percentage: number
-  weight: number
-  requiredForFull: boolean
-  owned?: boolean
+  dlcId: string;
+  name: string;
+  percentage: number;
+  weight: number;
+  requiredForFull: boolean;
+  owned?: boolean;
 }
 
 interface CompletionSummary {
-  main: number
-  full: number
-  completionist: number
-  dlcs: DLCSummary[]
-  achievementPercentage: number
-  hasDlcs: boolean
+  main: number;
+  full: number;
+  completionist: number;
+  dlcs: DLCSummary[];
+  achievementPercentage: number;
+  hasDlcs: boolean;
 }
 
 interface ProgressHistoryProps {
-  gameId: string
-  platformId: string
-  onProgressChange?: () => void
+  gameId: string;
+  platformId: string;
+  onProgressChange?: () => void;
 }
 
-type TabType = 'main' | 'dlc' | 'full' | 'completionist'
-type RangeOption = '1d' | '30d' | '3mo' | '6mo' | '12mo'
+type TabType = "main" | "dlc" | "full" | "completionist";
+type RangeOption = "1d" | "30d" | "3mo" | "6mo" | "12mo";
 
 const TAB_COLORS: Record<TabType, string> = {
-  main: '#10B981',
-  dlc: '#8B5CF6',
-  full: '#06B6D4',
-  completionist: '#F59E0B',
-}
+  main: "#10B981",
+  dlc: "#8B5CF6",
+  full: "#06B6D4",
+  completionist: "#F59E0B",
+};
 
-const QUICK_PRESETS = [25, 50, 75, 100]
+const QUICK_PRESETS = [25, 50, 75, 100];
 const RANGE_OPTIONS: Array<{ value: RangeOption; label: string }> = [
-  { value: '1d', label: 'Last 1d' },
-  { value: '30d', label: 'Last 30d' },
-  { value: '3mo', label: 'Last 3mo' },
-  { value: '6mo', label: 'Last 6mo' },
-  { value: '12mo', label: 'Last 12mo' },
-]
+  { value: "1d", label: "Last 1d" },
+  { value: "30d", label: "Last 30d" },
+  { value: "3mo", label: "Last 3mo" },
+  { value: "6mo", label: "Last 6mo" },
+  { value: "12mo", label: "Last 12mo" },
+];
 
-const clampPercentage = (value: number): number => Math.min(100, Math.max(0, Math.round(value)))
+const clampPercentage = (value: number): number => Math.min(100, Math.max(0, Math.round(value)));
 
 const getRangeStart = (range: RangeOption): Date => {
-  const now = new Date()
-  const start = new Date(now)
-  if (range === '1d') {
-    start.setDate(now.getDate() - 1)
-  } else if (range === '30d') {
-    start.setDate(now.getDate() - 30)
-  } else if (range === '3mo') {
-    start.setMonth(now.getMonth() - 3)
-  } else if (range === '6mo') {
-    start.setMonth(now.getMonth() - 6)
+  const now = new Date();
+  const start = new Date(now);
+  if (range === "1d") {
+    start.setDate(now.getDate() - 1);
+  } else if (range === "30d") {
+    start.setDate(now.getDate() - 30);
+  } else if (range === "3mo") {
+    start.setMonth(now.getMonth() - 3);
+  } else if (range === "6mo") {
+    start.setMonth(now.getMonth() - 6);
   } else {
-    start.setFullYear(now.getFullYear() - 1)
+    start.setFullYear(now.getFullYear() - 1);
   }
-  return start
-}
+  return start;
+};
 
 export function ProgressHistory({ gameId, platformId, onProgressChange }: ProgressHistoryProps) {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<TabType>('main')
-  const [selectedDlcId, setSelectedDlcId] = useState<string | null>(null)
-  const [sliderValue, setSliderValue] = useState<number | null>(null)
-  const [percentageInput, setPercentageInput] = useState<string>('')
-  const [isEditingPercentage, setIsEditingPercentage] = useState(false)
-  const [notes, setNotes] = useState('')
-  const [showHistory, setShowHistory] = useState(false)
-  const [selectedRange, setSelectedRange] = useState<RangeOption>('3mo')
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabType>("main");
+  const [selectedDlcId, setSelectedDlcId] = useState<string | null>(null);
+  const [sliderValue, setSliderValue] = useState<number | null>(null);
+  const [percentageInput, setPercentageInput] = useState<string>("");
+  const [isEditingPercentage, setIsEditingPercentage] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<RangeOption>("3mo");
 
   const { data: logsData, isLoading } = useQuery({
-    queryKey: ['completionLogs', gameId, platformId],
+    queryKey: ["completionLogs", gameId, platformId],
     queryFn: async () => {
-      const response = await completionLogsAPI.getAll(gameId, { limit: 100, platform_id: platformId })
+      const response = await completionLogsAPI.getAll(gameId, {
+        limit: 100,
+        platform_id: platformId,
+      });
       return response.data as {
-        logs: CompletionLog[]
-        total: number
-        currentPercentage: number
-        summary: CompletionSummary
-        achievementHistory?: Array<{ percentage: number; logged_at: string; notes: string }>
-        fullProgressHistory?: Array<{ percentage: number; logged_at: string; notes: string }>
-      }
+        logs: CompletionLog[];
+        total: number;
+        currentPercentage: number;
+        summary: CompletionSummary;
+        achievementHistory?: Array<{ percentage: number; logged_at: string; notes: string }>;
+        fullProgressHistory?: Array<{ percentage: number; logged_at: string; notes: string }>;
+      };
     },
-  })
+  });
 
   const { data: additionsData } = useQuery({
-    queryKey: ['additions', gameId, platformId],
+    queryKey: ["additions", gameId, platformId],
     queryFn: async () => {
-      const response = await additionsAPI.getAll(gameId, platformId)
+      const response = await additionsAPI.getAll(gameId, platformId);
       return response.data as {
-        additions: GameAddition[]
-        total: number
-        hasDlcs: boolean
-      }
+        additions: GameAddition[];
+        total: number;
+        hasDlcs: boolean;
+      };
     },
-  })
+  });
 
-  const summary = logsData?.summary || { main: 0, full: 0, completionist: 0, dlcs: [], achievementPercentage: 100, hasDlcs: false }
-  const hasDlcs = additionsData?.hasDlcs || summary.hasDlcs
-  const additions = additionsData?.additions || []
+  const summary = useMemo(
+    () =>
+      logsData?.summary ?? {
+        main: 0,
+        full: 0,
+        completionist: 0,
+        dlcs: [],
+        achievementPercentage: 100,
+        hasDlcs: false,
+      },
+    [logsData?.summary]
+  );
+  const hasDlcs = useMemo(
+    () => additionsData?.hasDlcs ?? summary.hasDlcs,
+    [additionsData?.hasDlcs, summary.hasDlcs]
+  );
+  const additions = useMemo(() => additionsData?.additions ?? [], [additionsData?.additions]);
 
   const getCurrentPercentage = (): number => {
-    if (activeTab === 'main') return summary.main
-    if (activeTab === 'full') return summary.full
-    if (activeTab === 'completionist') return summary.completionist
-    if (activeTab === 'dlc' && selectedDlcId) {
-      const dlc = summary.dlcs.find((d) => d.dlcId === selectedDlcId)
-      return dlc?.percentage || 0
+    if (activeTab === "main") return summary.main;
+    if (activeTab === "full") return summary.full;
+    if (activeTab === "completionist") return summary.completionist;
+    if (activeTab === "dlc" && selectedDlcId) {
+      const dlc = summary.dlcs.find((d) => d.dlcId === selectedDlcId);
+      return dlc?.percentage || 0;
     }
-    return 0
-  }
+    return 0;
+  };
 
-  const currentPercentage = getCurrentPercentage()
-  const displayValue = sliderValue ?? currentPercentage
-  const activeColor = TAB_COLORS[activeTab]
+  const currentPercentage = getCurrentPercentage();
+  const displayValue = sliderValue ?? currentPercentage;
+  const activeColor = TAB_COLORS[activeTab];
 
   useEffect(() => {
     if (!isEditingPercentage) {
-      setPercentageInput(String(displayValue))
+      setPercentageInput(String(displayValue));
     }
-  }, [displayValue, isEditingPercentage])
+  }, [displayValue, isEditingPercentage]);
 
   const manualLogs = (logsData?.logs || []).filter((log) => {
-    if (activeTab === 'main') return log.completion_type === 'main'
-    if (activeTab === 'full') return log.completion_type === 'full'
-    if (activeTab === 'completionist') return log.completion_type === 'completionist'
-    if (activeTab === 'dlc') return log.completion_type === 'dlc' && log.dlc_id === selectedDlcId
-    return false
-  })
+    if (activeTab === "main") return log.completion_type === "main";
+    if (activeTab === "full") return log.completion_type === "full";
+    if (activeTab === "completionist") return log.completion_type === "completionist";
+    if (activeTab === "dlc") return log.completion_type === "dlc" && log.dlc_id === selectedDlcId;
+    return false;
+  });
 
-  const achievementHistoryData = logsData?.achievementHistory || []
-  const fullProgressHistoryData = logsData?.fullProgressHistory || []
+  const achievementHistoryData = logsData?.achievementHistory || [];
+  const fullProgressHistoryData = logsData?.fullProgressHistory || [];
 
-  let logs: typeof manualLogs = manualLogs
+  let logs: typeof manualLogs = manualLogs;
 
-  if (activeTab === 'main' && achievementHistoryData.length > 0) {
+  if (activeTab === "main" && achievementHistoryData.length > 0) {
     logs = [
       ...achievementHistoryData.map((h) => ({
         id: `achievement-${h.logged_at}`,
-        user_id: '',
+        user_id: "",
         game_id: gameId,
         platform_id: platformId,
-        completion_type: 'main' as CompletionType,
+        completion_type: "main" as CompletionType,
         dlc_id: null,
         percentage: h.percentage,
         logged_at: h.logged_at,
         notes: h.notes,
       })),
-      ...manualLogs.filter((log) => !achievementHistoryData.some((h) =>
-        Math.abs(new Date(h.logged_at).getTime() - new Date(log.logged_at).getTime()) < 1000
-      )),
-    ].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
-  } else if (activeTab === 'full' && fullProgressHistoryData.length > 0) {
+      ...manualLogs.filter(
+        (log) =>
+          !achievementHistoryData.some(
+            (h) =>
+              Math.abs(new Date(h.logged_at).getTime() - new Date(log.logged_at).getTime()) < 1000
+          )
+      ),
+    ].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime());
+  } else if (activeTab === "full" && fullProgressHistoryData.length > 0) {
     logs = [
       ...fullProgressHistoryData.map((h) => ({
         id: `full-${h.logged_at}`,
-        user_id: '',
+        user_id: "",
         game_id: gameId,
         platform_id: platformId,
-        completion_type: 'full' as CompletionType,
+        completion_type: "full" as CompletionType,
         dlc_id: null,
         percentage: h.percentage,
         logged_at: h.logged_at,
         notes: h.notes,
       })),
-      ...manualLogs.filter((log) => !fullProgressHistoryData.some((h) =>
-        Math.abs(new Date(h.logged_at).getTime() - new Date(log.logged_at).getTime()) < 1000
-      )),
-    ].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
+      ...manualLogs.filter(
+        (log) =>
+          !fullProgressHistoryData.some(
+            (h) =>
+              Math.abs(new Date(h.logged_at).getTime() - new Date(log.logged_at).getTime()) < 1000
+          )
+      ),
+    ].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime());
   }
 
   const logProgressMutation = useMutation({
@@ -202,141 +227,140 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       completionLogsAPI.create(gameId, {
         platformId,
         percentage: displayValue,
-        completionType: activeTab === 'dlc' ? 'dlc' : 'main',
-        dlcId: activeTab === 'dlc' ? selectedDlcId : null,
+        completionType: activeTab === "dlc" ? "dlc" : "main",
+        dlcId: activeTab === "dlc" ? selectedDlcId : null,
         notes: notes || null,
       }),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['additions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      setSliderValue(null)
-      setNotes('')
+      queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["additions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["customFields", gameId, platformId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      setSliderValue(null);
+      setNotes("");
 
-      const data = response.data as { statusChanged?: boolean; newStatus?: string }
+      const data = response.data as { statusChanged?: boolean; newStatus?: string };
       if (data.statusChanged && data.newStatus) {
-        const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1)
-        showToast(`Progress logged - Game moved to "${statusLabel}"`, 'success')
+        const statusLabel = data.newStatus.charAt(0).toUpperCase() + data.newStatus.slice(1);
+        showToast(`Progress logged - Game moved to "${statusLabel}"`, "success");
       } else {
-        showToast('Progress logged', 'success')
+        showToast("Progress logged", "success");
       }
-      onProgressChange?.()
+      onProgressChange?.();
     },
     onError: () => {
-      showToast('Failed to log progress', 'error')
+      showToast("Failed to log progress", "error");
     },
-  })
+  });
 
   const deleteLogMutation = useMutation({
     mutationFn: (logId: string) => completionLogsAPI.delete(gameId, logId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['additions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['customFields', gameId, platformId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      showToast('Log entry deleted', 'success')
-      onProgressChange?.()
+      queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["additions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["customFields", gameId, platformId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      showToast("Log entry deleted", "success");
+      onProgressChange?.();
     },
     onError: () => {
-      showToast('Failed to delete log entry', 'error')
+      showToast("Failed to delete log entry", "error");
     },
-  })
+  });
 
-  const hasChanged = sliderValue !== null && sliderValue !== currentPercentage
-  const canEdit = activeTab === 'main' || (activeTab === 'dlc' && selectedDlcId)
+  const hasChanged = sliderValue !== null && sliderValue !== currentPercentage;
+  const canEdit = activeTab === "main" || (activeTab === "dlc" && selectedDlcId);
 
-  const rangeStart = getRangeStart(selectedRange)
-  const rangeLogs = logs.filter((log) => new Date(log.logged_at) >= rangeStart)
-  const chartData = [...rangeLogs]
-    .reverse()
-    .map((log) => ({
-      date: new Date(log.logged_at).toLocaleDateString(),
-      percentage: log.percentage,
-    }))
+  const rangeStart = getRangeStart(selectedRange);
+  const rangeLogs = logs.filter((log) => new Date(log.logged_at) >= rangeStart);
+  const chartData = [...rangeLogs].reverse().map((log) => ({
+    date: new Date(log.logged_at).toLocaleDateString(),
+    percentage: log.percentage,
+  }));
 
   const handleTabChange = (tab: TabType) => {
     navigate({
-      to: '.',
-      hash: 'stats',
+      to: ".",
+      hash: "stats",
       search: { tab },
-    })
-    setSliderValue(null)
-    setNotes('')
-  }
+    });
+    setSliderValue(null);
+    setNotes("");
+  };
 
   const handleSliderChange = (value: number) => {
-    const clamped = clampPercentage(value)
-    setSliderValue(clamped)
-    setPercentageInput(String(clamped))
-  }
+    const clamped = clampPercentage(value);
+    setSliderValue(clamped);
+    setPercentageInput(String(clamped));
+  };
 
   const handlePercentageChange = (value: string) => {
-    setPercentageInput(value)
+    setPercentageInput(value);
     if (!value.trim()) {
-      return
+      return;
     }
-    const parsed = Number(value)
+    const parsed = Number(value);
     if (!Number.isNaN(parsed)) {
-      setSliderValue(clampPercentage(parsed))
+      setSliderValue(clampPercentage(parsed));
     }
-  }
+  };
 
   const handlePercentageBlur = () => {
     if (!percentageInput.trim()) {
-      setSliderValue(null)
-      setPercentageInput(String(currentPercentage))
-      return
+      setSliderValue(null);
+      setPercentageInput(String(currentPercentage));
+      return;
     }
-    const parsed = Number(percentageInput)
+    const parsed = Number(percentageInput);
     if (Number.isNaN(parsed)) {
-      setSliderValue(null)
-      setPercentageInput(String(currentPercentage))
-      return
+      setSliderValue(null);
+      setPercentageInput(String(currentPercentage));
+      return;
     }
-    const clamped = clampPercentage(parsed)
-    setSliderValue(clamped)
-    setPercentageInput(String(clamped))
-  }
+    const clamped = clampPercentage(parsed);
+    setSliderValue(clamped);
+    setPercentageInput(String(clamped));
+  };
 
   const getTabLabel = (tab: TabType): string => {
-    if (tab === 'main') return 'Main'
-    if (tab === 'dlc') return 'DLCs'
-    if (tab === 'full') return 'Full'
-    return 'Completionist'
-  }
+    if (tab === "main") return "Main";
+    if (tab === "dlc") return "DLCs";
+    if (tab === "full") return "Full";
+    return "Completionist";
+  };
 
   const getTabPercentage = (tab: TabType): number => {
-    if (tab === 'main') return summary.main
-    if (tab === 'full') return summary.full
-    if (tab === 'completionist') return summary.completionist
-    if (tab === 'dlc') {
-      const dlcs = summary.dlcs
-      if (dlcs.length === 0) return 0
-      const avg = dlcs.reduce((acc, d) => acc + d.percentage, 0) / dlcs.length
-      return Math.floor(avg)
+    if (tab === "main") return summary.main;
+    if (tab === "full") return summary.full;
+    if (tab === "completionist") return summary.completionist;
+    if (tab === "dlc") {
+      const dlcs = summary.dlcs;
+      if (dlcs.length === 0) return 0;
+      const avg = dlcs.reduce((acc, d) => acc + d.percentage, 0) / dlcs.length;
+      return Math.floor(avg);
     }
-    return 0
-  }
+    return 0;
+  };
 
-  const visibleTabs: TabType[] = hasDlcs
-    ? ['main', 'dlc', 'full', 'completionist']
-    : ['main', 'full', 'completionist']
+  const visibleTabs = useMemo<TabType[]>(
+    () => (hasDlcs ? ["main", "dlc", "full", "completionist"] : ["main", "full", "completionist"]),
+    [hasDlcs]
+  );
 
-  const searchParams = useSearch({ from: '/library/$id' })
+  const searchParams = useSearch({ from: "/library/$id" });
 
   // Sync activeTab with URL search params
   useEffect(() => {
     if (searchParams.tab && visibleTabs.includes(searchParams.tab as TabType)) {
-      setActiveTab(searchParams.tab as TabType)
+      setActiveTab(searchParams.tab as TabType);
 
       // Auto-select first DLC if tab is 'dlc' but no DLC selected yet
-      if (searchParams.tab === 'dlc' && additions.length > 0 && !selectedDlcId) {
-        setSelectedDlcId(additions[0].id)
+      if (searchParams.tab === "dlc" && additions.length > 0 && !selectedDlcId) {
+        setSelectedDlcId(additions[0].id);
       }
     }
-  }, [searchParams.tab, visibleTabs, additions, selectedDlcId])
+  }, [searchParams.tab, visibleTabs, additions, selectedDlcId]);
 
   return (
     <div className="space-y-4">
@@ -349,10 +373,14 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
             onClick={() => handleTabChange(tab)}
             className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
               activeTab === tab
-                ? 'text-ctp-text shadow-sm'
-                : 'text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1/50'
+                ? "text-ctp-text shadow-sm"
+                : "text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1/50"
             }`}
-            style={activeTab === tab ? { backgroundColor: TAB_COLORS[tab] + '30', color: TAB_COLORS[tab] } : {}}
+            style={
+              activeTab === tab
+                ? { backgroundColor: TAB_COLORS[tab] + "30", color: TAB_COLORS[tab] }
+                : {}
+            }
           >
             <div>{getTabLabel(tab)}</div>
             <div className="text-[10px] opacity-70">{getTabPercentage(tab)}%</div>
@@ -360,28 +388,28 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
         ))}
       </div>
 
-      {activeTab === 'dlc' && additions.length > 0 && (
+      {activeTab === "dlc" && additions.length > 0 && (
         <div className="space-y-2">
-          <label className="text-xs text-ctp-subtext0">Select DLC (only owned DLCs affect progress)</label>
+          <p className="text-xs text-ctp-subtext0">Select DLC (only owned DLCs affect progress)</p>
           <ScrollFade axis="y" className="space-y-2 max-h-60 overflow-y-auto">
             {additions.map((dlc) => {
-              const dlcSummary = summary.dlcs.find((d) => d.dlcId === dlc.id)
-              const pct = dlcSummary?.percentage || 0
-              const isOwned = dlcSummary?.owned ?? dlc.owned
+              const dlcSummary = summary.dlcs.find((d) => d.dlcId === dlc.id);
+              const pct = dlcSummary?.percentage || 0;
+              const isOwned = dlcSummary?.owned ?? dlc.owned;
               return (
                 <button
                   key={dlc.id}
                   onClick={() => {
-                    setSelectedDlcId(dlc.id)
-                    setSliderValue(null)
-                    setNotes('')
+                    setSelectedDlcId(dlc.id);
+                    setSliderValue(null);
+                    setNotes("");
                   }}
                   className={`text-left p-3 rounded-lg border transition-all ${
                     selectedDlcId === dlc.id
-                      ? 'border-purple-500 bg-purple-500/10'
+                      ? "border-purple-500 bg-purple-500/10"
                       : isOwned
-                        ? 'border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-surface2'
-                        : 'border-ctp-surface0 bg-ctp-mantle/30 opacity-60 hover:opacity-80'
+                        ? "border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-surface2"
+                        : "border-ctp-surface0 bg-ctp-mantle/30 opacity-60 hover:opacity-80"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -393,7 +421,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                         </span>
                       )}
                     </div>
-                    <span className="text-sm font-bold" style={{ color: TAB_COLORS.dlc }}>{pct}%</span>
+                    <span className="text-sm font-bold" style={{ color: TAB_COLORS.dlc }}>
+                      {pct}%
+                    </span>
                   </div>
                   <div className="mt-1 w-full bg-ctp-surface1 rounded-full h-1.5">
                     <div
@@ -407,23 +437,23 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                     </span>
                   )}
                 </button>
-              )
+              );
             })}
           </ScrollFade>
         </div>
       )}
 
-      {activeTab === 'dlc' && additions.length === 0 && (
+      {activeTab === "dlc" && additions.length === 0 && (
         <div className="text-sm text-ctp-subtext0 bg-ctp-surface0/50 rounded-lg p-4">
           No DLCs found for this game.
         </div>
       )}
 
-      {(activeTab === 'full' || activeTab === 'completionist') && (
+      {(activeTab === "full" || activeTab === "completionist") && (
         <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-ctp-subtext0">
-              {activeTab === 'full' ? 'Full Game Progress' : 'Completionist Progress'}
+              {activeTab === "full" ? "Full Game Progress" : "Completionist Progress"}
             </span>
             <span className="text-2xl font-bold" style={{ color: activeColor }}>
               {currentPercentage}%
@@ -436,11 +466,11 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
             />
           </div>
           <p className="text-xs text-ctp-overlay1">
-            {activeTab === 'full'
-              ? 'Auto-calculated from Main + all DLCs completion'
-              : 'Auto-calculated from Full game + Achievements completion'}
+            {activeTab === "full"
+              ? "Auto-calculated from Main + all DLCs completion"
+              : "Auto-calculated from Full game + Achievements completion"}
           </p>
-          {activeTab === 'completionist' && (
+          {activeTab === "completionist" && (
             <div className="flex gap-4 text-xs text-ctp-subtext0 mt-2">
               <span>Full: {summary.full}%</span>
               <span>Achievements: {summary.achievementPercentage}%</span>
@@ -454,10 +484,13 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
           <div className="flex items-center justify-between gap-4">
             <div>
               <h4 className="text-sm font-semibold text-ctp-text">
-                {activeTab === 'main' ? 'Main Story' : additions.find((d) => d.id === selectedDlcId)?.name || 'DLC'} Progress
+                {activeTab === "main"
+                  ? "Main Story"
+                  : additions.find((d) => d.id === selectedDlcId)?.name || "DLC"}{" "}
+                Progress
               </h4>
               <p className="text-xs text-ctp-overlay1">
-                {activeTab === 'main' ? 'Main story completion' : 'DLC/Expansion content'}
+                {activeTab === "main" ? "Main story completion" : "DLC/Expansion content"}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -472,8 +505,8 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 onChange={(event) => handlePercentageChange(event.target.value)}
                 onFocus={() => setIsEditingPercentage(true)}
                 onBlur={() => {
-                  setIsEditingPercentage(false)
-                  handlePercentageBlur()
+                  setIsEditingPercentage(false);
+                  handlePercentageBlur();
                 }}
                 aria-label="Progress percentage"
                 className="progress-percentage-input w-16 sm:w-20 text-center text-2xl font-bold bg-ctp-crust/70 border border-ctp-surface1 rounded-lg px-2 py-1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
@@ -507,11 +540,17 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 type="button"
                 onClick={() => handleSliderChange(value)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border bg-ctp-mantle/80 ${
-                  displayValue === value ? 'bg-opacity-20' : 'border-ctp-surface1/80 text-ctp-subtext0 hover:text-ctp-text'
+                  displayValue === value
+                    ? "bg-opacity-20"
+                    : "border-ctp-surface1/80 text-ctp-subtext0 hover:text-ctp-text"
                 }`}
                 style={
                   displayValue === value
-                    ? { borderColor: activeColor, color: activeColor, backgroundColor: activeColor + '15' }
+                    ? {
+                        borderColor: activeColor,
+                        color: activeColor,
+                        backgroundColor: activeColor + "15",
+                      }
                     : {}
                 }
               >
@@ -541,8 +580,8 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 <button
                   type="button"
                   onClick={() => {
-                    setSliderValue(null)
-                    setNotes('')
+                    setSliderValue(null);
+                    setNotes("");
                   }}
                   className="px-3 py-1.5 text-sm text-ctp-subtext1 rounded-lg border border-ctp-surface1 
                              bg-ctp-mantle/60 hover:bg-ctp-surface0/80 transition-colors"
@@ -554,9 +593,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                   onClick={() => logProgressMutation.mutate()}
                   disabled={logProgressMutation.isPending}
                   className="px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
-                  style={{ backgroundColor: activeColor, color: '#111' }}
+                  style={{ backgroundColor: activeColor, color: "#111" }}
                 >
-                  {logProgressMutation.isPending ? 'Saving...' : 'Log Progress'}
+                  {logProgressMutation.isPending ? "Saving..." : "Log Progress"}
                 </button>
               </div>
             </div>
@@ -597,25 +636,25 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               <LineChart data={chartData}>
                 <XAxis
                   dataKey="date"
-                  tick={{ fill: '#71717A', fontSize: 10 }}
-                  axisLine={{ stroke: '#3f3f46' }}
+                  tick={{ fill: "#71717A", fontSize: 10 }}
+                  axisLine={{ stroke: "#3f3f46" }}
                   tickLine={false}
                 />
                 <YAxis
                   domain={[0, 100]}
-                  tick={{ fill: '#71717A', fontSize: 10 }}
-                  axisLine={{ stroke: '#3f3f46' }}
+                  tick={{ fill: "#71717A", fontSize: 10 }}
+                  axisLine={{ stroke: "#3f3f46" }}
                   tickLine={false}
                   width={25}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1a1a1a',
-                    border: '1px solid #3f3f46',
-                    borderRadius: '8px',
+                    backgroundColor: "#1a1a1a",
+                    border: "1px solid #3f3f46",
+                    borderRadius: "8px",
                   }}
-                  itemStyle={{ color: '#fff' }}
-                  formatter={(value: number) => [`${value}%`, 'Completion']}
+                  itemStyle={{ color: "#fff" }}
+                  formatter={(value: number) => [`${value}%`, "Completion"]}
                 />
                 <Line
                   type="monotone"
@@ -647,19 +686,22 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className={`w-4 h-4 transition-transform ${showHistory ? 'rotate-90' : ''}`}
+                className={`w-4 h-4 transition-transform ${showHistory ? "rotate-90" : ""}`}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
               </svg>
-              History ({logs.length} {logs.length === 1 ? 'entry' : 'entries'})
+              History ({logs.length} {logs.length === 1 ? "entry" : "entries"})
             </span>
-            <span className="text-xs text-ctp-overlay1">{showHistory ? 'Hide' : 'View'}</span>
+            <span className="text-xs text-ctp-overlay1">{showHistory ? "Hide" : "View"}</span>
           </button>
 
           {showHistory && (
             <ScrollFade axis="y" className="mt-3 space-y-2 max-h-60 overflow-y-auto pr-1">
               {logs.map((log) => (
-                <div key={log.id} className="flex items-start justify-between bg-ctp-mantle/70 rounded-lg p-2.5">
+                <div
+                  key={log.id}
+                  className="flex items-start justify-between bg-ctp-mantle/70 rounded-lg p-2.5"
+                >
                   <div className="flex-1">
                     <div className="flex items-baseline gap-2">
                       <span className="font-medium text-sm" style={{ color: activeColor }}>
@@ -667,15 +709,17 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                       </span>
                       <span className="text-xs text-ctp-overlay1">
                         {new Date(log.logged_at).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
-                    {log.notes && <p className="text-xs text-ctp-subtext0 mt-1 line-clamp-2">{log.notes}</p>}
+                    {log.notes && (
+                      <p className="text-xs text-ctp-subtext0 mt-1 line-clamp-2">{log.notes}</p>
+                    )}
                   </div>
                   {canEdit && (
                     <button
@@ -709,5 +753,5 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
 
       {isLoading && <div className="text-ctp-subtext0 text-sm">Loading progress history...</div>}
     </div>
-  )
+  );
 }

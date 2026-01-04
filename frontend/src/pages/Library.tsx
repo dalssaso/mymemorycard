@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useMemo } from 'react'
-import { useLibraryFilters } from '@/hooks/useLibraryFilters'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useLibraryFilters } from "@/hooks/useLibraryFilters";
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,177 +11,177 @@ import {
   type ColumnFiltersState,
   type VisibilityState,
   type RowSelectionState,
-} from '@tanstack/react-table'
-import { Link } from '@tanstack/react-router'
-import { GameCard } from '@/components/GameCard'
-import { BackButton, PageLayout } from '@/components/layout'
-import { LibrarySidebar } from '@/components/sidebar'
-import { PlatformIcons } from '@/components/PlatformIcon'
-import { Checkbox, ScrollFade, Select } from '@/components/ui'
-import { GameCardSkeleton } from '@/components/ui/Skeleton'
-import { useToast } from '@/components/ui/Toast'
-import { collectionsAPI, gamesAPI } from '@/lib/api'
-import { SortControl, ActiveFilterPills } from '@/components/filters'
+} from "@tanstack/react-table";
+import { Link } from "@tanstack/react-router";
+import { GameCard } from "@/components/GameCard";
+import { BackButton, PageLayout } from "@/components/layout";
+import { LibrarySidebar } from "@/components/sidebar";
+import { PlatformIcons } from "@/components/PlatformIcon";
+import { Checkbox, ScrollFade, Select } from "@/components/ui";
+import { GameCardSkeleton } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
+import { collectionsAPI, gamesAPI } from "@/lib/api";
+import { SortControl, ActiveFilterPills } from "@/components/filters";
 
 interface Collection {
-  id: string
-  name: string
-  description: string | null
-  game_count: number
+  id: string;
+  name: string;
+  description: string | null;
+  game_count: number;
 }
 
 interface Game {
-  id: string
-  name: string
-  cover_art_url: string | null
+  id: string;
+  name: string;
+  cover_art_url: string | null;
   platforms: {
-    id: string
-    name: string
-    displayName: string
-    iconUrl: string | null
-    colorPrimary: string
-  }[]
-  status: string
-  max_user_rating: number | null
-  total_minutes_sum: number
-  latest_last_played: string | null
-  metacritic_score: number | null
-  release_date: string | null
-  is_favorite_any: boolean
-  series_name: string | null
+    id: string;
+    name: string;
+    displayName: string;
+    iconUrl: string | null;
+    colorPrimary: string;
+  }[];
+  status: string;
+  max_user_rating: number | null;
+  total_minutes_sum: number;
+  latest_last_played: string | null;
+  metacritic_score: number | null;
+  release_date: string | null;
+  is_favorite_any: boolean;
+  series_name: string | null;
 }
 
 interface AggregatedGame {
-  id: string
-  name: string
-  cover_art_url: string | null
+  id: string;
+  name: string;
+  cover_art_url: string | null;
   platforms: {
-    id: string
-    name: string
-    displayName: string
-    iconUrl: string | null
-    colorPrimary: string
-  }[]
-  status: string
-  user_rating: number | null
-  total_minutes: number
-  last_played: string | null
-  metacritic_score: number | null
-  release_date: string | null
-  is_favorite: boolean
-  series_name: string | null
+    id: string;
+    name: string;
+    displayName: string;
+    iconUrl: string | null;
+    colorPrimary: string;
+  }[];
+  status: string;
+  user_rating: number | null;
+  total_minutes: number;
+  last_played: string | null;
+  metacritic_score: number | null;
+  release_date: string | null;
+  is_favorite: boolean;
+  series_name: string | null;
 }
 
-const columnHelper = createColumnHelper<AggregatedGame>()
+const columnHelper = createColumnHelper<AggregatedGame>();
 
 const COLUMN_LABELS: Record<string, string> = {
-  name: 'Name',
-  platforms: 'Platforms',
-  status: 'Status',
-  metacritic_score: 'Critic Score',
-  user_rating: 'Your Rating',
-  total_minutes: 'Playtime',
-}
+  name: "Name",
+  platforms: "Platforms",
+  status: "Status",
+  metacritic_score: "Critic Score",
+  user_rating: "Your Rating",
+  total_minutes: "Playtime",
+};
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export function Library() {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-  const { filters, setFilter, clearFilters, hasActiveFilters } = useLibraryFilters()
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [showColumnSettings, setShowColumnSettings] = useState<boolean>(false)
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [showCollectionDropdown, setShowCollectionDropdown] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [selectionMode, setSelectionMode] = useState(false)
+  const { showToast } = useToast();
+  const queryClient = useQueryClient();
+  const { filters, setFilter, clearFilters, hasActiveFilters } = useLibraryFilters();
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [showColumnSettings, setShowColumnSettings] = useState<boolean>(false);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
 
   const handleExitSelectionMode = () => {
-    setSelectionMode(false)
-    setRowSelection({})
-    setShowCollectionDropdown(false)
-  }
+    setSelectionMode(false);
+    setRowSelection({});
+    setShowCollectionDropdown(false);
+  };
 
-  const handleExport = async (format: 'json' | 'csv') => {
+  const handleExport = async (format: "json" | "csv") => {
     try {
-      const response = await gamesAPI.export(format)
+      const response = await gamesAPI.export(format);
       const blob = new Blob([response.data], {
-        type: format === 'json' ? 'application/json' : 'text/csv'
-      })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `mymemorycard-export-${new Date().toISOString().split('T')[0]}.${format}`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      showToast(`Library exported as ${format.toUpperCase()}`, 'success')
-    } catch (error) {
-      showToast('Failed to export library', 'error')
+        type: format === "json" ? "application/json" : "text/csv",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `mymemorycard-export-${new Date().toISOString().split("T")[0]}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showToast(`Library exported as ${format.toUpperCase()}`, "success");
+    } catch {
+      showToast("Failed to export library", "error");
     }
-  }
+  };
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['games', filters],
+    queryKey: ["games", filters],
     queryFn: async () => {
       const response = await gamesAPI.getAll({
         platform: filters.platform || undefined,
         status: filters.status || undefined,
         favorites: filters.favorites || undefined,
-        genre: filters.genre.length > 0 ? filters.genre.join(',') : undefined,
-        collection: filters.collection.length > 0 ? filters.collection.join(',') : undefined,
-        franchise: filters.franchise.length > 0 ? filters.franchise.join(',') : undefined,
+        genre: filters.genre.length > 0 ? filters.genre.join(",") : undefined,
+        collection: filters.collection.length > 0 ? filters.collection.join(",") : undefined,
+        franchise: filters.franchise.length > 0 ? filters.franchise.join(",") : undefined,
         sort: filters.sort || undefined,
-      })
-      return response.data as { games: Game[] }
+      });
+      return response.data as { games: Game[] };
     },
-  })
+  });
 
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
-      return response.data as { collections: Collection[] }
+      const response = await collectionsAPI.getAll();
+      return response.data as { collections: Collection[] };
     },
-  })
+  });
 
-  const collections = collectionsData?.collections || []
+  const collections = collectionsData?.collections || [];
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (gameIds: string[]) => gamesAPI.bulkDelete(gameIds),
     onSuccess: (_, gameIds) => {
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      handleExitSelectionMode()
-      showToast(`Deleted ${gameIds.length} game(s)`, 'success')
-      setShowDeleteConfirm(false)
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      handleExitSelectionMode();
+      showToast(`Deleted ${gameIds.length} game(s)`, "success");
+      setShowDeleteConfirm(false);
     },
     onError: () => {
-      showToast('Failed to delete games', 'error')
+      showToast("Failed to delete games", "error");
     },
-  })
+  });
 
   const bulkAddToCollectionMutation = useMutation({
     mutationFn: ({ collectionId, gameIds }: { collectionId: string; gameIds: string[] }) =>
       collectionsAPI.bulkAddGames(collectionId, gameIds),
     onSuccess: (_, { gameIds }) => {
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      handleExitSelectionMode()
-      showToast(`Added ${gameIds.length} game(s) to collection`, 'success')
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      handleExitSelectionMode();
+      showToast(`Added ${gameIds.length} game(s) to collection`, "success");
     },
     onError: () => {
-      showToast('Failed to add games to collection', 'error')
+      showToast("Failed to add games to collection", "error");
     },
-  })
+  });
 
-  const games = data?.games || []
+  const games = useMemo(() => data?.games ?? [], [data?.games]);
 
   // Backend now returns aggregated games, use directly
   const aggregatedGames = useMemo(() => {
-    return games.map(game => ({
+    return games.map((game) => ({
       id: game.id,
       name: game.name,
       cover_art_url: game.cover_art_url,
@@ -194,37 +194,37 @@ export function Library() {
       release_date: game.release_date,
       is_favorite: game.is_favorite_any,
       series_name: game.series_name,
-    }))
-  }, [games])
+    }));
+  }, [games]);
 
   // Get unique platforms and statuses for filters
   const uniquePlatforms = useMemo(() => {
-    const platformsSet = new Set<string>()
-    aggregatedGames.forEach(game => {
-      game.platforms.forEach(p => platformsSet.add(p.displayName))
-    })
-    return Array.from(platformsSet).sort()
-  }, [aggregatedGames])
+    const platformsSet = new Set<string>();
+    aggregatedGames.forEach((game) => {
+      game.platforms.forEach((p) => platformsSet.add(p.displayName));
+    });
+    return Array.from(platformsSet).sort();
+  }, [aggregatedGames]);
 
   const uniqueStatuses = useMemo(() => {
-    const statuses = new Set(aggregatedGames.map(g => g.status))
-    return Array.from(statuses).sort()
-  }, [aggregatedGames])
+    const statuses = new Set(aggregatedGames.map((g) => g.status));
+    return Array.from(statuses).sort();
+  }, [aggregatedGames]);
 
   // Backend handles filtering and sorting, use aggregated games directly
-  const filteredGames = aggregatedGames
+  const filteredGames = aggregatedGames;
 
   const selectedGameIds = useMemo(() => {
     return Object.keys(rowSelection)
       .filter((key) => rowSelection[key])
       .map((index) => filteredGames[parseInt(index)]?.id)
-      .filter(Boolean) as string[]
-  }, [rowSelection, filteredGames])
+      .filter(Boolean) as string[];
+  }, [rowSelection, filteredGames]);
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('name', {
-        header: 'Name',
+      columnHelper.accessor("name", {
+        header: "Name",
         cell: (info) => (
           <div className="flex items-center gap-3">
             {info.row.original.cover_art_url ? (
@@ -248,36 +248,34 @@ export function Library() {
           </div>
         ),
       }),
-      columnHelper.accessor('platforms', {
-        header: 'Platforms',
-        cell: (info) => (
-          <PlatformIcons platforms={info.getValue()} size="sm" maxDisplay={5} />
-        ),
+      columnHelper.accessor("platforms", {
+        header: "Platforms",
+        cell: (info) => <PlatformIcons platforms={info.getValue()} size="sm" maxDisplay={5} />,
       }),
-      columnHelper.accessor('status', {
-        header: 'Status',
+      columnHelper.accessor("status", {
+        header: "Status",
         cell: (info) => info.getValue(),
       }),
-      columnHelper.accessor('metacritic_score', {
-        header: 'Score',
-        cell: (info) => info.getValue() || '-',
+      columnHelper.accessor("metacritic_score", {
+        header: "Score",
+        cell: (info) => info.getValue() || "-",
       }),
-      columnHelper.accessor('user_rating', {
-        header: 'Rating',
-        cell: (info) => (info.getValue() ? `${info.getValue()}/10` : '-'),
+      columnHelper.accessor("user_rating", {
+        header: "Rating",
+        cell: (info) => (info.getValue() ? `${info.getValue()}/10` : "-"),
       }),
-      columnHelper.accessor('total_minutes', {
-        header: 'Playtime',
+      columnHelper.accessor("total_minutes", {
+        header: "Playtime",
         cell: (info) => {
-          const minutes = info.getValue()
-          const hours = Math.floor(minutes / 60)
-          const mins = minutes % 60
-          return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+          const minutes = info.getValue();
+          const hours = Math.floor(minutes / 60);
+          const mins = minutes % 60;
+          return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
         },
       }),
     ],
     []
-  )
+  );
 
   const table = useReactTable({
     data: filteredGames,
@@ -303,9 +301,9 @@ export function Library() {
         pageSize: 20,
       },
     },
-  })
+  });
 
-  const allFilteredSelected = filteredGames.length > 0 && table.getIsAllRowsSelected()
+  const allFilteredSelected = filteredGames.length > 0 && table.getIsAllRowsSelected();
 
   if (isLoading) {
     return (
@@ -325,7 +323,7 @@ export function Library() {
           </div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   if (error) {
@@ -338,13 +336,13 @@ export function Library() {
           </div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   const handleClearFilters = () => {
-    setGlobalFilter('')
-    clearFilters()
-  }
+    setGlobalFilter("");
+    clearFilters();
+  };
 
   const sidebarContent = (
     <LibrarySidebar
@@ -358,7 +356,7 @@ export function Library() {
       onClearFilters={handleClearFilters}
       hasActiveFilters={hasActiveFilters || Boolean(globalFilter)}
     />
-  )
+  );
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
@@ -375,13 +373,13 @@ export function Library() {
           {/* Export Buttons */}
           <div className="flex gap-2">
             <button
-              onClick={() => handleExport('json')}
+              onClick={() => handleExport("json")}
               className="px-4 py-2 bg-ctp-teal/20 border border-ctp-teal/30 text-ctp-teal hover:bg-ctp-teal/30 rounded transition-all text-sm"
             >
               Export JSON
             </button>
             <button
-              onClick={() => handleExport('csv')}
+              onClick={() => handleExport("csv")}
               className="px-4 py-2 bg-ctp-green/20 border border-ctp-green/30 text-ctp-green hover:bg-ctp-green/30 rounded transition-all text-sm"
             >
               Export CSV
@@ -399,9 +397,9 @@ export function Library() {
             aria-label="Search games in your library"
             className="input flex-1 min-w-[200px]"
           />
-          
+
           {/* Column Visibility (Table View Only) */}
-          {viewMode === 'table' && (
+          {viewMode === "table" && (
             <div className="relative">
               <button
                 onClick={() => setShowColumnSettings(!showColumnSettings)}
@@ -456,7 +454,7 @@ export function Library() {
             </div>
           )}
         </div>
-        
+
         {/* Active Filter Pills */}
         {hasActiveFilters && (
           <div className="mb-4">
@@ -473,22 +471,36 @@ export function Library() {
           <div className="flex items-center gap-4">
             <span className="text-sm text-zinc-400">
               {(() => {
-                const { pageIndex, pageSize } = table.getState().pagination
-                const start = pageIndex * pageSize + 1
-                const end = Math.min((pageIndex + 1) * pageSize, filteredGames.length)
-                return `Showing ${start}-${end} of ${filteredGames.length} games`
+                const { pageIndex, pageSize } = table.getState().pagination;
+                const start = pageIndex * pageSize + 1;
+                const end = Math.min((pageIndex + 1) * pageSize, filteredGames.length);
+                return `Showing ${start}-${end} of ${filteredGames.length} games`;
               })()}
               {hasActiveFilters && ` (filtered from ${games.length} total)`}
             </span>
             {!selectionMode && games.length > 0 && (
               <>
-                <SortControl currentSort={filters.sort} onSortChange={(s) => setFilter('sort', s)} />
+                <SortControl
+                  currentSort={filters.sort}
+                  onSortChange={(s) => setFilter("sort", s)}
+                />
                 <button
                   onClick={() => setSelectionMode(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-ctp-text border border-zinc-700 hover:border-zinc-500 rounded transition-all"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
                   </svg>
                   Select
                 </button>
@@ -518,16 +530,16 @@ export function Library() {
           <div className="mb-4 p-3 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-ctp-text">
-                {selectedGameIds.length > 0 
+                {selectedGameIds.length > 0
                   ? `${selectedGameIds.length} game(s) selected`
-                  : 'Select games to manage'}
+                  : "Select games to manage"}
               </span>
               {filteredGames.length > 0 && (
                 <button
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
                   className="text-sm text-zinc-400 hover:text-ctp-text"
                 >
-                  {allFilteredSelected ? 'Deselect all' : 'Select all'}
+                  {allFilteredSelected ? "Deselect all" : "Select all"}
                 </button>
               )}
               {selectedGameIds.length > 0 && (
@@ -608,10 +620,7 @@ export function Library() {
                 This action cannot be undone.
               </p>
               <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="btn btn-secondary"
-                >
+                <button onClick={() => setShowDeleteConfirm(false)} className="btn btn-secondary">
                   Cancel
                 </button>
                 <button
@@ -619,7 +628,7 @@ export function Library() {
                   disabled={bulkDeleteMutation.isPending}
                   className="px-4 py-2 bg-ctp-red text-ctp-base hover:bg-ctp-red/80 rounded transition-all"
                 >
-                  {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                  {bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>
@@ -629,27 +638,31 @@ export function Library() {
         {games.length === 0 ? (
           <div className="card text-center py-12">
             <h2 className="text-2xl font-bold mb-4">No Games Yet</h2>
-            <p className="text-zinc-400 mb-6">
-              Start building your library by importing games
-            </p>
+            <p className="text-zinc-400 mb-6">Start building your library by importing games</p>
             <Link to="/import" className="btn btn-primary inline-block">
               Import Games
             </Link>
           </div>
-        ) : viewMode === 'grid' ? (
+        ) : viewMode === "grid" ? (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
               {table.getRowModel().rows.map((row) => {
-                const isSelected = row.getIsSelected()
+                const isSelected = row.getIsSelected();
                 if (selectionMode) {
                   return (
                     <div
                       key={row.original.id}
                       onClick={() => row.toggleSelected()}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          row.toggleSelected();
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                       className={`card cursor-pointer transition-all relative p-0 sm:p-4 ${
-                        isSelected 
-                          ? 'bg-ctp-mauve/20 border-ctp-mauve' 
-                          : 'hover:border-zinc-500'
+                        isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-zinc-500"
                       }`}
                     >
                       {/* Mobile: Poster-only layout */}
@@ -667,12 +680,25 @@ export function Library() {
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="text-sm font-bold text-ctp-text line-clamp-2">{row.original.name}</h3>
+                          <h3 className="text-sm font-bold text-ctp-text line-clamp-2">
+                            {row.original.name}
+                          </h3>
                         </div>
                         {isSelected && (
                           <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-ctp-text">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={3}
+                              stroke="currentColor"
+                              className="w-4 h-4 text-ctp-text"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m4.5 12.75 6 6 9-13.5"
+                              />
                             </svg>
                           </div>
                         )}
@@ -694,9 +720,14 @@ export function Library() {
                         <div className="flex-1">
                           <h3 className="text-lg font-bold mb-2">{row.original.name}</h3>
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <PlatformIcons platforms={row.original.platforms} size="sm" maxDisplay={5} />
+                            <PlatformIcons
+                              platforms={row.original.platforms}
+                              size="sm"
+                              maxDisplay={5}
+                            />
                             <span className="badge text-zinc-400 border-zinc-600">
-                              {row.original.status.charAt(0).toUpperCase() + row.original.status.slice(1)}
+                              {row.original.status.charAt(0).toUpperCase() +
+                                row.original.status.slice(1)}
                             </span>
                           </div>
                           {row.original.metacritic_score && (
@@ -708,16 +739,27 @@ export function Library() {
                         </div>
                         {isSelected && (
                           <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4 text-ctp-text">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={3}
+                              stroke="currentColor"
+                              className="w-4 h-4 text-ctp-text"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m4.5 12.75 6 6 9-13.5"
+                              />
                             </svg>
                           </div>
                         )}
                       </div>
                     </div>
-                  )
+                  );
                 }
-                return <GameCard key={row.original.id} {...row.original} />
+                return <GameCard key={row.original.id} {...row.original} />;
               })}
             </div>
 
@@ -760,10 +802,7 @@ export function Library() {
                         </th>
                       )}
                       {headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className="text-left p-4 text-zinc-400 font-medium"
-                        >
+                        <th key={header.id} className="text-left p-4 text-zinc-400 font-medium">
                           {flexRender(header.column.columnDef.header, header.getContext())}
                         </th>
                       ))}
@@ -774,7 +813,7 @@ export function Library() {
                   {table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
-                      className={`border-b border-ctp-surface0 hover:bg-ctp-surface1 transition-colors ${selectionMode && row.getIsSelected() ? 'bg-ctp-mauve/10' : ''}`}
+                      className={`border-b border-ctp-surface0 hover:bg-ctp-surface1 transition-colors ${selectionMode && row.getIsSelected() ? "bg-ctp-mauve/10" : ""}`}
                     >
                       {selectionMode && (
                         <td className="w-12 p-4">
@@ -821,5 +860,5 @@ export function Library() {
         )}
       </div>
     </PageLayout>
-  )
+  );
 }

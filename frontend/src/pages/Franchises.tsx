@@ -1,36 +1,36 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
-import { BackButton, PageLayout } from '@/components/layout'
-import { FranchisesSidebar } from '@/components/sidebar'
-import { Card, Button } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { franchisesAPI, FranchiseSummary } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { BackButton, PageLayout } from "@/components/layout";
+import { FranchisesSidebar } from "@/components/sidebar";
+import { Card, Button } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { franchisesAPI, type FranchiseSummary } from "@/lib/api";
 
 export function Franchises() {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
-      return response.data
+      const response = await franchisesAPI.getAll();
+      return response.data;
     },
-  })
+  });
 
   const syncMutation = useMutation({
     mutationFn: () => franchisesAPI.sync(),
     onSuccess: (response) => {
-      const { games_checked, games_updated } = response.data
-      queryClient.invalidateQueries({ queryKey: ['franchises'] })
-      showToast(`Synced ${games_updated} of ${games_checked} games`, 'success')
+      const { games_checked, games_updated } = response.data;
+      queryClient.invalidateQueries({ queryKey: ["franchises"] });
+      showToast(`Synced ${games_updated} of ${games_checked} games`, "success");
     },
     onError: () => {
-      showToast('Failed to sync franchises', 'error')
+      showToast("Failed to sync franchises", "error");
     },
-  })
+  });
 
-  const franchises = data?.franchises || []
+  const franchises = data?.franchises || [];
 
   if (isLoading) {
     return (
@@ -39,7 +39,7 @@ export function Franchises() {
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   return (
@@ -62,23 +62,22 @@ export function Franchises() {
               />
               <h1 className="text-4xl font-bold text-ctp-text">Franchises</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">
-              Game series in your library
-            </p>
+            <p className="text-ctp-subtext0 mt-1">Game series in your library</p>
           </div>
           <Button
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending}
             variant="secondary"
           >
-            {syncMutation.isPending ? 'Syncing...' : 'Sync Franchises'}
+            {syncMutation.isPending ? "Syncing..." : "Sync Franchises"}
           </Button>
         </div>
 
         {franchises.length === 0 ? (
           <Card>
             <p className="text-ctp-subtext0 text-center py-8">
-              No franchises found. Add games that belong to a series, or click "Sync Franchises" to detect series for your existing games.
+              No franchises found. Add games that belong to a series, or click &quot;Sync
+              Franchises&quot; to detect series for your existing games.
             </p>
           </Card>
         ) : (
@@ -104,11 +103,9 @@ export function Franchises() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-ctp-text font-medium truncate">
-                      {franchise.series_name}
-                    </p>
+                    <p className="text-ctp-text font-medium truncate">{franchise.series_name}</p>
                     <p className="text-sm text-ctp-teal">
-                      {franchise.game_count} {franchise.game_count === 1 ? 'game' : 'games'}
+                      {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                     </p>
                   </div>
                 </div>
@@ -118,5 +115,5 @@ export function Franchises() {
         )}
       </div>
     </PageLayout>
-  )
+  );
 }
