@@ -3,6 +3,7 @@
 Ollama lets you run large language models locally on your machine for free.
 
 **Supported AI Curator Features:**
+
 - ✅ Collection Suggestions
 - ✅ Next Game Recommendations
 - ❌ Cover Image Generation (requires OpenAI provider)
@@ -10,6 +11,7 @@ Ollama lets you run large language models locally on your machine for free.
 ## Installation
 
 ### macOS
+
 ```bash
 # Download from website
 open https://ollama.ai/download/mac
@@ -19,11 +21,13 @@ brew install ollama
 ```
 
 ### Linux
+
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
 ### Windows
+
 Download the installer from [Ollama for Windows](https://ollama.ai/download/windows)
 
 ## Pulling a Model
@@ -83,24 +87,29 @@ If you're using MyMemoryCard with Docker:
 Choose based on your hardware:
 
 ### 8GB RAM
+
 - `llama3.2:3b`: Best choice, fast and capable
 - `phi3:mini`: Tiny but capable (2GB)
 
 ### 16GB RAM
+
 - `llama3.1:8b`: More capable, still fast
 - `mistral:7b`: Good alternative
 
 ### 32GB+ RAM
+
 - `llama3.1:70b`: Very capable (needs GPU)
 - `mixtral:8x7b`: Excellent quality
 
 ## Hardware Requirements
 
 Minimum:
+
 - 8GB RAM
 - 10GB free disk space
 
 Recommended:
+
 - 16GB+ RAM
 - GPU (NVIDIA, AMD, or Apple Silicon)
 - SSD for faster model loading
@@ -108,12 +117,14 @@ Recommended:
 ## Performance Tips
 
 1. **Use GPU acceleration**:
+
    ```bash
    # Check GPU is being used
    ollama ps
    ```
 
 2. **Keep models in memory**:
+
    ```bash
    # Load model into memory
    ollama run llama3.2:3b "test"
@@ -124,21 +135,25 @@ Recommended:
 ## Troubleshooting
 
 ### Connection refused
+
 - Ensure Ollama is running: `ollama ps`
 - Check port 11434 is not blocked
 - For Docker: Use `host.docker.internal` instead of `localhost`
 
 ### Model not found
+
 - Pull the model first: `ollama pull llama3.2:3b`
 - List available models: `ollama list`
 - Use exact model name from list
 
 ### Out of memory
+
 - Use a smaller model (e.g., `llama3.2:3b` instead of `llama3.1:8b`)
 - Close other applications
 - Restart Ollama
 
 ### Slow performance
+
 - Install on SSD if possible
 - Use GPU acceleration
 - Choose smaller model

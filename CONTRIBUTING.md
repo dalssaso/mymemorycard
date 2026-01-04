@@ -32,17 +32,20 @@ Be respectful, constructive, and professional in all interactions. This project 
 1. Fork the repository on GitHub
 
 2. Clone your fork:
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/MyMemoryCard.git
 cd mymemorycard
 ```
 
 3. Add upstream remote:
+
 ```bash
 git remote add upstream https://github.com/dalssaso/MyMemoryCard.git
 ```
 
 4. Install dependencies:
+
 ```bash
 # Backend
 cd backend
@@ -54,6 +57,7 @@ npm install
 ```
 
 5. Start development services:
+
 ```bash
 # Terminal 1 - Start PostgreSQL and Redis
 docker-compose up -d postgres redis
@@ -68,6 +72,7 @@ npm run dev
 ```
 
 6. Install pre-commit hooks:
+
 ```bash
 # From project root
 npm install -g husky
@@ -77,6 +82,7 @@ npm install -g lint-staged
 ## Development Workflow
 
 1. **Create a feature branch:**
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
@@ -86,6 +92,7 @@ git checkout -b feature/your-feature-name
 3. **Write tests** for new functionality (minimum 90% coverage)
 
 4. **Run tests locally:**
+
 ```bash
 # Backend tests
 cd backend
@@ -97,6 +104,7 @@ npm test
 ```
 
 5. **Check types:**
+
 ```bash
 # Backend
 cd backend
@@ -110,12 +118,14 @@ npm run typecheck
 6. **Commit your changes** (pre-commit hooks will run automatically)
 
 7. **Rebase on latest main before pushing:**
+
 ```bash
 git fetch upstream
 git rebase upstream/main
 ```
 
 8. **Push to your fork:**
+
 ```bash
 git push origin feature/your-feature-name
 # If you rebased, you may need:
@@ -150,17 +160,17 @@ git push --force-with-lease origin feature/your-feature-name
 ```typescript
 // Good
 export async function getGame(id: string): Promise<Game> {
-  const result = await db.query('SELECT * FROM games WHERE id = $1', [id]);
+  const result = await db.query("SELECT * FROM games WHERE id = $1", [id]);
   if (!result.rows[0]) {
-    throw new Error('Game not found');
+    throw new Error("Game not found");
   }
   return result.rows[0];
 }
 
 // Bad
 export async function getGame(id: any) {
-  const result = await db.query('SELECT * FROM games WHERE id = $1', [id]);
-  console.log('✅ Game found!'); // No emojis!
+  const result = await db.query("SELECT * FROM games WHERE id = $1", [id]);
+  console.log("✅ Game found!"); // No emojis!
   return result.rows[0];
 }
 ```
@@ -199,8 +209,8 @@ try {
   const game = await gameService.getGame(id);
   return Response.json(game);
 } catch (error) {
-  console.error('Failed to fetch game:', error);
-  return Response.json({ error: 'Failed to fetch game' }, { status: 500 });
+  console.error("Failed to fetch game:", error);
+  return Response.json({ error: "Failed to fetch game" }, { status: 500 });
 }
 
 // Bad
@@ -208,7 +218,7 @@ try {
   const game = await gameService.getGame(id);
   return Response.json(game);
 } catch (error) {
-  console.log('❌ Error!'); // No emojis!
+  console.log("❌ Error!"); // No emojis!
   return Response.json({ error }); // Don't leak error details
 }
 ```
@@ -222,9 +232,9 @@ All new code must maintain **90% or higher** test coverage.
 ### Backend Testing (Bun Test)
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 
-describe('Game Routes', () => {
+describe("Game Routes", () => {
   beforeEach(async () => {
     // Setup test data
   });
@@ -233,11 +243,11 @@ describe('Game Routes', () => {
     // Cleanup
   });
 
-  it('should return game by id', async () => {
-    const response = await fetch('http://localhost:3000/api/games/1');
+  it("should return game by id", async () => {
+    const response = await fetch("http://localhost:3000/api/games/1");
     expect(response.status).toBe(200);
     const data = await response.json();
-    expect(data).toHaveProperty('id');
+    expect(data).toHaveProperty("id");
   });
 });
 ```
@@ -460,18 +470,22 @@ git rebase -i HEAD~N
 
 ```markdown
 ## Description
+
 Brief description of what this PR does
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 Describe how you tested your changes
 
 ## Checklist
+
 - [ ] Tests added/updated
 - [ ] Code coverage >= 90%
 - [ ] TypeScript strict mode passes
@@ -578,6 +592,7 @@ See [docs/release-process.md](docs/release-process.md) for complete documentatio
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors page
 - Release notes (for significant contributions)
 - Project documentation (for major features)

@@ -5,6 +5,7 @@ OpenAI provides the official ChatGPT API with excellent quality and reliability.
 **Note:** OpenAI is the only provider that supports AI-generated collection cover images using DALL-E models.
 
 **Supported AI Curator Features:**
+
 - ✅ Collection Suggestions
 - ✅ Next Game Recommendations
 - ✅ Cover Image Generation (DALL-E)
@@ -32,6 +33,7 @@ OpenAI provides the official ChatGPT API with excellent quality and reliability.
 ## Pricing
 
 Current pricing (as of January 2025):
+
 - **gpt-4.1-mini**: $0.003/1K input tokens, $0.012/1K output tokens
 - gpt-4o-mini: $0.00015/1K input tokens, $0.0006/1K output tokens
 - dall-e-3: $0.040 per image (1024x1024)
@@ -41,10 +43,12 @@ View current pricing: [OpenAI Pricing](https://openai.com/api/pricing/)
 ## Advanced Options
 
 ### Custom Parameters
+
 - **Temperature** (0-2): Controls randomness. Lower = more focused, Higher = more creative
 - **Max Tokens**: Maximum response length (affects cost)
 
 ### Image Generation
+
 - Uses the main API key by default
 - Optional: Set separate image API key for better cost tracking
 - Default model: `dall-e-3` (recommended)
@@ -59,16 +63,19 @@ View current pricing: [OpenAI Pricing](https://openai.com/api/pricing/)
 ## Troubleshooting
 
 ### "Invalid API key" error
+
 - Verify you copied the full key
 - Check that the key hasn't been revoked
 - Ensure your OpenAI account has billing set up
 
 ### Rate limit errors
+
 - OpenAI has rate limits for new accounts
 - Upgrade to paid tier for higher limits
 - Wait a few seconds between requests
 
 ### High costs
+
 - Use gpt-4.1-mini instead of larger models
 - Reduce max tokens setting
 - The app caches library data to minimize API calls

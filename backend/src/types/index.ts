@@ -32,7 +32,7 @@ export interface Platform {
   id: string;
   name: string;
   display_name: string;
-  platform_type: 'pc' | 'console' | 'mobile' | 'physical';
+  platform_type: "pc" | "console" | "mobile" | "physical";
   is_system: boolean;
   is_physical: boolean;
   website_url: string | null;

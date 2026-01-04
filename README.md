@@ -132,14 +132,17 @@ make db-studio        # Open Drizzle Studio GUI
 ## Docker Compose Files
 
 ### Development (root directory)
+
 - `docker-compose.yml` - Infrastructure only (PostgreSQL on port 5433, Redis on port 6380)
 
 ### Production (deploy/ directory)
+
 - `deploy/docker-compose.yml` - Full stack with Nginx reverse proxy
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines including:
+
 - Code style and testing requirements
 - Linear git history practices (rebase workflow)
 - Commit message format
@@ -154,6 +157,7 @@ Game metadata is powered by [RAWG Video Games Database](https://rawg.io).
 This project is licensed under the **PolyForm Noncommercial License 1.0.0**.
 
 ### What this means:
+
 - **Free for personal use** - Self-hosting, hobby projects, research, education
 - **Free for nonprofits** - Charities, educational institutions, government
 - **Not for commercial use** - Cannot be used in paid products or services

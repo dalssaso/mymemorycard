@@ -24,6 +24,16 @@ npm run test:coverage # Coverage report (90% threshold)
 npm run typecheck     # TypeScript checking
 ```
 
+## After Every Code Change
+
+Run these commands after any modifications:
+
+```bash
+npm run typecheck
+```
+
+Fix any type errors before committing.
+
 ## Directory Structure
 
 ```
@@ -127,11 +137,11 @@ Status colors:
 
 ### Component Guidelines
 
-1. Always define TypeScript interface for props
+1. Define TypeScript interface for props
 2. Include ARIA attributes for interactive elements
 3. Use `ctp-*` theme colors for consistency
 4. Use `@/*` path alias for imports
-5. No emojis in code or logs
+5. Follow code style rules from root [CLAUDE.md](../CLAUDE.md)
 
 ## Reference Files
 

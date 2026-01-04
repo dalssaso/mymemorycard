@@ -15,20 +15,22 @@ MyMemoryCard uses [release-please](https://github.com/googleapis/release-please)
 ### Automatic Releases (Recommended)
 
 Release-please automatically:
+
 1. Analyzes conventional commits on `main`
 2. Creates/updates a combined release PR with changelog
 3. When merged, creates GitHub releases and triggers Docker builds
 
 **Commit conventions:**
 
-| Prefix | Version Bump | Example |
-|--------|--------------|---------|
-| `feat:` | Minor (1.1.0 -> 1.2.0) | `feat: add game filtering` |
-| `fix:` | Patch (1.1.0 -> 1.1.1) | `fix: resolve import error` |
-| `perf:` | Patch | `perf: optimize database queries` |
-| `feat!:` or `BREAKING CHANGE:` | Major (1.1.0 -> 2.0.0) | `feat!: redesign API` |
+| Prefix                         | Version Bump           | Example                           |
+| ------------------------------ | ---------------------- | --------------------------------- |
+| `feat:`                        | Minor (1.1.0 -> 1.2.0) | `feat: add game filtering`        |
+| `fix:`                         | Patch (1.1.0 -> 1.1.1) | `fix: resolve import error`       |
+| `perf:`                        | Patch                  | `perf: optimize database queries` |
+| `feat!:` or `BREAKING CHANGE:` | Major (1.1.0 -> 2.0.0) | `feat!: redesign API`             |
 
 **Scope for component-specific changes:**
+
 - `feat(backend): add new endpoint`
 - `fix(frontend): resolve rendering issue`
 
@@ -44,10 +46,12 @@ For testing before official release:
 5. Run workflow
 
 Pre-release images are tagged with:
+
 - Full version: `1.2.0-alpha.1`
 - Type only: `alpha` (overwritten by subsequent alphas)
 
 **Pre-release progression:**
+
 ```
 1.2.0-alpha.1 -> 1.2.0-alpha.2 -> 1.2.0-beta.1 -> 1.2.0-rc.1 -> 1.2.0
 ```
@@ -56,12 +60,12 @@ Pre-release images are tagged with:
 
 Each stable release creates these tags:
 
-| Tag | Description | Example |
-|-----|-------------|---------|
-| `X.Y.Z` | Exact version | `1.2.3` |
-| `X.Y` | Minor version (updated on each 1.2.x) | `1.2` |
-| `X` | Major version (updated on each 1.x.x) | `1` |
-| `latest` | Most recent stable release | `latest` |
+| Tag      | Description                           | Example  |
+| -------- | ------------------------------------- | -------- |
+| `X.Y.Z`  | Exact version                         | `1.2.3`  |
+| `X.Y`    | Minor version (updated on each 1.2.x) | `1.2`    |
+| `X`      | Major version (updated on each 1.x.x) | `1`      |
+| `latest` | Most recent stable release            | `latest` |
 
 Pre-releases only get their exact version tag (e.g., `1.2.0-alpha.1`).
 
@@ -125,11 +129,13 @@ BACKEND_VERSION=1.2.0-alpha.1 docker compose up -d backend
 ### Hotfix Process
 
 1. Create branch from `main`:
+
    ```bash
    git checkout -b fix/critical-bug
    ```
 
 2. Make fix with conventional commit:
+
    ```bash
    git commit -m "fix: critical security issue"
    ```
@@ -171,6 +177,7 @@ docker compose ps
 ### Release PR Not Created
 
 1. Check commits follow conventional format:
+
    ```bash
    git log --oneline main~5..main
    ```
@@ -197,6 +204,7 @@ docker compose ps
 If manifest and package.json versions diverge:
 
 1. Manually sync `.release-please-manifest.json`:
+
    ```json
    {
      "frontend": "1.2.0",
@@ -212,21 +220,22 @@ If manifest and package.json versions diverge:
 ### Pre-release Validation Failed
 
 The manual release workflow validates version format. Ensure you use:
+
 - Format: `X.Y.Z-(alpha|beta|rc).N`
 - Valid examples: `1.2.0-alpha.1`, `2.0.0-beta.3`, `1.0.0-rc.1`
 - Invalid: `1.2.0-alpha`, `1.2.0.alpha.1`, `1.2-alpha.1`
 
 ## Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `release-please-config.json` | Release automation config |
-| `.release-please-manifest.json` | Current version tracker |
-| `backend/package.json` | Backend version source |
-| `frontend/package.json` | Frontend version source |
+| File                                   | Purpose                    |
+| -------------------------------------- | -------------------------- |
+| `release-please-config.json`           | Release automation config  |
+| `.release-please-manifest.json`        | Current version tracker    |
+| `backend/package.json`                 | Backend version source     |
+| `frontend/package.json`                | Frontend version source    |
 | `.github/workflows/release-please.yml` | Automatic release workflow |
-| `.github/workflows/docker.yml` | Docker build workflow |
-| `.github/workflows/manual-release.yml` | Pre-release workflow |
+| `.github/workflows/docker.yml`         | Docker build workflow      |
+| `.github/workflows/manual-release.yml` | Pre-release workflow       |
 
 ## Additional Resources
 

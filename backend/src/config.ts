@@ -1,18 +1,20 @@
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === "production";
 
 export const config = {
   port: Number(process.env.PORT) || 3000,
 
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard',
+    url:
+      process.env.DATABASE_URL ||
+      "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard",
   },
 
   redis: {
-    url: process.env.REDIS_URL || 'redis://localhost:6380',
+    url: process.env.REDIS_URL || "redis://localhost:6380",
   },
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production',
+    secret: process.env.JWT_SECRET || "dev-jwt-secret-change-in-production",
   },
 
   rawg: {
@@ -21,13 +23,11 @@ export const config = {
 
   cors: {
     origin: process.env.ORIGIN,
-    allowedOrigins: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      process.env.ORIGIN,
-    ].filter(Boolean) as string[],
+    allowedOrigins: ["http://localhost:5173", "http://localhost:3000", process.env.ORIGIN].filter(
+      Boolean
+    ) as string[],
   },
 
   isProduction,
-  skipRedisConnect: process.env.SKIP_REDIS_CONNECT === '1',
-}
+  skipRedisConnect: process.env.SKIP_REDIS_CONNECT === "1",
+};

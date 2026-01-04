@@ -14,6 +14,7 @@ Production docker-compose files use pinned versions that are auto-updated on eac
 - Frontend: `1.1.0` <!-- x-release-please-version -->
 
 Images are pulled from GitHub Container Registry:
+
 ```bash
 ghcr.io/dalssaso/mymemorycard/backend:1.1.0
 ghcr.io/dalssaso/mymemorycard/frontend:1.1.0
@@ -155,7 +156,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Timeout settings for long-running requests
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -188,6 +189,7 @@ sudo certbot --nginx -d games.yourdomain.com
 ```
 
 Follow the prompts to:
+
 - Enter your email address
 - Agree to Terms of Service
 - Choose whether to redirect HTTP to HTTPS (recommended: yes)
@@ -240,6 +242,7 @@ docker compose up -d
 The `deploy/docker-compose.yml` file uses pre-built images from GitHub Container Registry with pinned versions. See [`deploy/README.md`](../deploy/README.md) for full configuration options.
 
 Key features of the production configuration:
+
 - Pre-built multi-platform images (amd64/arm64)
 - Health checks for all services
 - Network isolation (internal network for databases)
@@ -407,9 +410,9 @@ http {
     gzip_vary on;
     gzip_proxied any;
     gzip_comp_level 6;
-    gzip_types text/plain text/css text/xml text/javascript 
-               application/json application/javascript application/xml+rss 
-               application/rss+xml font/truetype font/opentype 
+    gzip_types text/plain text/css text/xml text/javascript
+               application/json application/javascript application/xml+rss
+               application/rss+xml font/truetype font/opentype
                application/vnd.ms-fontobject image/svg+xml;
 
     # Connection limits
@@ -503,6 +506,7 @@ sudo docker-compose restart backend
 ## Security Best Practices
 
 1. **Keep System Updated**
+
    ```bash
    sudo apt update && sudo apt upgrade -y
    ```

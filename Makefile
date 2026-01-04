@@ -1,7 +1,7 @@
 # MyMemoryCard Makefile
 # Run `make help` to see available commands
 
-.PHONY: help dev stop clean test test-unit test-integration test-coverage typecheck format install db-shell logs
+.PHONY: help dev stop clean test test-unit test-integration test-coverage typecheck format format-check format-backend format-check-backend format-frontend format-check-frontend install db-shell logs
 
 # Default target
 help:
@@ -25,6 +25,10 @@ help:
 	@echo "  make typecheck        Run TypeScript type checking"
 	@echo "  make format           Format all code with Prettier"
 	@echo "  make format-check     Check formatting without changes"
+	@echo "  make format-backend   Format backend code only"
+	@echo "  make format-frontend  Format frontend code only"
+	@echo "  make format-check-backend   Check backend formatting only"
+	@echo "  make format-check-frontend  Check frontend formatting only"
 	@echo ""
 	@echo "Database (Drizzle ORM):"
 	@echo "  make db-shell         Open PostgreSQL shell"
@@ -137,6 +141,18 @@ format:
 
 format-check:
 	npm run format:check
+
+format-backend:
+	npm run format:backend
+
+format-check-backend:
+	npm run format:check:backend
+
+format-frontend:
+	npm run format:frontend
+
+format-check-frontend:
+	npm run format:check:frontend
 
 # =============================================================================
 # Database (Drizzle ORM)

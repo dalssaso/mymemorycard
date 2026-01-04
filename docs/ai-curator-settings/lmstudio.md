@@ -3,6 +3,7 @@
 LM Studio is a user-friendly desktop application for running large language models locally with a GUI interface.
 
 **Supported AI Curator Features:**
+
 - ✅ Collection Suggestions
 - ✅ Next Game Recommendations
 - ❌ Cover Image Generation (requires OpenAI provider)
@@ -54,14 +55,17 @@ LM Studio is a user-friendly desktop application for running large language mode
 LM Studio supports any GGUF format models:
 
 ### For 8GB RAM
+
 - **Llama 3.2 3B**: Best choice, fast and capable
 - Phi-3 Mini: Very small, good for limited RAM
 
 ### For 16GB RAM
+
 - **Llama 3.1 8B**: More capable, good balance
 - Mistral 7B: Popular alternative
 
 ### For 32GB+ RAM
+
 - Llama 3.1 70B: Very capable (needs GPU)
 - Mixtral 8x7B: Excellent quality
 
@@ -92,24 +96,28 @@ If using MyMemoryCard with Docker:
 ## Troubleshooting
 
 ### Connection refused
+
 - Ensure LM Studio server is running
 - Check the server tab shows "Server running on port 1234"
 - Verify firewall isn't blocking port 1234
 - For Docker: Use `host.docker.internal` instead of `localhost`
 
 ### Model not responding
+
 - Check model is loaded in LM Studio
 - Try stopping and restarting the server
 - Ensure enough RAM is available
 - Check LM Studio logs for errors
 
 ### Slow responses
+
 - Use a smaller/faster model
 - Enable GPU acceleration in LM Studio settings
 - Reduce max tokens in MyMemoryCard settings
 - Close other applications to free RAM
 
 ### Wrong model format
+
 - LM Studio only supports GGUF format models
 - Download models directly from LM Studio's search
 - Or use Hugging Face models compatible with llama.cpp
@@ -117,12 +125,16 @@ If using MyMemoryCard with Docker:
 ## Advanced Configuration
 
 ### Custom Server Port
+
 If port 1234 is in use:
+
 1. Change port in LM Studio server settings
 2. Update Base URL in MyMemoryCard to match
 
 ### Model Parameters
+
 In LM Studio server tab, you can adjust:
+
 - Temperature (0-2)
 - Max tokens
 - Context window
