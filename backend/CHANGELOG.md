@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.2...backend-v1.2.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* google style formatting and linting fixes ([#12](https://github.com/dalssaso/mymemorycard/issues/12)) ([195cb60](https://github.com/dalssaso/mymemorycard/commit/195cb60e473472417af2a2b758e7eacd6186afca))
+
 ## [1.2.2](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.1...backend-v1.2.2) (2026-01-04)
 
 
