@@ -4,5 +4,9 @@
     "cd backend && bunx eslint --fix --config eslint.config.mjs",
     "cd backend && bun run typecheck"
   ],
+  "frontend/**/*.{ts,tsx,js,jsx}": [
+    "prettier --write",
+    "cd frontend && npx eslint --fix --config eslint.config.mjs"
+  ],
   "*.{json,md}": ["prettier --write"]
 }

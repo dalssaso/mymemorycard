@@ -59,6 +59,13 @@ jobs:
         working-directory: ./frontend
         run: npm run typecheck
 
+      - name: ESLint
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Prettier check
+        run: npm run format:check:frontend
+
       - name: Build frontend
         working-directory: ./frontend
         run: npm run build
