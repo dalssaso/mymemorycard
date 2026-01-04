@@ -274,6 +274,18 @@ router.post(
               cover_art_url, background_image_url, metacritic_score,
               esrb_rating, series_name, expected_playtime
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            ON CONFLICT (rawg_id) DO UPDATE SET
+              name = EXCLUDED.name,
+              slug = EXCLUDED.slug,
+              release_date = EXCLUDED.release_date,
+              description = EXCLUDED.description,
+              cover_art_url = EXCLUDED.cover_art_url,
+              background_image_url = EXCLUDED.background_image_url,
+              metacritic_score = EXCLUDED.metacritic_score,
+              esrb_rating = EXCLUDED.esrb_rating,
+              series_name = COALESCE(EXCLUDED.series_name, games.series_name),
+              expected_playtime = EXCLUDED.expected_playtime,
+              updated_at = NOW()
             RETURNING *`,
             [
               rawgGame.id,
@@ -292,15 +304,13 @@ router.post(
           const newGame = result.rows[0];
 
           for (const genre of rawgGame.genres) {
-            let genreRecord = await client.query("SELECT id FROM genres WHERE rawg_id = $1", [
-              genre.id,
-            ]);
-            if (genreRecord.rows.length === 0) {
-              genreRecord = await client.query(
-                "INSERT INTO genres (rawg_id, name) VALUES ($1, $2) RETURNING id",
-                [genre.id, genre.name]
-              );
-            }
+            const genreRecord = await client.query(
+              `INSERT INTO genres (rawg_id, name)
+               VALUES ($1, $2)
+               ON CONFLICT (rawg_id) DO UPDATE SET name = EXCLUDED.name
+               RETURNING id`,
+              [genre.id, genre.name]
+            );
             await client.query(
               "INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
               [newGame.id, genreRecord.rows[0].id]
