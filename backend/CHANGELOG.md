@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.1...backend-v1.2.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* problematic healthcheck and security code validation ([#10](https://github.com/dalssaso/mymemorycard/issues/10)) ([aae3d70](https://github.com/dalssaso/mymemorycard/commit/aae3d70c607cb80f6fbac5c82d703600e00555ee))
+
 ## [1.2.1](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.0...backend-v1.2.1) (2026-01-03)
 
 
