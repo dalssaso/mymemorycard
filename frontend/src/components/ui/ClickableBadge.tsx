@@ -1,3 +1,5 @@
+import { Button } from "./button";
+
 interface ClickableBadgeProps {
   label: string;
   percentage: number;
@@ -21,11 +23,12 @@ export function ClickableBadge({
   };
 
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 ${className}`}
+      variant="ghost"
+      className={`h-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 ${className}`}
       style={{
         backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
         borderWidth: "1px",
@@ -37,6 +40,6 @@ export function ClickableBadge({
     >
       <span className="font-semibold">{label}:</span>
       <span>{percentage}%</span>
-    </button>
+    </Button>
   );
 }
