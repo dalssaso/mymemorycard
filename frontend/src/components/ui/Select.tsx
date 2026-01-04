@@ -1,46 +1,46 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from "react";
 
 export interface SelectOption<T = string> {
-  value: T
-  label: string
-  colorVar?: string
-  textClass?: string
-  surfaceStrength?: number
-  borderStrength?: number
-  metadata?: React.ReactNode
-  disabled?: boolean
+  value: T;
+  label: string;
+  colorVar?: string;
+  textClass?: string;
+  surfaceStrength?: number;
+  borderStrength?: number;
+  metadata?: React.ReactNode;
+  disabled?: boolean;
 }
 
 interface SelectProps<T = string> {
-  id: string
-  value: T
-  options: SelectOption<T>[]
-  onChange: (value: T) => void
-  placeholder?: string
-  disabled?: boolean
-  className?: string
-  showCheckmark?: boolean
-  surfaceStyle?: 'default' | 'status'
-  'aria-label'?: string
-  'aria-describedby'?: string
+  id: string;
+  value: T;
+  options: SelectOption<T>[];
+  onChange: (value: T) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  showCheckmark?: boolean;
+  surfaceStyle?: "default" | "status";
+  "aria-label"?: string;
+  "aria-describedby"?: string;
 }
 
 const getOptionSurfaceStyle = <T extends string | number = string>(
   option: SelectOption<T>,
-  surfaceStyle: 'default' | 'status'
+  surfaceStyle: "default" | "status"
 ): React.CSSProperties | undefined => {
-  if (surfaceStyle !== 'status' || !option.colorVar) {
-    return undefined
+  if (surfaceStyle !== "status" || !option.colorVar) {
+    return undefined;
   }
 
-  const surfaceStrength = option.surfaceStrength ?? 35
-  const borderStrength = option.borderStrength ?? 55
+  const surfaceStrength = option.surfaceStrength ?? 35;
+  const borderStrength = option.borderStrength ?? 55;
 
   return {
     backgroundColor: `color-mix(in srgb, var(${option.colorVar}) ${surfaceStrength}%, transparent)`,
     borderColor: `color-mix(in srgb, var(${option.colorVar}) ${borderStrength}%, transparent)`,
-  }
-}
+  };
+};
 
 export function Select<T extends string | number = string>({
   id,
@@ -49,50 +49,50 @@ export function Select<T extends string | number = string>({
   onChange,
   placeholder,
   disabled = false,
-  className = '',
+  className = "",
   showCheckmark = true,
-  surfaceStyle = 'default',
-  'aria-label': ariaLabel,
-  'aria-describedby': ariaDescribedBy,
+  surfaceStyle = "default",
+  "aria-label": ariaLabel,
+  "aria-describedby": ariaDescribedBy,
 }: SelectProps<T>) {
-  const [isOpen, setIsOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement | null>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const selectedOption = options.find((opt) => opt.value === value)
-  const displayLabel = selectedOption?.label || placeholder || 'Select...'
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayLabel = selectedOption?.label || placeholder || "Select...";
 
   useEffect(() => {
     if (!isOpen) {
-      return
+      return;
     }
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!menuRef.current) return
+      if (!menuRef.current) return;
       if (!menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false)
+      if (event.key === "Escape") {
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
 
   const handleSelect = (optionValue: T) => {
-    setIsOpen(false)
+    setIsOpen(false);
     if (optionValue !== value) {
-      onChange(optionValue)
+      onChange(optionValue);
     }
-  }
+  };
 
   return (
     <div className={`relative ${className}`} ref={menuRef}>
@@ -115,13 +115,13 @@ export function Select<T extends string | number = string>({
               style={{ backgroundColor: `var(${selectedOption.colorVar})` }}
             />
           )}
-          <span className={`truncate ${selectedOption?.textClass || ''}`}>{displayLabel}</span>
+          <span className={`truncate ${selectedOption?.textClass || ""}`}>{displayLabel}</span>
           {selectedOption?.metadata && (
             <span className="ml-auto flex-shrink-0">{selectedOption.metadata}</span>
           )}
         </span>
         <svg
-          className={`h-4 w-4 text-ctp-subtext0 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 text-ctp-subtext0 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -145,8 +145,8 @@ export function Select<T extends string | number = string>({
           >
             <div className="grid gap-2">
               {options.map((option) => {
-                const isSelected = option.value === value
-                const isDisabled = option.disabled || false
+                const isSelected = option.value === value;
+                const isDisabled = option.disabled || false;
 
                 return (
                   <button
@@ -158,10 +158,10 @@ export function Select<T extends string | number = string>({
                     onClick={() => !isDisabled && handleSelect(option.value)}
                     disabled={isDisabled}
                     className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed min-w-0 ${
-                      isSelected ? 'ring-1 ring-ctp-mauve' : ''
-                    } ${surfaceStyle === 'default' ? 'border-ctp-surface1 bg-ctp-surface0 hover:bg-ctp-surface1' : ''}`}
+                      isSelected ? "ring-1 ring-ctp-mauve" : ""
+                    } ${surfaceStyle === "default" ? "border-ctp-surface1 bg-ctp-surface0 hover:bg-ctp-surface1" : ""}`}
                     style={
-                      surfaceStyle === 'status'
+                      surfaceStyle === "status"
                         ? getOptionSurfaceStyle(option, surfaceStyle)
                         : undefined
                     }
@@ -173,7 +173,7 @@ export function Select<T extends string | number = string>({
                           style={{ backgroundColor: `var(${option.colorVar})` }}
                         />
                       )}
-                      <span className={`truncate ${option.textClass || ''}`}>{option.label}</span>
+                      <span className={`truncate ${option.textClass || ""}`}>{option.label}</span>
                       {option.metadata && (
                         <span className="flex-shrink-0 ml-1">{option.metadata}</span>
                       )}
@@ -194,12 +194,12 @@ export function Select<T extends string | number = string>({
                       </svg>
                     )}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
         </>
       )}
     </div>
-  )
+  );
 }

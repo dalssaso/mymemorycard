@@ -1,61 +1,61 @@
-import { useRef, useState } from 'react'
-import type { PointerEvent } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Checkbox, Input, ScrollFade } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { completionLogsAPI, gamesAPI } from '@/lib/api'
+import { useRef, useState } from "react";
+import type { PointerEvent } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button, Checkbox, Input, ScrollFade } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { completionLogsAPI, gamesAPI } from "@/lib/api";
 
 interface Achievement {
-  achievement_id: string
-  source: 'rawg' | 'manual'
-  name: string
-  description: string | null
-  image_url: string | null
-  rarity_percent: number | null
-  completed: boolean
-  completed_at: string | null
-  can_delete: boolean
+  achievement_id: string;
+  source: "rawg" | "manual";
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  rarity_percent: number | null;
+  completed: boolean;
+  completed_at: string | null;
+  can_delete: boolean;
 }
 
 interface GameAchievementsProps {
-  gameId: string
-  platformId: string
+  gameId: string;
+  platformId: string;
 }
 
 export function GameAchievements({ gameId, platformId }: GameAchievementsProps) {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const manualSwipeStartXRef = useRef(0)
-  const manualSwipeStartYRef = useRef(0)
-  const manualSwipeStartOffsetRef = useRef(0)
-  const manualSwipeInProgressRef = useRef(false)
-  const [filter, setFilter] = useState<'all' | 'completed' | 'incomplete'>('all')
-  const [manualName, setManualName] = useState('')
-  const [manualDescription, setManualDescription] = useState('')
-  const [selectedManualIds, setSelectedManualIds] = useState<string[]>([])
-  const [activeManualSwipeId, setActiveManualSwipeId] = useState<string | null>(null)
-  const [activeManualSwipeOffset, setActiveManualSwipeOffset] = useState(0)
-  const [swipedManualId, setSwipedManualId] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const manualSwipeStartXRef = useRef(0);
+  const manualSwipeStartYRef = useRef(0);
+  const manualSwipeStartOffsetRef = useRef(0);
+  const manualSwipeInProgressRef = useRef(false);
+  const [filter, setFilter] = useState<"all" | "completed" | "incomplete">("all");
+  const [manualName, setManualName] = useState("");
+  const [manualDescription, setManualDescription] = useState("");
+  const [selectedManualIds, setSelectedManualIds] = useState<string[]>([]);
+  const [activeManualSwipeId, setActiveManualSwipeId] = useState<string | null>(null);
+  const [activeManualSwipeOffset, setActiveManualSwipeOffset] = useState(0);
+  const [swipedManualId, setSwipedManualId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['achievements', gameId, platformId],
+    queryKey: ["achievements", gameId, platformId],
     queryFn: async () => {
-      const response = await gamesAPI.getAchievements(gameId, platformId)
-      return response.data as { achievements: Achievement[]; message?: string }
+      const response = await gamesAPI.getAchievements(gameId, platformId);
+      return response.data as { achievements: Achievement[]; message?: string };
     },
-  })
+  });
 
   const toggleMutation = useMutation({
     mutationFn: ({ achievementId, completed }: { achievementId: string; completed: boolean }) =>
       gamesAPI.updateAchievement(gameId, platformId, achievementId, completed),
     onMutate: async ({ achievementId, completed }) => {
-      await queryClient.cancelQueries({ queryKey: ['achievements', gameId, platformId] })
-      const previousData = queryClient.getQueryData(['achievements', gameId, platformId])
+      await queryClient.cancelQueries({ queryKey: ["achievements", gameId, platformId] });
+      const previousData = queryClient.getQueryData(["achievements", gameId, platformId]);
 
       queryClient.setQueryData(
-        ['achievements', gameId, platformId],
+        ["achievements", gameId, platformId],
         (old: { achievements: Achievement[] } | undefined) => {
-          if (!old) return old
+          if (!old) return old;
           return {
             ...old,
             achievements: old.achievements.map((ach) =>
@@ -67,184 +67,185 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   }
                 : ach
             ),
-          }
+          };
         }
-      )
+      );
 
-      return { previousData }
+      return { previousData };
     },
     onError: (_err, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(['achievements', gameId, platformId], context.previousData)
+        queryClient.setQueryData(["achievements", gameId, platformId], context.previousData);
       }
-      showToast('Failed to update achievement', 'error')
+      showToast("Failed to update achievement", "error");
     },
     onSuccess: async () => {
       try {
-        await completionLogsAPI.recalculate(gameId, platformId)
-        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-        queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-        queryClient.invalidateQueries({ queryKey: ['games'] })
-        queryClient.invalidateQueries({ queryKey: ['activityFeed'] })
-        queryClient.invalidateQueries({ queryKey: ['achievementStats'] })
+        await completionLogsAPI.recalculate(gameId, platformId);
+        queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] });
+        queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+        queryClient.invalidateQueries({ queryKey: ["games"] });
+        queryClient.invalidateQueries({ queryKey: ["activityFeed"] });
+        queryClient.invalidateQueries({ queryKey: ["achievementStats"] });
       } catch (error) {
-        console.error('Failed to recalculate progress after achievement update:', error)
+        console.error("Failed to recalculate progress after achievement update:", error);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['achievements', gameId, platformId] })
+      queryClient.invalidateQueries({ queryKey: ["achievements", gameId, platformId] });
     },
-  })
+  });
 
   const createManualAchievementMutation = useMutation({
     mutationFn: (data: { name: string; description?: string }) =>
       gamesAPI.createManualAchievement(gameId, platformId, data),
     onSuccess: async () => {
-      setManualName('')
-      setManualDescription('')
-      setSelectedManualIds([])
+      setManualName("");
+      setManualDescription("");
+      setSelectedManualIds([]);
       try {
-        await completionLogsAPI.recalculate(gameId, platformId)
-        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-        queryClient.invalidateQueries({ queryKey: ['achievementStats'] })
+        await completionLogsAPI.recalculate(gameId, platformId);
+        queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] });
+        queryClient.invalidateQueries({ queryKey: ["achievementStats"] });
       } catch (error) {
-        console.error('Failed to recalculate progress after achievement creation:', error)
+        console.error("Failed to recalculate progress after achievement creation:", error);
       }
-      queryClient.invalidateQueries({ queryKey: ['achievements', gameId, platformId] })
-      showToast('Achievement added', 'success')
+      queryClient.invalidateQueries({ queryKey: ["achievements", gameId, platformId] });
+      showToast("Achievement added", "success");
     },
     onError: () => {
-      showToast('Failed to add achievement', 'error')
+      showToast("Failed to add achievement", "error");
     },
-  })
+  });
 
   const bulkDeleteManualMutation = useMutation({
     mutationFn: (achievementIds: string[]) =>
       gamesAPI.deleteManualAchievements(gameId, platformId, achievementIds),
     onSuccess: async () => {
-      setSelectedManualIds([])
+      setSelectedManualIds([]);
       try {
-        await completionLogsAPI.recalculate(gameId, platformId)
-        queryClient.invalidateQueries({ queryKey: ['completionLogs', gameId] })
-        queryClient.invalidateQueries({ queryKey: ['achievementStats'] })
+        await completionLogsAPI.recalculate(gameId, platformId);
+        queryClient.invalidateQueries({ queryKey: ["completionLogs", gameId] });
+        queryClient.invalidateQueries({ queryKey: ["achievementStats"] });
       } catch (error) {
-        console.error('Failed to recalculate progress after achievement delete:', error)
+        console.error("Failed to recalculate progress after achievement delete:", error);
       }
-      queryClient.invalidateQueries({ queryKey: ['achievements', gameId, platformId] })
-      showToast('Manual achievements deleted', 'success')
+      queryClient.invalidateQueries({ queryKey: ["achievements", gameId, platformId] });
+      showToast("Manual achievements deleted", "success");
     },
     onError: () => {
-      showToast('Failed to delete achievements', 'error')
+      showToast("Failed to delete achievements", "error");
     },
-  })
+  });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-ctp-subtext0">Loading achievements...</div>
       </div>
-    )
+    );
   }
 
   if (error) {
-    return <div className="text-ctp-red py-4">Failed to load achievements</div>
+    return <div className="text-ctp-red py-4">Failed to load achievements</div>;
   }
 
-  const achievements = data?.achievements || []
-  const manualAchievements = achievements.filter((ach) => ach.source === 'manual')
-  const rawgAchievements = achievements.filter((ach) => ach.source === 'rawg')
-  const maxSwipeOffset = 72
+  const achievements = data?.achievements || [];
+  const manualAchievements = achievements.filter((ach) => ach.source === "manual");
+  const rawgAchievements = achievements.filter((ach) => ach.source === "rawg");
+  const maxSwipeOffset = 72;
 
-  const completedCount = achievements.filter((a) => a.completed).length
-  const totalCount = achievements.length
-  const completionPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+  const completedCount = achievements.filter((a) => a.completed).length;
+  const totalCount = achievements.length;
+  const completionPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   const filteredAchievements = achievements.filter((ach) => {
-    if (filter === 'completed') return ach.completed
-    if (filter === 'incomplete') return !ach.completed
-    return true
-  })
-  const filteredManualAchievements = filteredAchievements.filter((ach) => ach.source === 'manual')
-  const filteredRawgAchievements = filteredAchievements.filter((ach) => ach.source === 'rawg')
+    if (filter === "completed") return ach.completed;
+    if (filter === "incomplete") return !ach.completed;
+    return true;
+  });
+  const filteredManualAchievements = filteredAchievements.filter((ach) => ach.source === "manual");
+  const filteredRawgAchievements = filteredAchievements.filter((ach) => ach.source === "rawg");
 
   const manualEmptyMessage =
     manualAchievements.length === 0
-      ? 'No user added achievements yet'
-      : 'No user added achievements match this filter'
+      ? "No user added achievements yet"
+      : "No user added achievements match this filter";
   const rawgEmptyMessage =
     rawgAchievements.length === 0
-      ? data?.message || 'No game achievements available for this game'
-      : 'No game achievements match this filter'
+      ? data?.message || "No game achievements available for this game"
+      : "No game achievements match this filter";
 
   const toggleManualSelection = (achievementId: string) => {
     setSelectedManualIds((prev) =>
       prev.includes(achievementId)
         ? prev.filter((id) => id !== achievementId)
         : [...prev, achievementId]
-    )
-  }
+    );
+  };
 
-  const canCreateManual = manualName.trim().length > 0 && !createManualAchievementMutation.isPending
-  const canBulkDelete = selectedManualIds.length > 0 && !bulkDeleteManualMutation.isPending
+  const canCreateManual =
+    manualName.trim().length > 0 && !createManualAchievementMutation.isPending;
+  const canBulkDelete = selectedManualIds.length > 0 && !bulkDeleteManualMutation.isPending;
 
   const handleManualPointerDown =
     (achievementId: string) => (event: PointerEvent<HTMLDivElement>) => {
-      if (event.pointerType === 'mouse' && event.button !== 0) return
-      manualSwipeStartXRef.current = event.clientX
-      manualSwipeStartYRef.current = event.clientY
-      manualSwipeStartOffsetRef.current = swipedManualId === achievementId ? -maxSwipeOffset : 0
-      manualSwipeInProgressRef.current = false
-      setActiveManualSwipeId(achievementId)
-      setActiveManualSwipeOffset(manualSwipeStartOffsetRef.current)
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      manualSwipeStartXRef.current = event.clientX;
+      manualSwipeStartYRef.current = event.clientY;
+      manualSwipeStartOffsetRef.current = swipedManualId === achievementId ? -maxSwipeOffset : 0;
+      manualSwipeInProgressRef.current = false;
+      setActiveManualSwipeId(achievementId);
+      setActiveManualSwipeOffset(manualSwipeStartOffsetRef.current);
       if (swipedManualId && swipedManualId !== achievementId) {
-        setSwipedManualId(null)
+        setSwipedManualId(null);
       }
-      event.currentTarget.setPointerCapture(event.pointerId)
-    }
+      event.currentTarget.setPointerCapture(event.pointerId);
+    };
 
   const handleManualPointerMove =
     (achievementId: string) => (event: PointerEvent<HTMLDivElement>) => {
-      if (activeManualSwipeId !== achievementId) return
-      const currentX = event.clientX
-      const currentY = event.clientY
-      const deltaX = currentX - manualSwipeStartXRef.current
-      const deltaY = currentY - manualSwipeStartYRef.current
-      if (Math.abs(deltaX) < 4 && Math.abs(deltaY) < 4) return
-      if (Math.abs(deltaX) < Math.abs(deltaY)) return
+      if (activeManualSwipeId !== achievementId) return;
+      const currentX = event.clientX;
+      const currentY = event.clientY;
+      const deltaX = currentX - manualSwipeStartXRef.current;
+      const deltaY = currentY - manualSwipeStartYRef.current;
+      if (Math.abs(deltaX) < 4 && Math.abs(deltaY) < 4) return;
+      if (Math.abs(deltaX) < Math.abs(deltaY)) return;
 
       const nextOffset = Math.max(
         -maxSwipeOffset,
         Math.min(0, manualSwipeStartOffsetRef.current + deltaX)
-      )
-      setActiveManualSwipeOffset(nextOffset)
-      manualSwipeInProgressRef.current = true
-    }
+      );
+      setActiveManualSwipeOffset(nextOffset);
+      manualSwipeInProgressRef.current = true;
+    };
 
   const handleManualPointerEnd =
     (achievementId: string) => (event: PointerEvent<HTMLDivElement>) => {
-      if (activeManualSwipeId !== achievementId) return
-      const shouldOpen = activeManualSwipeOffset <= -maxSwipeOffset / 2
-      setSwipedManualId(shouldOpen ? achievementId : null)
-      setActiveManualSwipeId(null)
-      setActiveManualSwipeOffset(0)
-      manualSwipeInProgressRef.current = false
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
+      if (activeManualSwipeId !== achievementId) return;
+      const shouldOpen = activeManualSwipeOffset <= -maxSwipeOffset / 2;
+      setSwipedManualId(shouldOpen ? achievementId : null);
+      setActiveManualSwipeId(null);
+      setActiveManualSwipeOffset(0);
+      manualSwipeInProgressRef.current = false;
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    };
 
   const handleManualAchievementClick = (achievement: Achievement) => {
     if (manualSwipeInProgressRef.current) {
-      manualSwipeInProgressRef.current = false
-      return
+      manualSwipeInProgressRef.current = false;
+      return;
     }
     if (swipedManualId === achievement.achievement_id) {
-      setSwipedManualId(null)
-      return
+      setSwipedManualId(null);
+      return;
     }
     toggleMutation.mutate({
       achievementId: achievement.achievement_id,
       completed: !achievement.completed,
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -267,19 +268,19 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
       </div>
 
       <div className="flex gap-2">
-        {(['all', 'incomplete', 'completed'] as const).map((f) => (
+        {(["all", "incomplete", "completed"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded-lg text-sm transition-all ${
               filter === f
-                ? 'bg-ctp-mauve text-ctp-base'
-                : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1'
+                ? "bg-ctp-mauve text-ctp-base"
+                : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1"
             }`}
           >
-            {f === 'all'
+            {f === "all"
               ? `All (${totalCount})`
-              : f === 'completed'
+              : f === "completed"
                 ? `Completed (${completedCount})`
                 : `Incomplete (${totalCount - completedCount})`}
           </button>
@@ -297,7 +298,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
           {manualAchievements.length > 0 && (
             <div className="text-xs text-ctp-subtext0">
               {manualAchievements.length} user added achievement
-              {manualAchievements.length === 1 ? '' : 's'}
+              {manualAchievements.length === 1 ? "" : "s"}
             </div>
           )}
         </div>
@@ -362,15 +363,15 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
         ) : (
           <div className="mt-3 space-y-2">
             {filteredManualAchievements.map((ach) => {
-              const isSwiped = swipedManualId === ach.achievement_id
-              const isDragging = activeManualSwipeId === ach.achievement_id
+              const isSwiped = swipedManualId === ach.achievement_id;
+              const isDragging = activeManualSwipeId === ach.achievement_id;
               const translateX = isDragging
                 ? activeManualSwipeOffset
                 : isSwiped
                   ? -maxSwipeOffset
-                  : 0
+                  : 0;
 
-              const showSwipeAction = isSwiped || isDragging
+              const showSwipeAction = isSwiped || isDragging;
 
               return (
                 <div
@@ -379,14 +380,14 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                 >
                   <div
                     className={`absolute inset-y-0 right-0 w-[72px] bg-ctp-red md:hidden flex items-center justify-center transition-opacity ${
-                      showSwipeAction ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      showSwipeAction ? "opacity-100" : "opacity-0 pointer-events-none"
                     }`}
                   >
                     <button
                       onClick={(event) => {
-                        event.stopPropagation()
-                        bulkDeleteManualMutation.mutate([ach.achievement_id])
-                        setSwipedManualId(null)
+                        event.stopPropagation();
+                        bulkDeleteManualMutation.mutate([ach.achievement_id]);
+                        setSwipedManualId(null);
                       }}
                       disabled={bulkDeleteManualMutation.isPending}
                       className="text-ctp-base text-sm font-semibold disabled:opacity-60"
@@ -398,15 +399,15 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   <div
                     className={`flex items-center gap-3 w-full p-3 rounded-lg transition-transform cursor-pointer touch-pan-y ${
                       ach.completed
-                        ? 'bg-ctp-green/10 border border-ctp-green/30'
-                        : 'bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2'
-                    } ${isDragging ? '' : 'duration-200 ease-out'}`}
+                        ? "bg-ctp-green/10 border border-ctp-green/30"
+                        : "bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2"
+                    } ${isDragging ? "" : "duration-200 ease-out"}`}
                     style={{ transform: `translateX(${translateX}px)` }}
                     onClick={() => handleManualAchievementClick(ach)}
                     onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        handleManualAchievementClick(ach)
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleManualAchievementClick(ach);
                       }
                     }}
                     onPointerDown={handleManualPointerDown(ach.achievement_id)}
@@ -425,7 +426,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
 
                     <div
                       className={`w-12 h-12 rounded bg-ctp-yellow/20 text-ctp-yellow flex items-center justify-center ${
-                        ach.completed ? '' : 'opacity-60'
+                        ach.completed ? "" : "opacity-60"
                       }`}
                     >
                       <svg
@@ -447,7 +448,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     <div className="flex-1 min-w-0">
                       <div
                         className={`font-medium truncate ${
-                          ach.completed ? 'text-ctp-green' : 'text-ctp-text'
+                          ach.completed ? "text-ctp-green" : "text-ctp-text"
                         }`}
                       >
                         {ach.name}
@@ -465,8 +466,8 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     <div
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                         ach.completed
-                          ? 'bg-ctp-green border-ctp-green text-ctp-base'
-                          : 'border-ctp-surface2 text-transparent hover:border-ctp-overlay1'
+                          ? "bg-ctp-green border-ctp-green text-ctp-base"
+                          : "border-ctp-surface2 text-transparent hover:border-ctp-overlay1"
                       }`}
                     >
                       <svg
@@ -485,7 +486,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
@@ -496,7 +497,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
           <div className="text-sm font-semibold text-ctp-text">Game Achievements</div>
           {rawgAchievements.length > 0 && (
             <div className="text-xs text-ctp-subtext0">
-              {rawgAchievements.length} game achievement{rawgAchievements.length === 1 ? '' : 's'}
+              {rawgAchievements.length} game achievement{rawgAchievements.length === 1 ? "" : "s"}
             </div>
           )}
         </div>
@@ -510,8 +511,8 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                 type="button"
                 className={`flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer ${
                   ach.completed
-                    ? 'bg-ctp-green/10 border border-ctp-green/30'
-                    : 'bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2'
+                    ? "bg-ctp-green/10 border border-ctp-green/30"
+                    : "bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2"
                 }`}
                 onClick={() =>
                   toggleMutation.mutate({
@@ -524,12 +525,12 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   <img
                     src={ach.image_url}
                     alt=""
-                    className={`w-12 h-12 rounded ${ach.completed ? '' : 'opacity-50 grayscale'}`}
+                    className={`w-12 h-12 rounded ${ach.completed ? "" : "opacity-50 grayscale"}`}
                   />
                 ) : (
                   <div
                     className={`w-12 h-12 rounded bg-ctp-surface1 flex items-center justify-center ${
-                      ach.completed ? '' : 'opacity-50'
+                      ach.completed ? "" : "opacity-50"
                     }`}
                   >
                     <span className="text-ctp-overlay1 text-xl">?</span>
@@ -538,7 +539,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
 
                 <div className="flex-1 min-w-0">
                   <div
-                    className={`font-medium truncate ${ach.completed ? 'text-ctp-green' : 'text-ctp-text'}`}
+                    className={`font-medium truncate ${ach.completed ? "text-ctp-green" : "text-ctp-text"}`}
                   >
                     {ach.name}
                   </div>
@@ -550,10 +551,10 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       <span
                         className={`text-xs px-2 py-0.5 rounded ${
                           ach.rarity_percent < 10
-                            ? 'bg-ctp-yellow/20 text-ctp-yellow'
+                            ? "bg-ctp-yellow/20 text-ctp-yellow"
                             : ach.rarity_percent < 25
-                              ? 'bg-ctp-mauve/20 text-ctp-mauve'
-                              : 'bg-ctp-surface1 text-ctp-subtext0'
+                              ? "bg-ctp-mauve/20 text-ctp-mauve"
+                              : "bg-ctp-surface1 text-ctp-subtext0"
                         }`}
                       >
                         {ach.rarity_percent.toFixed(1)}% of players
@@ -570,8 +571,8 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                 <div
                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                     ach.completed
-                      ? 'bg-ctp-green border-ctp-green text-ctp-base'
-                      : 'border-ctp-surface2 text-transparent hover:border-ctp-overlay1'
+                      ? "bg-ctp-green border-ctp-green text-ctp-base"
+                      : "border-ctp-surface2 text-transparent hover:border-ctp-overlay1"
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,5 +590,5 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
         )}
       </div>
     </div>
-  )
+  );
 }

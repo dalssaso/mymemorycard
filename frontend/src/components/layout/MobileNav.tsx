@@ -1,21 +1,21 @@
-import { Link, useRouterState } from '@tanstack/react-router'
-import { useAuth } from '@/contexts/AuthContext'
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function MobileNav() {
-  const { user } = useAuth()
-  const locationHref = useRouterState({ select: (state) => state.location.href })
+  const { user } = useAuth();
+  const locationHref = useRouterState({ select: (state) => state.location.href });
 
   const getNavLinkClass = (isActive: boolean) =>
     `flex flex-col items-center justify-center rounded-lg transition-colors ${
       isActive
-        ? 'text-ctp-mauve bg-ctp-mauve/10'
-        : 'text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0'
-    }`
+        ? "text-ctp-mauve bg-ctp-mauve/10"
+        : "text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0"
+    }`;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-ctp-mantle border-t border-ctp-surface0 z-50">
       <div className="h-full grid grid-cols-7 gap-1">
-        <Link to="/dashboard" className={getNavLinkClass(locationHref.includes('/dashboard'))}>
+        <Link to="/dashboard" className={getNavLinkClass(locationHref.includes("/dashboard"))}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -27,7 +27,7 @@ export function MobileNav() {
           <span className="text-xs mt-1">Home</span>
         </Link>
 
-        <Link to="/library" className={getNavLinkClass(locationHref.includes('/library'))}>
+        <Link to="/library" className={getNavLinkClass(locationHref.includes("/library"))}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -39,7 +39,7 @@ export function MobileNav() {
           <span className="text-xs mt-1">Library</span>
         </Link>
 
-        <Link to="/collections" className={getNavLinkClass(locationHref.includes('/collections'))}>
+        <Link to="/collections" className={getNavLinkClass(locationHref.includes("/collections"))}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -51,7 +51,7 @@ export function MobileNav() {
           <span className="text-xs mt-1">Collections</span>
         </Link>
 
-        <Link to="/franchises" className={getNavLinkClass(locationHref.includes('/franchises'))}>
+        <Link to="/franchises" className={getNavLinkClass(locationHref.includes("/franchises"))}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -63,14 +63,14 @@ export function MobileNav() {
           <span className="text-xs mt-1">Franchises</span>
         </Link>
 
-        <Link to="/import" className={getNavLinkClass(locationHref.includes('/import'))}>
+        <Link to="/import" className={getNavLinkClass(locationHref.includes("/import"))}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           <span className="text-xs mt-1">Import</span>
         </Link>
 
-        <Link to="/ai-curator" className={getNavLinkClass(locationHref.includes('/ai-curator'))}>
+        <Link to="/ai-curator" className={getNavLinkClass(locationHref.includes("/ai-curator"))}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -85,12 +85,12 @@ export function MobileNav() {
         <div className="flex flex-col items-center justify-center text-ctp-subtext0">
           <div className="w-6 h-6 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">
             <span className="text-ctp-text font-medium text-xs">
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
+              {user?.username?.charAt(0).toUpperCase() || "U"}
             </span>
           </div>
           <span className="text-xs mt-1">Profile</span>
         </div>
       </div>
     </nav>
-  )
+  );
 }

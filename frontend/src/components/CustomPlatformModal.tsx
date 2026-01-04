@@ -1,27 +1,27 @@
-import { useEffect, useState } from 'react'
-import { ScrollFade } from '@/components/ui'
-import { PlatformIconBadge } from './PlatformIcon'
-import { PlatformTypeIcon } from './PlatformTypeIcon'
+import { useEffect, useState } from "react";
+import { ScrollFade } from "@/components/ui";
+import { PlatformIconBadge } from "./PlatformIcon";
+import { PlatformTypeIcon } from "./PlatformTypeIcon";
 
 interface CustomPlatformModalProps {
-  isOpen: boolean
-  isSubmitting?: boolean
-  onClose: () => void
+  isOpen: boolean;
+  isSubmitting?: boolean;
+  onClose: () => void;
   onSubmit: (data: {
-    displayName: string
-    platformType: string
-    websiteUrl?: string
-    defaultIconUrl?: string
-    colorPrimary?: string
-  }) => void
+    displayName: string;
+    platformType: string;
+    websiteUrl?: string;
+    defaultIconUrl?: string;
+    colorPrimary?: string;
+  }) => void;
 }
 
-const PLATFORM_TYPES: Array<{ value: 'pc' | 'console' | 'mobile' | 'physical'; label: string }> = [
-  { value: 'pc', label: 'PC' },
-  { value: 'console', label: 'Console' },
-  { value: 'mobile', label: 'Mobile' },
-  { value: 'physical', label: 'Physical' },
-]
+const PLATFORM_TYPES: Array<{ value: "pc" | "console" | "mobile" | "physical"; label: string }> = [
+  { value: "pc", label: "PC" },
+  { value: "console", label: "Console" },
+  { value: "mobile", label: "Mobile" },
+  { value: "physical", label: "Physical" },
+];
 
 export function CustomPlatformModal({
   isOpen,
@@ -29,45 +29,45 @@ export function CustomPlatformModal({
   onClose,
   onSubmit,
 }: CustomPlatformModalProps) {
-  const [displayName, setDisplayName] = useState('')
-  const [platformType, setPlatformType] = useState<'pc' | 'console' | 'mobile' | 'physical' | ''>(
-    ''
-  )
-  const [websiteUrl, setWebsiteUrl] = useState('')
-  const [defaultIconUrl, setDefaultIconUrl] = useState('')
-  const [colorPrimary, setColorPrimary] = useState('#6B7280')
-  const [error, setError] = useState('')
+  const [displayName, setDisplayName] = useState("");
+  const [platformType, setPlatformType] = useState<"pc" | "console" | "mobile" | "physical" | "">(
+    ""
+  );
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [defaultIconUrl, setDefaultIconUrl] = useState("");
+  const [colorPrimary, setColorPrimary] = useState("#6B7280");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      setDisplayName('')
-      setPlatformType('')
-      setWebsiteUrl('')
-      setDefaultIconUrl('')
-      setColorPrimary('#6B7280')
-      setError('')
+      setDisplayName("");
+      setPlatformType("");
+      setWebsiteUrl("");
+      setDefaultIconUrl("");
+      setColorPrimary("#6B7280");
+      setError("");
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleSubmit = () => {
     if (!displayName.trim()) {
-      setError('Display name is required')
-      return
+      setError("Display name is required");
+      return;
     }
 
     if (!platformType) {
-      setError('Platform type is required')
-      return
+      setError("Platform type is required");
+      return;
     }
 
     // Validate SVG URL if provided
     if (defaultIconUrl.trim()) {
-      const url = defaultIconUrl.trim().toLowerCase()
-      if (!url.endsWith('.svg') && !url.startsWith('data:image/svg+xml')) {
-        setError('Icon URL must be an SVG file (ending in .svg or data URI)')
-        return
+      const url = defaultIconUrl.trim().toLowerCase();
+      if (!url.endsWith(".svg") && !url.startsWith("data:image/svg+xml")) {
+        setError("Icon URL must be an SVG file (ending in .svg or data URI)");
+        return;
       }
     }
 
@@ -77,8 +77,8 @@ export function CustomPlatformModal({
       websiteUrl: websiteUrl.trim() || undefined,
       defaultIconUrl: defaultIconUrl.trim() || undefined,
       colorPrimary: colorPrimary || undefined,
-    })
-  }
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -134,8 +134,8 @@ export function CustomPlatformModal({
                   onClick={() => setPlatformType(type.value)}
                   className={`px-3 py-2 rounded-lg text-sm border transition-colors flex items-center gap-2 ${
                     platformType === type.value
-                      ? 'border-ctp-teal bg-ctp-teal/10 text-ctp-teal'
-                      : 'border-ctp-surface1 text-ctp-subtext0 hover:border-gray-500'
+                      ? "border-ctp-teal bg-ctp-teal/10 text-ctp-teal"
+                      : "border-ctp-surface1 text-ctp-subtext0 hover:border-gray-500"
                   }`}
                 >
                   <PlatformTypeIcon type={type.value} size="sm" />
@@ -180,7 +180,7 @@ export function CustomPlatformModal({
               placeholder="https://cdn.simpleicons.org/steam/ffffff"
             />
             <p className="text-xs text-ctp-overlay1 mt-1">
-              Provide an SVG icon URL from{' '}
+              Provide an SVG icon URL from{" "}
               <a
                 href="https://simpleicons.org"
                 target="_blank"
@@ -188,7 +188,7 @@ export function CustomPlatformModal({
                 className="text-ctp-teal hover:text-ctp-mauve"
               >
                 Simple Icons
-              </a>{' '}
+              </a>{" "}
               or leave empty for text badge.
             </p>
           </div>
@@ -230,9 +230,9 @@ export function CustomPlatformModal({
               <div className="flex items-center justify-center py-4">
                 <PlatformIconBadge
                   platform={{
-                    displayName: displayName || 'Platform',
+                    displayName: displayName || "Platform",
                     iconUrl: defaultIconUrl.trim() || null,
-                    colorPrimary: colorPrimary || '#6B7280',
+                    colorPrimary: colorPrimary || "#6B7280",
                   }}
                   size="lg"
                   showLabel={true}
@@ -252,10 +252,10 @@ export function CustomPlatformModal({
             disabled={isSubmitting}
             className="btn btn-primary"
           >
-            {isSubmitting ? 'Saving...' : 'Save Platform'}
+            {isSubmitting ? "Saving..." : "Save Platform"}
           </button>
         </div>
       </ScrollFade>
     </div>
-  )
+  );
 }

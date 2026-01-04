@@ -1,54 +1,54 @@
-import { Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { useAnimatedNumber } from '@/hooks/use-animated-number'
-import { collectionsAPI, franchisesAPI, type FranchiseSummary } from '@/lib/api'
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
+import { collectionsAPI, franchisesAPI, type FranchiseSummary } from "@/lib/api";
 
 interface Collection {
-  id: string
-  name: string
-  game_count: number
+  id: string;
+  name: string;
+  game_count: number;
 }
 
 interface CollectionsSidebarProps {
-  onCreateCollection?: () => void
+  onCreateCollection?: () => void;
 }
 
 export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
-      return response.data as { collections: Collection[] }
+      const response = await collectionsAPI.getAll();
+      return response.data as { collections: Collection[] };
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
   const { data: franchisesData } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
-      return response.data
+      const response = await franchisesAPI.getAll();
+      return response.data;
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
   const collections = useMemo(
     () => collectionsData?.collections ?? [],
     [collectionsData?.collections]
-  )
-  const franchises = useMemo(() => franchisesData?.franchises ?? [], [franchisesData?.franchises])
+  );
+  const franchises = useMemo(() => franchisesData?.franchises ?? [], [franchisesData?.franchises]);
 
   const stats = useMemo(() => {
-    const totalCollections = collections.length
-    const totalFranchises = franchises.length
+    const totalCollections = collections.length;
+    const totalFranchises = franchises.length;
 
-    return { totalCollections, totalFranchises }
-  }, [collections, franchises])
-  const animatedCollections = useAnimatedNumber(stats.totalCollections)
-  const animatedFranchises = useAnimatedNumber(stats.totalFranchises)
+    return { totalCollections, totalFranchises };
+  }, [collections, franchises]);
+  const animatedCollections = useAnimatedNumber(stats.totalCollections);
+  const animatedFranchises = useAnimatedNumber(stats.totalFranchises);
 
   if (isCollapsed) {
     return (
@@ -152,7 +152,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
           </div>
         )}
       </div>
-    )
+    );
   }
 
   return (
@@ -344,7 +344,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                     {collection.name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {collection.game_count} {collection.game_count === 1 ? 'game' : 'games'}
+                    {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -413,7 +413,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                     {franchise.series_name}
                   </p>
                   <p className="text-xs text-ctp-overlay1">
-                    {franchise.game_count} {franchise.game_count === 1 ? 'game' : 'games'}
+                    {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
@@ -430,5 +430,5 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
         </div>
       )}
     </div>
-  )
+  );
 }

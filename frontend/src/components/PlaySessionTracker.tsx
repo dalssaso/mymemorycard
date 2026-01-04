@@ -1,40 +1,40 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ScrollFade } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { sessionsAPI } from '@/lib/api'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ScrollFade } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { sessionsAPI } from "@/lib/api";
 
 interface PlaySession {
-  id: string
-  user_id: string
-  game_id: string
-  platform_id: string
-  started_at: string
-  ended_at: string | null
-  duration_minutes: number | null
-  notes: string | null
-  created_at: string
-  game_name?: string
-  platform_name?: string
+  id: string;
+  user_id: string;
+  game_id: string;
+  platform_id: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_minutes: number | null;
+  notes: string | null;
+  created_at: string;
+  game_name?: string;
+  platform_name?: string;
 }
 
 interface PlaySessionTrackerProps {
-  gameId: string
-  platformId: string
-  onSessionChange?: () => void
+  gameId: string;
+  platformId: string;
+  onSessionChange?: () => void;
 }
 
 function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 }
 
 function formatElapsedTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
 export function PlaySessionTracker({
@@ -42,66 +42,66 @@ export function PlaySessionTracker({
   platformId,
   onSessionChange,
 }: PlaySessionTrackerProps) {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const [isManualMode, setIsManualMode] = useState(false)
-  const [manualDuration, setManualDuration] = useState('')
-  const [manualDate, setManualDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [sessionNotes, setSessionNotes] = useState('')
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [manualDuration, setManualDuration] = useState("");
+  const [manualDate, setManualDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [sessionNotes, setSessionNotes] = useState("");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: sessionsData, isLoading: loadingSessions } = useQuery({
-    queryKey: ['sessions', gameId],
+    queryKey: ["sessions", gameId],
     queryFn: async () => {
-      const response = await sessionsAPI.getAll(gameId, { limit: 10 })
+      const response = await sessionsAPI.getAll(gameId, { limit: 10 });
       return response.data as {
-        sessions: PlaySession[]
-        total: number
-        totalMinutes: number
-      }
+        sessions: PlaySession[];
+        total: number;
+        totalMinutes: number;
+      };
     },
-  })
+  });
 
   const { data: activeSessionData } = useQuery({
-    queryKey: ['activeSession'],
+    queryKey: ["activeSession"],
     queryFn: async () => {
-      const response = await sessionsAPI.getActive()
-      return response.data as { session: PlaySession | null }
+      const response = await sessionsAPI.getActive();
+      return response.data as { session: PlaySession | null };
     },
-  })
+  });
 
-  const activeSession = activeSessionData?.session
-  const isActiveForThisGame = activeSession?.game_id === gameId
+  const activeSession = activeSessionData?.session;
+  const isActiveForThisGame = activeSession?.game_id === gameId;
 
   const startTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current)
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1)
-    }, 1000)
-  }, [])
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+  }, []);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (isActiveForThisGame && activeSession) {
-      const startTime = new Date(activeSession.started_at).getTime()
-      const now = Date.now()
-      const elapsed = Math.floor((now - startTime) / 1000)
-      setElapsedSeconds(elapsed)
-      startTimer()
+      const startTime = new Date(activeSession.started_at).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      setElapsedSeconds(elapsed);
+      startTimer();
     } else {
-      stopTimer()
-      setElapsedSeconds(0)
+      stopTimer();
+      setElapsedSeconds(0);
     }
 
-    return () => stopTimer()
-  }, [isActiveForThisGame, activeSession, startTimer, stopTimer])
+    return () => stopTimer();
+  }, [isActiveForThisGame, activeSession, startTimer, stopTimer]);
 
   const startSessionMutation = useMutation({
     mutationFn: () =>
@@ -110,15 +110,15 @@ export function PlaySessionTracker({
         startedAt: new Date().toISOString(),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activeSession'] })
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      showToast('Session started', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["activeSession"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      showToast("Session started", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to start session', 'error')
+      showToast("Failed to start session", "error");
     },
-  })
+  });
 
   const endSessionMutation = useMutation({
     mutationFn: (sessionId: string) =>
@@ -126,62 +126,62 @@ export function PlaySessionTracker({
         endedAt: new Date().toISOString(),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activeSession'] })
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      showToast('Session ended', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["activeSession"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      showToast("Session ended", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to end session', 'error')
+      showToast("Failed to end session", "error");
     },
-  })
+  });
 
   const addManualSessionMutation = useMutation({
     mutationFn: () => {
-      const durationMinutes = parseInt(manualDuration)
+      const durationMinutes = parseInt(manualDuration);
       if (isNaN(durationMinutes) || durationMinutes <= 0) {
-        throw new Error('Invalid duration')
+        throw new Error("Invalid duration");
       }
-      const startedAt = new Date(manualDate)
-      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000)
+      const startedAt = new Date(manualDate);
+      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000);
       return sessionsAPI.create(gameId, {
         platformId,
         startedAt: startedAt.toISOString(),
         endedAt: endedAt.toISOString(),
         durationMinutes,
         notes: sessionNotes || null,
-      })
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      setManualDuration('')
-      setSessionNotes('')
-      setIsManualMode(false)
-      showToast('Session added', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      setManualDuration("");
+      setSessionNotes("");
+      setIsManualMode(false);
+      showToast("Session added", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to add session', 'error')
+      showToast("Failed to add session", "error");
     },
-  })
+  });
 
   const deleteSessionMutation = useMutation({
     mutationFn: (sessionId: string) => sessionsAPI.delete(gameId, sessionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      showToast('Session deleted', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      showToast("Session deleted", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to delete session', 'error')
+      showToast("Failed to delete session", "error");
     },
-  })
+  });
 
-  const sessions = sessionsData?.sessions || []
-  const totalMinutes = sessionsData?.totalMinutes || 0
+  const sessions = sessionsData?.sessions || [];
+  const totalMinutes = sessionsData?.totalMinutes || 0;
 
   return (
     <div className="space-y-4">
@@ -210,7 +210,7 @@ export function PlaySessionTracker({
               disabled={endSessionMutation.isPending}
               className="px-6 py-3 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
-              {endSessionMutation.isPending ? 'Stopping...' : 'Stop'}
+              {endSessionMutation.isPending ? "Stopping..." : "Stop"}
             </button>
           </div>
         </div>
@@ -223,14 +223,14 @@ export function PlaySessionTracker({
             }
             className="flex-1 py-3 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {startSessionMutation.isPending ? 'Starting...' : 'Start Session'}
+            {startSessionMutation.isPending ? "Starting..." : "Start Session"}
           </button>
           <button
             onClick={() => setIsManualMode(!isManualMode)}
             className={`px-4 py-3 rounded-lg font-semibold transition-colors ${
               isManualMode
-                ? 'bg-ctp-mauve text-ctp-base'
-                : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
+                ? "bg-ctp-mauve text-ctp-base"
+                : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
             }`}
           >
             + Manual
@@ -287,13 +287,13 @@ export function PlaySessionTracker({
               disabled={addManualSessionMutation.isPending || !manualDuration}
               className="flex-1 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
-              {addManualSessionMutation.isPending ? 'Adding...' : 'Add Session'}
+              {addManualSessionMutation.isPending ? "Adding..." : "Add Session"}
             </button>
             <button
               onClick={() => {
-                setIsManualMode(false)
-                setManualDuration('')
-                setSessionNotes('')
+                setIsManualMode(false);
+                setManualDuration("");
+                setSessionNotes("");
               }}
               className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-colors"
             >
@@ -319,14 +319,14 @@ export function PlaySessionTracker({
                     <span className="text-ctp-text font-medium">
                       {session.ended_at
                         ? formatDuration(session.duration_minutes || 0)
-                        : 'In progress'}
+                        : "In progress"}
                     </span>
                     <span className="text-ctp-overlay1 text-sm">
                       {new Date(session.started_at).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </span>
                   </div>
@@ -338,7 +338,7 @@ export function PlaySessionTracker({
                   onClick={() => deleteSessionMutation.mutate(session.id)}
                   disabled={deleteSessionMutation.isPending || !session.ended_at}
                   className="p-2 text-ctp-overlay1 hover:text-ctp-red transition-colors disabled:opacity-50"
-                  title={session.ended_at ? 'Delete session' : 'Cannot delete active session'}
+                  title={session.ended_at ? "Delete session" : "Cannot delete active session"}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -365,5 +365,5 @@ export function PlaySessionTracker({
         </div>
       )}
     </div>
-  )
+  );
 }

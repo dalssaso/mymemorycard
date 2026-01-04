@@ -1,164 +1,164 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams, Link, useNavigate } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
-import { BackButton, PageLayout } from '@/components/layout'
-import { CollectionDetailSidebar } from '@/components/sidebar/CollectionDetailSidebar'
-import { Button, Checkbox, ScrollFade } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { collectionsAPI, gamesAPI } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { BackButton, PageLayout } from "@/components/layout";
+import { CollectionDetailSidebar } from "@/components/sidebar/CollectionDetailSidebar";
+import { Button, Checkbox, ScrollFade } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { collectionsAPI, gamesAPI } from "@/lib/api";
 
 interface Game {
-  id: string
-  name: string
-  cover_art_url: string | null
-  platform_display_name: string
-  status: string
-  user_rating: number | null
-  is_favorite: boolean
+  id: string;
+  name: string;
+  cover_art_url: string | null;
+  platform_display_name: string;
+  status: string;
+  user_rating: number | null;
+  is_favorite: boolean;
 }
 
 interface Collection {
-  id: string
-  name: string
-  description: string | null
-  cover_filename: string | null
-  cover_art_url: string | null
+  id: string;
+  name: string;
+  description: string | null;
+  cover_filename: string | null;
+  cover_art_url: string | null;
 }
 
 interface LibraryGame {
-  id: string
-  name: string
-  cover_art_url: string | null
-  platform_display_name: string
+  id: string;
+  name: string;
+  cover_art_url: string | null;
+  platform_display_name: string;
 }
 
 export function CollectionDetail() {
-  const { id } = useParams({ from: '/collections/$id' })
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const [isEditingName, setIsEditingName] = useState(false)
-  const [isEditingDescription, setIsEditingDescription] = useState(false)
-  const [nameValue, setNameValue] = useState('')
-  const [descriptionValue, setDescriptionValue] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showAddGamesModal, setShowAddGamesModal] = useState(false)
-  const [selectedGameIds, setSelectedGameIds] = useState<string[]>([])
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedCollectionGameIds, setSelectedCollectionGameIds] = useState<string[]>([])
-  const [coverKey, setCoverKey] = useState(Date.now())
+  const { id } = useParams({ from: "/collections/$id" });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const [descriptionValue, setDescriptionValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAddGamesModal, setShowAddGamesModal] = useState(false);
+  const [selectedGameIds, setSelectedGameIds] = useState<string[]>([]);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedCollectionGameIds, setSelectedCollectionGameIds] = useState<string[]>([]);
+  const [coverKey, setCoverKey] = useState(Date.now());
 
   const { data, isLoading } = useQuery({
-    queryKey: ['collection', id],
+    queryKey: ["collection", id],
     queryFn: async () => {
-      const response = await collectionsAPI.getOne(id)
-      return response.data as { collection: Collection; games: Game[] }
+      const response = await collectionsAPI.getOne(id);
+      return response.data as { collection: Collection; games: Game[] };
     },
-  })
+  });
 
   const { data: libraryData } = useQuery({
-    queryKey: ['library-games'],
+    queryKey: ["library-games"],
     queryFn: async () => {
-      const response = await gamesAPI.getAll()
-      return response.data as { games: LibraryGame[] }
+      const response = await gamesAPI.getAll();
+      return response.data as { games: LibraryGame[] };
     },
-  })
+  });
 
   const updateCollectionMutation = useMutation({
     mutationFn: ({ name, description }: { name: string; description: string }) =>
       collectionsAPI.update(id, name, description),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collection', id] })
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Collection updated successfully', 'success')
-      setIsEditingName(false)
-      setIsEditingDescription(false)
+      queryClient.invalidateQueries({ queryKey: ["collection", id] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      showToast("Collection updated successfully", "success");
+      setIsEditingName(false);
+      setIsEditingDescription(false);
     },
     onError: () => {
-      showToast('Failed to update collection', 'error')
+      showToast("Failed to update collection", "error");
     },
-  })
+  });
 
   const addGameMutation = useMutation({
     mutationFn: (gameIds: string[]) => collectionsAPI.bulkAddGames(id, gameIds),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collection', id] })
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Games added to collection', 'success')
-      setSelectedGameIds([])
-      setSearchQuery('')
-      setShowAddGamesModal(false)
+      queryClient.invalidateQueries({ queryKey: ["collection", id] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      showToast("Games added to collection", "success");
+      setSelectedGameIds([]);
+      setSearchQuery("");
+      setShowAddGamesModal(false);
     },
     onError: () => {
-      showToast('Failed to add games', 'error')
+      showToast("Failed to add games", "error");
     },
-  })
+  });
 
   const removeGameMutation = useMutation({
     mutationFn: (gameIds: string[]) =>
       Promise.all(gameIds.map((gameId) => collectionsAPI.removeGame(id, gameId))),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collection', id] })
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Games removed from collection', 'success')
-      setSelectedCollectionGameIds([])
-      setSelectionMode(false)
+      queryClient.invalidateQueries({ queryKey: ["collection", id] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      showToast("Games removed from collection", "success");
+      setSelectedCollectionGameIds([]);
+      setSelectionMode(false);
     },
     onError: () => {
-      showToast('Failed to remove games', 'error')
+      showToast("Failed to remove games", "error");
     },
-  })
+  });
 
   const deleteCollectionMutation = useMutation({
     mutationFn: () => collectionsAPI.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Collection deleted', 'success')
-      navigate({ to: '/collections' })
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      showToast("Collection deleted", "success");
+      navigate({ to: "/collections" });
     },
     onError: () => {
-      showToast('Failed to delete collection', 'error')
+      showToast("Failed to delete collection", "error");
     },
-  })
+  });
 
-  const games = useMemo(() => data?.games ?? [], [data?.games])
+  const games = useMemo(() => data?.games ?? [], [data?.games]);
 
-  const collectionGameIds = useMemo(() => new Set(games.map((game) => game.id)), [games])
+  const collectionGameIds = useMemo(() => new Set(games.map((game) => game.id)), [games]);
 
-  const libraryItems = useMemo(() => libraryData?.games ?? [], [libraryData?.games])
+  const libraryItems = useMemo(() => libraryData?.games ?? [], [libraryData?.games]);
 
   const libraryGames = useMemo(() => {
-    const items = libraryItems
-    const uniqueGames = new Map<string, LibraryGame>()
+    const items = libraryItems;
+    const uniqueGames = new Map<string, LibraryGame>();
     for (const game of items) {
       if (!uniqueGames.has(game.id)) {
-        uniqueGames.set(game.id, game)
+        uniqueGames.set(game.id, game);
       }
     }
-    return Array.from(uniqueGames.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }, [libraryItems])
+    return Array.from(uniqueGames.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [libraryItems]);
 
   const availableGames = useMemo(
     () => libraryGames.filter((game) => !collectionGameIds.has(game.id)),
     [libraryGames, collectionGameIds]
-  )
+  );
 
-  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const searchResults = useMemo(() => {
-    if (!normalizedQuery) return []
+    if (!normalizedQuery) return [];
     const results = availableGames.filter((game) =>
       game.name.toLowerCase().includes(normalizedQuery)
-    )
-    const selectedSet = new Set(selectedGameIds)
+    );
+    const selectedSet = new Set(selectedGameIds);
     results.sort((a, b) => {
-      const aSelected = selectedSet.has(a.id)
-      const bSelected = selectedSet.has(b.id)
-      if (aSelected !== bSelected) return aSelected ? -1 : 1
-      return a.name.localeCompare(b.name)
-    })
-    return results.slice(0, 20)
-  }, [availableGames, normalizedQuery, selectedGameIds])
+      const aSelected = selectedSet.has(a.id);
+      const bSelected = selectedSet.has(b.id);
+      if (aSelected !== bSelected) return aSelected ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return results.slice(0, 20);
+  }, [availableGames, normalizedQuery, selectedGameIds]);
 
   if (isLoading) {
     return (
@@ -167,7 +167,7 @@ export function CollectionDetail() {
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   if (!data) {
@@ -177,87 +177,87 @@ export function CollectionDetail() {
           <div className="text-ctp-red">Collection not found</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
-  const { collection } = data
+  const { collection } = data;
 
   const toggleSelectedGame = (gameId: string) => {
     setSelectedGameIds((current) =>
       current.includes(gameId) ? current.filter((id) => id !== gameId) : [...current, gameId]
-    )
-  }
+    );
+  };
 
   const toggleSelectedCollectionGame = (gameId: string) => {
     setSelectedCollectionGameIds((current) =>
       current.includes(gameId) ? current.filter((id) => id !== gameId) : [...current, gameId]
-    )
-  }
+    );
+  };
 
   const handleDeleteCollection = () => {
     if (confirm(`Are you sure you want to delete "${collection.name}"?`)) {
-      deleteCollectionMutation.mutate()
+      deleteCollectionMutation.mutate();
     }
-  }
+  };
 
   const handleSaveName = () => {
     if (!nameValue.trim()) {
-      showToast('Collection name cannot be empty', 'error')
-      return
+      showToast("Collection name cannot be empty", "error");
+      return;
     }
-    updateCollectionMutation.mutate({ name: nameValue, description: collection.description || '' })
-  }
+    updateCollectionMutation.mutate({ name: nameValue, description: collection.description || "" });
+  };
 
   const handleSaveDescription = () => {
-    updateCollectionMutation.mutate({ name: collection.name, description: descriptionValue })
-  }
+    updateCollectionMutation.mutate({ name: collection.name, description: descriptionValue });
+  };
 
   const handleUploadCover = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
-      showToast('Image must be under 5MB', 'error')
-      return
+      showToast("Image must be under 5MB", "error");
+      return;
     }
 
     try {
-      await collectionsAPI.uploadCover(id, file)
-      setCoverKey(Date.now())
-      await queryClient.refetchQueries({ queryKey: ['collection', id] })
-      await queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Cover updated', 'success')
+      await collectionsAPI.uploadCover(id, file);
+      setCoverKey(Date.now());
+      await queryClient.refetchQueries({ queryKey: ["collection", id] });
+      await queryClient.invalidateQueries({ queryKey: ["collections"] });
+      showToast("Cover updated", "success");
     } catch (error: unknown) {
       const message =
-        error && typeof error === 'object' && 'response' in error
+        error && typeof error === "object" && "response" in error
           ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null
-      showToast(message ?? 'Failed to upload cover', 'error')
+          : null;
+      showToast(message ?? "Failed to upload cover", "error");
     }
-  }
+  };
 
   const handleDeleteCover = async () => {
-    if (!confirm('Remove custom cover? Will revert to auto-selected game cover.')) {
-      return
+    if (!confirm("Remove custom cover? Will revert to auto-selected game cover.")) {
+      return;
     }
     try {
-      await collectionsAPI.deleteCover(id)
-      setCoverKey(Date.now())
-      await queryClient.refetchQueries({ queryKey: ['collection', id] })
-      await queryClient.invalidateQueries({ queryKey: ['collections'] })
-      showToast('Cover removed', 'success')
+      await collectionsAPI.deleteCover(id);
+      setCoverKey(Date.now());
+      await queryClient.refetchQueries({ queryKey: ["collection", id] });
+      await queryClient.invalidateQueries({ queryKey: ["collections"] });
+      showToast("Cover removed", "success");
     } catch {
-      showToast('Failed to remove cover', 'error')
+      showToast("Failed to remove cover", "error");
     }
-  }
+  };
 
   const handleUploadCoverClick = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'image/jpeg,image/jpg,image/png,image/webp,image/gif'
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/jpg,image/png,image/webp,image/gif";
     input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) handleUploadCover(file)
-    }
-    input.click()
-  }
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) handleUploadCover(file);
+    };
+    input.click();
+  };
 
   return (
     <PageLayout
@@ -302,7 +302,7 @@ export function CollectionDetail() {
                     disabled={updateCollectionMutation.isPending}
                     size="sm"
                   >
-                    {updateCollectionMutation.isPending ? 'Saving...' : 'Save'}
+                    {updateCollectionMutation.isPending ? "Saving..." : "Save"}
                   </Button>
                   <Button variant="secondary" size="sm" onClick={() => setIsEditingName(false)}>
                     Cancel
@@ -320,8 +320,8 @@ export function CollectionDetail() {
                 </div>
                 <button
                   onClick={() => {
-                    setNameValue(collection.name)
-                    setIsEditingName(true)
+                    setNameValue(collection.name);
+                    setIsEditingName(true);
                   }}
                   className="text-sm text-ctp-teal hover:text-ctp-mauve"
                 >
@@ -345,7 +345,7 @@ export function CollectionDetail() {
                 />
               ) : collection.cover_art_url ? (
                 <img
-                  src={`${collection.cover_art_url}${collection.cover_art_url.includes('?') ? '&' : '?'}v=${coverKey}`}
+                  src={`${collection.cover_art_url}${collection.cover_art_url.includes("?") ? "&" : "?"}v=${coverKey}`}
                   alt={collection.name}
                   className="w-full h-full object-cover"
                 />
@@ -364,7 +364,7 @@ export function CollectionDetail() {
                 onClick={handleUploadCoverClick}
                 className="flex-1"
               >
-                {collection.cover_filename ? 'Change Cover' : 'Add Cover'}
+                {collection.cover_filename ? "Change Cover" : "Add Cover"}
               </Button>
 
               {collection.cover_filename && (
@@ -383,7 +383,7 @@ export function CollectionDetail() {
             <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3 mb-4">
               <div className="text-xs text-ctp-teal">Games</div>
               <div className="text-lg font-semibold text-ctp-text">
-                {games.length} {games.length === 1 ? 'game' : 'games'}
+                {games.length} {games.length === 1 ? "game" : "games"}
               </div>
             </div>
 
@@ -402,12 +402,12 @@ export function CollectionDetail() {
                 {!isEditingDescription && (
                   <button
                     onClick={() => {
-                      setDescriptionValue(collection.description || '')
-                      setIsEditingDescription(true)
+                      setDescriptionValue(collection.description || "");
+                      setIsEditingDescription(true);
                     }}
                     className="text-sm text-ctp-teal hover:text-ctp-mauve"
                   >
-                    {collection.description ? 'Edit' : 'Add Description'}
+                    {collection.description ? "Edit" : "Add Description"}
                   </button>
                 )}
               </div>
@@ -426,7 +426,7 @@ export function CollectionDetail() {
                       disabled={updateCollectionMutation.isPending}
                       size="sm"
                     >
-                      {updateCollectionMutation.isPending ? 'Saving...' : 'Save'}
+                      {updateCollectionMutation.isPending ? "Saving..." : "Save"}
                     </Button>
                     <Button
                       variant="secondary"
@@ -439,7 +439,7 @@ export function CollectionDetail() {
                 </div>
               ) : (
                 <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
-                  {collection.description || 'No description yet'}
+                  {collection.description || "No description yet"}
                 </div>
               )}
             </div>
@@ -454,21 +454,21 @@ export function CollectionDetail() {
                       <button
                         onClick={() => {
                           if (selectedCollectionGameIds.length === games.length) {
-                            setSelectedCollectionGameIds([])
+                            setSelectedCollectionGameIds([]);
                           } else {
-                            setSelectedCollectionGameIds(games.map((game) => game.id))
+                            setSelectedCollectionGameIds(games.map((game) => game.id));
                           }
                         }}
                         className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
                       >
                         {selectedCollectionGameIds.length === games.length
-                          ? 'Deselect All'
-                          : 'Select All'}
+                          ? "Deselect All"
+                          : "Select All"}
                       </button>
                       <button
                         onClick={() => {
-                          setSelectionMode(false)
-                          setSelectedCollectionGameIds([])
+                          setSelectionMode(false);
+                          setSelectedCollectionGameIds([]);
                         }}
                         className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
                       >
@@ -502,7 +502,7 @@ export function CollectionDetail() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {games.map((game) => {
-                    const isSelected = selectedCollectionGameIds.includes(game.id)
+                    const isSelected = selectedCollectionGameIds.includes(game.id);
                     if (selectionMode) {
                       return (
                         <div
@@ -510,9 +510,9 @@ export function CollectionDetail() {
                           className="group cursor-pointer"
                           onClick={() => toggleSelectedCollectionGame(game.id)}
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                              event.preventDefault()
-                              toggleSelectedCollectionGame(game.id)
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              toggleSelectedCollectionGame(game.id);
                             }
                           }}
                           role="button"
@@ -521,8 +521,8 @@ export function CollectionDetail() {
                           <div
                             className={`aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative border transition-colors ${
                               isSelected
-                                ? 'border-ctp-mauve bg-ctp-mauve/20'
-                                : 'border-dashed border-ctp-surface1 hover:border-ctp-mauve'
+                                ? "border-ctp-mauve bg-ctp-mauve/20"
+                                : "border-dashed border-ctp-surface1 hover:border-ctp-mauve"
                             }`}
                           >
                             {game.cover_art_url ? (
@@ -531,8 +531,8 @@ export function CollectionDetail() {
                                 alt={game.name}
                                 className={`w-full h-full object-cover transition-all ${
                                   isSelected
-                                    ? 'opacity-100 grayscale-0'
-                                    : 'opacity-60 group-hover:opacity-100'
+                                    ? "opacity-100 grayscale-0"
+                                    : "opacity-60 group-hover:opacity-100"
                                 }`}
                               />
                             ) : (
@@ -563,7 +563,7 @@ export function CollectionDetail() {
                             {game.name}
                           </p>
                         </div>
-                      )
+                      );
                     }
 
                     return (
@@ -594,7 +594,7 @@ export function CollectionDetail() {
                           ×
                         </button>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               )}
@@ -607,7 +607,7 @@ export function CollectionDetail() {
         <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 bg-ctp-mantle border border-ctp-surface1 rounded-xl px-6 py-4 shadow-xl z-40 flex items-center gap-4">
           <span className="text-ctp-text font-medium">
             {selectedCollectionGameIds.length} game
-            {selectedCollectionGameIds.length !== 1 ? 's' : ''} selected
+            {selectedCollectionGameIds.length !== 1 ? "s" : ""} selected
           </span>
           <div className="h-6 w-px bg-ctp-surface1" />
           <Button
@@ -616,7 +616,7 @@ export function CollectionDetail() {
             disabled={removeGameMutation.isPending}
             className="text-sm py-1 px-3"
           >
-            {removeGameMutation.isPending ? 'Removing...' : 'Remove from Collection'}
+            {removeGameMutation.isPending ? "Removing..." : "Remove from Collection"}
           </Button>
         </div>
       )}
@@ -628,9 +628,9 @@ export function CollectionDetail() {
               <h2 className="text-2xl font-bold text-ctp-text">Add Games</h2>
               <button
                 onClick={() => {
-                  setShowAddGamesModal(false)
-                  setSelectedGameIds([])
-                  setSearchQuery('')
+                  setShowAddGamesModal(false);
+                  setSelectedGameIds([]);
+                  setSearchQuery("");
                 }}
                 className="text-ctp-subtext0 hover:text-ctp-text"
               >
@@ -669,8 +669,8 @@ export function CollectionDetail() {
                       key={game.id}
                       className={`w-full flex items-center gap-3 border rounded-lg p-2 text-left transition-colors cursor-pointer ${
                         selectedGameIds.includes(game.id)
-                          ? 'border-ctp-mauve bg-ctp-mauve/10'
-                          : 'border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1'
+                          ? "border-ctp-mauve bg-ctp-mauve/10"
+                          : "border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1"
                       }`}
                     >
                       <Checkbox
@@ -708,9 +708,9 @@ export function CollectionDetail() {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setShowAddGamesModal(false)
-                    setSelectedGameIds([])
-                    setSearchQuery('')
+                    setShowAddGamesModal(false);
+                    setSelectedGameIds([]);
+                    setSearchQuery("");
                   }}
                 >
                   Cancel
@@ -719,7 +719,7 @@ export function CollectionDetail() {
                   onClick={() => addGameMutation.mutate(selectedGameIds)}
                   disabled={selectedGameIds.length === 0 || addGameMutation.isPending}
                 >
-                  {addGameMutation.isPending ? 'Adding...' : 'Add Selected'}
+                  {addGameMutation.isPending ? "Adding..." : "Add Selected"}
                 </Button>
               </div>
             </div>
@@ -727,5 +727,5 @@ export function CollectionDetail() {
         </div>
       )}
     </PageLayout>
-  )
+  );
 }

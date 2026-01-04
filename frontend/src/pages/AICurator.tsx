@@ -1,242 +1,242 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BackButton, PageLayout } from '@/components/layout'
-import { useToast } from '@/components/ui/Toast'
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { BackButton, PageLayout } from "@/components/layout";
+import { useToast } from "@/components/ui/Toast";
 import {
   aiAPI,
   collectionsAPI,
   type CollectionSuggestion,
   type NextGameSuggestion,
-} from '@/lib/api'
-import { AICuratorSidebar } from '@/components/sidebar'
+} from "@/lib/api";
+import { AICuratorSidebar } from "@/components/sidebar";
 
 export function AICurator() {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-  const { showToast } = useToast()
-  const [showCollectionsModal, setShowCollectionsModal] = useState(false)
-  const [showNextGameModal, setShowNextGameModal] = useState(false)
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [showGenerateCoverModal, setShowGenerateCoverModal] = useState(false)
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+  const [showNextGameModal, setShowNextGameModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showGenerateCoverModal, setShowGenerateCoverModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'collections' | 'nextGame' | 'generateCover'
-    cost: number
-    collectionId?: string
-    collectionName?: string
-    collectionDescription?: string
-    theme?: string
-  } | null>(null)
-  const [nextGameInput, setNextGameInput] = useState('')
-  const [collectionThemeInput, setCollectionThemeInput] = useState('')
-  const [suggestedCollections, setSuggestedCollections] = useState<CollectionSuggestion[]>([])
-  const [suggestedGame, setSuggestedGame] = useState<NextGameSuggestion | null>(null)
+    type: "collections" | "nextGame" | "generateCover";
+    cost: number;
+    collectionId?: string;
+    collectionName?: string;
+    collectionDescription?: string;
+    theme?: string;
+  } | null>(null);
+  const [nextGameInput, setNextGameInput] = useState("");
+  const [collectionThemeInput, setCollectionThemeInput] = useState("");
+  const [suggestedCollections, setSuggestedCollections] = useState<CollectionSuggestion[]>([]);
+  const [suggestedGame, setSuggestedGame] = useState<NextGameSuggestion | null>(null);
   const [expandedCard, setExpandedCard] = useState<
-    'collections' | 'nextGame' | 'generateCover' | null
-  >(null)
-  const [generateCoverOnCreate, setGenerateCoverOnCreate] = useState(false)
+    "collections" | "nextGame" | "generateCover" | null
+  >(null);
+  const [generateCoverOnCreate, setGenerateCoverOnCreate] = useState(false);
 
   const getApiErrorMessage = (error: unknown): string | null => {
-    if (!error || typeof error !== 'object') {
-      return null
+    if (!error || typeof error !== "object") {
+      return null;
     }
-    if ('response' in error) {
-      const response = (error as { response?: { data?: { error?: string } } }).response
-      return response?.data?.error ?? null
+    if ("response" in error) {
+      const response = (error as { response?: { data?: { error?: string } } }).response;
+      return response?.data?.error ?? null;
     }
-    return null
-  }
+    return null;
+  };
 
   const { data: settingsData } = useQuery({
-    queryKey: ['ai-settings'],
+    queryKey: ["ai-settings"],
     queryFn: async () => {
-      const response = await aiAPI.getSettings()
-      return response.data
+      const response = await aiAPI.getSettings();
+      return response.data;
     },
-  })
+  });
 
   const { data: activityData } = useQuery({
-    queryKey: ['ai-activity'],
+    queryKey: ["ai-activity"],
     queryFn: async () => {
-      const response = await aiAPI.getActivity(20)
-      return response.data
+      const response = await aiAPI.getActivity(20);
+      return response.data;
     },
-  })
+  });
 
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
+      const response = await collectionsAPI.getAll();
       return response.data as {
-        collections: Array<{ id: string; name: string; description: string | null }>
-      }
+        collections: Array<{ id: string; name: string; description: string | null }>;
+      };
     },
-  })
+  });
 
   const suggestCollectionsMutation = useMutation({
     mutationFn: (theme?: string) => aiAPI.suggestCollections(theme),
     onSuccess: (response) => {
-      setSuggestedCollections(response.data.collections)
-      setShowCollectionsModal(true)
+      setSuggestedCollections(response.data.collections);
+      setShowCollectionsModal(true);
       showToast(
         `Generated ${response.data.collections.length} collection suggestions ($${response.data.cost.toFixed(4)})`,
-        'success'
-      )
-      queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
+        "success"
+      );
+      queryClient.invalidateQueries({ queryKey: ["ai-activity"] });
     },
     onError: (error: unknown) => {
-      showToast(getApiErrorMessage(error) ?? 'Failed to generate suggestions', 'error')
+      showToast(getApiErrorMessage(error) ?? "Failed to generate suggestions", "error");
     },
-  })
+  });
 
   const suggestNextGameMutation = useMutation({
     mutationFn: (userInput?: string) => aiAPI.suggestNextGame(userInput),
     onSuccess: (response) => {
-      setSuggestedGame(response.data.suggestion)
-      setShowNextGameModal(true)
-      showToast(`Suggested next game ($${response.data.cost.toFixed(4)})`, 'success')
-      queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
+      setSuggestedGame(response.data.suggestion);
+      setShowNextGameModal(true);
+      showToast(`Suggested next game ($${response.data.cost.toFixed(4)})`, "success");
+      queryClient.invalidateQueries({ queryKey: ["ai-activity"] });
     },
     onError: (error: unknown) => {
-      showToast(getApiErrorMessage(error) ?? 'Failed to generate suggestion', 'error')
+      showToast(getApiErrorMessage(error) ?? "Failed to generate suggestion", "error");
     },
-  })
+  });
 
   const createCollectionMutation = useMutation({
     mutationFn: async (data: {
-      name: string
-      description: string
-      gameIds: string[]
-      generateCover?: boolean
+      name: string;
+      description: string;
+      gameIds: string[];
+      generateCover?: boolean;
     }) => {
-      const createResult = await collectionsAPI.create(data.name, data.description)
-      const collectionId = createResult.data.collection.id
+      const createResult = await collectionsAPI.create(data.name, data.description);
+      const collectionId = createResult.data.collection.id;
 
       if (data.gameIds.length > 0) {
-        await collectionsAPI.bulkAddGames(collectionId, data.gameIds)
+        await collectionsAPI.bulkAddGames(collectionId, data.gameIds);
       }
 
-      let coverCost = 0
+      let coverCost = 0;
       if (data.generateCover) {
-        const coverResult = await aiAPI.generateCover(data.name, data.description, collectionId)
-        coverCost = coverResult.data.cost
+        const coverResult = await aiAPI.generateCover(data.name, data.description, collectionId);
+        coverCost = coverResult.data.cost;
       }
 
       return {
         collection: createResult.data.collection,
         addedCount: data.gameIds.length,
         coverCost,
-      }
+      };
     },
     onSuccess: (result, variables) => {
-      const gameCount = result.addedCount
+      const gameCount = result.addedCount;
       let message =
         gameCount > 0
           ? `Created "${variables.name}" with ${gameCount} games`
-          : `Created collection: ${variables.name}`
+          : `Created collection: ${variables.name}`;
       if (result.coverCost > 0) {
-        message += ` (cover: $${result.coverCost.toFixed(4)})`
+        message += ` (cover: $${result.coverCost.toFixed(4)})`;
       }
-      showToast(message, 'success')
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
+      showToast(message, "success");
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["ai-activity"] });
     },
     onError: () => {
-      showToast('Failed to create collection', 'error')
+      showToast("Failed to create collection", "error");
     },
-  })
+  });
 
   const generateCoverMutation = useMutation({
     mutationFn: (data: {
-      collectionName: string
-      collectionDescription: string
-      collectionId: string
+      collectionName: string;
+      collectionDescription: string;
+      collectionId: string;
     }) => aiAPI.generateCover(data.collectionName, data.collectionDescription, data.collectionId),
     onSuccess: (response, variables) => {
-      showToast(`Cover generated ($${response.data.cost.toFixed(4)})`, 'success')
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-      queryClient.invalidateQueries({ queryKey: ['collection', variables.collectionId] })
-      queryClient.invalidateQueries({ queryKey: ['ai-activity'] })
-      setShowGenerateCoverModal(false)
+      showToast(`Cover generated ($${response.data.cost.toFixed(4)})`, "success");
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["collection", variables.collectionId] });
+      queryClient.invalidateQueries({ queryKey: ["ai-activity"] });
+      setShowGenerateCoverModal(false);
       // Navigate to the collection to show the new cover
-      navigate({ to: '/collections/$id', params: { id: variables.collectionId } })
+      navigate({ to: "/collections/$id", params: { id: variables.collectionId } });
     },
     onError: (error: unknown) => {
-      showToast(getApiErrorMessage(error) ?? 'Failed to generate cover', 'error')
+      showToast(getApiErrorMessage(error) ?? "Failed to generate cover", "error");
     },
-  })
+  });
 
   const handleSuggestCollections = async () => {
     try {
-      const { data } = await aiAPI.estimateCost('suggest_collections')
+      const { data } = await aiAPI.estimateCost("suggest_collections");
       setConfirmAction({
-        type: 'collections',
+        type: "collections",
         cost: data.estimatedCostUsd,
         theme: collectionThemeInput || undefined,
-      })
-      setShowConfirmModal(true)
+      });
+      setShowConfirmModal(true);
     } catch (error) {
-      console.error('Failed to estimate cost:', error)
-      showToast('Failed to estimate cost', 'error')
+      console.error("Failed to estimate cost:", error);
+      showToast("Failed to estimate cost", "error");
     }
-  }
+  };
 
   const handleSuggestNextGame = async () => {
     try {
-      const { data } = await aiAPI.estimateCost('suggest_next_game')
-      setConfirmAction({ type: 'nextGame', cost: data.estimatedCostUsd })
-      setShowConfirmModal(true)
+      const { data } = await aiAPI.estimateCost("suggest_next_game");
+      setConfirmAction({ type: "nextGame", cost: data.estimatedCostUsd });
+      setShowConfirmModal(true);
     } catch (error) {
-      console.error('Failed to estimate cost:', error)
-      showToast('Failed to estimate cost', 'error')
+      console.error("Failed to estimate cost:", error);
+      showToast("Failed to estimate cost", "error");
     }
-  }
+  };
 
   const handleGenerateCover = async (collectionId: string) => {
-    const collection = collectionsData?.collections.find((c) => c.id === collectionId)
-    if (!collection) return
+    const collection = collectionsData?.collections.find((c) => c.id === collectionId);
+    if (!collection) return;
 
     try {
-      const { data } = await aiAPI.estimateCost('generate_cover_image')
+      const { data } = await aiAPI.estimateCost("generate_cover_image");
       setConfirmAction({
-        type: 'generateCover',
+        type: "generateCover",
         cost: data.estimatedCostUsd,
         collectionId: collection.id,
         collectionName: collection.name,
-        collectionDescription: collection.description || '',
-      })
-      setShowConfirmModal(true)
+        collectionDescription: collection.description || "",
+      });
+      setShowConfirmModal(true);
     } catch (error) {
-      console.error('Failed to estimate cost:', error)
-      showToast('Failed to estimate cost', 'error')
+      console.error("Failed to estimate cost:", error);
+      showToast("Failed to estimate cost", "error");
     }
-  }
+  };
 
   const handleConfirmAction = () => {
-    if (!confirmAction) return
+    if (!confirmAction) return;
 
-    setShowConfirmModal(false)
-    if (confirmAction.type === 'collections') {
-      suggestCollectionsMutation.mutate(confirmAction.theme)
-    } else if (confirmAction.type === 'nextGame') {
-      suggestNextGameMutation.mutate(nextGameInput || undefined)
-    } else if (confirmAction.type === 'generateCover' && confirmAction.collectionId) {
+    setShowConfirmModal(false);
+    if (confirmAction.type === "collections") {
+      suggestCollectionsMutation.mutate(confirmAction.theme);
+    } else if (confirmAction.type === "nextGame") {
+      suggestNextGameMutation.mutate(nextGameInput || undefined);
+    } else if (confirmAction.type === "generateCover" && confirmAction.collectionId) {
       generateCoverMutation.mutate({
         collectionId: confirmAction.collectionId,
-        collectionName: confirmAction.collectionName || '',
-        collectionDescription: confirmAction.collectionDescription || '',
-      })
+        collectionName: confirmAction.collectionName || "",
+        collectionDescription: confirmAction.collectionDescription || "",
+      });
     }
-    setConfirmAction(null)
-  }
+    setConfirmAction(null);
+  };
 
   const handleCancelAction = () => {
-    setShowConfirmModal(false)
-    setConfirmAction(null)
-  }
+    setShowConfirmModal(false);
+    setConfirmAction(null);
+  };
 
   const isEnabled =
-    settingsData?.activeProvider !== null && settingsData?.activeProvider !== undefined
+    settingsData?.activeProvider !== null && settingsData?.activeProvider !== undefined;
 
   if (!isEnabled) {
     return (
@@ -277,7 +277,7 @@ export function AICurator() {
           </div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   return (
@@ -297,7 +297,7 @@ export function AICurator() {
             recommendations and help you organize your collection.
           </p>
           <p className="text-xs text-ctp-overlay1">
-            Provider: {settingsData?.activeProvider?.provider} | Model:{' '}
+            Provider: {settingsData?.activeProvider?.provider} | Model:{" "}
             {settingsData?.activeProvider?.model}
           </p>
         </div>
@@ -305,13 +305,13 @@ export function AICurator() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8 items-start">
           <div
             className={`card transition-all cursor-pointer ${
-              expandedCard === 'collections' ? 'p-6' : 'p-4'
+              expandedCard === "collections" ? "p-6" : "p-4"
             } hover:bg-ctp-surface0/50`}
-            onClick={() => setExpandedCard(expandedCard === 'collections' ? null : 'collections')}
+            onClick={() => setExpandedCard(expandedCard === "collections" ? null : "collections")}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                setExpandedCard(expandedCard === 'collections' ? null : 'collections')
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setExpandedCard(expandedCard === "collections" ? null : "collections");
               }
             }}
             role="button"
@@ -335,7 +335,7 @@ export function AICurator() {
               </div>
               <h3 className="text-base font-semibold text-ctp-text">Suggest Collections</h3>
             </div>
-            {expandedCard === 'collections' && (
+            {expandedCard === "collections" && (
               <>
                 <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
                   AI analyzes your library to suggest themed collections based on mood, gameplay
@@ -363,13 +363,13 @@ export function AICurator() {
                 </div>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    handleSuggestCollections()
+                    e.stopPropagation();
+                    handleSuggestCollections();
                   }}
                   disabled={suggestCollectionsMutation.isPending}
                   className="w-full px-4 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {suggestCollectionsMutation.isPending ? 'Generating...' : 'Generate Suggestions'}
+                  {suggestCollectionsMutation.isPending ? "Generating..." : "Generate Suggestions"}
                 </button>
               </>
             )}
@@ -377,13 +377,13 @@ export function AICurator() {
 
           <div
             className={`card transition-all cursor-pointer ${
-              expandedCard === 'nextGame' ? 'p-6' : 'p-4'
+              expandedCard === "nextGame" ? "p-6" : "p-4"
             } hover:bg-ctp-surface0/50`}
-            onClick={() => setExpandedCard(expandedCard === 'nextGame' ? null : 'nextGame')}
+            onClick={() => setExpandedCard(expandedCard === "nextGame" ? null : "nextGame")}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                setExpandedCard(expandedCard === 'nextGame' ? null : 'nextGame')
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setExpandedCard(expandedCard === "nextGame" ? null : "nextGame");
               }
             }}
             role="button"
@@ -413,7 +413,7 @@ export function AICurator() {
               </div>
               <h3 className="text-base font-semibold text-ctp-text">Suggest Next Game</h3>
             </div>
-            {expandedCard === 'nextGame' && (
+            {expandedCard === "nextGame" && (
               <>
                 <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
                   Get personalized recommendations on what to play next based on your play history
@@ -421,13 +421,13 @@ export function AICurator() {
                 </p>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    setShowNextGameModal(true)
+                    e.stopPropagation();
+                    setShowNextGameModal(true);
                   }}
                   disabled={suggestNextGameMutation.isPending}
                   className="w-full px-4 py-2 bg-ctp-blue text-ctp-base rounded-lg hover:bg-ctp-blue/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {suggestNextGameMutation.isPending ? 'Analyzing...' : 'Get Recommendation'}
+                  {suggestNextGameMutation.isPending ? "Analyzing..." : "Get Recommendation"}
                 </button>
               </>
             )}
@@ -435,15 +435,15 @@ export function AICurator() {
 
           <div
             className={`card transition-all cursor-pointer ${
-              expandedCard === 'generateCover' ? 'p-6' : 'p-4'
+              expandedCard === "generateCover" ? "p-6" : "p-4"
             } hover:bg-ctp-surface0/50`}
             onClick={() =>
-              setExpandedCard(expandedCard === 'generateCover' ? null : 'generateCover')
+              setExpandedCard(expandedCard === "generateCover" ? null : "generateCover")
             }
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                setExpandedCard(expandedCard === 'generateCover' ? null : 'generateCover')
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setExpandedCard(expandedCard === "generateCover" ? null : "generateCover");
               }
             }}
             role="button"
@@ -467,7 +467,7 @@ export function AICurator() {
               </div>
               <h3 className="text-base font-semibold text-ctp-text">Generate Collection Cover</h3>
             </div>
-            {expandedCard === 'generateCover' && (
+            {expandedCard === "generateCover" && (
               <>
                 <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
                   Create AI-generated cover art for your collections based on their name and
@@ -475,13 +475,13 @@ export function AICurator() {
                 </p>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    setShowGenerateCoverModal(true)
+                    e.stopPropagation();
+                    setShowGenerateCoverModal(true);
                   }}
                   disabled={generateCoverMutation.isPending || !collectionsData?.collections.length}
                   className="w-full px-4 py-2 bg-ctp-green text-ctp-base rounded-lg hover:bg-ctp-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {generateCoverMutation.isPending ? 'Generating...' : 'Select Collection'}
+                  {generateCoverMutation.isPending ? "Generating..." : "Select Collection"}
                 </button>
               </>
             )}
@@ -500,7 +500,7 @@ export function AICurator() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-ctp-text">
-                        {log.actionType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                        {log.actionType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </span>
                       {log.success ? (
                         <span className="text-xs px-2 py-0.5 bg-ctp-green/20 text-ctp-green rounded">
@@ -513,9 +513,9 @@ export function AICurator() {
                       )}
                     </div>
                     <div className="text-xs text-ctp-overlay1 mt-1">
-                      {new Date(log.createdAt).toLocaleString()} •{' '}
-                      {log.estimatedCostUsd ? `$${log.estimatedCostUsd.toFixed(4)}` : 'N/A'} •{' '}
-                      {log.durationMs ? `${(log.durationMs / 1000).toFixed(1)}s` : 'N/A'}
+                      {new Date(log.createdAt).toLocaleString()} •{" "}
+                      {log.estimatedCostUsd ? `$${log.estimatedCostUsd.toFixed(4)}` : "N/A"} •{" "}
+                      {log.durationMs ? `${(log.durationMs / 1000).toFixed(1)}s` : "N/A"}
                     </div>
                   </div>
                 </div>
@@ -562,13 +562,13 @@ export function AICurator() {
                   <h3 className="text-lg font-semibold text-ctp-mauve mb-2">{collection.name}</h3>
                   <p className="text-sm text-ctp-subtext0 mb-3">{collection.description}</p>
                   <div className="text-xs text-ctp-overlay1 mb-3">
-                    <strong>Games ({collection.gameNames.length}):</strong>{' '}
-                    {collection.gameNames.join(', ')}
+                    <strong>Games ({collection.gameNames.length}):</strong>{" "}
+                    {collection.gameNames.join(", ")}
                   </div>
                   <div className="text-xs text-ctp-overlay2 italic mb-3">
                     {collection.reasoning}
                   </div>
-                  {settingsData?.activeProvider?.provider === 'openai' && (
+                  {settingsData?.activeProvider?.provider === "openai" && (
                     <label className="flex items-center gap-2 text-sm text-ctp-subtext0 mb-3">
                       <input
                         type="checkbox"
@@ -586,12 +586,12 @@ export function AICurator() {
                         description: collection.description,
                         gameIds: collection.gameIds,
                         generateCover: generateCoverOnCreate,
-                      })
+                      });
                     }}
                     disabled={createCollectionMutation.isPending}
                     className="px-4 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors text-sm disabled:opacity-50"
                   >
-                    {createCollectionMutation.isPending ? 'Creating...' : 'Create Collection'}
+                    {createCollectionMutation.isPending ? "Creating..." : "Create Collection"}
                   </button>
                 </div>
               ))}
@@ -654,7 +654,7 @@ export function AICurator() {
                   disabled={suggestNextGameMutation.isPending}
                   className="w-full px-4 py-2 bg-ctp-blue text-ctp-base rounded-lg hover:bg-ctp-blue/90 transition-colors disabled:opacity-50"
                 >
-                  {suggestNextGameMutation.isPending ? 'Analyzing...' : 'Get Suggestion'}
+                  {suggestNextGameMutation.isPending ? "Analyzing..." : "Get Suggestion"}
                 </button>
               </div>
             ) : (
@@ -672,8 +672,8 @@ export function AICurator() {
                 </div>
                 <button
                   onClick={() => {
-                    setSuggestedGame(null)
-                    setNextGameInput('')
+                    setSuggestedGame(null);
+                    setNextGameInput("");
                   }}
                   className="w-full px-4 py-2 bg-ctp-surface0 text-ctp-text rounded-lg hover:bg-ctp-surface1 transition-colors"
                 >
@@ -726,8 +726,8 @@ export function AICurator() {
                 <button
                   key={collection.id}
                   onClick={() => {
-                    setShowGenerateCoverModal(false)
-                    handleGenerateCover(collection.id)
+                    setShowGenerateCoverModal(false);
+                    handleGenerateCover(collection.id);
                   }}
                   className="w-full p-4 bg-ctp-surface0 hover:bg-ctp-surface1 rounded-lg transition-colors text-left"
                 >
@@ -799,12 +799,12 @@ export function AICurator() {
                   </svg>
                   <div>
                     <p className="text-sm text-ctp-text mb-2">
-                      {confirmAction.type === 'collections'
+                      {confirmAction.type === "collections"
                         ? confirmAction.theme
                           ? `This will analyze your game library and generate collection suggestions for theme: "${confirmAction.theme}".`
-                          : 'This will analyze your game library and generate collection suggestions.'
-                        : confirmAction.type === 'nextGame'
-                          ? 'This will analyze your play history and suggest what to play next.'
+                          : "This will analyze your game library and generate collection suggestions."
+                        : confirmAction.type === "nextGame"
+                          ? "This will analyze your play history and suggest what to play next."
                           : `This will generate an AI cover image for "${confirmAction.collectionName}".`}
                     </p>
                     <div className="flex items-baseline gap-2">
@@ -836,5 +836,5 @@ export function AICurator() {
         </div>
       )}
     </PageLayout>
-  )
+  );
 }

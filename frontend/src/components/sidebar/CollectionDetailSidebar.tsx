@@ -1,34 +1,34 @@
-import { Link } from '@tanstack/react-router'
-import { useSidebar } from '@/contexts/SidebarContext'
+import { Link } from "@tanstack/react-router";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface CollectionDetailSidebarProps {
-  collectionId: string
-  collectionName: string
-  gameCount: number
-  isUpdating?: boolean
+  collectionId: string;
+  collectionName: string;
+  gameCount: number;
+  isUpdating?: boolean;
 }
 
 const SECTIONS = [
-  { id: 'description', label: 'Description', icon: 'M4 6h16M4 12h16m-7 6h7' },
+  { id: "description", label: "Description", icon: "M4 6h16M4 12h16m-7 6h7" },
   {
-    id: 'games',
-    label: 'Games',
-    icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+    id: "games",
+    label: "Games",
+    icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
   },
-]
+];
 
 export function CollectionDetailSidebar({
   collectionName,
   gameCount,
 }: CollectionDetailSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
+    const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }
+  };
 
   if (isCollapsed) {
     return (
@@ -89,7 +89,7 @@ export function CollectionDetailSidebar({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -158,7 +158,7 @@ export function CollectionDetailSidebar({
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
             <div className="text-xs text-ctp-subtext0 mb-1">Games</div>
             <div className="text-sm text-ctp-text font-medium">
-              {gameCount} {gameCount === 1 ? 'game' : 'games'}
+              {gameCount} {gameCount === 1 ? "game" : "games"}
             </div>
           </div>
         </div>
@@ -202,5 +202,5 @@ export function CollectionDetailSidebar({
         </div>
       </div>
     </div>
-  )
+  );
 }

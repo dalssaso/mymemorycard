@@ -1,111 +1,111 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
-import { BackButton, PageLayout } from '@/components/layout'
-import { useToast } from '@/components/ui/Toast'
-import { useTheme } from '@/contexts/ThemeContext'
-import { preferencesAPI, aiAPI } from '@/lib/api'
-import { Select } from '@/components/ui/Select'
-import type { SelectOption } from '@/components/ui/Select'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { BackButton, PageLayout } from "@/components/layout";
+import { useToast } from "@/components/ui/Toast";
+import { useTheme } from "@/contexts/ThemeContext";
+import { preferencesAPI, aiAPI } from "@/lib/api";
+import { Select } from "@/components/ui/Select";
+import type { SelectOption } from "@/components/ui/Select";
 
-type Theme = 'light' | 'dark' | 'auto'
+type Theme = "light" | "dark" | "auto";
 
 interface UserPreferences {
-  default_view: 'grid' | 'table'
-  items_per_page: number
-  theme: Theme
+  default_view: "grid" | "table";
+  items_per_page: number;
+  theme: Theme;
 }
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const THEME_OPTIONS: Array<{ value: Theme; label: string; description: string }> = [
-  { value: 'light', label: 'Light', description: 'Catppuccin Latte' },
-  { value: 'dark', label: 'Dark', description: 'Catppuccin Mocha' },
-  { value: 'auto', label: 'Auto', description: 'Match system preference' },
-]
+  { value: "light", label: "Light", description: "Catppuccin Latte" },
+  { value: "dark", label: "Dark", description: "Catppuccin Mocha" },
+  { value: "auto", label: "Auto", description: "Match system preference" },
+];
 
 const PROVIDER_OPTIONS = [
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'openrouter', label: 'OpenRouter' },
-  { value: 'ollama', label: 'Ollama (Local)' },
-  { value: 'lmstudio', label: 'LM Studio (Local)' },
-]
+  { value: "openai", label: "OpenAI" },
+  { value: "openrouter", label: "OpenRouter" },
+  { value: "ollama", label: "Ollama (Local)" },
+  { value: "lmstudio", label: "LM Studio (Local)" },
+];
 
 export function Settings() {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const { theme, setTheme } = useTheme()
-  const [isUpdatingTheme, setIsUpdatingTheme] = useState(false)
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { theme, setTheme } = useTheme();
+  const [isUpdatingTheme, setIsUpdatingTheme] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['preferences'],
+    queryKey: ["preferences"],
     queryFn: async () => {
-      const response = await preferencesAPI.get()
-      return response.data as { preferences: UserPreferences }
+      const response = await preferencesAPI.get();
+      return response.data as { preferences: UserPreferences };
     },
-  })
+  });
 
   const updateMutation = useMutation({
     mutationFn: (prefs: Partial<UserPreferences>) => preferencesAPI.update(prefs),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['preferences'] })
-      showToast('Preferences saved', 'success')
+      queryClient.invalidateQueries({ queryKey: ["preferences"] });
+      showToast("Preferences saved", "success");
     },
     onError: () => {
-      showToast('Failed to save preferences', 'error')
+      showToast("Failed to save preferences", "error");
     },
-  })
+  });
 
   const preferences = data?.preferences || {
-    default_view: 'grid',
+    default_view: "grid",
     items_per_page: 25,
     theme,
-  }
+  };
 
-  const handleViewChange = (view: 'grid' | 'table') => {
-    updateMutation.mutate({ default_view: view })
-  }
+  const handleViewChange = (view: "grid" | "table") => {
+    updateMutation.mutate({ default_view: view });
+  };
 
   const handlePageSizeChange = (size: number) => {
-    updateMutation.mutate({ items_per_page: size })
-  }
+    updateMutation.mutate({ items_per_page: size });
+  };
 
   const handleThemeChange = async (nextTheme: Theme) => {
     if (isUpdatingTheme || nextTheme === theme) {
-      return
+      return;
     }
 
-    setIsUpdatingTheme(true)
-    await setTheme(nextTheme)
-    setIsUpdatingTheme(false)
-    showToast('Theme updated', 'success')
-  }
+    setIsUpdatingTheme(true);
+    await setTheme(nextTheme);
+    setIsUpdatingTheme(false);
+    showToast("Theme updated", "success");
+  };
 
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<string>('openai')
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<string>("openai");
   const [providerForms, setProviderForms] = useState<
     Record<
       string,
       {
-        base_url?: string | null
-        api_key?: string | null
-        api_key_masked?: string | null
-        model?: string
-        image_api_key?: string | null
-        image_api_key_masked?: string | null
-        image_model?: string | null
-        temperature?: number
-        max_tokens?: number
+        base_url?: string | null;
+        api_key?: string | null;
+        api_key_masked?: string | null;
+        model?: string;
+        image_api_key?: string | null;
+        image_api_key_masked?: string | null;
+        image_model?: string | null;
+        temperature?: number;
+        max_tokens?: number;
       }
     >
-  >({})
+  >({});
 
   const { data: aiData } = useQuery({
-    queryKey: ['ai-settings'],
+    queryKey: ["ai-settings"],
     queryFn: async () => {
-      const response = await aiAPI.getSettings()
-      const { providers, activeProvider } = response.data
+      const response = await aiAPI.getSettings();
+      const { providers, activeProvider } = response.data;
 
       // Initialize forms for all configured providers
-      const forms: typeof providerForms = {}
+      const forms: typeof providerForms = {};
       providers.forEach((p) => {
         forms[p.provider] = {
           base_url: p.base_url,
@@ -115,59 +115,59 @@ export function Settings() {
           image_model: p.image_model,
           temperature: p.temperature,
           max_tokens: p.max_tokens,
-        }
-      })
-      setProviderForms(forms)
+        };
+      });
+      setProviderForms(forms);
 
       // Set selected provider to active one or first in list
       if (activeProvider) {
-        setSelectedProvider(activeProvider.provider)
+        setSelectedProvider(activeProvider.provider);
       } else if (providers.length > 0) {
-        setSelectedProvider(providers[0].provider)
+        setSelectedProvider(providers[0].provider);
       }
 
-      return response.data
+      return response.data;
     },
-  })
+  });
 
   const { data: modelsData, isLoading: modelsLoading } = useQuery({
-    queryKey: ['ai-models', selectedProvider],
+    queryKey: ["ai-models", selectedProvider],
     queryFn: async () => {
-      if (!['openai', 'openrouter'].includes(selectedProvider)) {
-        return { textModels: [], imageModels: [] }
+      if (!["openai", "openrouter"].includes(selectedProvider)) {
+        return { textModels: [], imageModels: [] };
       }
-      const response = await aiAPI.getModels(selectedProvider)
-      return response.data
+      const response = await aiAPI.getModels(selectedProvider);
+      return response.data;
     },
-    enabled: ['openai', 'openrouter'].includes(selectedProvider),
+    enabled: ["openai", "openrouter"].includes(selectedProvider),
     staleTime: 24 * 60 * 60 * 1000,
-  })
+  });
 
   const updateAiMutation = useMutation({
     mutationFn: aiAPI.updateSettings,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-settings'] })
+      queryClient.invalidateQueries({ queryKey: ["ai-settings"] });
       // Also invalidate models query so it refetches with new API key
-      queryClient.invalidateQueries({ queryKey: ['ai-models', selectedProvider] })
-      showToast('AI provider settings saved', 'success')
+      queryClient.invalidateQueries({ queryKey: ["ai-models", selectedProvider] });
+      showToast("AI provider settings saved", "success");
     },
     onError: () => {
-      showToast('Failed to save provider settings', 'error')
+      showToast("Failed to save provider settings", "error");
     },
-  })
+  });
 
   const setActiveProviderMutation = useMutation({
     mutationFn: aiAPI.setActiveProvider,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-settings'] })
-      showToast('Active provider updated', 'success')
+      queryClient.invalidateQueries({ queryKey: ["ai-settings"] });
+      showToast("Active provider updated", "success");
     },
     onError: () => {
-      showToast('Failed to set active provider', 'error')
+      showToast("Failed to set active provider", "error");
     },
-  })
+  });
 
-  const currentForm = providerForms[selectedProvider] || {}
+  const currentForm = providerForms[selectedProvider] || {};
 
   const updateCurrentForm = (updates: Partial<typeof currentForm>) => {
     setProviderForms({
@@ -176,16 +176,16 @@ export function Settings() {
         ...currentForm,
         ...updates,
       },
-    })
-  }
+    });
+  };
 
   const handleAiSettingsSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const form = providerForms[selectedProvider]
-    if (!form) return
+    e.preventDefault();
+    const form = providerForms[selectedProvider];
+    if (!form) return;
 
     // OpenRouter doesn't support image generation reliably - only allow for OpenAI
-    const supportsImages = selectedProvider === 'openai'
+    const supportsImages = selectedProvider === "openai";
 
     updateAiMutation.mutate({
       provider: selectedProvider,
@@ -198,11 +198,11 @@ export function Settings() {
       temperature: form.temperature,
       maxTokens: form.max_tokens,
       setActive: true, // Always set as active when saving
-    })
-  }
+    });
+  };
 
   const handleProviderClick = (provider: string) => {
-    setSelectedProvider(provider)
+    setSelectedProvider(provider);
     // If provider not configured yet, initialize empty form
     if (!providerForms[provider]) {
       setProviderForms({
@@ -211,16 +211,16 @@ export function Settings() {
           temperature: 0.7,
           max_tokens: 12000,
         },
-      })
+      });
     }
-  }
+  };
 
   const isProviderConfigured = (provider: string) => {
     return (
       providerForms[provider]?.api_key_masked !== null &&
       providerForms[provider]?.api_key_masked !== undefined
-    )
-  }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -243,7 +243,7 @@ export function Settings() {
           </div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   return (
@@ -265,12 +265,12 @@ export function Settings() {
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => handleViewChange('grid')}
+                onClick={() => handleViewChange("grid")}
                 disabled={updateMutation.isPending}
                 className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                  preferences.default_view === 'grid'
-                    ? 'bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve'
-                    : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
+                  preferences.default_view === "grid"
+                    ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
+                    : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
@@ -293,12 +293,12 @@ export function Settings() {
                 </div>
               </button>
               <button
-                onClick={() => handleViewChange('table')}
+                onClick={() => handleViewChange("table")}
                 disabled={updateMutation.isPending}
                 className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                  preferences.default_view === 'table'
-                    ? 'bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve'
-                    : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
+                  preferences.default_view === "table"
+                    ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
+                    : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
@@ -336,8 +336,8 @@ export function Settings() {
                   disabled={updateMutation.isPending}
                   className={`px-4 py-2 rounded-lg border transition-all ${
                     preferences.items_per_page === size
-                      ? 'bg-ctp-teal/20 border-ctp-teal text-ctp-teal'
-                      : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
+                      ? "bg-ctp-teal/20 border-ctp-teal text-ctp-teal"
+                      : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
                   }`}
                 >
                   {size}
@@ -360,8 +360,8 @@ export function Settings() {
                   disabled={isUpdatingTheme}
                   className={`px-4 py-3 rounded-lg border-2 text-left transition-all ${
                     theme === option.value
-                      ? 'bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve'
-                      : 'bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2'
+                      ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
+                      : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
                   }`}
                 >
                   <div className="font-medium">{option.label}</div>
@@ -383,9 +383,9 @@ export function Settings() {
               </p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {PROVIDER_OPTIONS.map((option) => {
-                  const isActive = aiData?.activeProvider?.provider === option.value
-                  const isConfigured = isProviderConfigured(option.value)
-                  const isSelected = selectedProvider === option.value
+                  const isActive = aiData?.activeProvider?.provider === option.value;
+                  const isConfigured = isProviderConfigured(option.value);
+                  const isSelected = selectedProvider === option.value;
 
                   return (
                     <button
@@ -394,8 +394,8 @@ export function Settings() {
                       onClick={() => handleProviderClick(option.value)}
                       className={`relative w-full px-3 py-3 rounded-lg text-sm transition-all flex items-center justify-between ${
                         isSelected
-                          ? 'bg-ctp-mauve/20 text-ctp-mauve border-2 border-ctp-mauve/50'
-                          : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-2 border-transparent'
+                          ? "bg-ctp-mauve/20 text-ctp-mauve border-2 border-ctp-mauve/50"
+                          : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-2 border-transparent"
                       }`}
                     >
                       <span className="flex items-center gap-2">
@@ -416,7 +416,7 @@ export function Settings() {
                         </svg>
                       )}
                     </button>
-                  )
+                  );
                 })}
               </div>
               <p className="text-xs text-ctp-overlay1 mt-2">
@@ -447,7 +447,7 @@ export function Settings() {
                   View setup guides
                 </a>
               </p>
-              {selectedProvider !== 'openai' && (
+              {selectedProvider !== "openai" && (
                 <div className="mt-3 p-3 bg-ctp-yellow/10 border border-ctp-yellow/30 rounded-lg">
                   <p className="text-xs text-ctp-yellow flex items-start gap-2">
                     <svg
@@ -493,34 +493,34 @@ export function Settings() {
                   )}
               </div>
 
-              {(selectedProvider === 'ollama' ||
-                selectedProvider === 'lmstudio' ||
-                selectedProvider === 'openrouter') && (
+              {(selectedProvider === "ollama" ||
+                selectedProvider === "lmstudio" ||
+                selectedProvider === "openrouter") && (
                 <div>
                   <label
                     className="block text-sm font-medium text-ctp-text mb-2"
                     htmlFor="provider-base-url"
                   >
-                    Base URL {selectedProvider === 'openrouter' && '(Optional)'}
+                    Base URL {selectedProvider === "openrouter" && "(Optional)"}
                   </label>
                   <input
                     id="provider-base-url"
                     type="url"
-                    value={currentForm.base_url || ''}
+                    value={currentForm.base_url || ""}
                     onChange={(e) => updateCurrentForm({ base_url: e.target.value || null })}
                     placeholder={
-                      selectedProvider === 'ollama'
-                        ? 'http://localhost:11434/v1'
-                        : selectedProvider === 'lmstudio'
-                          ? 'http://localhost:1234/v1'
-                          : 'https://openrouter.ai/api/v1'
+                      selectedProvider === "ollama"
+                        ? "http://localhost:11434/v1"
+                        : selectedProvider === "lmstudio"
+                          ? "http://localhost:1234/v1"
+                          : "https://openrouter.ai/api/v1"
                     }
                     className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                   />
                   <p className="text-xs text-ctp-overlay1 mt-1">
-                    {selectedProvider === 'ollama' && 'Default: http://localhost:11434/v1'}
-                    {selectedProvider === 'lmstudio' && 'Default: http://localhost:1234/v1'}
-                    {selectedProvider === 'openrouter' && 'Default: https://openrouter.ai/api/v1'}
+                    {selectedProvider === "ollama" && "Default: http://localhost:11434/v1"}
+                    {selectedProvider === "lmstudio" && "Default: http://localhost:1234/v1"}
+                    {selectedProvider === "openrouter" && "Default: https://openrouter.ai/api/v1"}
                   </p>
                 </div>
               )}
@@ -536,35 +536,35 @@ export function Settings() {
                   id="provider-api-key"
                   type={
                     currentForm.api_key === undefined && currentForm.api_key_masked
-                      ? 'text'
-                      : 'password'
+                      ? "text"
+                      : "password"
                   }
                   value={
                     currentForm.api_key !== undefined
-                      ? currentForm.api_key || ''
-                      : currentForm.api_key_masked || ''
+                      ? currentForm.api_key || ""
+                      : currentForm.api_key_masked || ""
                   }
                   onChange={(e) => updateCurrentForm({ api_key: e.target.value || null })}
                   onFocus={(e) => {
                     if (currentForm.api_key === undefined && currentForm.api_key_masked) {
-                      updateCurrentForm({ api_key: '' })
-                      setTimeout(() => e.target.select(), 0)
+                      updateCurrentForm({ api_key: "" });
+                      setTimeout(() => e.target.select(), 0);
                     }
                   }}
                   placeholder={
-                    selectedProvider === 'ollama' || selectedProvider === 'lmstudio'
-                      ? 'Not required for local models'
+                    selectedProvider === "ollama" || selectedProvider === "lmstudio"
+                      ? "Not required for local models"
                       : currentForm.api_key_masked
-                        ? 'Click to replace existing key'
-                        : 'Enter your API key'
+                        ? "Click to replace existing key"
+                        : "Enter your API key"
                   }
                   className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                   readOnly={currentForm.api_key === undefined && currentForm.api_key_masked != null}
                 />
                 <p className="text-xs text-ctp-overlay1 mt-1">
                   {currentForm.api_key_masked && currentForm.api_key === undefined
-                    ? 'API key configured. Click the field to replace it.'
-                    : 'Your API key is encrypted before being stored.'}
+                    ? "API key configured. Click the field to replace it."
+                    : "Your API key is encrypted before being stored."}
                 </p>
               </div>
 
@@ -575,12 +575,12 @@ export function Settings() {
                 >
                   Model
                 </label>
-                {selectedProvider === 'openai' ? (
+                {selectedProvider === "openai" ? (
                   <>
                     {modelsData && modelsData.textModels.length > 0 ? (
                       <Select
                         id="model-select"
-                        value={currentForm.model || ''}
+                        value={currentForm.model || ""}
                         options={modelsData.textModels.map(
                           (model): SelectOption => ({
                             value: model.id,
@@ -602,10 +602,10 @@ export function Settings() {
                       <input
                         id="model-select"
                         type="text"
-                        value={currentForm.model || ''}
+                        value={currentForm.model || ""}
                         onChange={(e) => updateCurrentForm({ model: e.target.value })}
                         placeholder={
-                          modelsLoading ? 'Loading models...' : 'e.g., gpt-4o, gpt-4o-mini'
+                          modelsLoading ? "Loading models..." : "e.g., gpt-4o, gpt-4o-mini"
                         }
                         disabled={modelsLoading}
                         className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
@@ -613,18 +613,18 @@ export function Settings() {
                     )}
                     <p className="text-xs text-ctp-overlay1 mt-1">
                       {modelsLoading
-                        ? 'Loading available models from OpenAI...'
+                        ? "Loading available models from OpenAI..."
                         : modelsData && modelsData.textModels.length > 0
-                          ? 'Select from available OpenAI models'
-                          : 'Save your API key first, then reload to see available models'}
+                          ? "Select from available OpenAI models"
+                          : "Save your API key first, then reload to see available models"}
                     </p>
                   </>
-                ) : selectedProvider === 'openrouter' ? (
+                ) : selectedProvider === "openrouter" ? (
                   <>
                     {modelsData && modelsData.textModels.length > 0 ? (
                       <Select
                         id="model-select"
-                        value={currentForm.model || ''}
+                        value={currentForm.model || ""}
                         options={modelsData.textModels.map(
                           (model): SelectOption => ({
                             value: model.id,
@@ -645,12 +645,12 @@ export function Settings() {
                     ) : (
                       <input
                         type="text"
-                        value={currentForm.model || ''}
+                        value={currentForm.model || ""}
                         onChange={(e) => updateCurrentForm({ model: e.target.value })}
                         placeholder={
                           modelsLoading
-                            ? 'Loading models...'
-                            : 'e.g., openai/gpt-4o, anthropic/claude-3.5-sonnet'
+                            ? "Loading models..."
+                            : "e.g., openai/gpt-4o, anthropic/claude-3.5-sonnet"
                         }
                         disabled={modelsLoading}
                         className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
@@ -658,10 +658,10 @@ export function Settings() {
                     )}
                     <p className="text-xs text-ctp-overlay1 mt-1">
                       {modelsLoading ? (
-                        'Loading available models from OpenRouter...'
+                        "Loading available models from OpenRouter..."
                       ) : modelsData && modelsData.textModels.length > 0 ? (
                         <span>
-                          Top 5 recommended models.{' '}
+                          Top 5 recommended models.{" "}
                           <a
                             href="https://openrouter.ai/models"
                             target="_blank"
@@ -674,7 +674,7 @@ export function Settings() {
                       ) : (
                         <span>
                           Save your API key first, then reload to see available models. Requires
-                          provider prefix (e.g., openai/gpt-4o).{' '}
+                          provider prefix (e.g., openai/gpt-4o).{" "}
                           <a
                             href="https://openrouter.ai/models"
                             target="_blank"
@@ -691,20 +691,20 @@ export function Settings() {
                   <>
                     <input
                       type="text"
-                      value={currentForm.model || ''}
+                      value={currentForm.model || ""}
                       onChange={(e) => updateCurrentForm({ model: e.target.value })}
                       placeholder={
-                        selectedProvider === 'ollama'
-                          ? 'e.g., llama3.2:3b, mistral:latest'
-                          : 'e.g., gpt-4o-mini'
+                        selectedProvider === "ollama"
+                          ? "e.g., llama3.2:3b, mistral:latest"
+                          : "e.g., gpt-4o-mini"
                       }
                       className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                     />
                     <p className="text-xs text-ctp-overlay1 mt-1">
-                      {selectedProvider === 'ollama' &&
-                        'Recommended: llama3.2:3b, mistral:latest, qwen2.5:3b'}
-                      {selectedProvider === 'lmstudio' &&
-                        'Use the model name shown in LM Studio server tab'}
+                      {selectedProvider === "ollama" &&
+                        "Recommended: llama3.2:3b, mistral:latest, qwen2.5:3b"}
+                      {selectedProvider === "lmstudio" &&
+                        "Use the model name shown in LM Studio server tab"}
                     </p>
                   </>
                 )}
@@ -716,9 +716,9 @@ export function Settings() {
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className="text-sm text-ctp-blue hover:underline flex items-center gap-1"
                 >
-                  {showAdvanced ? 'Hide' : 'Show'} Advanced Options
+                  {showAdvanced ? "Hide" : "Show"} Advanced Options
                   <svg
-                    className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -735,7 +735,7 @@ export function Settings() {
 
               {showAdvanced && (
                 <div className="space-y-4 pl-4 border-l-2 border-ctp-surface1">
-                  {selectedProvider === 'openai' ? (
+                  {selectedProvider === "openai" ? (
                     <>
                       <div>
                         <label
@@ -749,13 +749,13 @@ export function Settings() {
                           type={
                             currentForm.image_api_key === undefined &&
                             currentForm.image_api_key_masked
-                              ? 'text'
-                              : 'password'
+                              ? "text"
+                              : "password"
                           }
                           value={
                             currentForm.image_api_key !== undefined
-                              ? currentForm.image_api_key || ''
-                              : currentForm.image_api_key_masked || ''
+                              ? currentForm.image_api_key || ""
+                              : currentForm.image_api_key_masked || ""
                           }
                           onChange={(e) =>
                             updateCurrentForm({ image_api_key: e.target.value || null })
@@ -765,15 +765,15 @@ export function Settings() {
                               currentForm.image_api_key === undefined &&
                               currentForm.image_api_key_masked
                             ) {
-                              updateCurrentForm({ image_api_key: '' })
-                              setTimeout(() => e.target.select(), 0)
+                              updateCurrentForm({ image_api_key: "" });
+                              setTimeout(() => e.target.select(), 0);
                             }
                           }}
                           placeholder={
                             currentForm.image_api_key_masked &&
                             currentForm.image_api_key === undefined
-                              ? 'Click to replace existing key'
-                              : 'Leave empty to use main API key'
+                              ? "Click to replace existing key"
+                              : "Leave empty to use main API key"
                           }
                           className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
                           readOnly={
@@ -784,8 +784,8 @@ export function Settings() {
                         <p className="text-xs text-ctp-overlay1 mt-1">
                           {currentForm.image_api_key_masked &&
                           currentForm.image_api_key === undefined
-                            ? 'Separate API key configured for image generation.'
-                            : 'If not specified, the main API key will be used for image generation.'}
+                            ? "Separate API key configured for image generation."
+                            : "If not specified, the main API key will be used for image generation."}
                         </p>
                       </div>
                       <div>
@@ -799,7 +799,7 @@ export function Settings() {
                           <>
                             <Select
                               id="image-model-select"
-                              value={currentForm.image_model || ''}
+                              value={currentForm.image_model || ""}
                               options={modelsData.imageModels.map(
                                 (model): SelectOption => ({
                                   value: model.id,
@@ -826,18 +826,18 @@ export function Settings() {
                             <input
                               id="image-model-select"
                               type="text"
-                              value={currentForm.image_model || ''}
+                              value={currentForm.image_model || ""}
                               onChange={(e) =>
                                 updateCurrentForm({ image_model: e.target.value || null })
                               }
-                              placeholder={modelsLoading ? 'Loading models...' : 'dall-e-3'}
+                              placeholder={modelsLoading ? "Loading models..." : "dall-e-3"}
                               disabled={modelsLoading}
                               className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
                             />
                             <p className="text-xs text-ctp-overlay1 mt-1">
                               {modelsLoading
-                                ? 'Loading available models from OpenAI...'
-                                : 'Save your API key first, then reload to see available models. DALL-E 3 is recommended.'}
+                                ? "Loading available models from OpenAI..."
+                                : "Save your API key first, then reload to see available models. DALL-E 3 is recommended."}
                             </p>
                           </>
                         )}
@@ -864,9 +864,9 @@ export function Settings() {
                           <p className="text-ctp-overlay1">
                             AI-generated collection cover images are only supported with OpenAI
                             (DALL-E models).
-                            {selectedProvider === 'ollama' || selectedProvider === 'lmstudio'
-                              ? ' Local models do not support image generation.'
-                              : ' OpenRouter image generation has been disabled due to reliability issues.'}
+                            {selectedProvider === "ollama" || selectedProvider === "lmstudio"
+                              ? " Local models do not support image generation."
+                              : " OpenRouter image generation has been disabled due to reliability issues."}
                           </p>
                           <p className="mt-2 text-ctp-overlay1">
                             To use this feature, configure an OpenAI provider above with an API key
@@ -933,7 +933,7 @@ export function Settings() {
                 className="px-6 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updateAiMutation.isPending
-                  ? 'Saving...'
+                  ? "Saving..."
                   : `Save ${PROVIDER_OPTIONS.find((p) => p.value === selectedProvider)?.label} Settings`}
               </button>
             </form>
@@ -941,5 +941,5 @@ export function Settings() {
         </div>
       </div>
     </PageLayout>
-  )
+  );
 }

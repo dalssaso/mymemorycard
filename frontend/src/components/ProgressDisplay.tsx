@@ -1,64 +1,64 @@
-import { useQuery } from '@tanstack/react-query'
-import { completionLogsAPI, type CompletionType } from '@/lib/api'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { ClickableBadge } from '@/components/ui'
+import { useQuery } from "@tanstack/react-query";
+import { completionLogsAPI, type CompletionType } from "@/lib/api";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ClickableBadge } from "@/components/ui";
 
 interface DLCSummary {
-  dlcId: string
-  name: string
-  percentage: number
-  weight: number
-  requiredForFull: boolean
-  owned?: boolean
+  dlcId: string;
+  name: string;
+  percentage: number;
+  weight: number;
+  requiredForFull: boolean;
+  owned?: boolean;
 }
 
 interface CompletionSummary {
-  main: number
-  full: number
-  completionist: number
-  dlcs: DLCSummary[]
-  achievementPercentage: number
-  hasDlcs: boolean
+  main: number;
+  full: number;
+  completionist: number;
+  dlcs: DLCSummary[];
+  achievementPercentage: number;
+  hasDlcs: boolean;
 }
 
 interface ProgressDisplayProps {
-  gameId: string
-  platformId?: string
+  gameId: string;
+  platformId?: string;
 }
 
 const TYPE_COLORS: Record<CompletionType, string> = {
-  main: '#10B981',
-  dlc: '#8B5CF6',
-  full: '#06B6D4',
-  completionist: '#F59E0B',
-}
+  main: "#10B981",
+  dlc: "#8B5CF6",
+  full: "#06B6D4",
+  completionist: "#F59E0B",
+};
 
 export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const handleBadgeClick = (tab: 'main' | 'dlc' | 'full' | 'completionist') => {
+  const handleBadgeClick = (tab: "main" | "dlc" | "full" | "completionist") => {
     navigate({
-      to: '.',
-      hash: 'stats',
+      to: ".",
+      hash: "stats",
       search: { tab },
-    })
-  }
+    });
+  };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['completionLogs', gameId, platformId],
+    queryKey: ["completionLogs", gameId, platformId],
     queryFn: async () => {
       const response = await completionLogsAPI.getAll(gameId, {
         limit: 1,
         ...(platformId && { platform_id: platformId }),
-      })
+      });
       return response.data as {
-        logs: unknown[]
-        total: number
-        currentPercentage: number
-        summary: CompletionSummary
-      }
+        logs: unknown[];
+        total: number;
+        currentPercentage: number;
+        summary: CompletionSummary;
+      };
     },
-  })
+  });
 
   if (isLoading) {
     return (
@@ -66,7 +66,7 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
         <div className="h-4 bg-ctp-surface1 rounded w-1/2 mb-2" />
         <div className="h-6 bg-ctp-surface1 rounded w-1/3" />
       </div>
-    )
+    );
   }
 
   const summary = data?.summary || {
@@ -76,17 +76,17 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
     dlcs: [],
     achievementPercentage: 100,
     hasDlcs: false,
-  }
-  const mainProgress = summary.main
-  const fullProgress = summary.full
-  const hasDlcs = summary.hasDlcs
+  };
+  const mainProgress = summary.main;
+  const fullProgress = summary.full;
+  const hasDlcs = summary.hasDlcs;
 
   return (
     <div className="bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg p-3">
       <Link to="." hash="stats" className="block hover:opacity-80 transition-opacity group">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-ctp-subtext0 group-hover:text-ctp-subtext1">
-            {hasDlcs ? 'Full Progress' : 'Main Progress'}
+            {hasDlcs ? "Full Progress" : "Main Progress"}
           </span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -119,14 +119,14 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
         </div>
       </Link>
       {(() => {
-        const ownedDlcs = summary.dlcs.filter((d) => d.owned !== false)
+        const ownedDlcs = summary.dlcs.filter((d) => d.owned !== false);
         const hasAchievements =
-          summary.achievementPercentage > 0 && summary.achievementPercentage < 100
+          summary.achievementPercentage > 0 && summary.achievementPercentage < 100;
         const hasOwnedDlcsWithProgress =
-          ownedDlcs.length > 0 && ownedDlcs.some((d) => d.percentage > 0)
+          ownedDlcs.length > 0 && ownedDlcs.some((d) => d.percentage > 0);
 
         const shouldShowCompletionist =
-          summary.completionist > 0 && (hasAchievements || hasOwnedDlcsWithProgress)
+          summary.completionist > 0 && (hasAchievements || hasOwnedDlcsWithProgress);
 
         return (
           <>
@@ -136,7 +136,7 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
                   label="Main"
                   percentage={mainProgress}
                   color={TYPE_COLORS.main}
-                  onClick={() => handleBadgeClick('main')}
+                  onClick={() => handleBadgeClick("main")}
                 />
                 {ownedDlcs.length > 0 && (
                   <ClickableBadge
@@ -145,14 +145,14 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
                       ownedDlcs.reduce((acc, d) => acc + d.percentage, 0) / ownedDlcs.length
                     )}
                     color={TYPE_COLORS.dlc}
-                    onClick={() => handleBadgeClick('dlc')}
+                    onClick={() => handleBadgeClick("dlc")}
                   />
                 )}
                 <ClickableBadge
                   label="Full"
                   percentage={fullProgress}
                   color={TYPE_COLORS.full}
-                  onClick={() => handleBadgeClick('full')}
+                  onClick={() => handleBadgeClick("full")}
                 />
               </div>
             )}
@@ -162,7 +162,7 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
                   label="Main"
                   percentage={mainProgress}
                   color={TYPE_COLORS.main}
-                  onClick={() => handleBadgeClick('main')}
+                  onClick={() => handleBadgeClick("main")}
                 />
               </div>
             )}
@@ -172,13 +172,13 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
                   label="Completionist"
                   percentage={summary.completionist}
                   color={TYPE_COLORS.completionist}
-                  onClick={() => handleBadgeClick('completionist')}
+                  onClick={() => handleBadgeClick("completionist")}
                 />
               </div>
             )}
           </>
-        )
+        );
       })()}
     </div>
-  )
+  );
 }

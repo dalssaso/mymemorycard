@@ -1,9 +1,9 @@
 interface ClickableBadgeProps {
-  label: string
-  percentage: number
-  color: string
-  onClick: () => void
-  className?: string
+  label: string;
+  percentage: number;
+  color: string;
+  onClick: () => void;
+  className?: string;
 }
 
 export function ClickableBadge({
@@ -11,14 +11,14 @@ export function ClickableBadge({
   percentage,
   color,
   onClick,
-  className = '',
+  className = "",
 }: ClickableBadgeProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onClick()
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
     }
-  }
+  };
 
   return (
     <button
@@ -28,8 +28,8 @@ export function ClickableBadge({
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-all hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 ${className}`}
       style={{
         backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
-        borderWidth: '1px',
-        borderStyle: 'solid',
+        borderWidth: "1px",
+        borderStyle: "solid",
         borderColor: `color-mix(in srgb, ${color} 50%, transparent)`,
         color: color,
       }}
@@ -38,5 +38,5 @@ export function ClickableBadge({
       <span className="font-semibold">{label}:</span>
       <span>{percentage}%</span>
     </button>
-  )
+  );
 }

@@ -1,36 +1,36 @@
-import { type ReactNode } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { ScrollFade } from '@/components/ui'
-import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
-import { gamesAPI, collectionsAPI, franchisesAPI } from '@/lib/api'
-import { BackButton } from './BackButton'
+import { type ReactNode } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { ScrollFade } from "@/components/ui";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { gamesAPI, collectionsAPI, franchisesAPI } from "@/lib/api";
+import { BackButton } from "./BackButton";
 
 const quickStatStyles = {
   total: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-mauve) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 35%, transparent)",
   },
   playing: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-teal) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 35%, transparent)",
   },
   completed: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-green) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-green) 35%, transparent)",
   },
   favorites: {
-    backgroundColor: 'color-mix(in srgb, var(--ctp-red) 35%, transparent)',
+    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
   },
-}
+};
 
 export interface SidebarProps {
-  children?: ReactNode
-  customCollapsed?: boolean
-  showBackButton?: boolean
+  children?: ReactNode;
+  customCollapsed?: boolean;
+  showBackButton?: boolean;
 }
 
 interface GameSummary {
-  status: string
-  is_favorite?: boolean
+  status: string;
+  is_favorite?: boolean;
 }
 
 export function Sidebar({
@@ -38,47 +38,47 @@ export function Sidebar({
   customCollapsed = false,
   showBackButton = true,
 }: SidebarProps) {
-  const { user } = useAuth()
-  const { isCollapsed, toggleSidebar } = useSidebar()
+  const { user } = useAuth();
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   // Fetch games for stats
   const { data } = useQuery({
-    queryKey: ['games'],
+    queryKey: ["games"],
     queryFn: async () => {
-      const response = await gamesAPI.getAll()
-      return response.data as { games: GameSummary[] }
+      const response = await gamesAPI.getAll();
+      return response.data as { games: GameSummary[] };
     },
-  })
+  });
 
   // Fetch collections
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
+      const response = await collectionsAPI.getAll();
       return response.data as {
-        collections: Array<{ id: string; name: string; game_count: number }>
-      }
+        collections: Array<{ id: string; name: string; game_count: number }>;
+      };
     },
-  })
+  });
 
   // Fetch franchises
   const { data: franchisesData } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
-      return response.data
+      const response = await franchisesAPI.getAll();
+      return response.data;
     },
-  })
+  });
 
-  const games = data?.games || []
-  const totalGames = games.length
-  const playingGames = games.filter((g) => g.status === 'playing').length
+  const games = data?.games || [];
+  const totalGames = games.length;
+  const playingGames = games.filter((g) => g.status === "playing").length;
   const completedGames = games.filter(
-    (g) => g.status === 'completed' || g.status === 'finished'
-  ).length
-  const favoriteGames = games.filter((g) => g.is_favorite === true).length
-  const collections = collectionsData?.collections || []
-  const franchises = franchisesData?.franchises || []
+    (g) => g.status === "completed" || g.status === "finished"
+  ).length;
+  const favoriteGames = games.filter((g) => g.is_favorite === true).length;
+  const collections = collectionsData?.collections || [];
+  const franchises = franchisesData?.franchises || [];
 
   return (
     <>
@@ -86,12 +86,12 @@ export function Sidebar({
       <button
         onClick={toggleSidebar}
         className={`hidden md:flex fixed top-20 z-20 w-6 h-6 bg-ctp-surface0 border border-ctp-surface1 rounded-full items-center justify-center hover:bg-ctp-surface1 hover:border-ctp-surface2 transition-all duration-300 ${
-          isCollapsed ? 'left-[52px]' : 'left-[228px]'
+          isCollapsed ? "left-[52px]" : "left-[228px]"
         }`}
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <svg
-          className={`w-3 h-3 text-ctp-subtext0 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+          className={`w-3 h-3 text-ctp-subtext0 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -102,7 +102,7 @@ export function Sidebar({
 
       <aside
         className={`hidden md:block fixed left-0 top-16 bottom-0 bg-ctp-mantle border-r border-ctp-surface0 transition-all duration-300 ${
-          isCollapsed ? 'w-16' : 'w-60'
+          isCollapsed ? "w-16" : "w-60"
         }`}
       >
         <ScrollFade axis="y" className="h-full overflow-y-auto">
@@ -124,7 +124,7 @@ export function Sidebar({
                   title={user?.username}
                 >
                   <span className="text-ctp-text font-medium text-sm">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    {user?.username?.charAt(0).toUpperCase() || "U"}
                   </span>
                 </div>
               </div>
@@ -159,7 +159,7 @@ export function Sidebar({
                     </Link>
                     <Link
                       to="/library"
-                      search={{ status: 'playing' }}
+                      search={{ status: "playing" }}
                       className="flex flex-col items-center gap-1 rounded-lg p-1 transition hover:brightness-110"
                       style={quickStatStyles.playing}
                       title="Playing"
@@ -187,7 +187,7 @@ export function Sidebar({
                     </Link>
                     <Link
                       to="/library"
-                      search={{ status: 'completed' }}
+                      search={{ status: "completed" }}
                       className="flex flex-col items-center gap-1 rounded-lg p-1 transition hover:brightness-110"
                       style={quickStatStyles.completed}
                       title="Completed"
@@ -294,7 +294,7 @@ export function Sidebar({
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">
                     <span className="text-ctp-text font-medium">
-                      {user?.username?.charAt(0).toUpperCase() || 'U'}
+                      {user?.username?.charAt(0).toUpperCase() || "U"}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -477,5 +477,5 @@ export function Sidebar({
         </ScrollFade>
       </aside>
     </>
-  )
+  );
 }

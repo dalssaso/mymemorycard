@@ -1,71 +1,71 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { RefObject } from 'react'
-import { getPlatformColor } from '@/components/PlatformIcon'
-import type { ActivityFeedResponse } from '@/lib/api'
-import { statsAPI } from '@/lib/api'
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { RefObject } from "react";
+import { getPlatformColor } from "@/components/PlatformIcon";
+import type { ActivityFeedResponse } from "@/lib/api";
+import { statsAPI } from "@/lib/api";
 
 export interface FeedItem {
-  type: 'session' | 'completion' | 'achievement'
-  id: string
-  game_id: string
-  game_name: string
-  platform_name: string
-  timestamp: string
-  duration_minutes?: number | null
-  percentage?: number
-  completion_type?: 'main' | 'dlc' | 'full' | 'completionist'
-  achievement_name?: string
-  rarity_percent?: number | null
+  type: "session" | "completion" | "achievement";
+  id: string;
+  game_id: string;
+  game_name: string;
+  platform_name: string;
+  timestamp: string;
+  duration_minutes?: number | null;
+  percentage?: number;
+  completion_type?: "main" | "dlc" | "full" | "completionist";
+  achievement_name?: string;
+  rarity_percent?: number | null;
 }
 
 interface ActivityFeedProps {
-  limit?: number
-  desktopLimit?: number
-  mobileLimit?: number
-  maxHeightClassName?: string
-  showMoreHref?: string
-  mobileShowMoreThreshold?: number
-  wrapperClassName?: string
+  limit?: number;
+  desktopLimit?: number;
+  mobileLimit?: number;
+  maxHeightClassName?: string;
+  showMoreHref?: string;
+  mobileShowMoreThreshold?: number;
+  wrapperClassName?: string;
 }
 
 function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 }
 
 function formatRelativeTime(date: Date): string {
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return date.toLocaleDateString()
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
 }
 
-function formatCompletionTypeLabel(type?: FeedItem['completion_type']): string {
-  if (type === 'dlc') return 'DLC'
-  if (type === 'full') return 'Full'
-  if (type === 'completionist') return 'Completionist'
-  return 'Main'
+function formatCompletionTypeLabel(type?: FeedItem["completion_type"]): string {
+  if (type === "dlc") return "DLC";
+  if (type === "full") return "Full";
+  if (type === "completionist") return "Completionist";
+  return "Main";
 }
 
 function withHexAlpha(color: string, alphaHex: string): string {
-  if (!/^#[0-9a-fA-F]{6}$/.test(color)) return color
-  return `${color}${alphaHex}`
+  if (!/^#[0-9a-fA-F]{6}$/.test(color)) return color;
+  return `${color}${alphaHex}`;
 }
 
 interface ActivityFeedListProps {
-  feed: FeedItem[]
-  className?: string
-  containerRef?: RefObject<HTMLDivElement>
+  feed: FeedItem[];
+  className?: string;
+  containerRef?: RefObject<HTMLDivElement>;
 }
 
 export function ActivityFeedList({ feed, className, containerRef }: ActivityFeedListProps) {
@@ -77,24 +77,24 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
           to="/library/$id"
           params={{ id: item.game_id }}
           hash={
-            item.type === 'session'
-              ? 'sessions'
-              : item.type === 'achievement'
-                ? 'achievements'
-                : 'stats'
+            item.type === "session"
+              ? "sessions"
+              : item.type === "achievement"
+                ? "achievements"
+                : "stats"
           }
           className="flex gap-2 px-2 py-1.5 bg-ctp-surface0/50 rounded-lg hover:bg-ctp-surface0 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
         >
           <div
             className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-              item.type === 'session'
-                ? 'bg-ctp-teal/20 text-ctp-teal'
-                : item.type === 'achievement'
-                  ? 'bg-yellow-400/20 text-yellow-400'
-                  : 'bg-ctp-green/20 text-ctp-green'
+              item.type === "session"
+                ? "bg-ctp-teal/20 text-ctp-teal"
+                : item.type === "achievement"
+                  ? "bg-yellow-400/20 text-yellow-400"
+                  : "bg-ctp-green/20 text-ctp-green"
             }`}
           >
-            {item.type === 'session' ? (
+            {item.type === "session" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -109,7 +109,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
                 />
               </svg>
-            ) : item.type === 'achievement' ? (
+            ) : item.type === "achievement" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -148,10 +148,10 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   {item.game_name}
                 </p>
                 <p className="text-[11px] text-ctp-subtext0 leading-4">
-                  {item.type === 'session' ? (
+                  {item.type === "session" ? (
                     item.duration_minutes ? (
                       <>
-                        Played for{' '}
+                        Played for{" "}
                         <span className="text-ctp-teal">
                           {formatDuration(item.duration_minutes)}
                         </span>
@@ -159,9 +159,9 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                     ) : (
                       <span className="text-ctp-overlay1">Session logged</span>
                     )
-                  ) : item.type === 'achievement' ? (
+                  ) : item.type === "achievement" ? (
                     <>
-                      Unlocked{' '}
+                      Unlocked{" "}
                       <span className="inline-flex items-center rounded border border-ctp-yellow/40 bg-ctp-yellow/20 px-1.5 py-0.5 text-ctp-yellow font-medium">
                         {item.achievement_name}
                       </span>
@@ -169,10 +169,10 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                         <span
                           className={`ml-1 inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
                             item.rarity_percent < 10
-                              ? 'border-ctp-yellow/40 bg-ctp-yellow/20 text-ctp-yellow'
+                              ? "border-ctp-yellow/40 bg-ctp-yellow/20 text-ctp-yellow"
                               : item.rarity_percent < 25
-                                ? 'border-ctp-mauve/40 bg-ctp-mauve/20 text-ctp-mauve'
-                                : 'border-ctp-surface2 bg-ctp-surface1 text-ctp-subtext0'
+                                ? "border-ctp-mauve/40 bg-ctp-mauve/20 text-ctp-mauve"
+                                : "border-ctp-surface2 bg-ctp-surface1 text-ctp-subtext0"
                           }`}
                         >
                           {item.rarity_percent.toFixed(1)}%
@@ -181,7 +181,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                     </>
                   ) : (
                     <>
-                      {formatCompletionTypeLabel(item.completion_type)} progress updated to{' '}
+                      {formatCompletionTypeLabel(item.completion_type)} progress updated to{" "}
                       <span className="inline-flex items-center rounded border border-ctp-green/40 bg-ctp-green/20 px-1.5 py-0.5 text-ctp-green font-medium">
                         {item.percentage}%
                       </span>
@@ -197,7 +197,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
               <span
                 className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
                 style={{
-                  backgroundColor: withHexAlpha(getPlatformColor(item.platform_name), 'CC'),
+                  backgroundColor: withHexAlpha(getPlatformColor(item.platform_name), "CC"),
                 }}
               >
                 {item.platform_name}
@@ -207,7 +207,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
         </Link>
       ))}
     </div>
-  )
+  );
 }
 
 export function ActivityFeed({
@@ -219,58 +219,58 @@ export function ActivityFeed({
   mobileShowMoreThreshold = 5,
   wrapperClassName,
 }: ActivityFeedProps) {
-  const [isDesktop, setIsDesktop] = useState(true)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const [isOverflowing, setIsOverflowing] = useState(false)
-  const effectiveLimit = isDesktop ? (desktopLimit ?? limit) : (mobileLimit ?? limit)
+  const [isDesktop, setIsDesktop] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const effectiveLimit = isDesktop ? (desktopLimit ?? limit) : (mobileLimit ?? limit);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      setIsDesktop(true)
-      return
+    if (typeof window === "undefined" || !window.matchMedia) {
+      setIsDesktop(true);
+      return;
     }
 
-    const mediaQuery = window.matchMedia('(min-width: 1024px)')
-    const update = () => setIsDesktop(mediaQuery.matches)
-    update()
-    mediaQuery.addEventListener('change', update)
-    return () => mediaQuery.removeEventListener('change', update)
-  }, [])
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mediaQuery.matches);
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['activityFeed', effectiveLimit],
+    queryKey: ["activityFeed", effectiveLimit],
     queryFn: async () => {
-      const response = await statsAPI.getActivityFeed(effectiveLimit)
-      return response.data as ActivityFeedResponse<FeedItem>
+      const response = await statsAPI.getActivityFeed(effectiveLimit);
+      return response.data as ActivityFeedResponse<FeedItem>;
     },
-    refetchOnMount: 'always',
-  })
+    refetchOnMount: "always",
+  });
 
-  const feed = useMemo(() => data?.feed ?? [], [data?.feed])
-  const total = data?.total ?? feed.length
+  const feed = useMemo(() => data?.feed ?? [], [data?.feed]);
+  const total = data?.total ?? feed.length;
 
   useEffect(() => {
     if (!containerRef.current || !isDesktop) {
-      setIsOverflowing(false)
-      return
+      setIsOverflowing(false);
+      return;
     }
 
-    const element = containerRef.current
+    const element = containerRef.current;
     const updateOverflow = () => {
-      setIsOverflowing(element.scrollHeight > element.clientHeight + 1)
+      setIsOverflowing(element.scrollHeight > element.clientHeight + 1);
+    };
+
+    updateOverflow();
+
+    if (typeof ResizeObserver === "undefined") {
+      updateOverflow();
+      return;
     }
 
-    updateOverflow()
-
-    if (typeof ResizeObserver === 'undefined') {
-      updateOverflow()
-      return
-    }
-
-    const observer = new ResizeObserver(updateOverflow)
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [feed, isDesktop])
+    const observer = new ResizeObserver(updateOverflow);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [feed, isDesktop]);
 
   if (isLoading) {
     return (
@@ -285,7 +285,7 @@ export function ActivityFeed({
           </div>
         ))}
       </div>
-    )
+    );
   }
 
   if (feed.length === 0) {
@@ -308,7 +308,7 @@ export function ActivityFeed({
         <p>No recent activity</p>
         <p className="text-sm mt-1">Start tracking your play sessions to see activity here</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -316,7 +316,7 @@ export function ActivityFeed({
       <ActivityFeedList
         feed={feed}
         containerRef={containerRef}
-        className={['space-y-3', maxHeightClassName].filter(Boolean).join(' ')}
+        className={["space-y-3", maxHeightClassName].filter(Boolean).join(" ")}
       />
       {showMoreHref && (isDesktop ? isOverflowing : total > mobileShowMoreThreshold) && (
         <div className="mt-3">
@@ -329,5 +329,5 @@ export function ActivityFeed({
         </div>
       )}
     </div>
-  )
+  );
 }

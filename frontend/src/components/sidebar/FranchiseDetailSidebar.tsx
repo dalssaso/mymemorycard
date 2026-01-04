@@ -1,37 +1,37 @@
-import { Link } from '@tanstack/react-router'
-import { useSidebar } from '@/contexts/SidebarContext'
+import { Link } from "@tanstack/react-router";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface FranchiseDetailSidebarProps {
-  seriesName: string
-  ownedCount: number
-  missingCount: number
+  seriesName: string;
+  ownedCount: number;
+  missingCount: number;
 }
 
 const SECTIONS = [
   {
-    id: 'owned-games',
-    label: 'Your Games',
-    icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
+    id: "owned-games",
+    label: "Your Games",
+    icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z",
   },
-  { id: 'missing-games', label: 'Missing Games', icon: 'M12 4v16m8-8H4' },
-]
+  { id: "missing-games", label: "Missing Games", icon: "M12 4v16m8-8H4" },
+];
 
 export function FranchiseDetailSidebar({
   seriesName,
   ownedCount,
   missingCount,
 }: FranchiseDetailSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
+    const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }
+  };
 
-  const totalGames = ownedCount + missingCount
-  const completionPercentage = totalGames > 0 ? Math.round((ownedCount / totalGames) * 100) : 0
+  const totalGames = ownedCount + missingCount;
+  const completionPercentage = totalGames > 0 ? Math.round((ownedCount / totalGames) * 100) : 0;
 
   if (isCollapsed) {
     return (
@@ -92,7 +92,7 @@ export function FranchiseDetailSidebar({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -161,14 +161,14 @@ export function FranchiseDetailSidebar({
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
             <div className="text-xs text-ctp-subtext0 mb-1">Owned</div>
             <div className="text-sm text-ctp-text font-medium">
-              {ownedCount} {ownedCount === 1 ? 'game' : 'games'}
+              {ownedCount} {ownedCount === 1 ? "game" : "games"}
             </div>
           </div>
           {missingCount > 0 && (
             <div className="bg-ctp-surface0/50 rounded-lg p-3">
               <div className="text-xs text-ctp-subtext0 mb-1">Missing</div>
               <div className="text-sm text-ctp-text font-medium">
-                {missingCount} {missingCount === 1 ? 'game' : 'games'}
+                {missingCount} {missingCount === 1 ? "game" : "games"}
               </div>
             </div>
           )}
@@ -217,5 +217,5 @@ export function FranchiseDetailSidebar({
         </div>
       </div>
     </div>
-  )
+  );
 }

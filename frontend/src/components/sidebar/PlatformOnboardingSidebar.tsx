@@ -1,16 +1,16 @@
-import { Link } from '@tanstack/react-router'
-import { useSidebar } from '@/contexts/SidebarContext'
+import { Link } from "@tanstack/react-router";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PlatformOnboardingSidebarProps {
-  selectedCount: number
-  onAddCustomPlatform: () => void
+  selectedCount: number;
+  onAddCustomPlatform: () => void;
 }
 
 export function PlatformOnboardingSidebar({
   selectedCount,
   onAddCustomPlatform,
 }: PlatformOnboardingSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   if (isCollapsed) {
     return (
@@ -73,7 +73,7 @@ export function PlatformOnboardingSidebar({
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -89,10 +89,10 @@ export function PlatformOnboardingSidebar({
       <Link
         to="/platforms"
         className={[
-          'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text',
-          'rounded-lg transition-colors font-medium',
-        ].join(' ')}
+          "flex items-center justify-center gap-2 w-full px-4 py-2.5",
+          "bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text",
+          "rounded-lg transition-colors font-medium",
+        ].join(" ")}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -109,10 +109,10 @@ export function PlatformOnboardingSidebar({
         type="button"
         onClick={onAddCustomPlatform}
         className={[
-          'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal',
-          'rounded-lg transition-colors font-medium',
-        ].join(' ')}
+          "flex items-center justify-center gap-2 w-full px-4 py-2.5",
+          "bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal",
+          "rounded-lg transition-colors font-medium",
+        ].join(" ")}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -143,13 +143,13 @@ export function PlatformOnboardingSidebar({
       <Link
         to="/import"
         className={[
-          'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base',
-          'rounded-lg transition-colors font-medium',
-        ].join(' ')}
+          "flex items-center justify-center gap-2 w-full px-4 py-2.5",
+          "bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base",
+          "rounded-lg transition-colors font-medium",
+        ].join(" ")}
       >
         Go to Import
       </Link>
     </div>
-  )
+  );
 }

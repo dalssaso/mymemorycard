@@ -1,191 +1,191 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useGlobalSearch } from '@/components/GlobalSearch'
-import { PlatformIcons } from '@/components/PlatformIcon'
-import { PlatformTypeIcon } from '@/components/PlatformTypeIcon'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
-import { useAuth } from '@/contexts/AuthContext'
-import { collectionsAPI, franchisesAPI, gamesAPI, userPlatformsAPI } from '@/lib/api'
+import { useQuery } from "@tanstack/react-query";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useGlobalSearch } from "@/components/GlobalSearch";
+import { PlatformIcons } from "@/components/PlatformIcon";
+import { PlatformTypeIcon } from "@/components/PlatformTypeIcon";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { collectionsAPI, franchisesAPI, gamesAPI, userPlatformsAPI } from "@/lib/api";
 
 type GameSearchItem = {
-  type: 'game'
-  id: string
-  name: string
-  imageUrl: string | null
+  type: "game";
+  id: string;
+  name: string;
+  imageUrl: string | null;
   platforms: Array<{
-    displayName: string
-    colorPrimary: string
-  }>
-  index: number
-}
+    displayName: string;
+    colorPrimary: string;
+  }>;
+  index: number;
+};
 
 type CollectionSearchItem = {
-  type: 'collection'
-  id: string
-  name: string
-  imageUrl: string | null
-  subtitle: string
-  index: number
-}
+  type: "collection";
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  subtitle: string;
+  index: number;
+};
 
 type FranchiseSearchItem = {
-  type: 'franchise'
-  id: string
-  name: string
-  imageUrl: string | null
-  subtitle: string
-  index: number
-}
+  type: "franchise";
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  subtitle: string;
+  index: number;
+};
 
 type PlatformSearchItem = {
-  type: 'platform'
-  id: string
-  name: string
-  imageUrl: string | null
-  subtitle: string
-  platformType: string
-  color: string
-  index: number
-}
+  type: "platform";
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  subtitle: string;
+  platformType: string;
+  color: string;
+  index: number;
+};
 
-type SearchItem = GameSearchItem | CollectionSearchItem | FranchiseSearchItem | PlatformSearchItem
+type SearchItem = GameSearchItem | CollectionSearchItem | FranchiseSearchItem | PlatformSearchItem;
 
 type SearchSection = {
-  label: string
-  items: SearchItem[]
-}
+  label: string;
+  items: SearchItem[];
+};
 
 export function Navbar() {
-  const { user, logout } = useAuth()
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const { isOpen } = useGlobalSearch()
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const searchContainerRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
-  const locationHref = useRouterState({ select: (state) => state.location.href })
+  const { user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { isOpen } = useGlobalSearch();
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const locationHref = useRouterState({ select: (state) => state.location.href });
 
   const { data: gamesData } = useQuery({
-    queryKey: ['games'],
+    queryKey: ["games"],
     queryFn: async () => {
-      const response = await gamesAPI.getAll()
+      const response = await gamesAPI.getAll();
       return response.data as {
         games: Array<{
-          id: string
-          name: string
-          cover_art_url: string | null
-          platform_id: string
-          platform_display_name: string
-        }>
-      }
+          id: string;
+          name: string;
+          cover_art_url: string | null;
+          platform_id: string;
+          platform_display_name: string;
+        }>;
+      };
     },
-  })
+  });
 
   const { data: collectionsData } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ["collections"],
     queryFn: async () => {
-      const response = await collectionsAPI.getAll()
+      const response = await collectionsAPI.getAll();
       return response.data as {
         collections: Array<{
-          id: string
-          name: string
-          description: string | null
-          game_count: number
-          cover_art_url: string | null
-          cover_filename: string | null
-        }>
-      }
+          id: string;
+          name: string;
+          description: string | null;
+          game_count: number;
+          cover_art_url: string | null;
+          cover_filename: string | null;
+        }>;
+      };
     },
-  })
+  });
 
   const { data: franchisesData } = useQuery({
-    queryKey: ['franchises'],
+    queryKey: ["franchises"],
     queryFn: async () => {
-      const response = await franchisesAPI.getAll()
+      const response = await franchisesAPI.getAll();
       return response.data as {
         franchises: Array<{
-          series_name: string
-          game_count: number
-          cover_art_url: string | null
-        }>
-      }
+          series_name: string;
+          game_count: number;
+          cover_art_url: string | null;
+        }>;
+      };
     },
-  })
+  });
 
   const { data: platformsData } = useQuery({
-    queryKey: ['user-platforms'],
+    queryKey: ["user-platforms"],
     queryFn: async () => {
-      const response = await userPlatformsAPI.getAll()
+      const response = await userPlatformsAPI.getAll();
       return response.data as {
         platforms: Array<{
-          id: string
-          name: string
-          display_name: string
-          platform_type: string
-          username: string | null
-          icon_url: string | null
-          default_icon_url: string | null
-          color_primary: string
-        }>
-      }
+          id: string;
+          name: string;
+          display_name: string;
+          platform_type: string;
+          username: string | null;
+          icon_url: string | null;
+          default_icon_url: string | null;
+          color_primary: string;
+        }>;
+      };
     },
-  })
+  });
 
   useEffect(() => {
     if (isOpen) {
-      setIsSearchExpanded(false)
+      setIsSearchExpanded(false);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (!isSearchExpanded) return
-      const target = event.target as Node
+      if (!isSearchExpanded) return;
+      const target = event.target as Node;
       if (searchContainerRef.current && !searchContainerRef.current.contains(target)) {
-        setIsSearchExpanded(false)
-        setSearchQuery('')
+        setIsSearchExpanded(false);
+        setSearchQuery("");
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isSearchExpanded])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isSearchExpanded]);
 
   useEffect(() => {
     if (isSearchExpanded) {
-      searchInputRef.current?.focus()
+      searchInputRef.current?.focus();
     }
-  }, [isSearchExpanded])
+  }, [isSearchExpanded]);
 
   const aggregatedGames = useMemo(() => {
-    const rawGames = gamesData?.games || []
-    const platformColorMap = new Map<string, string>()
-    const rawPlatforms = platformsData?.platforms || []
+    const rawGames = gamesData?.games || [];
+    const platformColorMap = new Map<string, string>();
+    const rawPlatforms = platformsData?.platforms || [];
     for (const platform of rawPlatforms) {
-      platformColorMap.set(platform.id, platform.color_primary)
+      platformColorMap.set(platform.id, platform.color_primary);
     }
     const gameMap = new Map<
       string,
       {
-        id: string
-        name: string
-        cover_art_url: string | null
+        id: string;
+        name: string;
+        cover_art_url: string | null;
         platforms: Array<{
-          displayName: string
-          colorPrimary: string
-        }>
+          displayName: string;
+          colorPrimary: string;
+        }>;
       }
-    >()
+    >();
 
     for (const game of rawGames) {
-      const existing = gameMap.get(game.id)
+      const existing = gameMap.get(game.id);
       if (existing) {
         existing.platforms.push({
           displayName: game.platform_display_name,
-          colorPrimary: platformColorMap.get(game.platform_id) ?? '#6B7280',
-        })
+          colorPrimary: platformColorMap.get(game.platform_id) ?? "#6B7280",
+        });
       } else {
         gameMap.set(game.id, {
           id: game.id,
@@ -194,123 +194,123 @@ export function Navbar() {
           platforms: [
             {
               displayName: game.platform_display_name,
-              colorPrimary: platformColorMap.get(game.platform_id) ?? '#6B7280',
+              colorPrimary: platformColorMap.get(game.platform_id) ?? "#6B7280",
             },
           ],
-        })
+        });
       }
     }
 
-    return Array.from(gameMap.values())
-  }, [gamesData, platformsData])
+    return Array.from(gameMap.values());
+  }, [gamesData, platformsData]);
 
   const searchResults = useMemo<SearchSection[]>(() => {
-    if (!searchQuery.trim()) return []
-    const query = searchQuery.toLowerCase()
-    const collections = collectionsData?.collections || []
-    const franchises = franchisesData?.franchises || []
-    const platforms = platformsData?.platforms || []
-    let index = 0
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    const collections = collectionsData?.collections || [];
+    const franchises = franchisesData?.franchises || [];
+    const platforms = platformsData?.platforms || [];
+    let index = 0;
 
     const gameResults = aggregatedGames
       .filter((game) => game.name.toLowerCase().includes(query))
       .slice(0, 4)
       .map((game) => ({
-        type: 'game' as const,
+        type: "game" as const,
         id: game.id,
         name: game.name,
         imageUrl: game.cover_art_url,
         platforms: game.platforms,
         index: index++,
-      }))
+      }));
 
     const collectionResults = collections
       .filter((collection) => {
-        const nameMatch = collection.name.toLowerCase().includes(query)
-        const descriptionMatch = collection.description?.toLowerCase().includes(query)
-        return nameMatch || descriptionMatch
+        const nameMatch = collection.name.toLowerCase().includes(query);
+        const descriptionMatch = collection.description?.toLowerCase().includes(query);
+        return nameMatch || descriptionMatch;
       })
       .slice(0, 3)
       .map((collection) => ({
-        type: 'collection' as const,
+        type: "collection" as const,
         id: collection.id,
         name: collection.name,
         imageUrl: collection.cover_filename
           ? `/api/collection-covers/${collection.cover_filename}`
           : collection.cover_art_url,
-        subtitle: `${collection.game_count} ${collection.game_count === 1 ? 'game' : 'games'}`,
+        subtitle: `${collection.game_count} ${collection.game_count === 1 ? "game" : "games"}`,
         index: index++,
-      }))
+      }));
 
     const franchiseResults = franchises
       .filter((franchise) => franchise.series_name.toLowerCase().includes(query))
       .slice(0, 3)
       .map((franchise) => ({
-        type: 'franchise' as const,
+        type: "franchise" as const,
         id: franchise.series_name,
         name: franchise.series_name,
         imageUrl: franchise.cover_art_url,
-        subtitle: `${franchise.game_count} ${franchise.game_count === 1 ? 'game' : 'games'}`,
+        subtitle: `${franchise.game_count} ${franchise.game_count === 1 ? "game" : "games"}`,
         index: index++,
-      }))
+      }));
 
     const platformResults = platforms
       .filter((platform) => {
-        const nameMatch = platform.display_name.toLowerCase().includes(query)
-        const altNameMatch = platform.name.toLowerCase().includes(query)
-        return nameMatch || altNameMatch
+        const nameMatch = platform.display_name.toLowerCase().includes(query);
+        const altNameMatch = platform.name.toLowerCase().includes(query);
+        return nameMatch || altNameMatch;
       })
       .slice(0, 3)
       .map((platform) => ({
-        type: 'platform' as const,
+        type: "platform" as const,
         id: platform.id,
         name: platform.display_name,
         imageUrl: platform.icon_url || platform.default_icon_url,
-        subtitle: platform.username || '',
+        subtitle: platform.username || "",
         platformType: platform.platform_type,
         color: platform.color_primary,
         index: index++,
-      }))
+      }));
 
     return [
-      { label: 'Games', items: gameResults },
-      { label: 'Collections', items: collectionResults },
-      { label: 'Franchises', items: franchiseResults },
-      { label: 'Platforms', items: platformResults },
-    ].filter((section) => section.items.length > 0)
-  }, [aggregatedGames, collectionsData, franchisesData, platformsData, searchQuery])
+      { label: "Games", items: gameResults },
+      { label: "Collections", items: collectionResults },
+      { label: "Franchises", items: franchiseResults },
+      { label: "Platforms", items: platformResults },
+    ].filter((section) => section.items.length > 0);
+  }, [aggregatedGames, collectionsData, franchisesData, platformsData, searchQuery]);
 
   const flatResults = useMemo<SearchItem[]>(
     () => searchResults.flatMap((section) => section.items),
     [searchResults]
-  )
+  );
 
   const handleSelectResult = (result: SearchItem) => {
-    setIsSearchExpanded(false)
-    setSearchQuery('')
-    if (result.type === 'game') {
-      navigate({ to: '/library/$id', params: { id: result.id } })
-      return
+    setIsSearchExpanded(false);
+    setSearchQuery("");
+    if (result.type === "game") {
+      navigate({ to: "/library/$id", params: { id: result.id } });
+      return;
     }
-    if (result.type === 'collection') {
-      navigate({ to: '/collections/$id', params: { id: result.id } })
-      return
+    if (result.type === "collection") {
+      navigate({ to: "/collections/$id", params: { id: result.id } });
+      return;
     }
-    if (result.type === 'franchise') {
-      navigate({ to: '/franchises/$seriesName', params: { seriesName: result.id } })
-      return
+    if (result.type === "franchise") {
+      navigate({ to: "/franchises/$seriesName", params: { seriesName: result.id } });
+      return;
     }
-    if (result.type === 'platform') {
-      navigate({ to: '/platforms/$id', params: { id: result.id } })
+    if (result.type === "platform") {
+      navigate({ to: "/platforms/$id", params: { id: result.id } });
     }
-  }
+  };
 
   const getNavLinkClass = (isActive: boolean) =>
     `px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
       isActive
-        ? 'text-ctp-mauve bg-ctp-mauve/10'
-        : 'text-ctp-subtext1 hover:text-ctp-text hover:bg-ctp-surface0'
-    }`
+        ? "text-ctp-mauve bg-ctp-mauve/10"
+        : "text-ctp-subtext1 hover:text-ctp-text hover:bg-ctp-surface0"
+    }`;
 
   return (
     <>
@@ -327,7 +327,7 @@ export function Navbar() {
             <div className="hidden md:flex items-center space-x-1">
               <Link
                 to="/dashboard"
-                className={getNavLinkClass(locationHref.includes('/dashboard'))}
+                className={getNavLinkClass(locationHref.includes("/dashboard"))}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -339,7 +339,7 @@ export function Navbar() {
                 </svg>
                 Dashboard
               </Link>
-              <Link to="/library" className={getNavLinkClass(locationHref.includes('/library'))}>
+              <Link to="/library" className={getNavLinkClass(locationHref.includes("/library"))}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -352,7 +352,7 @@ export function Navbar() {
               </Link>
               <Link
                 to="/collections"
-                className={getNavLinkClass(locationHref.includes('/collections'))}
+                className={getNavLinkClass(locationHref.includes("/collections"))}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -366,7 +366,7 @@ export function Navbar() {
               </Link>
               <Link
                 to="/franchises"
-                className={getNavLinkClass(locationHref.includes('/franchises'))}
+                className={getNavLinkClass(locationHref.includes("/franchises"))}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -380,7 +380,7 @@ export function Navbar() {
               </Link>
               <Link
                 to="/ai-curator"
-                className={getNavLinkClass(locationHref.includes('/ai-curator'))}
+                className={getNavLinkClass(locationHref.includes("/ai-curator"))}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -400,7 +400,7 @@ export function Navbar() {
             <div
               ref={searchContainerRef}
               className={`hidden md:flex items-center gap-2 h-9 border border-ctp-surface1 bg-ctp-surface0/60 rounded-lg px-3 text-ctp-subtext0 transition-all duration-200 overflow-hidden focus-within:border-ctp-mauve ${
-                isSearchExpanded ? 'w-72' : 'w-10'
+                isSearchExpanded ? "w-72" : "w-10"
               }`}
             >
               <button
@@ -430,17 +430,17 @@ export function Navbar() {
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search games, collections, franchises, platforms..."
                 onKeyDown={(event) => {
-                  if (event.key === 'Escape') {
-                    setIsSearchExpanded(false)
-                    setSearchQuery('')
+                  if (event.key === "Escape") {
+                    setIsSearchExpanded(false);
+                    setSearchQuery("");
                   }
-                  if (event.key === 'Enter' && flatResults[0]) {
-                    event.preventDefault()
-                    handleSelectResult(flatResults[0])
+                  if (event.key === "Enter" && flatResults[0]) {
+                    event.preventDefault();
+                    handleSelectResult(flatResults[0]);
                   }
                 }}
                 className={`bg-transparent text-sm text-ctp-text placeholder-ctp-overlay1 focus:outline-none transition-all duration-200 ${
-                  isSearchExpanded ? 'w-full opacity-100' : 'w-0 opacity-0'
+                  isSearchExpanded ? "w-full opacity-100" : "w-0 opacity-0"
                 }`}
                 aria-label="Search games"
               />
@@ -448,7 +448,7 @@ export function Navbar() {
 
             <ThemeToggle />
 
-            {isSearchExpanded && searchQuery.trim() !== '' && (
+            {isSearchExpanded && searchQuery.trim() !== "" && (
               <div className="absolute right-0 top-12 w-80 bg-ctp-mantle border border-ctp-surface1 rounded-lg shadow-lg z-50">
                 {searchResults.length === 0 ? (
                   <div className="px-4 py-3 text-sm text-ctp-subtext0">No results found</div>
@@ -470,7 +470,7 @@ export function Navbar() {
                               <div
                                 className="w-9 h-12 rounded overflow-hidden flex-shrink-0"
                                 style={
-                                  item.type === 'platform'
+                                  item.type === "platform"
                                     ? { backgroundColor: item.color }
                                     : undefined
                                 }
@@ -479,11 +479,11 @@ export function Navbar() {
                                   <img
                                     src={item.imageUrl}
                                     alt={item.name}
-                                    className={`w-full h-full ${item.type === 'platform' ? 'object-contain p-1.5' : 'object-cover'}`}
+                                    className={`w-full h-full ${item.type === "platform" ? "object-contain p-1.5" : "object-cover"}`}
                                   />
-                                ) : item.type === 'platform' ? (
+                                ) : item.type === "platform" ? (
                                   <div className="w-full h-full flex items-center justify-center text-ctp-base text-xs font-semibold">
-                                    {item.name?.charAt(0).toUpperCase() || '?'}
+                                    {item.name?.charAt(0).toUpperCase() || "?"}
                                   </div>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-ctp-overlay1 text-[10px]">
@@ -500,7 +500,7 @@ export function Navbar() {
                                     {item.type}
                                   </span>
                                 </div>
-                                {item.type === 'game' ? (
+                                {item.type === "game" ? (
                                   <div className="mt-1">
                                     <PlatformIcons
                                       platforms={item.platforms}
@@ -508,15 +508,15 @@ export function Navbar() {
                                       maxDisplay={3}
                                     />
                                   </div>
-                                ) : item.type === 'platform' ? (
+                                ) : item.type === "platform" ? (
                                   <div className="flex items-center gap-2 text-xs text-ctp-overlay1 mt-1">
                                     <PlatformTypeIcon
                                       type={
                                         item.platformType as
-                                          | 'pc'
-                                          | 'console'
-                                          | 'mobile'
-                                          | 'physical'
+                                          | "pc"
+                                          | "console"
+                                          | "mobile"
+                                          | "physical"
                                       }
                                       size="sm"
                                       showLabel={true}
@@ -550,7 +550,7 @@ export function Navbar() {
               >
                 <div className="w-8 h-8 bg-ctp-surface1 border border-ctp-surface2 rounded-full flex items-center justify-center">
                   <span className="text-ctp-text font-medium text-sm">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    {user?.username?.charAt(0).toUpperCase() || "U"}
                   </span>
                 </div>
                 <span className="hidden md:inline text-sm">{user?.username}</span>
@@ -587,8 +587,8 @@ export function Navbar() {
                       </Link>
                       <button
                         onClick={() => {
-                          setShowUserMenu(false)
-                          logout()
+                          setShowUserMenu(false);
+                          logout();
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-ctp-subtext1 hover:bg-ctp-surface1 hover:text-ctp-text"
                       >
@@ -603,5 +603,5 @@ export function Navbar() {
         </div>
       </nav>
     </>
-  )
+  );
 }

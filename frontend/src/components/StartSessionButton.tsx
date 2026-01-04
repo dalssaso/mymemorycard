@@ -1,33 +1,33 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { sessionsAPI } from '@/lib/api'
-import { useToast } from '@/components/ui/Toast'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { sessionsAPI } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface PlaySession {
-  id: string
-  user_id: string
-  game_id: string
-  platform_id: string
-  started_at: string
-  ended_at: string | null
-  duration_minutes: number | null
-  notes: string | null
-  created_at: string
-  game_name?: string
-  platform_name?: string
+  id: string;
+  user_id: string;
+  game_id: string;
+  platform_id: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_minutes: number | null;
+  notes: string | null;
+  created_at: string;
+  game_name?: string;
+  platform_name?: string;
 }
 
 interface StartSessionButtonProps {
-  gameId: string
-  platformId: string
-  onSessionChange?: () => void
+  gameId: string;
+  platformId: string;
+  onSessionChange?: () => void;
 }
 
 function formatElapsedTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
 export function StartSessionButton({
@@ -35,50 +35,50 @@ export function StartSessionButton({
   platformId,
   onSessionChange,
 }: StartSessionButtonProps) {
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: activeSessionData } = useQuery({
-    queryKey: ['activeSession'],
+    queryKey: ["activeSession"],
     queryFn: async () => {
-      const response = await sessionsAPI.getActive()
-      return response.data as { session: PlaySession | null }
+      const response = await sessionsAPI.getActive();
+      return response.data as { session: PlaySession | null };
     },
-  })
+  });
 
-  const activeSession = activeSessionData?.session
-  const isActiveForThisGame = activeSession?.game_id === gameId
+  const activeSession = activeSessionData?.session;
+  const isActiveForThisGame = activeSession?.game_id === gameId;
 
   const startTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current)
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1)
-    }, 1000)
-  }, [])
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+  }, []);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (isActiveForThisGame && activeSession) {
-      const startTime = new Date(activeSession.started_at).getTime()
-      const now = Date.now()
-      const elapsed = Math.floor((now - startTime) / 1000)
-      setElapsedSeconds(elapsed)
-      startTimer()
+      const startTime = new Date(activeSession.started_at).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      setElapsedSeconds(elapsed);
+      startTimer();
     } else {
-      stopTimer()
-      setElapsedSeconds(0)
+      stopTimer();
+      setElapsedSeconds(0);
     }
 
-    return () => stopTimer()
-  }, [isActiveForThisGame, activeSession, startTimer, stopTimer])
+    return () => stopTimer();
+  }, [isActiveForThisGame, activeSession, startTimer, stopTimer]);
 
   const startSessionMutation = useMutation({
     mutationFn: () =>
@@ -87,15 +87,15 @@ export function StartSessionButton({
         startedAt: new Date().toISOString(),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activeSession'] })
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      showToast('Session started', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["activeSession"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      showToast("Session started", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to start session', 'error')
+      showToast("Failed to start session", "error");
     },
-  })
+  });
 
   const endSessionMutation = useMutation({
     mutationFn: (sessionId: string) =>
@@ -103,16 +103,16 @@ export function StartSessionButton({
         endedAt: new Date().toISOString(),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activeSession'] })
-      queryClient.invalidateQueries({ queryKey: ['sessions', gameId] })
-      queryClient.invalidateQueries({ queryKey: ['game', gameId] })
-      showToast('Session ended', 'success')
-      onSessionChange?.()
+      queryClient.invalidateQueries({ queryKey: ["activeSession"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["game", gameId] });
+      showToast("Session ended", "success");
+      onSessionChange?.();
     },
     onError: () => {
-      showToast('Failed to end session', 'error')
+      showToast("Failed to end session", "error");
     },
-  })
+  });
 
   if (isActiveForThisGame) {
     return (
@@ -126,10 +126,10 @@ export function StartSessionButton({
           disabled={endSessionMutation.isPending}
           className="w-full py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
         >
-          {endSessionMutation.isPending ? 'Stopping...' : 'Stop Session'}
+          {endSessionMutation.isPending ? "Stopping..." : "Stop Session"}
         </button>
       </div>
-    )
+    );
   }
 
   if (activeSession && !isActiveForThisGame) {
@@ -137,7 +137,7 @@ export function StartSessionButton({
       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
         <div className="text-xs text-yellow-400">Active session on: {activeSession.game_name}</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -158,7 +158,7 @@ export function StartSessionButton({
           clipRule="evenodd"
         />
       </svg>
-      {startSessionMutation.isPending ? 'Starting...' : 'Start Session'}
+      {startSessionMutation.isPending ? "Starting..." : "Start Session"}
     </button>
-  )
+  );
 }

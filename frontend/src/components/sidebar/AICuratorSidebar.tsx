@@ -1,26 +1,26 @@
-import { useQuery } from '@tanstack/react-query'
-import { useSidebar } from '@/contexts/SidebarContext'
-import { aiAPI } from '@/lib/api'
-import { Link } from '@tanstack/react-router'
+import { useQuery } from "@tanstack/react-query";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { aiAPI } from "@/lib/api";
+import { Link } from "@tanstack/react-router";
 
 export function AICuratorSidebar() {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   const { data: settingsData } = useQuery({
-    queryKey: ['ai-settings'],
+    queryKey: ["ai-settings"],
     queryFn: async () => {
-      const response = await aiAPI.getSettings()
-      return response.data
+      const response = await aiAPI.getSettings();
+      return response.data;
     },
-  })
+  });
 
   const { data: activityData } = useQuery({
-    queryKey: ['ai-activity'],
+    queryKey: ["ai-activity"],
     queryFn: async () => {
-      const response = await aiAPI.getActivity(10)
-      return response.data
+      const response = await aiAPI.getActivity(10);
+      return response.data;
     },
-  })
+  });
 
   if (isCollapsed) {
     return (
@@ -48,7 +48,7 @@ export function AICuratorSidebar() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -143,7 +143,7 @@ export function AICuratorSidebar() {
               <div key={log.id} className="p-2 bg-ctp-surface0 rounded-lg">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <span className="text-xs text-ctp-text font-medium flex-1">
-                    {log.actionType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                    {log.actionType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </span>
                   {log.success ? (
                     <svg
@@ -267,5 +267,5 @@ export function AICuratorSidebar() {
         </div>
       </div>
     </div>
-  )
+  );
 }

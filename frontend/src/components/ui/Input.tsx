@@ -1,12 +1,12 @@
-import { type InputHTMLAttributes, forwardRef } from 'react'
+import { type InputHTMLAttributes, forwardRef } from "react";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  error?: string
-  label?: string
+  error?: string;
+  label?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ error, label, className = '', ...props }, ref) => {
+  ({ error, label, className = "", ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -15,14 +15,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={`w-full bg-ctp-mantle border ${
-            error ? 'border-ctp-red' : 'border-ctp-surface1'
+            error ? "border-ctp-red" : "border-ctp-surface1"
           } rounded-lg px-3 py-2 text-ctp-text placeholder-ctp-overlay1 focus:outline-none focus:border-ctp-mauve transition-colors ${className}`}
           {...props}
         />
         {error && <p className="mt-1 text-sm text-ctp-red">{error}</p>}
       </div>
-    )
+    );
   }
-)
+);
 
-Input.displayName = 'Input'
+Input.displayName = "Input";

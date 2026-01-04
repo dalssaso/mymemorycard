@@ -1,12 +1,12 @@
-import { useSidebar } from '@/contexts/SidebarContext'
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PlatformsSidebarProps {
-  platformCount: number
-  onAddCustomPlatform: () => void
+  platformCount: number;
+  onAddCustomPlatform: () => void;
 }
 
 export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: PlatformsSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   if (isCollapsed) {
     return (
@@ -37,7 +37,7 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -54,10 +54,10 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
         type="button"
         onClick={onAddCustomPlatform}
         className={[
-          'flex items-center justify-center gap-2 w-full px-4 py-2.5',
-          'bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal',
-          'rounded-lg transition-colors font-medium',
-        ].join(' ')}
+          "flex items-center justify-center gap-2 w-full px-4 py-2.5",
+          "bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal",
+          "rounded-lg transition-colors font-medium",
+        ].join(" ")}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -83,5 +83,5 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
         </div>
       </div>
     </div>
-  )
+  );
 }

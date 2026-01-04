@@ -1,27 +1,27 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate } from "@tanstack/react-router";
 
 interface BackButtonProps {
-  label?: string
-  iconOnly?: boolean
-  className?: string
+  label?: string;
+  iconOnly?: boolean;
+  className?: string;
 }
 
-export function BackButton({ label = 'Back', iconOnly = false, className = '' }: BackButtonProps) {
-  const navigate = useNavigate()
+export function BackButton({ label = "Back", iconOnly = false, className = "" }: BackButtonProps) {
+  const navigate = useNavigate();
 
   const handleClick = () => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      window.history.back()
-      return
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
     }
 
-    navigate({ to: '/dashboard' as const })
-  }
+    navigate({ to: "/dashboard" as const });
+  };
 
   return (
     <button type="button" onClick={handleClick} aria-label={label} className={className}>
       <svg
-        className={iconOnly ? 'w-5 h-5' : 'w-4 h-4'}
+        className={iconOnly ? "w-5 h-5" : "w-4 h-4"}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -35,5 +35,5 @@ export function BackButton({ label = 'Back', iconOnly = false, className = '' }:
       </svg>
       {!iconOnly && <span>{label}</span>}
     </button>
-  )
+  );
 }

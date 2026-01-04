@@ -1,108 +1,108 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
-import { completionLogsAPI, gamesAPI, sessionsAPI, userPlatformsAPI } from '@/lib/api'
-import { BackButton, PageLayout } from '@/components/layout'
-import { GameDetailSidebar } from '@/components/sidebar'
-import { useToast } from '@/components/ui/Toast'
-import { GameAchievements } from '@/components/GameAchievements'
-import { PlatformIconBadge } from '@/components/PlatformIcon'
-import { StartSessionButton } from '@/components/StartSessionButton'
-import { ProgressDisplay } from '@/components/ProgressDisplay'
-import { SessionsHistory } from '@/components/SessionsHistory'
-import { ProgressHistory } from '@/components/ProgressHistory'
-import { EditionOwnership } from '@/components/EditionOwnership'
-import { EditionSwitcher } from '@/components/EditionSwitcher'
-import { FranchisePreview } from '@/components/FranchisePreview'
-import { RawgIdCorrection } from '@/components/RawgIdCorrection'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useNavigate, useLocation } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { completionLogsAPI, gamesAPI, sessionsAPI, userPlatformsAPI } from "@/lib/api";
+import { BackButton, PageLayout } from "@/components/layout";
+import { GameDetailSidebar } from "@/components/sidebar";
+import { useToast } from "@/components/ui/Toast";
+import { GameAchievements } from "@/components/GameAchievements";
+import { PlatformIconBadge } from "@/components/PlatformIcon";
+import { StartSessionButton } from "@/components/StartSessionButton";
+import { ProgressDisplay } from "@/components/ProgressDisplay";
+import { SessionsHistory } from "@/components/SessionsHistory";
+import { ProgressHistory } from "@/components/ProgressHistory";
+import { EditionOwnership } from "@/components/EditionOwnership";
+import { EditionSwitcher } from "@/components/EditionSwitcher";
+import { FranchisePreview } from "@/components/FranchisePreview";
+import { RawgIdCorrection } from "@/components/RawgIdCorrection";
 
 interface GameDetails {
-  id: string
-  rawg_id: number | null
-  name: string
-  slug: string | null
-  release_date: string | null
-  description: string | null
-  cover_art_url: string | null
-  background_image_url: string | null
-  metacritic_score: number | null
-  esrb_rating: string | null
-  platform_id: string
-  platform_name: string
-  platform_display_name: string
-  platform_color_primary: string
-  platform_icon_url: string | null
-  status: string | null
-  user_rating: number | null
-  notes: string | null
-  total_minutes: number
-  last_played: string | null
-  is_favorite: boolean
-  series_name: string | null
-  expected_playtime: number | null
+  id: string;
+  rawg_id: number | null;
+  name: string;
+  slug: string | null;
+  release_date: string | null;
+  description: string | null;
+  cover_art_url: string | null;
+  background_image_url: string | null;
+  metacritic_score: number | null;
+  esrb_rating: string | null;
+  platform_id: string;
+  platform_name: string;
+  platform_display_name: string;
+  platform_color_primary: string;
+  platform_icon_url: string | null;
+  status: string | null;
+  user_rating: number | null;
+  notes: string | null;
+  total_minutes: number;
+  last_played: string | null;
+  is_favorite: boolean;
+  series_name: string | null;
+  expected_playtime: number | null;
 }
 
 interface UserPlatform {
-  id: string
-  platform_id: string
-  name: string
-  display_name: string
-  platform_type: string | null
-  color_primary: string
-  default_icon_url: string | null
+  id: string;
+  platform_id: string;
+  name: string;
+  display_name: string;
+  platform_type: string | null;
+  color_primary: string;
+  default_icon_url: string | null;
 }
 
 const STATUS_OPTIONS = [
   {
-    value: 'backlog',
-    label: 'Backlog',
-    colorVar: '--ctp-subtext1',
-    textClass: 'text-ctp-subtext1',
+    value: "backlog",
+    label: "Backlog",
+    colorVar: "--ctp-subtext1",
+    textClass: "text-ctp-subtext1",
     surfaceStrength: 35,
     borderStrength: 55,
   },
   {
-    value: 'playing',
-    label: 'Playing',
-    colorVar: '--ctp-teal',
-    textClass: 'text-ctp-teal',
+    value: "playing",
+    label: "Playing",
+    colorVar: "--ctp-teal",
+    textClass: "text-ctp-teal",
     surfaceStrength: 45,
     borderStrength: 65,
   },
   {
-    value: 'finished',
-    label: 'Finished',
-    colorVar: '--ctp-green',
-    textClass: 'text-ctp-green',
+    value: "finished",
+    label: "Finished",
+    colorVar: "--ctp-green",
+    textClass: "text-ctp-green",
     surfaceStrength: 45,
     borderStrength: 65,
   },
   {
-    value: 'completed',
-    label: 'Completed',
-    colorVar: '--ctp-yellow',
-    textClass: 'text-ctp-yellow',
+    value: "completed",
+    label: "Completed",
+    colorVar: "--ctp-yellow",
+    textClass: "text-ctp-yellow",
     surfaceStrength: 45,
     borderStrength: 65,
   },
   {
-    value: 'dropped',
-    label: 'Dropped',
-    colorVar: '--ctp-red',
-    textClass: 'text-ctp-red',
+    value: "dropped",
+    label: "Dropped",
+    colorVar: "--ctp-red",
+    textClass: "text-ctp-red",
     surfaceStrength: 45,
     borderStrength: 65,
   },
-]
+];
 
 const getStatusSurfaceStyle = (option: {
-  colorVar: string
-  surfaceStrength: number
-  borderStrength: number
+  colorVar: string;
+  surfaceStrength: number;
+  borderStrength: number;
 }) => ({
   backgroundColor: `color-mix(in srgb, var(${option.colorVar}) ${option.surfaceStrength}%, transparent)`,
   borderColor: `color-mix(in srgb, var(${option.colorVar}) ${option.borderStrength}%, transparent)`,
-})
+});
 
 function normalizeGameName(name: string): string {
   const editionPatterns = [
@@ -110,271 +110,271 @@ function normalizeGameName(name: string): string {
     /\s*\((game of the year|goty|deluxe|ultimate|complete|definitive|enhanced|remastered|remake|hd|4k|anniversary|collector'?s?|gold|platinum|standard|special|limited|legacy|royal|premium)\s*(edition|version)?\)$/i,
     /\s*(remastered|remake|hd collection|collection)$/i,
     /\s*[-–—]\s*\d{4}\s*(edition|remaster)?$/i,
-  ]
+  ];
 
-  let normalized = name
+  let normalized = name;
   for (const pattern of editionPatterns) {
-    normalized = normalized.replace(pattern, '')
+    normalized = normalized.replace(pattern, "");
   }
-  return normalized.trim()
+  return normalized.trim();
 }
 
 export function GameDetail() {
-  const { id } = useParams({ from: '/library/$id' })
-  const queryClient = useQueryClient()
-  const { showToast } = useToast()
-  const [isEditingNotes, setIsEditingNotes] = useState(false)
-  const [notesValue, setNotesValue] = useState('')
-  const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null)
-  const [isStatusOpen, setIsStatusOpen] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [showPlaytimeInput, setShowPlaytimeInput] = useState(false)
-  const [playtimeHours, setPlaytimeHours] = useState('')
-  const [playtimeMinutes, setPlaytimeMinutes] = useState('')
-  const statusMenuRef = useRef<HTMLDivElement | null>(null)
-  const location = useLocation()
-  const navigate = useNavigate()
+  const { id } = useParams({ from: "/library/$id" });
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState("");
+  const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPlaytimeInput, setShowPlaytimeInput] = useState(false);
+  const [playtimeHours, setPlaytimeHours] = useState("");
+  const [playtimeMinutes, setPlaytimeMinutes] = useState("");
+  const statusMenuRef = useRef<HTMLDivElement | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['game', id],
+    queryKey: ["game", id],
     queryFn: async () => {
-      const response = await gamesAPI.getOne(id)
+      const response = await gamesAPI.getOne(id);
       return response.data as {
-        game: GameDetails
-        platforms: GameDetails[]
-        genres: string[]
-      }
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      };
     },
-  })
+  });
 
   const { data: userPlatformsData } = useQuery({
-    queryKey: ['user-platforms'],
+    queryKey: ["user-platforms"],
     queryFn: async () => {
-      const response = await userPlatformsAPI.getAll()
-      return response.data as { platforms: UserPlatform[] }
+      const response = await userPlatformsAPI.getAll();
+      return response.data as { platforms: UserPlatform[] };
     },
-  })
+  });
 
-  const mutationPlatformId = selectedPlatformId || data?.game?.platform_id || ''
+  const mutationPlatformId = selectedPlatformId || data?.game?.platform_id || "";
 
   useEffect(() => {
-    if (!location.hash) return
-    const targetId = location.hash.replace('#', '')
+    if (!location.hash) return;
+    const targetId = location.hash.replace("#", "");
 
     const scrollToTarget = () => {
-      const element = document.getElementById(targetId)
-      if (!element) return false
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      element.focus({ preventScroll: true })
-      return true
-    }
+      const element = document.getElementById(targetId);
+      if (!element) return false;
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      element.focus({ preventScroll: true });
+      return true;
+    };
 
-    if (scrollToTarget()) return
+    if (scrollToTarget()) return;
 
-    let attempts = 0
-    const maxAttempts = 15
+    let attempts = 0;
+    const maxAttempts = 15;
     const interval = window.setInterval(() => {
-      attempts += 1
+      attempts += 1;
       if (scrollToTarget() || attempts >= maxAttempts) {
-        window.clearInterval(interval)
+        window.clearInterval(interval);
       }
-    }, 100)
+    }, 100);
 
-    return () => window.clearInterval(interval)
-  }, [location.hash, data?.game?.id, data?.game?.platform_id, selectedPlatformId])
+    return () => window.clearInterval(interval);
+  }, [location.hash, data?.game?.id, data?.game?.platform_id, selectedPlatformId]);
 
   useEffect(() => {
     if (!isStatusOpen) {
-      return
+      return;
     }
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!statusMenuRef.current) return
+      if (!statusMenuRef.current) return;
       if (!statusMenuRef.current.contains(event.target as Node)) {
-        setIsStatusOpen(false)
+        setIsStatusOpen(false);
       }
-    }
+    };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsStatusOpen(false)
+      if (event.key === "Escape") {
+        setIsStatusOpen(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isStatusOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isStatusOpen]);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ platformId, status }: { platformId: string; status: string }) =>
       gamesAPI.updateStatus(id, platformId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      showToast('Status updated successfully', 'success')
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      showToast("Status updated successfully", "success");
     },
     onError: () => {
-      showToast('Failed to update status', 'error')
+      showToast("Failed to update status", "error");
     },
-  })
+  });
 
   const updateRatingMutation = useMutation({
     mutationFn: ({ platformId, rating }: { platformId: string; rating: number }) =>
       gamesAPI.updateRating(id, platformId, rating),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      showToast('Rating updated successfully', 'success')
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      showToast("Rating updated successfully", "success");
     },
     onError: () => {
-      showToast('Failed to update rating', 'error')
+      showToast("Failed to update rating", "error");
     },
-  })
+  });
 
   const updateNotesMutation = useMutation({
     mutationFn: ({ platformId, notes }: { platformId: string; notes: string }) =>
       gamesAPI.updateNotes(id, platformId, notes),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      setIsEditingNotes(false)
-      showToast('Notes saved successfully', 'success')
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      setIsEditingNotes(false);
+      showToast("Notes saved successfully", "success");
     },
     onError: () => {
-      showToast('Failed to save notes', 'error')
+      showToast("Failed to save notes", "error");
     },
-  })
+  });
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ platformId, isFavorite }: { platformId: string; isFavorite: boolean }) =>
       gamesAPI.toggleFavorite(id, platformId, isFavorite),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      showToast(variables.isFavorite ? 'Added to favorites' : 'Removed from favorites', 'success')
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      showToast(variables.isFavorite ? "Added to favorites" : "Removed from favorites", "success");
     },
     onError: () => {
-      showToast('Failed to update favorite status', 'error')
+      showToast("Failed to update favorite status", "error");
     },
-  })
+  });
 
   const deleteGameMutation = useMutation({
     mutationFn: ({ platformId }: { platformId: string }) => gamesAPI.delete(id, platformId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      showToast('Game removed from library', 'success')
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      showToast("Game removed from library", "success");
 
-      const remainingPlatforms = platforms.filter((p) => p.platform_id !== variables.platformId)
+      const remainingPlatforms = platforms.filter((p) => p.platform_id !== variables.platformId);
       if (remainingPlatforms.length === 0) {
-        navigate({ to: '/library' })
+        navigate({ to: "/library" });
       } else {
-        setSelectedPlatformId(remainingPlatforms[0].platform_id)
+        setSelectedPlatformId(remainingPlatforms[0].platform_id);
       }
     },
     onError: () => {
-      showToast('Failed to remove game', 'error')
+      showToast("Failed to remove game", "error");
     },
-  })
+  });
 
   const addToPlatformMutation = useMutation({
     mutationFn: ({ platformId }: { platformId: string }) => gamesAPI.addToPlatform(id, platformId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      queryClient.invalidateQueries({ queryKey: ['games'] })
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      queryClient.invalidateQueries({ queryKey: ["games"] });
       // Auto-switch to the newly added platform
-      setSelectedPlatformId(variables.platformId)
-      const userPlatforms = userPlatformsData?.platforms || []
-      const platform = userPlatforms.find((p) => p.platform_id === variables.platformId)
-      showToast(platform ? `Added to ${platform.display_name}` : 'Added to platform', 'success')
+      setSelectedPlatformId(variables.platformId);
+      const userPlatforms = userPlatformsData?.platforms || [];
+      const platform = userPlatforms.find((p) => p.platform_id === variables.platformId);
+      showToast(platform ? `Added to ${platform.display_name}` : "Added to platform", "success");
     },
     onError: () => {
-      showToast('Failed to add game to platform', 'error')
+      showToast("Failed to add game to platform", "error");
     },
-  })
+  });
 
   const addPlaytimeMutation = useMutation({
     mutationFn: async () => {
       if (!mutationPlatformId) {
-        throw new Error('Platform is required')
+        throw new Error("Platform is required");
       }
 
-      const parsedHours = playtimeHours.trim() ? Number(playtimeHours) : 0
-      const parsedMinutes = playtimeMinutes.trim() ? Number(playtimeMinutes) : 0
+      const parsedHours = playtimeHours.trim() ? Number(playtimeHours) : 0;
+      const parsedMinutes = playtimeMinutes.trim() ? Number(playtimeMinutes) : 0;
 
       if (Number.isNaN(parsedHours) || Number.isNaN(parsedMinutes)) {
-        throw new Error('Invalid playtime input')
+        throw new Error("Invalid playtime input");
       }
 
       if (parsedHours < 0 || parsedMinutes < 0 || parsedMinutes > 59) {
-        throw new Error('Invalid playtime input')
+        throw new Error("Invalid playtime input");
       }
 
-      const durationMinutes = parsedHours * 60 + parsedMinutes
+      const durationMinutes = parsedHours * 60 + parsedMinutes;
       if (durationMinutes <= 0) {
-        throw new Error('Playtime must be greater than zero')
+        throw new Error("Playtime must be greater than zero");
       }
 
-      const startedAt = new Date()
-      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000)
+      const startedAt = new Date();
+      const endedAt = new Date(startedAt.getTime() + durationMinutes * 60000);
 
       await sessionsAPI.create(id, {
         platformId: mutationPlatformId,
         startedAt: startedAt.toISOString(),
         endedAt: endedAt.toISOString(),
         durationMinutes,
-      })
+      });
 
       const cachedProgress = queryClient.getQueryData([
-        'completionLogs',
+        "completionLogs",
         id,
         mutationPlatformId,
       ]) as
         | {
-            summary?: { main?: number }
-            currentPercentage?: number
+            summary?: { main?: number };
+            currentPercentage?: number;
           }
-        | undefined
+        | undefined;
 
-      let currentMainPercentage = cachedProgress?.summary?.main
+      let currentMainPercentage = cachedProgress?.summary?.main;
       if (currentMainPercentage === undefined) {
         const response = await completionLogsAPI.getAll(id, {
           limit: 1,
           platform_id: mutationPlatformId,
-        })
+        });
         const data = response.data as {
-          currentPercentage: number
-          summary?: { main?: number }
-        }
-        currentMainPercentage = data.summary?.main ?? data.currentPercentage
+          currentPercentage: number;
+          summary?: { main?: number };
+        };
+        currentMainPercentage = data.summary?.main ?? data.currentPercentage;
       }
 
       await completionLogsAPI.create(id, {
         platformId: mutationPlatformId,
         percentage: currentMainPercentage ?? 0,
-        completionType: 'main',
-      })
+        completionType: "main",
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', id] })
-      queryClient.invalidateQueries({ queryKey: ['game', id] })
-      queryClient.invalidateQueries({ queryKey: ['completionLogs', id] })
+      queryClient.invalidateQueries({ queryKey: ["sessions", id] });
+      queryClient.invalidateQueries({ queryKey: ["game", id] });
+      queryClient.invalidateQueries({ queryKey: ["completionLogs", id] });
       if (mutationPlatformId) {
-        queryClient.invalidateQueries({ queryKey: ['completionLogs', id, mutationPlatformId] })
+        queryClient.invalidateQueries({ queryKey: ["completionLogs", id, mutationPlatformId] });
       }
-      queryClient.invalidateQueries({ queryKey: ['games'] })
-      setPlaytimeHours('')
-      setPlaytimeMinutes('')
-      setShowPlaytimeInput(false)
-      showToast('Playtime added', 'success')
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      setPlaytimeHours("");
+      setPlaytimeMinutes("");
+      setShowPlaytimeInput(false);
+      showToast("Playtime added", "success");
     },
     onError: () => {
-      showToast('Failed to add playtime', 'error')
+      showToast("Failed to add playtime", "error");
     },
-  })
+  });
 
   if (isLoading) {
     return (
@@ -383,7 +383,7 @@ export function GameDetail() {
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
   if (error || !data?.game) {
@@ -393,62 +393,62 @@ export function GameDetail() {
           <div className="text-ctp-red">Game not found</div>
         </div>
       </PageLayout>
-    )
+    );
   }
 
-  const game = data.game
-  const genres = data?.genres || []
-  const platforms = data?.platforms || []
-  const hasMultiplePlatforms = platforms.length > 1
+  const game = data.game;
+  const genres = data?.genres || [];
+  const platforms = data?.platforms || [];
+  const hasMultiplePlatforms = platforms.length > 1;
 
-  const activePlatformId = selectedPlatformId || game.platform_id
-  const activePlatform = platforms.find((p) => p.platform_id === activePlatformId) || game
-  const activeStatus = activePlatform.status || 'backlog'
+  const activePlatformId = selectedPlatformId || game.platform_id;
+  const activePlatform = platforms.find((p) => p.platform_id === activePlatformId) || game;
+  const activeStatus = activePlatform.status || "backlog";
   const activeStatusOption =
-    STATUS_OPTIONS.find((option) => option.value === activeStatus) || STATUS_OPTIONS[0]
+    STATUS_OPTIONS.find((option) => option.value === activeStatus) || STATUS_OPTIONS[0];
 
   // Compute platforms user has in profile but doesn't own the game on
-  const ownedPlatformIds = new Set(platforms.map((p) => p.platform_id))
+  const ownedPlatformIds = new Set(platforms.map((p) => p.platform_id));
   const availablePlatforms = (userPlatformsData?.platforms || []).filter(
     (p) => !ownedPlatformIds.has(p.platform_id)
-  )
+  );
 
-  const parsedPlaytimeHours = playtimeHours.trim() ? Number(playtimeHours) : 0
-  const parsedPlaytimeMinutes = playtimeMinutes.trim() ? Number(playtimeMinutes) : 0
+  const parsedPlaytimeHours = playtimeHours.trim() ? Number(playtimeHours) : 0;
+  const parsedPlaytimeMinutes = playtimeMinutes.trim() ? Number(playtimeMinutes) : 0;
   const hasValidPlaytimeInput =
     !Number.isNaN(parsedPlaytimeHours) &&
     !Number.isNaN(parsedPlaytimeMinutes) &&
     parsedPlaytimeHours >= 0 &&
     parsedPlaytimeMinutes >= 0 &&
     parsedPlaytimeMinutes <= 59 &&
-    (parsedPlaytimeHours > 0 || parsedPlaytimeMinutes > 0)
+    (parsedPlaytimeHours > 0 || parsedPlaytimeMinutes > 0);
 
   const handleStatusChange = (status: string) => {
-    updateStatusMutation.mutate({ platformId: activePlatformId, status })
-  }
+    updateStatusMutation.mutate({ platformId: activePlatformId, status });
+  };
 
   const handleRatingChange = (rating: number) => {
-    updateRatingMutation.mutate({ platformId: activePlatformId, rating })
-  }
+    updateRatingMutation.mutate({ platformId: activePlatformId, rating });
+  };
 
   const handleSaveNotes = () => {
-    updateNotesMutation.mutate({ platformId: activePlatformId, notes: notesValue })
-  }
+    updateNotesMutation.mutate({ platformId: activePlatformId, notes: notesValue });
+  };
 
   const handlePlatformChange = (platformId: string) => {
-    if (platformId === activePlatformId) return
-    setSelectedPlatformId(platformId)
-    const platform = platforms.find((item) => item.platform_id === platformId)
+    if (platformId === activePlatformId) return;
+    setSelectedPlatformId(platformId);
+    const platform = platforms.find((item) => item.platform_id === platformId);
     showToast(
-      platform ? `Now tracking on ${platform.platform_display_name}` : 'Tracking platform updated',
-      'success'
-    )
-  }
+      platform ? `Now tracking on ${platform.platform_display_name}` : "Tracking platform updated",
+      "success"
+    );
+  };
 
   const startEditingNotes = () => {
-    setNotesValue(activePlatform.notes || '')
-    setIsEditingNotes(true)
-  }
+    setNotesValue(activePlatform.notes || "");
+    setIsEditingNotes(true);
+  };
 
   const sidebarContent = (
     <GameDetailSidebar
@@ -458,7 +458,7 @@ export function GameDetail() {
       onStatusChange={handleStatusChange}
       isUpdating={updateStatusMutation.isPending}
     />
-  )
+  );
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true} showBackButton={false}>
@@ -505,11 +505,11 @@ export function GameDetail() {
             {platforms.length > 0 && (
               <div className="mt-4">
                 <span className="block text-sm font-medium text-ctp-subtext0 mb-2">
-                  {platforms.length === 1 ? 'Platform' : 'Platforms'}
+                  {platforms.length === 1 ? "Platform" : "Platforms"}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {platforms.map((platform) => {
-                    const isActivePlatform = platform.platform_id === activePlatformId
+                    const isActivePlatform = platform.platform_id === activePlatformId;
                     return (
                       <button
                         key={platform.platform_id}
@@ -517,8 +517,8 @@ export function GameDetail() {
                         onClick={() => handlePlatformChange(platform.platform_id)}
                         className={`px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border ${
                           isActivePlatform
-                            ? 'bg-ctp-teal/15 border-ctp-teal/50'
-                            : 'bg-ctp-mauve/10 border-ctp-mauve/30 hover:bg-ctp-mauve/20'
+                            ? "bg-ctp-teal/15 border-ctp-teal/50"
+                            : "bg-ctp-mauve/10 border-ctp-mauve/30 hover:bg-ctp-mauve/20"
                         }`}
                       >
                         <PlatformIconBadge
@@ -553,7 +553,7 @@ export function GameDetail() {
                           </span>
                         )}
                       </button>
-                    )
+                    );
                   })}
                 </div>
                 {hasMultiplePlatforms && (
@@ -642,7 +642,7 @@ export function GameDetail() {
                     <span className={activeStatusOption.textClass}>{activeStatusOption.label}</span>
                   </span>
                   <svg
-                    className={`h-4 w-4 text-ctp-subtext0 transition-transform ${isStatusOpen ? 'rotate-180' : ''}`}
+                    className={`h-4 w-4 text-ctp-subtext0 transition-transform ${isStatusOpen ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -677,13 +677,13 @@ export function GameDetail() {
                             role="option"
                             aria-selected={option.value === activeStatus}
                             onClick={() => {
-                              setIsStatusOpen(false)
+                              setIsStatusOpen(false);
                               if (option.value !== activeStatus) {
-                                handleStatusChange(option.value)
+                                handleStatusChange(option.value);
                               }
                             }}
                             className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
-                              option.value === activeStatus ? 'ring-1 ring-ctp-mauve' : ''
+                              option.value === activeStatus ? "ring-1 ring-ctp-mauve" : ""
                             }`}
                             style={getStatusSurfaceStyle(option)}
                           >
@@ -726,7 +726,7 @@ export function GameDetail() {
               <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3">
                 <div className="text-xs text-ctp-teal">Playtime</div>
                 <div className="text-lg font-semibold text-ctp-text">
-                  {Math.floor(activePlatform.total_minutes / 60)}h{' '}
+                  {Math.floor(activePlatform.total_minutes / 60)}h{" "}
                   {activePlatform.total_minutes % 60}m
                 </div>
                 <div className="mt-2">
@@ -764,14 +764,14 @@ export function GameDetail() {
                           disabled={addPlaytimeMutation.isPending || !hasValidPlaytimeInput}
                           className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 bg-ctp-teal text-ctp-base hover:bg-ctp-teal/80"
                         >
-                          {addPlaytimeMutation.isPending ? 'Saving...' : 'Add Playtime'}
+                          {addPlaytimeMutation.isPending ? "Saving..." : "Add Playtime"}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            setShowPlaytimeInput(false)
-                            setPlaytimeHours('')
-                            setPlaytimeMinutes('')
+                            setShowPlaytimeInput(false);
+                            setPlaytimeHours("");
+                            setPlaytimeMinutes("");
                           }}
                           className="px-3 py-1.5 text-sm rounded-lg border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1 transition-colors"
                         >
@@ -821,8 +821,8 @@ export function GameDetail() {
                     aria-pressed={activePlatform.user_rating === rating}
                     className={`py-2 text-sm rounded transition-all ${
                       activePlatform.user_rating === rating
-                        ? 'bg-ctp-mauve text-ctp-base shadow-lg shadow-ctp-mauve/50'
-                        : 'bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text'
+                        ? "bg-ctp-mauve text-ctp-base shadow-lg shadow-ctp-mauve/50"
+                        : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
                     }`}
                   >
                     {rating}
@@ -843,15 +843,15 @@ export function GameDetail() {
                 disabled={toggleFavoriteMutation.isPending}
                 className={`w-full py-3 rounded-lg font-semibold transition-all ${
                   activePlatform.is_favorite
-                    ? 'bg-ctp-red/20 border-2 border-ctp-red text-ctp-red hover:bg-ctp-red/30'
-                    : 'bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface1 hover:border-ctp-red hover:text-ctp-red'
+                    ? "bg-ctp-red/20 border-2 border-ctp-red text-ctp-red hover:bg-ctp-red/30"
+                    : "bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface1 hover:border-ctp-red hover:text-ctp-red"
                 }`}
               >
                 <span className="inline-flex items-center justify-center gap-2">
                   <svg
                     className="w-5 h-5"
                     viewBox="0 0 24 24"
-                    fill={activePlatform.is_favorite ? 'currentColor' : 'none'}
+                    fill={activePlatform.is_favorite ? "currentColor" : "none"}
                     stroke="currentColor"
                     strokeWidth={2}
                     aria-hidden="true"
@@ -862,7 +862,7 @@ export function GameDetail() {
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
-                  {activePlatform.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                  {activePlatform.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
                 </span>
               </button>
             </div>
@@ -878,13 +878,13 @@ export function GameDetail() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
-                        deleteGameMutation.mutate({ platformId: activePlatformId })
-                        setShowDeleteConfirm(false)
+                        deleteGameMutation.mutate({ platformId: activePlatformId });
+                        setShowDeleteConfirm(false);
                       }}
                       disabled={deleteGameMutation.isPending}
                       className="flex-1 py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg font-semibold transition-all disabled:opacity-50"
                     >
-                      {deleteGameMutation.isPending ? 'Removing...' : 'Confirm Remove'}
+                      {deleteGameMutation.isPending ? "Removing..." : "Confirm Remove"}
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
@@ -981,7 +981,7 @@ export function GameDetail() {
                 <a
                   href={`https://www.ign.com/wikis/${normalizeGameName(activePlatform.name)
                     .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')}`}
+                    .replace(/[^a-z0-9]+/g, "-")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
@@ -1039,7 +1039,7 @@ export function GameDetail() {
                       onClick={startEditingNotes}
                       className="text-sm text-ctp-teal hover:text-ctp-mauve"
                     >
-                      {activePlatform.notes ? 'Edit' : 'Add Notes'}
+                      {activePlatform.notes ? "Edit" : "Add Notes"}
                     </button>
                   )}
                 </div>
@@ -1058,7 +1058,7 @@ export function GameDetail() {
                         disabled={updateNotesMutation.isPending}
                         className="px-4 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg disabled:opacity-50"
                       >
-                        {updateNotesMutation.isPending ? 'Saving...' : 'Save'}
+                        {updateNotesMutation.isPending ? "Saving..." : "Save"}
                       </button>
                       <button
                         onClick={() => setIsEditingNotes(false)}
@@ -1070,7 +1070,7 @@ export function GameDetail() {
                   </div>
                 ) : (
                   <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
-                    {activePlatform.notes || 'No notes yet'}
+                    {activePlatform.notes || "No notes yet"}
                   </div>
                 )}
               </div>
@@ -1123,5 +1123,5 @@ export function GameDetail() {
         </div>
       </div>
     </PageLayout>
-  )
+  );
 }

@@ -1,17 +1,17 @@
-import { Link } from '@tanstack/react-router'
-import { useSidebar } from '@/contexts/SidebarContext'
+import { Link } from "@tanstack/react-router";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface Platform {
-  id: string
-  name: string
-  display_name: string
+  id: string;
+  name: string;
+  display_name: string;
 }
 
 interface ImportSidebarProps {
-  platforms: Platform[]
-  selectedPlatform: string
-  onPlatformSelect: (platformId: string) => void
-  isImporting?: boolean
+  platforms: Platform[];
+  selectedPlatform: string;
+  onPlatformSelect: (platformId: string) => void;
+  isImporting?: boolean;
 }
 
 export function ImportSidebar({
@@ -20,7 +20,7 @@ export function ImportSidebar({
   onPlatformSelect,
   isImporting,
 }: ImportSidebarProps) {
-  const { isCollapsed } = useSidebar()
+  const { isCollapsed } = useSidebar();
 
   if (isCollapsed) {
     return (
@@ -49,17 +49,17 @@ export function ImportSidebar({
               disabled={isImporting}
               className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
-                  ? 'bg-ctp-mauve/20 text-ctp-mauve ring-2 ring-ctp-mauve'
-                  : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+                  ? "bg-ctp-mauve/20 text-ctp-mauve ring-2 ring-ctp-mauve"
+                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
               title={platform.display_name}
             >
-              {platform.display_name.trim().charAt(0).toUpperCase() || '?'}
+              {platform.display_name.trim().charAt(0).toUpperCase() || "?"}
             </button>
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -104,8 +104,8 @@ export function ImportSidebar({
               disabled={isImporting}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
-                  ? 'bg-ctp-mauve/20 text-ctp-mauve border border-ctp-mauve/30'
-                  : 'text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text'
+                  ? "bg-ctp-mauve/20 text-ctp-mauve border border-ctp-mauve/30"
+                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
             >
               {platform.display_name}
@@ -182,5 +182,5 @@ export function ImportSidebar({
         </div>
       </div>
     </div>
-  )
+  );
 }
