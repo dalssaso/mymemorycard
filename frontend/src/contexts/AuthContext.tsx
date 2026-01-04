@@ -1,91 +1,109 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { authAPI } from "@/lib/api";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { authAPI } from "@/lib/api"
+import { clearToken, getToken, setToken, subscribe } from "@/lib/auth-storage"
 
 interface User {
-  id: string;
-  username: string;
+  id: string
+  username: string
 }
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+export interface AuthContextType {
+  user: User | null
+  token: string | null
+  isLoading: boolean
+  login: (username: string, password: string) => Promise<void>
+  register: (username: string, password: string) => Promise<void>
+  logout: () => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+  const [token, setTokenState] = useState<string | null>(getToken())
+  const queryClient = useQueryClient()
 
   useEffect(() => {
-    // Check for existing token on mount
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    return subscribe((nextToken) => {
+      setTokenState(nextToken)
+    })
+  }, [])
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+  const {
+    data: user,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: async () => {
+      const response = await authAPI.me()
+      return (response.data.user ?? response.data) as User
+    },
+    enabled: Boolean(token),
+    retry: false,
+  })
 
-      // Verify token is still valid
-      authAPI
-        .me()
-        .then(() => setIsLoading(false))
-        .catch(() => {
-          // Token invalid, clear storage
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          setToken(null);
-          setUser(null);
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
+  useEffect(() => {
+    if (isError) {
+      clearToken()
     }
-  }, []);
+  }, [isError])
 
-  const login = async (username: string, password: string) => {
-    const response = await authAPI.login({ username, password });
-    const { user: userData, token: userToken } = response.data;
 
-    setUser(userData);
-    setToken(userToken);
-    localStorage.setItem("token", userToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
+  const login = useCallback(async (username: string, password: string) => {
+    const response = await authAPI.login({ username, password })
+    const { user: userData, token: userToken } = response.data as {
+      user: User
+      token: string
+    }
 
-  const register = async (username: string, password: string) => {
-    const response = await authAPI.register({ username, password });
-    const { user: userData, token: userToken } = response.data;
+    setToken(userToken)
+    queryClient.setQueryData(["auth", "me"], userData)
+  }, [queryClient])
 
-    setUser(userData);
-    setToken(userToken);
-    localStorage.setItem("token", userToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
+  const register = useCallback(async (username: string, password: string) => {
+    const response = await authAPI.register({ username, password })
+    const { user: userData, token: userToken } = response.data as {
+      user: User
+      token: string
+    }
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-  };
+    setToken(userToken)
+    queryClient.setQueryData(["auth", "me"], userData)
+  }, [queryClient])
 
-  return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const logout = useCallback(() => {
+    clearToken()
+    queryClient.removeQueries({ queryKey: ["auth", "me"] })
+  }, [queryClient])
+
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user: user ?? null,
+      token,
+      isLoading: token ? isLoading : false,
+      login,
+      register,
+      logout,
+    }),
+    [isLoading, login, logout, register, token, user]
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+export function useAuth(): AuthContextType {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
   }
-  return context;
+  return context
 }
