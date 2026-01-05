@@ -37,25 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     });
   }, []);
 
-  const {
-    data: user,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: user, isLoading } = useQuery({
     queryKey: ["auth", "me"],
-    queryFn: async () => {
-      const response = await authAPI.me();
+    queryFn: async ({ signal }) => {
+      const response = await authAPI.me(signal);
       return (response.data.user ?? response.data) as User;
     },
     enabled: Boolean(token),
     retry: false,
   });
-
-  useEffect(() => {
-    if (isError) {
-      clearToken();
-    }
-  }, [isError]);
 
   const login = useCallback(
     async (username: string, password: string) => {
@@ -86,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   );
 
   const logout = useCallback(() => {
+    void queryClient.cancelQueries({ queryKey: ["auth", "me"] });
     clearToken();
     queryClient.removeQueries({ queryKey: ["auth", "me"] });
   }, [queryClient]);

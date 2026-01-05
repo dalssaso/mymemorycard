@@ -1,4 +1,5 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import { userPlatformsAPI } from "@/lib/api";
 
 export interface UserPlatformSummary {
@@ -14,11 +15,14 @@ export interface UserPlatformSummary {
 }
 
 export function useUserPlatforms(): UseQueryResult<{ platforms: UserPlatformSummary[] }> {
+  const { token } = useAuth();
+
   return useQuery({
     queryKey: ["user-platforms"],
     queryFn: async () => {
       const response = await userPlatformsAPI.getAll();
       return response.data as { platforms: UserPlatformSummary[] };
     },
+    enabled: Boolean(token),
   });
 }

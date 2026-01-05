@@ -7,6 +7,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { AuthRedirectListener } from "@/components/AuthRedirectListener";
 import { AppShell } from "@/components/layout";
+import { getToken } from "@/lib/auth-storage";
 import type { RouterContext } from "@/router-context";
 
 function RootLayout(): JSX.Element {
@@ -33,13 +34,18 @@ function RootLayout(): JSX.Element {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  beforeLoad: ({ context, location }) => {
+  beforeLoad: ({ location }) => {
     const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
-    if (!context.auth.token && !isAuthRoute) {
-      throw redirect({ to: "/login" });
+    const token = getToken();
+
+    // Handle root path - redirect to dashboard or login
+    if (location.pathname === "/") {
+      throw redirect({ to: token ? "/dashboard" : "/login", replace: true });
     }
-    if (context.auth.token && isAuthRoute) {
-      throw redirect({ to: "/dashboard" });
+
+    // Enforce authentication for protected routes
+    if (!token && !isAuthRoute) {
+      throw redirect({ to: "/login" });
     }
   },
   component: RootLayout,
