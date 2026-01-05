@@ -1,13 +1,13 @@
-import { Link, useNavigate } from "@tanstack/react-router"
-import { z } from "zod"
-import { FormProvider, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { FormField } from "@/components/ui/form-field"
-import { useAuth } from "@/contexts/AuthContext"
+import { Link, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { FormField } from "@/components/ui/form-field";
+import { useAuth } from "@/contexts/AuthContext";
 
-const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/
+const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
 const registerSchema = z
   .object({
@@ -15,22 +15,19 @@ const registerSchema = z
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
-      .regex(
-        strongPassword,
-        "Use upper, lower, number, and symbol characters"
-      ),
+      .regex(strongPassword, "Use upper, lower, number, and symbol characters"),
     confirmPassword: z.string().min(1, "Confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
     message: "Passwords do not match",
-  })
+  });
 
-type RegisterForm = z.infer<typeof registerSchema>
+type RegisterForm = z.infer<typeof registerSchema>;
 
 export function Register(): JSX.Element {
-  const { register } = useAuth()
-  const navigate = useNavigate()
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -39,29 +36,29 @@ export function Register(): JSX.Element {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
-  const password = form.watch("password")
-  const confirmPassword = form.watch("confirmPassword")
-  const passwordsMatch = password.length > 0 && password === confirmPassword
-  const passwordStrong = strongPassword.test(password)
+  const password = form.watch("password");
+  const confirmPassword = form.watch("confirmPassword");
+  const passwordsMatch = password.length > 0 && password === confirmPassword;
+  const passwordStrong = strongPassword.test(password);
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await register(data.username, data.password)
-      navigate({ to: "/platforms/onboarding" })
+      await register(data.username, data.password);
+      navigate({ to: "/platforms/onboarding" });
     } catch (error: unknown) {
       const message =
         error && typeof error === "object" && "response" in error
           ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null
-      form.setError("root", { message: message ?? "Failed to create account" })
+          : null;
+      form.setError("root", { message: message ?? "Failed to create account" });
     }
-  })
+  });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-ctp-base px-4">
-      <Card className="w-full max-w-sm border-ctp-surface1 bg-ctp-surface0/60">
+      <Card className="bg-ctp-surface0/60 w-full max-w-sm border-ctp-surface1">
         <CardHeader>
           <h1 className="text-center text-2xl font-semibold text-ctp-mauve">Create Account</h1>
           <p className="text-center text-sm text-ctp-subtext1">Start organizing your library</p>
@@ -107,5 +104,5 @@ export function Register(): JSX.Element {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

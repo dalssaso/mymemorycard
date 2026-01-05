@@ -113,22 +113,22 @@ export function PlatformOnboarding() {
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <h1 className="text-4xl font-bold text-ctp-text">Choose Your Platforms</h1>
           </div>
-          <p className="text-ctp-subtext0 mt-2">
+          <p className="mt-2 text-ctp-subtext0">
             Select the platforms you use. This keeps your imports focused and relevant.
           </p>
         </div>
 
         <Card className="mb-6 p-6">
-          <label className="block text-sm font-medium mb-2" htmlFor="platform-onboarding-search">
+          <label className="mb-2 block text-sm font-medium" htmlFor="platform-onboarding-search">
             Search platforms
           </label>
           <Input
@@ -140,7 +140,7 @@ export function PlatformOnboarding() {
         </Card>
 
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-ctp-text">Platforms</h2>
             <span className="text-sm text-ctp-subtext0">{selectedPlatformIds.length} selected</span>
           </div>
@@ -148,7 +148,7 @@ export function PlatformOnboarding() {
           {isLoadingPlatforms ? (
             <div className="text-ctp-subtext0">Loading platforms...</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPlatforms.map((platform) => {
                 const isSelected = selectedPlatformIds.includes(platform.id);
                 const isLocked = existingPlatformIds.has(platform.id);
@@ -161,8 +161,8 @@ export function PlatformOnboarding() {
                     variant="outline"
                     className={`w-full justify-start border px-4 py-3 text-left transition-colors ${
                       isSelected
-                        ? "border-ctp-mauve bg-ctp-mauve/20"
-                        : "border-ctp-surface0 bg-ctp-mantle/50 hover:border-ctp-surface1"
+                        ? "bg-ctp-mauve/20 border-ctp-mauve"
+                        : "bg-ctp-mantle/50 border-ctp-surface0 hover:border-ctp-surface1"
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center justify-between gap-2">

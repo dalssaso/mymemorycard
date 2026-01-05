@@ -1,4 +1,4 @@
-import { api } from "./axios"
+import { api } from "./axios";
 
 export const userPlatformsAPI = {
   getAll: () => api.get("/user-platforms"),
@@ -8,11 +8,11 @@ export const userPlatformsAPI = {
   update: (
     id: string,
     data: {
-      username?: string | null
-      iconUrl?: string | null
-      profileUrl?: string | null
-      notes?: string | null
+      username?: string | null;
+      iconUrl?: string | null;
+      profileUrl?: string | null;
+      notes?: string | null;
     }
   ) => api.patch(`/user-platforms/${id}`, data),
   remove: (id: string) => api.delete(`/user-platforms/${id}`),
-}
+};

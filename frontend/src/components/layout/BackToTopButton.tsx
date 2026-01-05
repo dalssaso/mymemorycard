@@ -28,7 +28,7 @@ export function BackToTopButton() {
       aria-label="Back to the top"
       variant="ghost"
       size="icon"
-      className="md:hidden fixed bottom-20 right-4 z-40 rounded-full bg-ctp-mauve text-ctp-base shadow-lg hover:bg-ctp-teal transition-colors w-11 h-11 flex items-center justify-center border border-ctp-mauve/40"
+      className="border-ctp-mauve/40 fixed bottom-20 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border bg-ctp-mauve text-ctp-base shadow-lg transition-colors hover:bg-ctp-teal md:hidden"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       type="button"
     >

@@ -1,34 +1,34 @@
-import { api } from "./axios"
+import { api } from "./axios";
 
 export interface FranchiseSummary {
-  series_name: string
-  game_count: number
-  cover_art_url: string | null
+  series_name: string;
+  game_count: number;
+  cover_art_url: string | null;
 }
 
 export interface OwnedGame {
-  id: string
-  rawg_id: number | null
-  name: string
-  release_date: string | null
-  cover_art_url: string | null
-  platforms: string[]
-  status: string
+  id: string;
+  rawg_id: number | null;
+  name: string;
+  release_date: string | null;
+  cover_art_url: string | null;
+  platforms: string[];
+  status: string;
 }
 
 export interface MissingGame {
-  rawgId: number
-  id: number
-  name: string
-  slug: string
-  released: string | null
-  background_image: string | null
+  rawgId: number;
+  id: number;
+  name: string;
+  slug: string;
+  released: string | null;
+  background_image: string | null;
 }
 
 export interface FranchiseDetail {
-  series_name: string
-  owned_games: OwnedGame[]
-  missing_games: MissingGame[]
+  series_name: string;
+  owned_games: OwnedGame[];
+  missing_games: MissingGame[];
 }
 
 export const franchisesAPI = {
@@ -41,4 +41,4 @@ export const franchisesAPI = {
     ),
   importGame: (rawgId: number, platformId: string, seriesName: string) =>
     api.post<{ success: boolean }>("/franchises/import", { rawgId, platformId, seriesName }),
-}
+};

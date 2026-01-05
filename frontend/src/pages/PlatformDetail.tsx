@@ -194,7 +194,7 @@ export function PlatformDetail() {
   if (isLoading || !platform) {
     return (
       <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
@@ -219,12 +219,12 @@ export function PlatformDetail() {
 
   return (
     <PageLayout sidebar={sidebarContent} showBackButton={false} customCollapsed={true}>
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <PlatformIconBadge
               platform={{
@@ -264,10 +264,10 @@ export function PlatformDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
             <div id="profile" className="bg-ctp-surface0/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-ctp-mauve">Profile</h2>
                 {!isEditingProfile && (
                   <Button
@@ -280,7 +280,7 @@ export function PlatformDetail() {
                       });
                       setIsEditingProfile(true);
                     }}
-                    className="h-auto px-0 text-sm text-ctp-teal hover:text-ctp-mauve hover:bg-transparent"
+                    className="h-auto px-0 text-sm text-ctp-teal hover:bg-transparent hover:text-ctp-mauve"
                   >
                     Edit
                   </Button>
@@ -291,7 +291,7 @@ export function PlatformDetail() {
                 <form className="space-y-3" onSubmit={handleSaveProfile}>
                   <div>
                     <label
-                      className="block text-xs font-medium mb-1 text-ctp-subtext0"
+                      className="mb-1 block text-xs font-medium text-ctp-subtext0"
                       htmlFor="platform-username"
                     >
                       Username
@@ -302,14 +302,14 @@ export function PlatformDetail() {
                       placeholder="Optional username"
                     />
                     {profileForm.formState.errors.username && (
-                      <p className="text-xs text-ctp-red mt-1">
+                      <p className="mt-1 text-xs text-ctp-red">
                         {profileForm.formState.errors.username.message}
                       </p>
                     )}
                   </div>
                   <div>
                     <label
-                      className="block text-xs font-medium mb-1 text-ctp-subtext0"
+                      className="mb-1 block text-xs font-medium text-ctp-subtext0"
                       htmlFor="platform-profile-url"
                     >
                       Profile URL
@@ -320,14 +320,14 @@ export function PlatformDetail() {
                       placeholder="Optional profile link"
                     />
                     {profileForm.formState.errors.profileUrl && (
-                      <p className="text-xs text-ctp-red mt-1">
+                      <p className="mt-1 text-xs text-ctp-red">
                         {profileForm.formState.errors.profileUrl.message}
                       </p>
                     )}
                   </div>
                   <div>
                     <label
-                      className="block text-xs font-medium mb-1 text-ctp-subtext0"
+                      className="mb-1 block text-xs font-medium text-ctp-subtext0"
                       htmlFor="platform-icon-url"
                     >
                       Icon URL (SVG only - overrides default)
@@ -340,11 +340,11 @@ export function PlatformDetail() {
                       }
                     />
                     {profileForm.formState.errors.iconUrl && (
-                      <p className="text-xs text-ctp-red mt-1">
+                      <p className="mt-1 text-xs text-ctp-red">
                         {profileForm.formState.errors.iconUrl.message}
                       </p>
                     )}
-                    <p className="text-xs text-ctp-overlay1 mt-1">
+                    <p className="mt-1 text-xs text-ctp-overlay1">
                       Provide an SVG icon URL from{" "}
                       <a
                         href={`https://simpleicons.org/?q=${encodeURIComponent(
@@ -361,10 +361,7 @@ export function PlatformDetail() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      type="submit"
-                      disabled={updatePlatformMutation.isPending}
-                    >
+                    <Button type="submit" disabled={updatePlatformMutation.isPending}>
                       {updatePlatformMutation.isPending ? "Saving..." : "Save"}
                     </Button>
                     <Button
@@ -410,7 +407,7 @@ export function PlatformDetail() {
             </div>
 
             <div id="notes" className="bg-ctp-surface0/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-ctp-mauve">Notes</h2>
                 {!isEditingNotes && (
                   <Button
@@ -421,7 +418,7 @@ export function PlatformDetail() {
                       });
                       setIsEditingNotes(true);
                     }}
-                    className="h-auto px-0 text-sm text-ctp-teal hover:text-ctp-mauve hover:bg-transparent"
+                    className="h-auto px-0 text-sm text-ctp-teal hover:bg-transparent hover:text-ctp-mauve"
                   >
                     {platform.notes ? "Edit" : "Add Notes"}
                   </Button>
@@ -436,15 +433,12 @@ export function PlatformDetail() {
                     placeholder="Add notes about this platform"
                   />
                   {notesForm.formState.errors.notes && (
-                    <p className="text-xs text-ctp-red mt-1">
+                    <p className="mt-1 text-xs text-ctp-red">
                       {notesForm.formState.errors.notes.message}
                     </p>
                   )}
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      type="submit"
-                      disabled={updatePlatformMutation.isPending}
-                    >
+                  <div className="mt-2 flex gap-2">
+                    <Button type="submit" disabled={updatePlatformMutation.isPending}>
                       {updatePlatformMutation.isPending ? "Saving..." : "Save"}
                     </Button>
                     <Button
@@ -462,7 +456,7 @@ export function PlatformDetail() {
                   </div>
                 </form>
               ) : (
-                <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
+                <div className="bg-ctp-mantle/50 rounded-lg p-4 text-ctp-subtext1">
                   {platform.notes || "No notes yet"}
                 </div>
               )}
@@ -471,7 +465,7 @@ export function PlatformDetail() {
 
           <div className="space-y-4">
             <div className="bg-ctp-surface0/50 rounded-lg p-4">
-              <div className="text-xs text-ctp-subtext0 mb-1">Platform Type</div>
+              <div className="mb-1 text-xs text-ctp-subtext0">Platform Type</div>
               <PlatformTypeIcon
                 type={platform.platform_type}
                 size="md"
@@ -480,25 +474,25 @@ export function PlatformDetail() {
               />
             </div>
             <div className="bg-ctp-surface0/50 rounded-lg p-4">
-              <div className="text-xs text-ctp-subtext0 mb-1">Brand Color</div>
+              <div className="mb-1 text-xs text-ctp-subtext0">Brand Color</div>
               <div className="flex items-center gap-2">
                 <div
-                  className="w-6 h-6 rounded border border-ctp-surface2"
+                  className="h-6 w-6 rounded border border-ctp-surface2"
                   style={{ backgroundColor: platform.color_primary }}
                 />
-                <span className="text-sm text-ctp-text font-mono">{platform.color_primary}</span>
+                <span className="font-mono text-sm text-ctp-text">{platform.color_primary}</span>
               </div>
             </div>
             {platform.default_icon_url && (
               <div className="bg-ctp-surface0/50 rounded-lg p-4">
-                <div className="text-xs text-ctp-subtext0 mb-1">Default Icon</div>
-                <div className="text-xs text-ctp-overlay1 break-all">
+                <div className="mb-1 text-xs text-ctp-subtext0">Default Icon</div>
+                <div className="break-all text-xs text-ctp-overlay1">
                   {platform.default_icon_url.substring(0, 50)}...
                 </div>
               </div>
             )}
             <div className="bg-ctp-surface0/50 rounded-lg p-4">
-              <div className="text-xs text-ctp-subtext0 mb-1">Saved Since</div>
+              <div className="mb-1 text-xs text-ctp-subtext0">Saved Since</div>
               <div className="text-sm text-ctp-text">
                 {new Date(platform.created_at).toLocaleDateString()}
               </div>

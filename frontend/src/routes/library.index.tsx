@@ -34,11 +34,7 @@ export const Route = createFileRoute("/library/")({
       platform: search.platform || "",
       status: search.status || "",
       favorites: search.favorites || false,
-      genre: search.genre
-        ? Array.isArray(search.genre)
-          ? search.genre
-          : [search.genre]
-        : [],
+      genre: search.genre ? (Array.isArray(search.genre) ? search.genre : [search.genre]) : [],
       collection: search.collection
         ? Array.isArray(search.collection)
           ? search.collection

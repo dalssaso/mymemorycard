@@ -1,25 +1,25 @@
-import { api } from "./axios"
+import { api } from "./axios";
 
 export const gamesAPI = {
   getAll: (params?: {
-    platform?: string
-    status?: string
-    favorites?: boolean
-    genre?: string
-    collection?: string
-    franchise?: string
-    sort?: string
+    platform?: string;
+    status?: string;
+    favorites?: boolean;
+    genre?: string;
+    collection?: string;
+    franchise?: string;
+    sort?: string;
   }) => {
-    if (!params) return api.get("/games")
-    const searchParams = new URLSearchParams()
-    if (params.platform) searchParams.set("platform", params.platform)
-    if (params.status) searchParams.set("status", params.status)
-    if (params.favorites) searchParams.set("favorites", "true")
-    if (params.genre) searchParams.set("genre", params.genre)
-    if (params.collection) searchParams.set("collection", params.collection)
-    if (params.franchise) searchParams.set("franchise", params.franchise)
-    if (params.sort) searchParams.set("sort", params.sort)
-    return api.get(`/games?${searchParams.toString()}`)
+    if (!params) return api.get("/games");
+    const searchParams = new URLSearchParams();
+    if (params.platform) searchParams.set("platform", params.platform);
+    if (params.status) searchParams.set("status", params.status);
+    if (params.favorites) searchParams.set("favorites", "true");
+    if (params.genre) searchParams.set("genre", params.genre);
+    if (params.collection) searchParams.set("collection", params.collection);
+    if (params.franchise) searchParams.set("franchise", params.franchise);
+    if (params.sort) searchParams.set("sort", params.sort);
+    return api.get(`/games?${searchParams.toString()}`);
   },
   getGenreStats: () => api.get("/games/stats/genres"),
   export: (format: "json" | "csv") =>
@@ -42,13 +42,13 @@ export const gamesAPI = {
     id: string,
     platformId: string,
     fields: {
-      estimated_completion_hours?: number | null
-      actual_playtime_hours?: number | null
-      completion_percentage?: number | null
-      difficulty_rating?: number | null
-      achievements_total?: number | null
-      achievements_earned?: number | null
-      replay_value?: number | null
+      estimated_completion_hours?: number | null;
+      actual_playtime_hours?: number | null;
+      completion_percentage?: number | null;
+      difficulty_rating?: number | null;
+      achievements_total?: number | null;
+      achievements_earned?: number | null;
+      replay_value?: number | null;
     }
   ) => api.put(`/games/${id}/custom-fields`, { platform_id: platformId, ...fields }),
   getAchievements: (id: string, platformId: string) =>
@@ -69,4 +69,4 @@ export const gamesAPI = {
     api.post(`/games/${id}/update-from-rawg`, options),
   addToPlatform: (id: string, platformId: string) =>
     api.post(`/games/${id}/platforms`, { platformId }),
-}
+};

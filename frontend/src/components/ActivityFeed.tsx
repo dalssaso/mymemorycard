@@ -81,10 +81,10 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 ? "achievements"
                 : "stats"
           }
-          className="flex gap-2 px-2 py-1.5 bg-ctp-surface0/50 rounded-lg hover:bg-ctp-surface0 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
+          className="bg-ctp-surface0/50 group flex gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-ctp-surface0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
         >
           <div
-            className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+            className={`flex h-7 w-7 items-center justify-center rounded-lg ${
               item.type === "session"
                 ? "bg-ctp-teal/20 text-ctp-teal"
                 : item.type === "achievement"
@@ -99,7 +99,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-3.5 h-3.5"
+                className="h-3.5 w-3.5"
               >
                 <path
                   strokeLinecap="round"
@@ -114,7 +114,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-3.5 h-3.5"
+                className="h-3.5 w-3.5"
               >
                 <path
                   strokeLinecap="round"
@@ -129,7 +129,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-3.5 h-3.5"
+                className="h-3.5 w-3.5"
               >
                 <path
                   strokeLinecap="round"
@@ -139,13 +139,13 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
               </svg>
             )}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-xs text-ctp-text font-medium truncate group-hover:text-ctp-teal transition-colors leading-4">
+                <p className="truncate text-xs font-medium leading-4 text-ctp-text transition-colors group-hover:text-ctp-teal">
                   {item.game_name}
                 </p>
-                <p className="text-[11px] text-ctp-subtext0 leading-4">
+                <p className="text-[11px] leading-4 text-ctp-subtext0">
                   {item.type === "session" ? (
                     item.duration_minutes ? (
                       <>
@@ -160,7 +160,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   ) : item.type === "achievement" ? (
                     <>
                       Unlocked{" "}
-                      <span className="inline-flex items-center rounded border border-ctp-yellow/40 bg-ctp-yellow/20 px-1.5 py-0.5 text-ctp-yellow font-medium">
+                      <span className="border-ctp-yellow/40 bg-ctp-yellow/20 inline-flex items-center rounded border px-1.5 py-0.5 font-medium text-ctp-yellow">
                         {item.achievement_name}
                       </span>
                       {item.rarity_percent !== null && item.rarity_percent !== undefined && (
@@ -180,14 +180,14 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   ) : (
                     <>
                       {formatCompletionTypeLabel(item.completion_type)} progress updated to{" "}
-                      <span className="inline-flex items-center rounded border border-ctp-green/40 bg-ctp-green/20 px-1.5 py-0.5 text-ctp-green font-medium">
+                      <span className="border-ctp-green/40 bg-ctp-green/20 inline-flex items-center rounded border px-1.5 py-0.5 font-medium text-ctp-green">
                         {item.percentage}%
                       </span>
                     </>
                   )}
                 </p>
               </div>
-              <span className="text-[10px] text-ctp-overlay1 whitespace-nowrap">
+              <span className="whitespace-nowrap text-[10px] text-ctp-overlay1">
                 {formatRelativeTime(new Date(item.timestamp))}
               </span>
             </div>
@@ -270,11 +270,11 @@ export function ActivityFeed({
     return (
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="animate-pulse flex gap-3">
-            <div className="w-10 h-10 bg-ctp-surface1 rounded-lg" />
+          <div key={i} className="flex animate-pulse gap-3">
+            <div className="h-10 w-10 rounded-lg bg-ctp-surface1" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-ctp-surface1 rounded w-3/4" />
-              <div className="h-3 bg-ctp-surface1 rounded w-1/2" />
+              <div className="h-4 w-3/4 rounded bg-ctp-surface1" />
+              <div className="h-3 w-1/2 rounded bg-ctp-surface1" />
             </div>
           </div>
         ))}
@@ -284,14 +284,14 @@ export function ActivityFeed({
 
   if (feed.length === 0) {
     return (
-      <div className="text-center py-8 text-ctp-overlay1">
+      <div className="py-8 text-center text-ctp-overlay1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-12 h-12 mx-auto mb-3 opacity-50"
+          className="mx-auto mb-3 h-12 w-12 opacity-50"
         >
           <path
             strokeLinecap="round"
@@ -300,7 +300,7 @@ export function ActivityFeed({
           />
         </svg>
         <p>No recent activity</p>
-        <p className="text-sm mt-1">Start tracking your play sessions to see activity here</p>
+        <p className="mt-1 text-sm">Start tracking your play sessions to see activity here</p>
       </div>
     );
   }
@@ -316,7 +316,7 @@ export function ActivityFeed({
         <div className="mt-3">
           <Link
             to={showMoreHref}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-ctp-surface0 text-ctp-text rounded-lg hover:bg-ctp-surface1 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-ctp-surface0 px-3 py-1.5 text-sm text-ctp-text transition-colors hover:bg-ctp-surface1"
           >
             Show more activity
           </Link>

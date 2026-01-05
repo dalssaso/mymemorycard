@@ -1,18 +1,13 @@
-import { type HTMLAttributes } from "react"
-import { cn } from "@/lib/cn"
+import { type HTMLAttributes } from "react";
+import { cn } from "@/lib/cn";
 
 function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>): JSX.Element {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-primary/10", className)}
-      {...props}
-    />
-  )
+  return <div className={cn("animate-pulse rounded-md bg-primary/10", className)} {...props} />;
 }
 
 function GameCardSkeleton(): JSX.Element {
   return (
-    <div className="rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 p-4">
+    <div className="bg-ctp-surface0/40 rounded-xl border border-ctp-surface1 p-4">
       <Skeleton className="h-40 w-full rounded-lg" />
       <div className="mt-4 space-y-2">
         <Skeleton className="h-4 w-3/4" />
@@ -24,12 +19,12 @@ function GameCardSkeleton(): JSX.Element {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function GameRowSkeleton(): JSX.Element {
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-ctp-surface1 bg-ctp-surface0/40 p-4">
+    <div className="bg-ctp-surface0/40 flex items-center gap-4 rounded-lg border border-ctp-surface1 p-4">
       <Skeleton className="h-16 w-12 rounded-md" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-1/2" />
@@ -37,15 +32,15 @@ function GameRowSkeleton(): JSX.Element {
       </div>
       <Skeleton className="h-6 w-16" />
     </div>
-  )
+  );
 }
 
 function SkeletonCard(): JSX.Element {
-  return <GameCardSkeleton />
+  return <GameCardSkeleton />;
 }
 
 function SkeletonTable(): JSX.Element {
-  return <GameRowSkeleton />
+  return <GameRowSkeleton />;
 }
 
-export { Skeleton, GameCardSkeleton, GameRowSkeleton, SkeletonCard, SkeletonTable }
+export { Skeleton, GameCardSkeleton, GameRowSkeleton, SkeletonCard, SkeletonTable };

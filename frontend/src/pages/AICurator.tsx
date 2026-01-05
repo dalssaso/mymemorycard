@@ -260,18 +260,18 @@ export function AICurator() {
   if (!isEnabled) {
     return (
       <PageLayout sidebar={<AICuratorSidebar />}>
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <h1 className="text-4xl font-bold text-ctp-text">AI Curator</h1>
           </div>
 
           <Card className="p-8 text-center">
             <svg
-              className="w-16 h-16 mx-auto mb-4 text-ctp-overlay0"
+              className="mx-auto mb-4 h-16 w-16 text-ctp-overlay0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -283,8 +283,8 @@ export function AICurator() {
                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
               />
             </svg>
-            <h2 className="text-2xl font-semibold text-ctp-text mb-2">AI Curator Not Enabled</h2>
-            <p className="text-ctp-subtext0 mb-6">
+            <h2 className="mb-2 text-2xl font-semibold text-ctp-text">AI Curator Not Enabled</h2>
+            <p className="mb-6 text-ctp-subtext0">
               Configure your AI settings to unlock collection suggestions and game recommendations.
             </p>
             <Button asChild>
@@ -298,17 +298,17 @@ export function AICurator() {
 
   return (
     <PageLayout sidebar={<AICuratorSidebar />}>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
           />
           <h1 className="text-4xl font-bold text-ctp-text">AI Curator</h1>
         </div>
 
         <Card className="mb-6 p-6">
-          <p className="text-ctp-subtext0 mb-4">
+          <p className="mb-4 text-ctp-subtext0">
             Powered by AI, the Curator analyzes your game library to provide personalized
             recommendations and help you organize your collection.
           </p>
@@ -318,9 +318,9 @@ export function AICurator() {
           </p>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8 items-start">
+        <div className="mb-8 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card
-            className={`transition-all cursor-pointer ${
+            className={`cursor-pointer transition-all ${
               expandedCard === "collections" ? "p-6" : "p-4"
             } hover:bg-ctp-surface0/50`}
             onClick={() => setExpandedCard(expandedCard === "collections" ? null : "collections")}
@@ -334,9 +334,9 @@ export function AICurator() {
             tabIndex={0}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-ctp-mauve/20 rounded-lg">
+              <div className="bg-ctp-mauve/20 rounded-lg p-2">
                 <svg
-                  className="w-5 h-5 text-ctp-mauve"
+                  className="h-5 w-5 text-ctp-mauve"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -353,13 +353,13 @@ export function AICurator() {
             </div>
             {expandedCard === "collections" && (
               <>
-                <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
+                <p className="mb-4 mt-3 text-sm text-ctp-subtext0">
                   AI analyzes your library to suggest themed collections based on mood, gameplay
                   style, and context
                 </p>
                 <div className="mb-4">
                   <label
-                    className="block text-sm font-medium text-ctp-text mb-2"
+                    className="mb-2 block text-sm font-medium text-ctp-text"
                     htmlFor="collection-theme"
                   >
                     Theme (Optional)
@@ -373,7 +373,7 @@ export function AICurator() {
                     className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <p className="text-xs text-ctp-overlay1 mt-1">
+                  <p className="mt-1 text-xs text-ctp-overlay1">
                     Leave empty for general suggestions, or specify themes for targeted collections
                   </p>
                 </div>
@@ -383,7 +383,7 @@ export function AICurator() {
                     handleSuggestCollections();
                   }}
                   disabled={suggestCollectionsMutation.isPending}
-                  className="w-full bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90"
+                  className="hover:bg-ctp-mauve/90 w-full bg-ctp-mauve text-ctp-base"
                 >
                   {suggestCollectionsMutation.isPending ? "Generating..." : "Generate Suggestions"}
                 </Button>
@@ -392,7 +392,7 @@ export function AICurator() {
           </Card>
 
           <Card
-            className={`transition-all cursor-pointer ${
+            className={`cursor-pointer transition-all ${
               expandedCard === "nextGame" ? "p-6" : "p-4"
             } hover:bg-ctp-surface0/50`}
             onClick={() => setExpandedCard(expandedCard === "nextGame" ? null : "nextGame")}
@@ -406,9 +406,9 @@ export function AICurator() {
             tabIndex={0}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-ctp-blue/20 rounded-lg">
+              <div className="bg-ctp-blue/20 rounded-lg p-2">
                 <svg
-                  className="w-5 h-5 text-ctp-blue"
+                  className="h-5 w-5 text-ctp-blue"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -431,7 +431,7 @@ export function AICurator() {
             </div>
             {expandedCard === "nextGame" && (
               <>
-                <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
+                <p className="mb-4 mt-3 text-sm text-ctp-subtext0">
                   Get personalized recommendations on what to play next based on your play history
                   and preferences
                 </p>
@@ -441,7 +441,7 @@ export function AICurator() {
                     setShowNextGameModal(true);
                   }}
                   disabled={suggestNextGameMutation.isPending}
-                  className="w-full bg-ctp-blue text-ctp-base hover:bg-ctp-blue/90 disabled:opacity-50"
+                  className="hover:bg-ctp-blue/90 w-full bg-ctp-blue text-ctp-base disabled:opacity-50"
                 >
                   {suggestNextGameMutation.isPending ? "Analyzing..." : "Get Recommendation"}
                 </Button>
@@ -450,7 +450,7 @@ export function AICurator() {
           </Card>
 
           <Card
-            className={`transition-all cursor-pointer ${
+            className={`cursor-pointer transition-all ${
               expandedCard === "generateCover" ? "p-6" : "p-4"
             } hover:bg-ctp-surface0/50`}
             onClick={() =>
@@ -466,9 +466,9 @@ export function AICurator() {
             tabIndex={0}
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-ctp-green/20 rounded-lg">
+              <div className="bg-ctp-green/20 rounded-lg p-2">
                 <svg
-                  className="w-5 h-5 text-ctp-green"
+                  className="h-5 w-5 text-ctp-green"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -485,7 +485,7 @@ export function AICurator() {
             </div>
             {expandedCard === "generateCover" && (
               <>
-                <p className="text-sm text-ctp-subtext0 mt-3 mb-4">
+                <p className="mb-4 mt-3 text-sm text-ctp-subtext0">
                   Create AI-generated cover art for your collections based on their name and
                   description
                 </p>
@@ -495,7 +495,7 @@ export function AICurator() {
                     setShowGenerateCoverModal(true);
                   }}
                   disabled={generateCoverMutation.isPending || !collectionsData?.collections.length}
-                  className="w-full bg-ctp-green text-ctp-base hover:bg-ctp-green/90 disabled:opacity-50"
+                  className="hover:bg-ctp-green/90 w-full bg-ctp-green text-ctp-base disabled:opacity-50"
                 >
                   {generateCoverMutation.isPending ? "Generating..." : "Select Collection"}
                 </Button>
@@ -506,12 +506,12 @@ export function AICurator() {
 
         {activityData && activityData.logs.length > 0 && (
           <Card className="p-6">
-            <h2 className="text-xl font-semibold text-ctp-mauve mb-4">Recent Activity</h2>
+            <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">Recent Activity</h2>
             <div className="space-y-2">
               {activityData.logs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 bg-ctp-surface0 rounded-lg"
+                  className="flex items-center justify-between rounded-lg bg-ctp-surface0 p-3"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -519,16 +519,16 @@ export function AICurator() {
                         {log.actionType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                       </span>
                       {log.success ? (
-                        <span className="text-xs px-2 py-0.5 bg-ctp-green/20 text-ctp-green rounded">
+                        <span className="bg-ctp-green/20 rounded px-2 py-0.5 text-xs text-ctp-green">
                           Success
                         </span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 bg-ctp-red/20 text-ctp-red rounded">
+                        <span className="bg-ctp-red/20 rounded px-2 py-0.5 text-xs text-ctp-red">
                           Failed
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-ctp-overlay1 mt-1">
+                    <div className="mt-1 text-xs text-ctp-overlay1">
                       {new Date(log.createdAt).toLocaleString()} •{" "}
                       {log.estimatedCostUsd ? `$${log.estimatedCostUsd.toFixed(4)}` : "N/A"} •{" "}
                       {log.durationMs ? `${(log.durationMs / 1000).toFixed(1)}s` : "N/A"}
@@ -542,7 +542,7 @@ export function AICurator() {
       </div>
 
       <Dialog open={showCollectionsModal} onOpenChange={setShowCollectionsModal}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto border-ctp-surface1 bg-ctp-mantle">
+        <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto border-ctp-surface1 bg-ctp-mantle">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-ctp-text">
               Collection Suggestions
@@ -551,16 +551,16 @@ export function AICurator() {
 
           <div className="space-y-4">
             {suggestedCollections.map((collection, index) => (
-              <div key={index} className="border border-ctp-surface1 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-ctp-mauve mb-2">{collection.name}</h3>
-                <p className="text-sm text-ctp-subtext0 mb-3">{collection.description}</p>
-                <div className="text-xs text-ctp-overlay1 mb-3 break-words">
+              <div key={index} className="rounded-lg border border-ctp-surface1 p-4">
+                <h3 className="mb-2 text-lg font-semibold text-ctp-mauve">{collection.name}</h3>
+                <p className="mb-3 text-sm text-ctp-subtext0">{collection.description}</p>
+                <div className="mb-3 break-words text-xs text-ctp-overlay1">
                   <strong>Games ({collection.gameNames.length}):</strong>{" "}
                   {collection.gameNames.join(", ")}
                 </div>
-                <div className="text-xs text-ctp-overlay2 italic mb-3">{collection.reasoning}</div>
+                <div className="mb-3 text-xs italic text-ctp-overlay2">{collection.reasoning}</div>
                 {settingsData?.activeProvider?.provider === "openai" && (
-                  <div className="flex items-center gap-2 text-sm text-ctp-subtext0 mb-3">
+                  <div className="mb-3 flex items-center gap-2 text-sm text-ctp-subtext0">
                     <Checkbox
                       id={`generate-cover-${index}`}
                       checked={generateCoverOnCreate}
@@ -579,7 +579,7 @@ export function AICurator() {
                     });
                   }}
                   disabled={createCollectionMutation.isPending}
-                  className="w-full bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90 sm:w-auto"
+                  className="hover:bg-ctp-mauve/90 w-full bg-ctp-mauve text-ctp-base sm:w-auto"
                 >
                   {createCollectionMutation.isPending ? "Creating..." : "Create Collection"}
                 </Button>
@@ -601,7 +601,7 @@ export function AICurator() {
             <div className="space-y-4">
               <div>
                 <label
-                  className="block text-sm font-medium text-ctp-text mb-2"
+                  className="mb-2 block text-sm font-medium text-ctp-text"
                   htmlFor="next-game-input"
                 >
                   What are you in the mood for? (Optional)
@@ -619,7 +619,7 @@ export function AICurator() {
                 <Button
                   onClick={handleSuggestNextGame}
                   disabled={suggestNextGameMutation.isPending}
-                  className="w-full bg-ctp-blue text-ctp-base hover:bg-ctp-blue/90"
+                  className="hover:bg-ctp-blue/90 w-full bg-ctp-blue text-ctp-base"
                 >
                   {suggestNextGameMutation.isPending ? "Analyzing..." : "Get Suggestion"}
                 </Button>
@@ -627,12 +627,12 @@ export function AICurator() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 bg-ctp-surface0 rounded-lg">
-                <h3 className="text-xl font-semibold text-ctp-blue mb-2">
+              <div className="rounded-lg bg-ctp-surface0 p-4">
+                <h3 className="mb-2 text-xl font-semibold text-ctp-blue">
                   {suggestedGame.gameName}
                 </h3>
                 {suggestedGame.estimatedHours && (
-                  <p className="text-sm text-ctp-overlay1 mb-3">
+                  <p className="mb-3 text-sm text-ctp-overlay1">
                     Estimated playtime: {suggestedGame.estimatedHours} hours
                   </p>
                 )}
@@ -655,7 +655,7 @@ export function AICurator() {
       </Dialog>
 
       <Dialog open={showGenerateCoverModal} onOpenChange={setShowGenerateCoverModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto border-ctp-surface1 bg-ctp-mantle">
+        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto border-ctp-surface1 bg-ctp-mantle">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-ctp-text">
               Generate Collection Cover
@@ -667,27 +667,27 @@ export function AICurator() {
             collection&apos;s name and description.
           </p>
 
-            <div className="space-y-2">
-              {collectionsData?.collections.map((collection) => (
-                <Button
-                  key={collection.id}
-                  onClick={() => {
-                    setShowGenerateCoverModal(false);
-                    handleGenerateCover(collection.id);
-                  }}
-                  variant="ghost"
-                  className="w-full justify-start bg-ctp-surface0 p-4 text-left hover:bg-ctp-surface1"
-                >
-                  <h3 className="text-base font-semibold text-ctp-text mb-1">{collection.name}</h3>
-                  {collection.description && (
-                    <p className="text-sm text-ctp-subtext0">{collection.description}</p>
-                  )}
-                </Button>
-              ))}
-            </div>
+          <div className="space-y-2">
+            {collectionsData?.collections.map((collection) => (
+              <Button
+                key={collection.id}
+                onClick={() => {
+                  setShowGenerateCoverModal(false);
+                  handleGenerateCover(collection.id);
+                }}
+                variant="ghost"
+                className="w-full justify-start bg-ctp-surface0 p-4 text-left hover:bg-ctp-surface1"
+              >
+                <h3 className="mb-1 text-base font-semibold text-ctp-text">{collection.name}</h3>
+                {collection.description && (
+                  <p className="text-sm text-ctp-subtext0">{collection.description}</p>
+                )}
+              </Button>
+            ))}
+          </div>
 
           {collectionsData?.collections.length === 0 && (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <p className="text-ctp-subtext0">No collections found. Create a collection first.</p>
             </div>
           )}
@@ -705,10 +705,10 @@ export function AICurator() {
                 Confirm Action
               </AlertDialogTitle>
               <AlertDialogDescription asChild>
-                <div className="p-4 bg-ctp-surface0 rounded-lg">
+                <div className="rounded-lg bg-ctp-surface0 p-4">
                   <div className="flex items-start gap-3">
                     <svg
-                      className="w-6 h-6 text-ctp-blue mt-0.5 flex-shrink-0"
+                      className="mt-0.5 h-6 w-6 flex-shrink-0 text-ctp-blue"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -721,7 +721,7 @@ export function AICurator() {
                       />
                     </svg>
                     <div>
-                      <p className="text-sm text-ctp-text mb-2">
+                      <p className="mb-2 text-sm text-ctp-text">
                         {confirmAction.type === "collections"
                           ? confirmAction.theme
                             ? `This will analyze your game library and generate collection suggestions for theme: "${confirmAction.theme}".`
@@ -747,7 +747,7 @@ export function AICurator() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmAction}
-                className="flex-1 bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/90"
+                className="hover:bg-ctp-mauve/90 flex-1 bg-ctp-mauve text-ctp-base"
               >
                 Continue
               </AlertDialogAction>

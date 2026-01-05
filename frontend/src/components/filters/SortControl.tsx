@@ -1,14 +1,8 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 
 interface SortControlProps {
-  currentSort: string
-  onSortChange: (sort: string) => void
+  currentSort: string;
+  onSortChange: (sort: string) => void;
 }
 
 const SORT_OPTIONS = [
@@ -23,14 +17,14 @@ const SORT_OPTIONS = [
   { value: "rating_low", label: "Rating (Low to High)" },
   { value: "last_played_recent", label: "Last Played (Recent)" },
   { value: "last_played_oldest", label: "Last Played (Oldest)" },
-]
+];
 
 export function SortControl({ currentSort, onSortChange }: SortControlProps): JSX.Element {
-  const value = currentSort || "default"
+  const value = currentSort || "default";
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort-select" className="text-sm text-zinc-400 whitespace-nowrap">
+      <label htmlFor="sort-select" className="whitespace-nowrap text-sm text-zinc-400">
         Sort by:
       </label>
       <Select
@@ -49,5 +43,5 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps): JS
         </SelectContent>
       </Select>
     </div>
-  )
+  );
 }

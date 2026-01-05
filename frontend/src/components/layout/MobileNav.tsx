@@ -1,20 +1,20 @@
-import { Link, useRouterState } from "@tanstack/react-router"
-import { useGlobalSearch } from "@/components/GlobalSearch"
-import { Button } from "@/components/ui"
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useGlobalSearch } from "@/components/GlobalSearch";
+import { Button } from "@/components/ui";
 
 export function MobileNav(): JSX.Element {
-  const { openSearch } = useGlobalSearch()
-  const locationHref = useRouterState({ select: (state) => state.location.href })
+  const { openSearch } = useGlobalSearch();
+  const locationHref = useRouterState({ select: (state) => state.location.href });
 
   const getNavLinkClass = (isActive: boolean) =>
     `flex flex-col items-center justify-center rounded-lg transition-colors ${
       isActive
         ? "text-ctp-mauve bg-ctp-mauve/10"
         : "text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0"
-    }`
+    }`;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-ctp-surface0 bg-ctp-mantle/95 backdrop-blur md:hidden">
+    <nav className="bg-ctp-mantle/95 fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-ctp-surface0 backdrop-blur md:hidden">
       <div className="grid h-full grid-cols-5 gap-1 px-2">
         <Link to="/dashboard" className={getNavLinkClass(locationHref.includes("/dashboard"))}>
           <span className="text-xs">Home</span>
@@ -27,7 +27,7 @@ export function MobileNav(): JSX.Element {
         <Button
           type="button"
           variant="ghost"
-          className="h-auto flex flex-col items-center justify-center rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+          className="flex h-auto flex-col items-center justify-center rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
           aria-label="Open search"
           onClick={() => openSearch(document.activeElement)}
         >
@@ -43,5 +43,5 @@ export function MobileNav(): JSX.Element {
         </Link>
       </div>
     </nav>
-  )
+  );
 }

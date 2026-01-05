@@ -66,7 +66,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
 
       <div>
         <span
-          className="block text-sm font-medium text-ctp-subtext0 mb-2"
+          className="mb-2 block text-sm font-medium text-ctp-subtext0"
           id="difficulty-rating-label"
         >
           Difficulty Rating (1-10)
@@ -78,9 +78,9 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
               onClick={() => handleFieldChange("difficulty_rating", rating)}
               aria-pressed={fields.difficulty_rating === rating}
               variant="ghost"
-              className={`h-auto flex-1 py-2 rounded transition-all text-sm ${
+              className={`h-auto flex-1 rounded py-2 text-sm transition-all ${
                 fields.difficulty_rating === rating
-                  ? "bg-ctp-red text-ctp-base shadow-lg shadow-ctp-red/50"
+                  ? "shadow-ctp-red/50 bg-ctp-red text-ctp-base shadow-lg"
                   : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
               }`}
             >
@@ -92,7 +92,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
           <Button
             onClick={() => handleFieldChange("difficulty_rating", null)}
             variant="link"
-            className="h-auto p-0 mt-2 text-sm text-ctp-overlay1 hover:text-ctp-subtext1"
+            className="mt-2 h-auto p-0 text-sm text-ctp-overlay1 hover:text-ctp-subtext1"
           >
             Clear rating
           </Button>

@@ -28,7 +28,7 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
   }
 
   return (
-    <ScrollFade axis="y" className="space-y-1 max-h-48 overflow-y-auto">
+    <ScrollFade axis="y" className="max-h-48 space-y-1 overflow-y-auto">
       {genres.map((genre) => {
         const isSelected = selectedGenres.includes(genre.name);
         return (
@@ -36,10 +36,10 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
             key={genre.name}
             onClick={() => toggleGenre(genre.name)}
             variant="ghost"
-            className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between border ${
+            className={`flex h-auto w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-all ${
               isSelected
-                ? "bg-ctp-peach/20 text-ctp-peach border-ctp-peach"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
+                ? "bg-ctp-peach/20 border-ctp-peach text-ctp-peach"
+                : "border-transparent text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             <span>{genre.name}</span>

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router";
 import {
   createContext,
   useCallback,
@@ -9,97 +9,104 @@ import {
   useState,
   type MutableRefObject,
   type ReactNode,
-} from "react"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
-import { useSearchData } from "@/hooks/useSearchData"
+} from "react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { useSearchData } from "@/hooks/useSearchData";
 
 interface GlobalSearchContextValue {
-  isOpen: boolean
-  openSearch: (trigger?: Element | null) => void
-  closeSearch: () => void
-  triggerRef: MutableRefObject<Element | null>
+  isOpen: boolean;
+  openSearch: (trigger?: Element | null) => void;
+  closeSearch: () => void;
+  triggerRef: MutableRefObject<Element | null>;
 }
 
-const GlobalSearchContext = createContext<GlobalSearchContextValue | null>(null)
+const GlobalSearchContext = createContext<GlobalSearchContextValue | null>(null);
 
 export function GlobalSearchProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [isOpen, setIsOpen] = useState(false)
-  const triggerRef = useRef<Element | null>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<Element | null>(null);
 
   const openSearch = useCallback((trigger?: Element | null) => {
-    triggerRef.current = trigger ?? document.activeElement
-    setIsOpen(true)
-  }, [])
+    triggerRef.current = trigger ?? document.activeElement;
+    setIsOpen(true);
+  }, []);
 
   const closeSearch = useCallback(() => {
-    setIsOpen(false)
-  }, [])
+    setIsOpen(false);
+  }, []);
 
   return (
     <GlobalSearchContext.Provider value={{ isOpen, openSearch, closeSearch, triggerRef }}>
       {children}
     </GlobalSearchContext.Provider>
-  )
+  );
 }
 
 export function useGlobalSearch(): GlobalSearchContextValue {
-  const context = useContext(GlobalSearchContext)
+  const context = useContext(GlobalSearchContext);
   if (!context) {
-    throw new Error("useGlobalSearch must be used within GlobalSearchProvider")
+    throw new Error("useGlobalSearch must be used within GlobalSearchProvider");
   }
-  return context
+  return context;
 }
 
 export function GlobalSearch(): JSX.Element {
-  const { isOpen, openSearch, closeSearch, triggerRef } = useGlobalSearch()
-  const [searchQuery, setSearchQuery] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
-  const { sections, totalCount } = useSearchData(searchQuery)
+  const { isOpen, openSearch, closeSearch, triggerRef } = useGlobalSearch();
+  const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { sections, totalCount } = useSearchData(searchQuery);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault()
-        openSearch(document.activeElement)
+        event.preventDefault();
+        openSearch(document.activeElement);
       }
-    }
+    };
 
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [openSearch])
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openSearch]);
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 0)
+      setTimeout(() => inputRef.current?.focus(), 0);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const emptyLabel = useMemo(() => {
-    if (!searchQuery.trim()) return "Type to search games, collections, and more."
-    return totalCount === 0 ? "No results found." : ""
-  }, [searchQuery, totalCount])
+    if (!searchQuery.trim()) return "Type to search games, collections, and more.";
+    return totalCount === 0 ? "No results found." : "";
+  }, [searchQuery, totalCount]);
 
   const handleSelect = useCallback(
     (href: string) => {
-      closeSearch()
-      setSearchQuery("")
+      closeSearch();
+      setSearchQuery("");
       if (triggerRef.current instanceof HTMLElement) {
-        triggerRef.current.focus()
+        triggerRef.current.focus();
       }
-      navigate({ to: href })
+      navigate({ to: href });
     },
     [closeSearch, navigate, triggerRef]
-  )
+  );
 
   return (
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
-          closeSearch()
-          setSearchQuery("")
+          closeSearch();
+          setSearchQuery("");
         }
       }}
     >
@@ -141,5 +148,5 @@ export function GlobalSearch(): JSX.Element {
         </Command>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -116,11 +116,11 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs text-ctp-subtext0 font-medium">Active filters:</span>
+      <span className="text-xs font-medium text-ctp-subtext0">Active filters:</span>
       {pills.map((pill, index) => (
         <div
           key={`${pill.key}-${pill.itemValue || pill.value}-${index}`}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${pill.colorClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all ${pill.colorClass}`}
         >
           <span className="max-w-[200px] truncate">
             {pill.label}: {pill.value}
@@ -129,10 +129,10 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
             onClick={() => handleRemove(pill)}
             variant="ghost"
             size="icon"
-            className="h-auto w-auto hover:opacity-70 transition-opacity flex-shrink-0"
+            className="h-auto w-auto flex-shrink-0 transition-opacity hover:opacity-70"
             aria-label={`Remove ${pill.label} filter`}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -147,7 +147,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
         <Button
           onClick={onClearAll}
           variant="link"
-          className="h-auto p-0 text-xs text-ctp-subtext0 hover:text-ctp-text underline transition-colors"
+          className="h-auto p-0 text-xs text-ctp-subtext0 underline transition-colors hover:text-ctp-text"
         >
           Clear all
         </Button>

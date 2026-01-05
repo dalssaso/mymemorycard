@@ -197,14 +197,14 @@ export function Library() {
         { queryKey: ["collections"] },
         (oldData) => {
           if (!oldData?.collections) return oldData;
-        return {
-          ...oldData,
-          collections: oldData.collections.map((collection: Collection) =>
-            collection.id === collectionId
-              ? { ...collection, game_count: collection.game_count + gameIds.length }
-              : collection
-          ),
-        };
+          return {
+            ...oldData,
+            collections: oldData.collections.map((collection: Collection) =>
+              collection.id === collectionId
+                ? { ...collection, game_count: collection.game_count + gameIds.length }
+                : collection
+            ),
+          };
         }
       );
 
@@ -277,11 +277,11 @@ export function Library() {
               <img
                 src={info.row.original.cover_art_url}
                 alt={info.getValue()}
-                className="w-8 h-12 object-cover rounded"
+                className="h-12 w-8 rounded object-cover"
               />
             ) : (
-              <div className="w-8 h-12 bg-zinc-800 rounded flex items-center justify-center">
-                <span className="text-zinc-600 text-xs">No image</span>
+              <div className="flex h-12 w-8 items-center justify-center rounded bg-zinc-800">
+                <span className="text-xs text-zinc-600">No image</span>
               </div>
             )}
             <Link
@@ -354,15 +354,15 @@ export function Library() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <h1 className="text-4xl font-bold text-ctp-text">Library</h1>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {Array.from({ length: 12 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -375,9 +375,9 @@ export function Library() {
   if (error) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="max-w-md p-6">
-            <h2 className="text-2xl font-bold text-ctp-red mb-4">Error</h2>
+            <h2 className="mb-4 text-2xl font-bold text-ctp-red">Error</h2>
             <p className="text-zinc-400">Failed to load your library. Please try again.</p>
           </Card>
         </div>
@@ -406,12 +406,12 @@ export function Library() {
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <h1 className="text-4xl font-bold text-ctp-mauve">Library</h1>
           </div>
@@ -421,14 +421,14 @@ export function Library() {
             <Button
               variant="outline"
               onClick={() => handleExport("json")}
-              className="border-ctp-teal/30 bg-ctp-teal/20 text-ctp-teal hover:bg-ctp-teal/30"
+              className="border-ctp-teal/30 bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal"
             >
               Export JSON
             </Button>
             <Button
               variant="outline"
               onClick={() => handleExport("csv")}
-              className="border-ctp-green/30 bg-ctp-green/20 text-ctp-green hover:bg-ctp-green/30"
+              className="border-ctp-green/30 bg-ctp-green/20 hover:bg-ctp-green/30 text-ctp-green"
             >
               Export CSV
             </Button>
@@ -436,7 +436,7 @@ export function Library() {
         </div>
 
         {/* Search and Column Settings */}
-        <div className="mb-6 flex flex-wrap gap-4 items-center">
+        <div className="mb-6 flex flex-wrap items-center gap-4">
           <Input
             type="text"
             value={globalFilter}
@@ -452,7 +452,7 @@ export function Library() {
               <Button
                 variant="outline"
                 onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className="border-ctp-surface1 bg-ctp-surface0/50 text-sm text-ctp-subtext1 hover:border-ctp-mauve"
+                className="bg-ctp-surface0/50 border-ctp-surface1 text-sm text-ctp-subtext1 hover:border-ctp-mauve"
                 aria-expanded={showColumnSettings}
                 aria-controls="column-settings"
               >
@@ -462,7 +462,7 @@ export function Library() {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-4 h-4"
+                  className="h-4 w-4"
                 >
                   <path
                     strokeLinecap="round"
@@ -480,19 +480,17 @@ export function Library() {
               {showColumnSettings && (
                 <div
                   id="column-settings"
-                  className="absolute top-full left-0 mt-2 p-3 bg-ctp-mantle border border-ctp-surface1 rounded-lg shadow-lg z-10 min-w-[200px]"
+                  className="absolute left-0 top-full z-10 mt-2 min-w-[200px] rounded-lg border border-ctp-surface1 bg-ctp-mantle p-3 shadow-lg"
                 >
                   <div className="flex flex-col gap-2">
                     {table.getAllLeafColumns().map((column) => (
                       <label
                         key={column.id}
-                        className="flex items-center gap-2 text-sm cursor-pointer hover:text-ctp-text"
+                        className="flex cursor-pointer items-center gap-2 text-sm hover:text-ctp-text"
                       >
                         <Checkbox
                           checked={column.getIsVisible()}
-                          onCheckedChange={(checked) =>
-                            column.toggleVisibility(checked === true)
-                          }
+                          onCheckedChange={(checked) => column.toggleVisibility(checked === true)}
                         />
                         <span className="text-zinc-300">
                           {COLUMN_LABELS[column.id] ?? column.id}
@@ -547,7 +545,7 @@ export function Library() {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-4 h-4"
+                    className="h-4 w-4"
                   >
                     <path
                       strokeLinecap="round"
@@ -584,7 +582,7 @@ export function Library() {
 
         {/* Selection Mode Bar */}
         {selectionMode && (
-          <div className="mb-4 p-3 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg flex items-center justify-between">
+          <div className="bg-ctp-surface0/50 mb-4 flex items-center justify-between rounded-lg border border-ctp-surface1 p-3">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-ctp-text">
                 {selectedGameIds.length > 0
@@ -596,7 +594,7 @@ export function Library() {
                   variant="ghost"
                   size="sm"
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
-                  className="h-auto px-2 text-sm text-zinc-400 hover:text-ctp-text hover:bg-transparent"
+                  className="h-auto px-2 text-sm text-zinc-400 hover:bg-transparent hover:text-ctp-text"
                 >
                   {allFilteredSelected ? "Deselect all" : "Select all"}
                 </Button>
@@ -606,7 +604,7 @@ export function Library() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setRowSelection({})}
-                  className="h-auto px-2 text-sm text-zinc-400 hover:text-ctp-text hover:bg-transparent"
+                  className="h-auto px-2 text-sm text-zinc-400 hover:bg-transparent hover:text-ctp-text"
                 >
                   Clear
                 </Button>
@@ -624,7 +622,7 @@ export function Library() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-auto border-ctp-teal/30 bg-ctp-teal/20 text-ctp-teal hover:bg-ctp-teal/30"
+                        className="border-ctp-teal/30 bg-ctp-teal/20 hover:bg-ctp-teal/30 h-auto text-ctp-teal"
                       >
                         Add to Collection
                       </Button>
@@ -634,9 +632,7 @@ export function Library() {
                       className="min-w-[200px] border-ctp-surface1 bg-ctp-mantle"
                     >
                       {collections.length === 0 ? (
-                        <div className="px-2 py-1 text-sm text-zinc-400">
-                          No collections yet
-                        </div>
+                        <div className="px-2 py-1 text-sm text-zinc-400">No collections yet</div>
                       ) : (
                         collections.map((collection) => (
                           <DropdownMenuItem
@@ -661,7 +657,7 @@ export function Library() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="h-auto border-ctp-red/30 bg-ctp-red/20 text-ctp-red hover:bg-ctp-red/30"
+                    className="border-ctp-red/30 bg-ctp-red/20 hover:bg-ctp-red/30 h-auto text-ctp-red"
                   >
                     Delete
                   </Button>
@@ -689,8 +685,8 @@ export function Library() {
                 Delete Games
               </AlertDialogTitle>
               <AlertDialogDescription className="text-zinc-400">
-                Are you sure you want to delete {selectedGameIds.length} game(s) from your
-                library? This action cannot be undone.
+                Are you sure you want to delete {selectedGameIds.length} game(s) from your library?
+                This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -699,7 +695,7 @@ export function Library() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => bulkDeleteMutation.mutate(selectedGameIds)}
-                className="bg-ctp-red text-ctp-base hover:bg-ctp-red/90"
+                className="hover:bg-ctp-red/90 bg-ctp-red text-ctp-base"
               >
                 {bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
@@ -709,15 +705,15 @@ export function Library() {
 
         {games.length === 0 ? (
           <Card className="py-12 text-center">
-            <h2 className="text-2xl font-bold mb-4">No Games Yet</h2>
-            <p className="text-zinc-400 mb-6">Start building your library by importing games</p>
+            <h2 className="mb-4 text-2xl font-bold">No Games Yet</h2>
+            <p className="mb-6 text-zinc-400">Start building your library by importing games</p>
             <Button asChild>
               <Link to="/import">Import Games</Link>
             </Button>
           </Card>
         ) : viewMode === "grid" ? (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
               {table.getRowModel().rows.map((row) => {
                 const isSelected = row.getIsSelected();
                 if (selectionMode) {
@@ -733,38 +729,38 @@ export function Library() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className={`rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 cursor-pointer transition-all relative p-0 sm:p-4 ${
+                      className={`bg-ctp-surface0/40 relative cursor-pointer rounded-xl border border-ctp-surface1 p-0 transition-all sm:p-4 ${
                         isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-zinc-500"
                       }`}
                     >
                       {/* Mobile: Poster-only layout */}
-                      <div className="sm:hidden relative aspect-[3/4] overflow-hidden rounded-lg">
+                      <div className="relative aspect-[3/4] overflow-hidden rounded-lg sm:hidden">
                         {row.original.cover_art_url ? (
                           <img
                             src={row.original.cover_art_url}
                             alt={row.original.name}
-                            className="w-full h-full object-cover"
+                            className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                            <span className="text-zinc-600 text-sm">No image</span>
+                          <div className="flex h-full w-full items-center justify-center bg-zinc-800">
+                            <span className="text-sm text-zinc-600">No image</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
+                        <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="text-sm font-bold text-ctp-text line-clamp-2">
+                          <h3 className="line-clamp-2 text-sm font-bold text-ctp-text">
                             {row.original.name}
                           </h3>
                         </div>
                         {isSelected && (
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="w-4 h-4 text-ctp-text"
+                              className="h-4 w-4 text-ctp-text"
                             >
                               <path
                                 strokeLinecap="round"
@@ -777,21 +773,21 @@ export function Library() {
                       </div>
 
                       {/* Desktop: Full card layout */}
-                      <div className="hidden sm:flex gap-4">
+                      <div className="hidden gap-4 sm:flex">
                         {row.original.cover_art_url ? (
                           <img
                             src={row.original.cover_art_url}
                             alt={row.original.name}
-                            className="w-24 h-32 object-cover rounded"
+                            className="h-32 w-24 rounded object-cover"
                           />
                         ) : (
-                          <div className="w-24 h-32 bg-zinc-800 rounded flex items-center justify-center">
-                            <span className="text-zinc-600 text-xs">No image</span>
+                          <div className="flex h-32 w-24 items-center justify-center rounded bg-zinc-800">
+                            <span className="text-xs text-zinc-600">No image</span>
                           </div>
                         )}
                         <div className="flex-1">
-                          <h3 className="text-lg font-bold mb-2">{row.original.name}</h3>
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <h3 className="mb-2 text-lg font-bold">{row.original.name}</h3>
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
                             <PlatformIcons
                               platforms={row.original.platforms}
                               size="sm"
@@ -810,14 +806,14 @@ export function Library() {
                           )}
                         </div>
                         {isSelected && (
-                          <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                          <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="w-4 h-4 text-ctp-text"
+                              className="h-4 w-4 text-ctp-text"
                             >
                               <path
                                 strokeLinecap="round"
@@ -836,7 +832,7 @@ export function Library() {
             </div>
 
             {table.getPageCount() > 1 && (
-              <div className="flex justify-center items-center gap-4">
+              <div className="flex items-center justify-center gap-4">
                 <Button
                   variant="secondary"
                   onClick={() => table.previousPage()}
@@ -862,55 +858,55 @@ export function Library() {
             <Card className="p-0">
               <ScrollFade axis="x" className="overflow-x-auto">
                 <table className="w-full">
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="border-b border-zinc-700">
-                      {selectionMode && (
-                        <th className="w-12 p-4">
-                          <Checkbox
-                            checked={table.getIsAllPageRowsSelected()}
-                            onChange={table.getToggleAllPageRowsSelectedHandler()}
-                            className="cursor-pointer"
-                          />
-                        </th>
-                      )}
-                      {headerGroup.headers.map((header) => (
-                        <th key={header.id} className="text-left p-4 text-zinc-400 font-medium">
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className={`border-b border-ctp-surface0 hover:bg-ctp-surface1 transition-colors ${selectionMode && row.getIsSelected() ? "bg-ctp-mauve/10" : ""}`}
-                    >
-                      {selectionMode && (
-                        <td className="w-12 p-4">
-                          <Checkbox
-                            checked={row.getIsSelected()}
-                            onChange={row.getToggleSelectedHandler()}
-                            className="cursor-pointer"
-                          />
-                        </td>
-                      )}
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="p-4">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
+                  <thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id} className="border-b border-zinc-700">
+                        {selectionMode && (
+                          <th className="w-12 p-4">
+                            <Checkbox
+                              checked={table.getIsAllPageRowsSelected()}
+                              onChange={table.getToggleAllPageRowsSelectedHandler()}
+                              className="cursor-pointer"
+                            />
+                          </th>
+                        )}
+                        {headerGroup.headers.map((header) => (
+                          <th key={header.id} className="p-4 text-left font-medium text-zinc-400">
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody>
+                    {table.getRowModel().rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        className={`border-b border-ctp-surface0 transition-colors hover:bg-ctp-surface1 ${selectionMode && row.getIsSelected() ? "bg-ctp-mauve/10" : ""}`}
+                      >
+                        {selectionMode && (
+                          <td className="w-12 p-4">
+                            <Checkbox
+                              checked={row.getIsSelected()}
+                              onChange={row.getToggleSelectedHandler()}
+                              className="cursor-pointer"
+                            />
+                          </td>
+                        )}
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} className="p-4">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               </ScrollFade>
             </Card>
 
             {table.getPageCount() > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-6">
+              <div className="mt-6 flex items-center justify-center gap-4">
                 <Button
                   variant="secondary"
                   onClick={() => table.previousPage()}

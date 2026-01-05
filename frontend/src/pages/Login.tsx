@@ -1,22 +1,22 @@
-import { Link, useNavigate } from "@tanstack/react-router"
-import { z } from "zod"
-import { useForm, FormProvider } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { FormField } from "@/components/ui/form-field"
-import { useAuth } from "@/contexts/AuthContext"
+import { Link, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { FormField } from "@/components/ui/form-field";
+import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-})
+});
 
-type LoginForm = z.infer<typeof loginSchema>
+type LoginForm = z.infer<typeof loginSchema>;
 
 export function Login(): JSX.Element {
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -24,24 +24,24 @@ export function Login(): JSX.Element {
       username: "",
       password: "",
     },
-  })
+  });
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await login(data.username, data.password)
-      navigate({ to: "/dashboard" })
+      await login(data.username, data.password);
+      navigate({ to: "/dashboard" });
     } catch (error: unknown) {
       const message =
         error && typeof error === "object" && "response" in error
           ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null
-      form.setError("root", { message: message ?? "Failed to login" })
+          : null;
+      form.setError("root", { message: message ?? "Failed to login" });
     }
-  })
+  });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-ctp-base px-4">
-      <Card className="w-full max-w-sm border-ctp-surface1 bg-ctp-surface0/60">
+      <Card className="bg-ctp-surface0/60 w-full max-w-sm border-ctp-surface1">
         <CardHeader>
           <h1 className="text-center text-2xl font-semibold text-ctp-mauve">MyMemoryCard</h1>
           <p className="text-center text-sm text-ctp-subtext1">Welcome back</p>
@@ -70,5 +70,5 @@ export function Login(): JSX.Element {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

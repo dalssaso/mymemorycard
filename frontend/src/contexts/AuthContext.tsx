@@ -6,36 +6,36 @@ import {
   useMemo,
   useState,
   type ReactNode,
-} from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { authAPI } from "@/lib/api"
-import { clearToken, getToken, setToken, subscribe } from "@/lib/auth-storage"
+} from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { authAPI } from "@/lib/api";
+import { clearToken, getToken, setToken, subscribe } from "@/lib/auth-storage";
 
 interface User {
-  id: string
-  username: string
+  id: string;
+  username: string;
 }
 
 export interface AuthContextType {
-  user: User | null
-  token: string | null
-  isLoading: boolean
-  login: (username: string, password: string) => Promise<void>
-  register: (username: string, password: string) => Promise<void>
-  logout: () => void
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [token, setTokenState] = useState<string | null>(getToken())
-  const queryClient = useQueryClient()
+  const [token, setTokenState] = useState<string | null>(getToken());
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     return subscribe((nextToken) => {
-      setTokenState(nextToken)
-    })
-  }, [])
+      setTokenState(nextToken);
+    });
+  }, []);
 
   const {
     data: user,
@@ -44,46 +44,51 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
-      const response = await authAPI.me()
-      return (response.data.user ?? response.data) as User
+      const response = await authAPI.me();
+      return (response.data.user ?? response.data) as User;
     },
     enabled: Boolean(token),
     retry: false,
-  })
+  });
 
   useEffect(() => {
     if (isError) {
-      clearToken()
+      clearToken();
     }
-  }, [isError])
+  }, [isError]);
 
+  const login = useCallback(
+    async (username: string, password: string) => {
+      const response = await authAPI.login({ username, password });
+      const { user: userData, token: userToken } = response.data as {
+        user: User;
+        token: string;
+      };
 
-  const login = useCallback(async (username: string, password: string) => {
-    const response = await authAPI.login({ username, password })
-    const { user: userData, token: userToken } = response.data as {
-      user: User
-      token: string
-    }
+      setToken(userToken);
+      queryClient.setQueryData(["auth", "me"], userData);
+    },
+    [queryClient]
+  );
 
-    setToken(userToken)
-    queryClient.setQueryData(["auth", "me"], userData)
-  }, [queryClient])
+  const register = useCallback(
+    async (username: string, password: string) => {
+      const response = await authAPI.register({ username, password });
+      const { user: userData, token: userToken } = response.data as {
+        user: User;
+        token: string;
+      };
 
-  const register = useCallback(async (username: string, password: string) => {
-    const response = await authAPI.register({ username, password })
-    const { user: userData, token: userToken } = response.data as {
-      user: User
-      token: string
-    }
-
-    setToken(userToken)
-    queryClient.setQueryData(["auth", "me"], userData)
-  }, [queryClient])
+      setToken(userToken);
+      queryClient.setQueryData(["auth", "me"], userData);
+    },
+    [queryClient]
+  );
 
   const logout = useCallback(() => {
-    clearToken()
-    queryClient.removeQueries({ queryKey: ["auth", "me"] })
-  }, [queryClient])
+    clearToken();
+    queryClient.removeQueries({ queryKey: ["auth", "me"] });
+  }, [queryClient]);
 
   const value = useMemo<AuthContextType>(
     () => ({
@@ -95,15 +100,15 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
       logout,
     }),
     [isLoading, login, logout, register, token, user]
-  )
+  );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

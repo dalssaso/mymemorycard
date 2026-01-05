@@ -81,7 +81,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       variant="ghost"
       size="icon"
-      className="p-2 rounded-lg text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0 transition-colors"
+      className="rounded-lg p-2 text-ctp-subtext0 transition-colors hover:bg-ctp-surface0 hover:text-ctp-text"
       aria-label={`Current theme: ${labelTheme}. Click to toggle light or dark.`}
       title={`Theme: ${labelTheme}`}
     >

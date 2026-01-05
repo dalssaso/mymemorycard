@@ -1,18 +1,18 @@
-export { Button, buttonVariants } from "./button"
-export type { ButtonProps } from "./button"
+export { Button, buttonVariants } from "./button";
+export type { ButtonProps } from "./button";
 
-export { Input } from "./input"
+export { Input } from "./input";
 
-export { Textarea } from "./textarea"
+export { Textarea } from "./textarea";
 
-export { Checkbox } from "./checkbox"
+export { Checkbox } from "./checkbox";
 
-export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card"
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
 
-export { Badge } from "./Badge"
-export type { BadgeProps } from "./Badge"
+export { Badge } from "./Badge";
+export type { BadgeProps } from "./Badge";
 
-export { ClickableBadge } from "./ClickableBadge"
+export { ClickableBadge } from "./ClickableBadge";
 
 export {
   Skeleton,
@@ -20,9 +20,9 @@ export {
   GameRowSkeleton,
   SkeletonCard,
   SkeletonTable,
-} from "./skeleton"
+} from "./skeleton";
 
-export { ScrollFade } from "./ScrollFade"
+export { ScrollFade } from "./ScrollFade";
 
 export {
   Select,
@@ -35,11 +35,18 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "./select"
+} from "./select";
 
-export { Combobox } from "./combobox"
+export { Combobox } from "./combobox";
 
-export { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./dialog"
+export {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./dialog";
 
 export {
   AlertDialog,
@@ -51,7 +58,7 @@ export {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./alert-dialog"
+} from "./alert-dialog";
 
 export {
   DropdownMenu,
@@ -68,19 +75,19 @@ export {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "./dropdown-menu"
+} from "./dropdown-menu";
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip"
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
 
-export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs"
+export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
-export { Switch } from "./switch"
+export { Switch } from "./switch";
 
-export { FormField } from "./form-field"
+export { FormField } from "./form-field";
 
-export { Label } from "./label"
+export { Label } from "./label";
 
-export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "./popover"
+export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "./popover";
 
 export {
   Command,
@@ -92,6 +99,6 @@ export {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "./command"
+} from "./command";
 
-export { ThemeToggle } from "./ThemeToggle"
+export { ThemeToggle } from "./ThemeToggle";

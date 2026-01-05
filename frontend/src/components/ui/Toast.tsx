@@ -1,29 +1,29 @@
-import { toast } from "sonner"
+import { toast } from "sonner";
 
-export type ToastType = "success" | "error" | "info" | "warning"
+export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface Toast {
-  id: string
-  message: string
-  type: ToastType
+  id: string;
+  message: string;
+  type: ToastType;
 }
 
 export function useToast(): { showToast: (message: string, type?: ToastType) => void } {
   const showToast = (message: string, type: ToastType = "info") => {
     if (type === "success") {
-      toast.success(message)
-      return
+      toast.success(message);
+      return;
     }
     if (type === "error") {
-      toast.error(message)
-      return
+      toast.error(message);
+      return;
     }
     if (type === "warning") {
-      toast.warning(message)
-      return
+      toast.warning(message);
+      return;
     }
-    toast.message(message)
-  }
+    toast.message(message);
+  };
 
-  return { showToast }
+  return { showToast };
 }

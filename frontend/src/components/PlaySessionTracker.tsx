@@ -185,30 +185,30 @@ export function PlaySessionTracker({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-ctp-text">Play Sessions</h3>
         <div className="text-sm text-ctp-subtext0">Total: {formatDuration(totalMinutes)}</div>
       </div>
 
       {activeSession && !isActiveForThisGame && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-sm text-yellow-400">
+        <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm text-yellow-400">
           You have an active session for another game: {activeSession.game_name}
         </div>
       )}
 
       {isActiveForThisGame ? (
-        <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-4">
+        <div className="bg-ctp-teal/10 border-ctp-teal/30 rounded-lg border p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <div className="text-sm text-ctp-teal">Session in progress</div>
-              <div className="text-3xl font-mono text-ctp-text mt-1">
+              <div className="mt-1 font-mono text-3xl text-ctp-text">
                 {formatElapsedTime(elapsedSeconds)}
               </div>
             </div>
             <Button
               onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
               disabled={endSessionMutation.isPending}
-              className="w-full sm:w-auto px-6 py-3 h-auto bg-ctp-red hover:bg-ctp-red/80 text-ctp-base font-semibold"
+              className="hover:bg-ctp-red/80 h-auto w-full bg-ctp-red px-6 py-3 font-semibold text-ctp-base sm:w-auto"
             >
               {endSessionMutation.isPending ? "Stopping..." : "Stop"}
             </Button>
@@ -221,16 +221,16 @@ export function PlaySessionTracker({
             disabled={
               startSessionMutation.isPending || Boolean(activeSession && !isActiveForThisGame)
             }
-            className="w-full sm:flex-1 py-3 h-auto bg-ctp-green hover:bg-ctp-green/80 text-ctp-base font-semibold"
+            className="hover:bg-ctp-green/80 h-auto w-full bg-ctp-green py-3 font-semibold text-ctp-base sm:flex-1"
           >
             {startSessionMutation.isPending ? "Starting..." : "Start Session"}
           </Button>
           <Button
             variant={isManualMode ? "default" : "secondary"}
             onClick={() => setIsManualMode(!isManualMode)}
-            className={`w-full sm:w-auto px-4 py-3 h-auto font-semibold ${
+            className={`h-auto w-full px-4 py-3 font-semibold sm:w-auto ${
               isManualMode
-                ? "bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/80"
+                ? "hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base"
                 : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
             }`}
           >
@@ -240,10 +240,10 @@ export function PlaySessionTracker({
       )}
 
       {isManualMode && (
-        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3">
+        <div className="bg-ctp-surface0/50 space-y-3 rounded-lg p-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="manual-date" className="block text-sm text-ctp-subtext0 mb-1">
+              <label htmlFor="manual-date" className="mb-1 block text-sm text-ctp-subtext0">
                 Date
               </label>
               <Input
@@ -251,11 +251,11 @@ export function PlaySessionTracker({
                 type="date"
                 value={manualDate}
                 onChange={(e) => setManualDate(e.target.value)}
-                className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+                className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
               />
             </div>
             <div>
-              <label htmlFor="manual-duration" className="block text-sm text-ctp-subtext0 mb-1">
+              <label htmlFor="manual-duration" className="mb-1 block text-sm text-ctp-subtext0">
                 Duration (minutes)
               </label>
               <Input
@@ -265,12 +265,12 @@ export function PlaySessionTracker({
                 placeholder="60"
                 value={manualDuration}
                 onChange={(e) => setManualDuration(e.target.value)}
-                className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+                className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="session-notes" className="block text-sm text-ctp-subtext0 mb-1">
+            <label htmlFor="session-notes" className="mb-1 block text-sm text-ctp-subtext0">
               Notes (optional)
             </label>
             <Input
@@ -279,14 +279,14 @@ export function PlaySessionTracker({
               placeholder="What did you do in this session?"
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+              className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
             />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               onClick={() => addManualSessionMutation.mutate()}
               disabled={addManualSessionMutation.isPending || !manualDuration}
-              className="flex-1 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base font-semibold"
+              className="hover:bg-ctp-mauve/80 flex-1 bg-ctp-mauve font-semibold text-ctp-base"
             >
               {addManualSessionMutation.isPending ? "Adding..." : "Add Session"}
             </Button>
@@ -297,7 +297,7 @@ export function PlaySessionTracker({
                 setManualDuration("");
                 setSessionNotes("");
               }}
-              className="flex-1 bg-ctp-surface1 hover:bg-ctp-surface2 text-ctp-text"
+              className="flex-1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2"
             >
               Cancel
             </Button>
@@ -306,24 +306,24 @@ export function PlaySessionTracker({
       )}
 
       {loadingSessions ? (
-        <div className="text-ctp-subtext0 text-sm">Loading sessions...</div>
+        <div className="text-sm text-ctp-subtext0">Loading sessions...</div>
       ) : sessions.length > 0 ? (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-ctp-subtext0">Recent Sessions</h4>
-          <ScrollFade axis="y" className="space-y-2 max-h-64 overflow-y-auto">
+          <ScrollFade axis="y" className="max-h-64 space-y-2 overflow-y-auto">
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between bg-ctp-surface0/50 rounded-lg p-3"
+                className="bg-ctp-surface0/50 flex items-center justify-between rounded-lg p-3"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-ctp-text font-medium">
+                    <span className="font-medium text-ctp-text">
                       {session.ended_at
                         ? formatDuration(session.duration_minutes || 0)
                         : "In progress"}
                     </span>
-                    <span className="text-ctp-overlay1 text-sm">
+                    <span className="text-sm text-ctp-overlay1">
                       {new Date(session.started_at).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -333,7 +333,7 @@ export function PlaySessionTracker({
                     </span>
                   </div>
                   {session.notes && (
-                    <p className="text-sm text-ctp-subtext0 mt-1">{session.notes}</p>
+                    <p className="mt-1 text-sm text-ctp-subtext0">{session.notes}</p>
                   )}
                 </div>
                 <Button
@@ -341,7 +341,7 @@ export function PlaySessionTracker({
                   size="icon"
                   onClick={() => deleteSessionMutation.mutate(session.id)}
                   disabled={deleteSessionMutation.isPending || !session.ended_at}
-                  className="h-8 w-8 text-ctp-overlay1 hover:text-ctp-red hover:bg-transparent"
+                  className="h-8 w-8 text-ctp-overlay1 hover:bg-transparent hover:text-ctp-red"
                   title={session.ended_at ? "Delete session" : "Cannot delete active session"}
                 >
                   <svg
@@ -350,7 +350,7 @@ export function PlaySessionTracker({
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-4 h-4"
+                    className="h-4 w-4"
                   >
                     <path
                       strokeLinecap="round"
@@ -364,7 +364,7 @@ export function PlaySessionTracker({
           </ScrollFade>
         </div>
       ) : (
-        <div className="text-ctp-overlay1 text-sm text-center py-4">
+        <div className="py-4 text-center text-sm text-ctp-overlay1">
           No sessions recorded yet. Start tracking your playtime!
         </div>
       )}

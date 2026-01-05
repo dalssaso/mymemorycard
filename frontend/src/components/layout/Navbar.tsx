@@ -1,22 +1,22 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router"
-import { useMemo } from "react"
-import { useGlobalSearch } from "@/components/GlobalSearch"
-import { Button } from "@/components/ui/button"
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { useGlobalSearch } from "@/components/GlobalSearch";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ThemeToggle } from "@/components/ui/ThemeToggle"
-import { useAuth } from "@/contexts/AuthContext"
+} from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar(): JSX.Element {
-  const { user, logout } = useAuth()
-  const { openSearch } = useGlobalSearch()
-  const navigate = useNavigate()
-  const locationHref = useRouterState({ select: (state) => state.location.href })
+  const { user, logout } = useAuth();
+  const { openSearch } = useGlobalSearch();
+  const navigate = useNavigate();
+  const locationHref = useRouterState({ select: (state) => state.location.href });
 
   const navLinks = useMemo(
     () => [
@@ -27,7 +27,7 @@ export function Navbar(): JSX.Element {
       { to: "/ai-curator", label: "AI Curator" },
     ],
     []
-  )
+  );
 
   return (
     <nav className="fixed left-0 top-0 z-50 h-16 w-full border-b border-ctp-surface0 bg-ctp-mantle">
@@ -35,11 +35,13 @@ export function Navbar(): JSX.Element {
         <div className="flex min-w-0 items-center gap-4">
           <Link to="/" className="flex items-center gap-2">
             <img src="/favicon.svg" alt="MyMemoryCard" className="h-8 w-8" />
-            <span className="hidden text-lg font-semibold text-ctp-text sm:inline">MyMemoryCard</span>
+            <span className="hidden text-lg font-semibold text-ctp-text sm:inline">
+              MyMemoryCard
+            </span>
           </Link>
           <div className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => {
-              const isActive = locationHref.includes(link.to)
+              const isActive = locationHref.includes(link.to);
               return (
                 <Link
                   key={link.to}
@@ -52,7 +54,7 @@ export function Navbar(): JSX.Element {
                 >
                   {link.label}
                 </Link>
-              )
+              );
             })}
           </div>
         </div>
@@ -89,9 +91,7 @@ export function Navbar(): JSX.Element {
                     {user?.username?.charAt(0).toUpperCase() || "U"}
                   </span>
                 </div>
-                <span className="hidden text-sm text-ctp-subtext1 md:inline">
-                  {user?.username}
-                </span>
+                <span className="hidden text-sm text-ctp-subtext1 md:inline">{user?.username}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -101,8 +101,8 @@ export function Navbar(): JSX.Element {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => {
-                  logout()
-                  navigate({ to: "/login" })
+                  logout();
+                  navigate({ to: "/login" });
                 }}
               >
                 Log out
@@ -112,5 +112,5 @@ export function Navbar(): JSX.Element {
         </div>
       </div>
     </nav>
-  )
+  );
 }

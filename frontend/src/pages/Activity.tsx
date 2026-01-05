@@ -49,11 +49,11 @@ export function Activity() {
 
   return (
     <PageLayout sidebar={<DashboardSidebar games={games} />} customCollapsed={true}>
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-6 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
           />
           <div>
             <h1 className="text-3xl font-bold text-ctp-text">Activity</h1>
@@ -67,19 +67,19 @@ export function Activity() {
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="animate-pulse flex gap-3">
-                  <div className="w-10 h-10 bg-ctp-surface1 rounded-lg" />
+                <div key={i} className="flex animate-pulse gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-ctp-surface1" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-ctp-surface1 rounded w-3/4" />
-                    <div className="h-3 bg-ctp-surface1 rounded w-1/2" />
+                    <div className="h-4 w-3/4 rounded bg-ctp-surface1" />
+                    <div className="h-3 w-1/2 rounded bg-ctp-surface1" />
                   </div>
                 </div>
               ))}
             </div>
           ) : feed.length === 0 ? (
-            <div className="text-center py-10 text-ctp-overlay1">
+            <div className="py-10 text-center text-ctp-overlay1">
               <p>No recent activity</p>
-              <p className="text-sm mt-1">
+              <p className="mt-1 text-sm">
                 Start tracking sessions, achievements, or completion updates
               </p>
               <div className="mt-4">
@@ -94,7 +94,7 @@ export function Activity() {
         </Card>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
+          <div className="mt-6 flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"

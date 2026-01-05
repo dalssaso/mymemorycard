@@ -25,14 +25,14 @@ export function ImportSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 pt-3 border-t border-ctp-surface0">
+      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
             title="Manage Platforms"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -42,7 +42,7 @@ export function ImportSidebar({
             </svg>
           </Link>
         </div>
-        <div className="flex flex-col items-center gap-1 pt-2 border-t border-ctp-surface0">
+        <div className="flex flex-col items-center gap-1 border-t border-ctp-surface0 pt-2">
           {platforms.map((platform) => (
             <Button
               key={platform.id}
@@ -50,7 +50,7 @@ export function ImportSidebar({
               disabled={isImporting}
               variant="ghost"
               size="icon"
-              className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold transition-all disabled:opacity-50 ${
+              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
                   ? "bg-ctp-mauve/20 text-ctp-mauve ring-2 ring-ctp-mauve"
                   : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
@@ -69,9 +69,9 @@ export function ImportSidebar({
     <div className="space-y-6">
       <Link
         to="/platforms"
-        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text rounded-lg transition-colors font-medium"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-ctp-surface0 px-4 py-2.5 font-medium text-ctp-text transition-colors hover:bg-ctp-surface1"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -83,9 +83,9 @@ export function ImportSidebar({
       </Link>
 
       <div>
-        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
           <svg
-            className="w-4 h-4 text-ctp-mauve"
+            className="h-4 w-4 text-ctp-mauve"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -106,9 +106,9 @@ export function ImportSidebar({
               onClick={() => onPlatformSelect(platform.id)}
               disabled={isImporting}
               variant="ghost"
-              className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all disabled:opacity-50 ${
+              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
-                  ? "bg-ctp-mauve/20 text-ctp-mauve border border-ctp-mauve/30"
+                  ? "bg-ctp-mauve/20 border-ctp-mauve/30 border text-ctp-mauve"
                   : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
             >
@@ -119,9 +119,9 @@ export function ImportSidebar({
       </div>
 
       <div>
-        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
           <svg
-            className="w-4 h-4 text-ctp-teal"
+            className="h-4 w-4 text-ctp-teal"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -136,18 +136,18 @@ export function ImportSidebar({
           Import Tips
         </h3>
         <div className="space-y-3 text-sm text-ctp-subtext0">
-          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
-            <p className="font-medium text-ctp-subtext1 mb-1">One game per line</p>
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-ctp-subtext1">One game per line</p>
             <p className="text-xs">Enter each game name on its own line for best results.</p>
           </div>
-          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
-            <p className="font-medium text-ctp-subtext1 mb-1">Use official names</p>
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-ctp-subtext1">Use official names</p>
             <p className="text-xs">
               &quot;The Witcher 3: Wild Hunt&quot; works better than &quot;Witcher 3&quot;.
             </p>
           </div>
-          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
-            <p className="font-medium text-ctp-subtext1 mb-1">Review matches</p>
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-ctp-subtext1">Review matches</p>
             <p className="text-xs">
               If a game isn&apos;t matched exactly, you&apos;ll be able to pick from candidates.
             </p>
@@ -156,9 +156,9 @@ export function ImportSidebar({
       </div>
 
       <div>
-        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
           <svg
-            className="w-4 h-4 text-ctp-green"
+            className="h-4 w-4 text-ctp-green"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -172,9 +172,9 @@ export function ImportSidebar({
           </svg>
           Data Source
         </h3>
-        <div className="p-3 bg-ctp-surface0/50 rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 bg-ctp-mauve rounded flex items-center justify-center text-ctp-base">
+        <div className="bg-ctp-surface0/50 rounded-lg p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-ctp-mauve text-ctp-base">
               <span className="text-xs font-bold">R</span>
             </div>
             <span className="text-sm text-ctp-subtext1">RAWG.io</span>

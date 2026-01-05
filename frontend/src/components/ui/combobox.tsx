@@ -1,22 +1,28 @@
-import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/cn"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export interface ComboboxOption {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 interface ComboboxProps {
-  options: ComboboxOption[]
-  value: string
-  onValueChange: (value: string) => void
-  placeholder?: string
-  searchPlaceholder?: string
-  emptyLabel?: string
-  className?: string
+  options: ComboboxOption[];
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyLabel?: string;
+  className?: string;
 }
 
 export function Combobox({
@@ -28,7 +34,7 @@ export function Combobox({
   emptyLabel = "No results found.",
   className,
 }: ComboboxProps): JSX.Element {
-  const selected = options.find((option) => option.value === value)
+  const selected = options.find((option) => option.value === value);
 
   return (
     <Popover>
@@ -66,5 +72,5 @@ export function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

@@ -204,7 +204,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
           onClick={() => setIsManualMode(!isManualMode)}
           className={`w-full sm:w-auto ${
             isManualMode
-              ? "bg-ctp-mauve text-ctp-base hover:bg-ctp-mauve/80"
+              ? "hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base"
               : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
           }`}
         >
@@ -213,10 +213,10 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       </div>
 
       {isManualMode && (
-        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3">
+        <div className="bg-ctp-surface0/50 space-y-3 rounded-lg p-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="manual-date-history" className="block text-sm text-ctp-subtext0 mb-1">
+              <label htmlFor="manual-date-history" className="mb-1 block text-sm text-ctp-subtext0">
                 Date
               </label>
               <Input
@@ -224,13 +224,13 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 type="date"
                 value={manualDate}
                 onChange={(e) => setManualDate(e.target.value)}
-                className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+                className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
               />
             </div>
             <div>
               <label
                 htmlFor="manual-duration-history"
-                className="block text-sm text-ctp-subtext0 mb-1"
+                className="mb-1 block text-sm text-ctp-subtext0"
               >
                 Duration (minutes)
               </label>
@@ -241,12 +241,12 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 placeholder="60"
                 value={manualDuration}
                 onChange={(e) => setManualDuration(e.target.value)}
-                className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+                className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="session-notes-history" className="block text-sm text-ctp-subtext0 mb-1">
+            <label htmlFor="session-notes-history" className="mb-1 block text-sm text-ctp-subtext0">
               Notes (optional)
             </label>
             <Input
@@ -255,14 +255,14 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               placeholder="What did you do in this session?"
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+              className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
             />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               onClick={() => addManualSessionMutation.mutate()}
               disabled={addManualSessionMutation.isPending || !manualDuration}
-              className="flex-1 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base font-semibold"
+              className="hover:bg-ctp-mauve/80 flex-1 bg-ctp-mauve font-semibold text-ctp-base"
             >
               {addManualSessionMutation.isPending ? "Adding..." : "Add Session"}
             </Button>
@@ -273,7 +273,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 setManualDuration("");
                 setSessionNotes("");
               }}
-              className="flex-1 bg-ctp-surface1 hover:bg-ctp-surface2 text-ctp-text"
+              className="flex-1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2"
             >
               Cancel
             </Button>
@@ -282,11 +282,11 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       )}
 
       {editingSession && (
-        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3 border border-ctp-mauve/50">
+        <div className="bg-ctp-surface0/50 border-ctp-mauve/50 space-y-3 rounded-lg border p-4">
           <h4 className="text-sm font-medium text-ctp-text">Edit Session</h4>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="edit-started-at" className="block text-sm text-ctp-subtext0 mb-1">
+              <label htmlFor="edit-started-at" className="mb-1 block text-sm text-ctp-subtext0">
                 Started At
               </label>
               <Input
@@ -294,11 +294,11 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 type="datetime-local"
                 value={editStartedAt}
                 onChange={(e) => setEditStartedAt(e.target.value)}
-                className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+                className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
               />
             </div>
             <div>
-              <label htmlFor="edit-ended-at" className="block text-sm text-ctp-subtext0 mb-1">
+              <label htmlFor="edit-ended-at" className="mb-1 block text-sm text-ctp-subtext0">
                 Ended At
               </label>
               <Input
@@ -306,12 +306,12 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 type="datetime-local"
                 value={editEndedAt}
                 onChange={(e) => setEditEndedAt(e.target.value)}
-                className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+                className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="edit-notes" className="block text-sm text-ctp-subtext0 mb-1">
+            <label htmlFor="edit-notes" className="mb-1 block text-sm text-ctp-subtext0">
               Notes (optional)
             </label>
             <Input
@@ -320,21 +320,21 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
               placeholder="What did you do in this session?"
               value={editNotes}
               onChange={(e) => setEditNotes(e.target.value)}
-              className="bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve"
+              className="border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
             />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               onClick={handleEditSave}
               disabled={updateSessionMutation.isPending || !editStartedAt || !editEndedAt}
-              className="flex-1 bg-ctp-mauve hover:bg-ctp-mauve/80 text-ctp-base font-semibold"
+              className="hover:bg-ctp-mauve/80 flex-1 bg-ctp-mauve font-semibold text-ctp-base"
             >
               {updateSessionMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
             <Button
               variant="secondary"
               onClick={() => setEditingSession(null)}
-              className="flex-1 bg-ctp-surface1 hover:bg-ctp-surface2 text-ctp-text"
+              className="flex-1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2"
             >
               Cancel
             </Button>
@@ -343,9 +343,9 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
       )}
 
       {loadingSessions ? (
-        <div className="text-ctp-subtext0 text-sm">Loading sessions...</div>
+        <div className="text-sm text-ctp-subtext0">Loading sessions...</div>
       ) : sessions.length > 0 ? (
-        <ScrollFade axis="y" className="space-y-2 max-h-96 overflow-y-auto">
+        <ScrollFade axis="y" className="max-h-96 space-y-2 overflow-y-auto">
           {sessions.map((session) => {
             const isSwiped = swipedSessionId === session.id;
             const isDragging = activeSwipeId === session.id;
@@ -356,8 +356,8 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
             return (
               <div key={session.id} className="relative overflow-hidden rounded-lg">
                 <div
-                  className={`absolute inset-y-0 right-0 w-[72px] bg-ctp-red md:hidden flex items-center justify-center transition-opacity ${
-                    showSwipeAction ? "opacity-100" : "opacity-0 pointer-events-none"
+                  className={`absolute inset-y-0 right-0 flex w-[72px] items-center justify-center bg-ctp-red transition-opacity md:hidden ${
+                    showSwipeAction ? "opacity-100" : "pointer-events-none opacity-0"
                   }`}
                 >
                   <Button
@@ -367,7 +367,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                       setSwipedSessionId(null);
                     }}
                     disabled={deleteSessionMutation.isPending || !session.ended_at}
-                    className="text-ctp-base text-sm font-semibold hover:bg-transparent disabled:opacity-60"
+                    className="text-sm font-semibold text-ctp-base hover:bg-transparent disabled:opacity-60"
                     aria-label={
                       session.ended_at ? "Delete session" : "Cannot delete active session"
                     }
@@ -376,7 +376,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                   </Button>
                 </div>
                 <div
-                  className={`flex items-center justify-between w-full bg-ctp-surface0 rounded-lg p-3 touch-pan-y transition-transform ${
+                  className={`flex w-full touch-pan-y items-center justify-between rounded-lg bg-ctp-surface0 p-3 transition-transform ${
                     isDragging ? "" : "duration-200 ease-out"
                   }`}
                   style={{ transform: `translateX(${translateX}px)` }}
@@ -387,12 +387,12 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-ctp-text font-medium">
+                      <span className="font-medium text-ctp-text">
                         {session.ended_at
                           ? formatDuration(session.duration_minutes || 0)
                           : "In progress"}
                       </span>
-                      <span className="text-ctp-overlay1 text-sm">
+                      <span className="text-sm text-ctp-overlay1">
                         {new Date(session.started_at).toLocaleDateString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -403,7 +403,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                       </span>
                     </div>
                     {session.notes && (
-                      <p className="text-sm text-ctp-subtext0 mt-1">{session.notes}</p>
+                      <p className="mt-1 text-sm text-ctp-subtext0">{session.notes}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
@@ -412,7 +412,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEditClick(session)}
-                        className="h-8 w-8 text-ctp-overlay1 hover:text-ctp-teal hover:bg-transparent"
+                        className="h-8 w-8 text-ctp-overlay1 hover:bg-transparent hover:text-ctp-teal"
                         title="Edit session"
                       >
                         <svg
@@ -421,7 +421,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                           viewBox="0 0 24 24"
                           strokeWidth={1.5}
                           stroke="currentColor"
-                          className="w-4 h-4"
+                          className="h-4 w-4"
                         >
                           <path
                             strokeLinecap="round"
@@ -436,7 +436,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                       size="icon"
                       onClick={() => deleteSessionMutation.mutate(session.id)}
                       disabled={deleteSessionMutation.isPending || !session.ended_at}
-                      className="hidden md:inline-flex h-8 w-8 text-ctp-overlay1 hover:text-ctp-red hover:bg-transparent"
+                      className="hidden h-8 w-8 text-ctp-overlay1 hover:bg-transparent hover:text-ctp-red md:inline-flex"
                       title={session.ended_at ? "Delete session" : "Cannot delete active session"}
                     >
                       <svg
@@ -445,7 +445,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="w-4 h-4"
+                        className="h-4 w-4"
                       >
                         <path
                           strokeLinecap="round"
@@ -461,7 +461,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
           })}
         </ScrollFade>
       ) : (
-        <div className="text-ctp-overlay1 text-sm text-center py-8 bg-ctp-surface0/30 rounded-lg">
+        <div className="bg-ctp-surface0/30 rounded-lg py-8 text-center text-sm text-ctp-overlay1">
           No sessions recorded yet
         </div>
       )}

@@ -117,16 +117,16 @@ export function StartSessionButton({
 
   if (isActiveForThisGame) {
     return (
-      <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3">
-        <div className="text-xs text-ctp-teal mb-1">Session in progress</div>
-        <div className="text-xl font-mono text-ctp-text mb-2">
+      <div className="bg-ctp-teal/10 border-ctp-teal/30 rounded-lg border p-3">
+        <div className="mb-1 text-xs text-ctp-teal">Session in progress</div>
+        <div className="mb-2 font-mono text-xl text-ctp-text">
           {formatElapsedTime(elapsedSeconds)}
         </div>
         <Button
           onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
           disabled={endSessionMutation.isPending}
           variant="ghost"
-          className="w-full h-auto py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+          className="hover:bg-ctp-red/80 h-auto w-full rounded-lg bg-ctp-red py-2 text-sm font-semibold text-ctp-base transition-colors disabled:opacity-50"
         >
           {endSessionMutation.isPending ? "Stopping..." : "Stop Session"}
         </Button>
@@ -136,7 +136,7 @@ export function StartSessionButton({
 
   if (activeSession && !isActiveForThisGame) {
     return (
-      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+      <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
         <div className="text-xs text-yellow-400">Active session on: {activeSession.game_name}</div>
       </div>
     );
@@ -147,13 +147,13 @@ export function StartSessionButton({
       onClick={() => startSessionMutation.mutate()}
       disabled={startSessionMutation.isPending}
       variant="ghost"
-      className="w-full h-auto py-2.5 bg-ctp-green hover:bg-ctp-green/80 text-ctp-base rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+      className="hover:bg-ctp-green/80 flex h-auto w-full items-center justify-center gap-2 rounded-lg bg-ctp-green py-2.5 text-sm font-semibold text-ctp-base transition-colors disabled:opacity-50"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="currentColor"
-        className="w-4 h-4"
+        className="h-4 w-4"
       >
         <path
           fillRule="evenodd"

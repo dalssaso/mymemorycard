@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router"
-import { Button, Card } from "@/components/ui"
+import { Link } from "@tanstack/react-router";
+import { Button, Card } from "@/components/ui";
 
 export function NotFound(): JSX.Element {
   return (
@@ -16,5 +16,5 @@ export function NotFound(): JSX.Element {
         </div>
       </Card>
     </div>
-  )
+  );
 }

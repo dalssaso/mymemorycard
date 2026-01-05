@@ -33,7 +33,7 @@ export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: Fran
   }
 
   return (
-    <ScrollFade axis="y" className="space-y-1 max-h-48 overflow-y-auto">
+    <ScrollFade axis="y" className="max-h-48 space-y-1 overflow-y-auto">
       {franchises.map((franchise) => {
         const isSelected = selectedFranchises.includes(franchise.series_name);
         return (
@@ -41,14 +41,14 @@ export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: Fran
             key={franchise.series_name}
             onClick={() => toggleFranchise(franchise.series_name)}
             variant="ghost"
-            className={`h-auto w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2 border ${
+            className={`flex h-auto w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-all ${
               isSelected
-                ? "bg-ctp-teal/20 text-ctp-teal border-ctp-teal"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
+                ? "bg-ctp-teal/20 border-ctp-teal text-ctp-teal"
+                : "border-transparent text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             <span className="truncate">{franchise.series_name}</span>
-            <span className="text-xs text-ctp-subtext1 flex-shrink-0">{franchise.game_count}</span>
+            <span className="flex-shrink-0 text-xs text-ctp-subtext1">{franchise.game_count}</span>
           </Button>
         );
       })}

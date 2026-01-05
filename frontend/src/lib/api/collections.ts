@@ -1,4 +1,4 @@
-import { api } from "./axios"
+import { api } from "./axios";
 
 export const collectionsAPI = {
   getAll: () => api.get("/collections"),
@@ -17,11 +17,11 @@ export const collectionsAPI = {
   getSeriesGames: (seriesName: string) =>
     api.get(`/collections/series/${encodeURIComponent(seriesName)}/games`),
   uploadCover: (id: string, file: File) => {
-    const formData = new FormData()
-    formData.append("cover", file)
+    const formData = new FormData();
+    formData.append("cover", file);
     return api.post(`/collections/${id}/cover`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
-    })
+    });
   },
   deleteCover: (id: string) => api.delete(`/collections/${id}/cover`),
-}
+};

@@ -59,7 +59,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
   });
 
   if (isLoading) {
-    return <div className="animate-pulse h-10 bg-ctp-surface1 rounded" />;
+    return <div className="h-10 animate-pulse rounded bg-ctp-surface1" />;
   }
 
   const hasEditions = data && data.availableEditions.length > 0;
@@ -86,20 +86,20 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
       )}
 
       {isUsingEdition && data?.currentDisplay && (
-        <div className="bg-ctp-mauve/10 border border-ctp-mauve/30 rounded-lg p-3">
-          <div className="text-sm text-ctp-text whitespace-normal break-words">
+        <div className="bg-ctp-mauve/10 border-ctp-mauve/30 rounded-lg border p-3">
+          <div className="whitespace-normal break-words text-sm text-ctp-text">
             {data.currentDisplay.edition_name}
           </div>
-          <div className="text-xs text-ctp-mauve mt-1">Currently displaying</div>
+          <div className="mt-1 text-xs text-ctp-mauve">Currently displaying</div>
         </div>
       )}
 
       {!isUsingEdition && data?.baseGame && (
-        <div className="bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg p-3">
-          <div className="text-sm text-ctp-text whitespace-normal break-words">
+        <div className="bg-ctp-surface0/50 rounded-lg border border-ctp-surface1 p-3">
+          <div className="whitespace-normal break-words text-sm text-ctp-text">
             {data.baseGame.name}
           </div>
-          <div className="text-xs text-ctp-overlay1 mt-1">Base game</div>
+          <div className="mt-1 text-xs text-ctp-overlay1">Base game</div>
         </div>
       )}
 
@@ -117,34 +117,34 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </Button>
 
           {isExpanded && (
-            <ScrollFade axis="y" className="space-y-2 max-h-80 overflow-y-auto pr-1">
+            <ScrollFade axis="y" className="max-h-80 space-y-2 overflow-y-auto pr-1">
               {data.availableEditions.map((edition) => (
                 <Button
                   variant="outline"
                   key={edition.rawg_id}
                   onClick={() => setEditionMutation.mutate(edition)}
                   disabled={setEditionMutation.isPending}
-                  className="w-full justify-start gap-3 border-ctp-surface1 bg-ctp-mantle/50 p-3 text-left hover:border-ctp-mauve hover:bg-ctp-mantle disabled:opacity-50"
+                  className="bg-ctp-mantle/50 w-full justify-start gap-3 border-ctp-surface1 p-3 text-left hover:border-ctp-mauve hover:bg-ctp-mantle disabled:opacity-50"
                 >
                   {edition.cover_url && (
                     <img
                       src={edition.cover_url}
                       alt={edition.name}
-                      className="w-16 h-20 object-cover rounded shrink-0"
+                      className="h-20 w-16 shrink-0 rounded object-cover"
                     />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-ctp-text whitespace-normal break-words leading-snug">
+                  <div className="min-w-0 flex-1">
+                    <div className="whitespace-normal break-words text-sm leading-snug text-ctp-text">
                       {edition.name}
                     </div>
-                    <div className="text-xs text-ctp-teal mt-2">
+                    <div className="mt-2 text-xs text-ctp-teal">
                       Click to use this edition&apos;s metadata
                     </div>
                   </div>

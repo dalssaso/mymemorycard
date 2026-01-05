@@ -1,4 +1,4 @@
-import { api } from "./axios"
+import { api } from "./axios";
 
 export const sessionsAPI = {
   getAll: (
@@ -8,24 +8,24 @@ export const sessionsAPI = {
   create: (
     gameId: string,
     data: {
-      platformId: string
-      startedAt: string
-      endedAt?: string | null
-      durationMinutes?: number | null
-      notes?: string | null
+      platformId: string;
+      startedAt: string;
+      endedAt?: string | null;
+      durationMinutes?: number | null;
+      notes?: string | null;
     }
   ) => api.post(`/games/${gameId}/sessions`, data),
   update: (
     gameId: string,
     sessionId: string,
     data: {
-      startedAt?: string
-      endedAt?: string | null
-      durationMinutes?: number | null
-      notes?: string | null
+      startedAt?: string;
+      endedAt?: string | null;
+      durationMinutes?: number | null;
+      notes?: string | null;
     }
   ) => api.patch(`/games/${gameId}/sessions/${sessionId}`, data),
   delete: (gameId: string, sessionId: string) =>
     api.delete(`/games/${gameId}/sessions/${sessionId}`),
   getActive: () => api.get("/sessions/active"),
-}
+};

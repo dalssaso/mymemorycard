@@ -1,64 +1,64 @@
-import { api } from "./axios"
+import { api } from "./axios";
 
 export interface AchievementStats {
   summary: {
-    totalAchievements: number
-    completedAchievements: number
-    overallPercentage: number
-    gamesWithAchievements: number
-    perfectGames: number
-  }
+    totalAchievements: number;
+    completedAchievements: number;
+    overallPercentage: number;
+    gamesWithAchievements: number;
+    perfectGames: number;
+  };
   rarityBreakdown: {
-    legendary: number
-    rare: number
-    uncommon: number
-    common: number
-  }
+    legendary: number;
+    rare: number;
+    uncommon: number;
+    common: number;
+  };
   rarestUnlocked: Array<{
-    gameName: string
-    coverArtUrl: string | null
-    achievementName: string | null
-    rarity: number | null
-  }>
+    gameName: string;
+    coverArtUrl: string | null;
+    achievementName: string | null;
+    rarity: number | null;
+  }>;
   gameStats: Array<{
-    gameId: string
-    gameName: string
-    coverArtUrl: string | null
-    total: number
-    completed: number
-    percentage: number
-  }>
+    gameId: string;
+    gameName: string;
+    coverArtUrl: string | null;
+    total: number;
+    completed: number;
+    percentage: number;
+  }>;
 }
 
 export interface CombinedHeatmapDay {
-  date: string
-  sessions: { count: number; minutes: number }
-  completions: { count: number }
-  achievements: { count: number }
-  total: number
+  date: string;
+  sessions: { count: number; minutes: number };
+  completions: { count: number };
+  achievements: { count: number };
+  total: number;
 }
 
 export interface CombinedHeatmapSummary {
-  totalSessions: number
-  totalMinutes: number
-  totalHours: number
-  totalCompletions: number
-  totalAchievements: number
-  activeDays: number
-  currentStreak: number
+  totalSessions: number;
+  totalMinutes: number;
+  totalHours: number;
+  totalCompletions: number;
+  totalAchievements: number;
+  activeDays: number;
+  currentStreak: number;
 }
 
 export interface ActivityFeedResponse<T> {
-  feed: T[]
-  total: number
-  page: number
-  pageSize: number
+  feed: T[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface ActivityFeedParams {
-  limit?: number
-  page?: number
-  pageSize?: number
+  limit?: number;
+  page?: number;
+  pageSize?: number;
 }
 
 export const statsAPI = {
@@ -74,9 +74,9 @@ export const statsAPI = {
     ),
   getActivityFeed: (params?: number | ActivityFeedParams) => {
     if (typeof params === "number") {
-      return api.get("/stats/activity-feed", { params: { limit: params } })
+      return api.get("/stats/activity-feed", { params: { limit: params } });
     }
-    return api.get("/stats/activity-feed", { params })
+    return api.get("/stats/activity-feed", { params });
   },
   getAchievementStats: () => api.get<AchievementStats>("/stats/achievements"),
-}
+};

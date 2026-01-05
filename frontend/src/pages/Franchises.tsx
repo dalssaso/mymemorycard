@@ -35,7 +35,7 @@ export function Franchises() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
@@ -52,17 +52,17 @@ export function Franchises() {
       }
       customCollapsed={true}
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
               />
               <h1 className="text-4xl font-bold text-ctp-text">Franchises</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">Game series in your library</p>
+            <p className="mt-1 text-ctp-subtext0">Game series in your library</p>
           </div>
           <Button
             onClick={() => syncMutation.mutate()}
@@ -75,13 +75,13 @@ export function Franchises() {
 
         {franchises.length === 0 ? (
           <Card>
-            <p className="text-ctp-subtext0 text-center py-8">
+            <p className="py-8 text-center text-ctp-subtext0">
               No franchises found. Add games that belong to a series, or click &quot;Sync
               Franchises&quot; to detect series for your existing games.
             </p>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {franchises.map((franchise: FranchiseSummary) => (
               <Link
                 key={franchise.series_name}
@@ -89,21 +89,21 @@ export function Franchises() {
                 params={{ seriesName: franchise.series_name }}
                 className="group focus-visible:outline-none"
               >
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ctp-mauve group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-ctp-base">
+                <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0 ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ctp-mauve group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-ctp-base">
                   {franchise.cover_art_url ? (
                     <img
                       src={franchise.cover_art_url}
                       alt={franchise.series_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                    <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                       <span className="text-sm">No Cover</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
+                  <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-ctp-text font-medium truncate">{franchise.series_name}</p>
+                    <p className="truncate font-medium text-ctp-text">{franchise.series_name}</p>
                     <p className="text-sm text-ctp-teal">
                       {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                     </p>

@@ -33,7 +33,7 @@ function PlatformIcon({
   color?: string;
 }) {
   if (iconUrl) {
-    return <img src={iconUrl} alt={name} className="w-full h-full object-cover" />;
+    return <img src={iconUrl} alt={name} className="h-full w-full object-cover" />;
   }
 
   const initial = name.trim().charAt(0).toUpperCase() || "P";
@@ -49,7 +49,7 @@ function PlatformIcon({
 
   return (
     <div
-      className={`w-full h-full flex items-center justify-center font-semibold text-6xl ${
+      className={`flex h-full w-full items-center justify-center text-6xl font-semibold ${
         isLightBackground ? "text-gray-900" : "text-ctp-base dark:text-ctp-text"
       }`}
       style={{ backgroundColor: colorValue }}
@@ -173,17 +173,17 @@ export function Platforms() {
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
               />
               <h1 className="text-4xl font-bold text-ctp-text">Platforms</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">
+            <p className="mt-1 text-ctp-subtext0">
               Keep your platform list current for accurate imports.
             </p>
           </div>
@@ -207,7 +207,7 @@ export function Platforms() {
           <div
             className={[
               "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
-              "gap-4 mb-10",
+              "mb-10 gap-4",
             ].join(" ")}
           >
             {userPlatforms.map((platform) => (
@@ -215,8 +215,8 @@ export function Platforms() {
                 <Link to="/platforms/$id" params={{ id: platform.id }}>
                   <div
                     className={[
-                      "aspect-square rounded-lg overflow-hidden bg-ctp-surface0",
-                      "mb-2 relative",
+                      "aspect-square overflow-hidden rounded-lg bg-ctp-surface0",
+                      "relative mb-2",
                     ].join(" ")}
                   >
                     <PlatformIcon
@@ -232,8 +232,8 @@ export function Platforms() {
                       ].join(" ")}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-ctp-text font-medium truncate">{platform.display_name}</p>
-                      <p className="text-sm text-ctp-teal truncate">
+                      <p className="truncate font-medium text-ctp-text">{platform.display_name}</p>
+                      <p className="truncate text-sm text-ctp-teal">
                         {platform.username || "No username set"}
                       </p>
                     </div>
@@ -245,7 +245,7 @@ export function Platforms() {
         )}
 
         <Card className="mb-6 p-6">
-          <label className="block text-sm font-medium mb-2" htmlFor="platforms-search">
+          <label className="mb-2 block text-sm font-medium" htmlFor="platforms-search">
             Search platforms
           </label>
           <Input
@@ -257,7 +257,7 @@ export function Platforms() {
         </Card>
 
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-ctp-text">Add Platforms</h2>
             <span className="text-sm text-ctp-subtext0">{selectedPlatformIds.length} selected</span>
           </div>
@@ -265,7 +265,7 @@ export function Platforms() {
           {isLoadingPlatforms ? (
             <div className="text-ctp-subtext0">Loading platforms...</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPlatforms.map((platform) => {
                 const isSelected = selectedPlatformIds.includes(platform.id);
                 const isLocked = existingPlatformIds.has(platform.id);
@@ -276,10 +276,10 @@ export function Platforms() {
                     type="button"
                     onClick={() => handleToggle(platform.id)}
                     disabled={isLocked}
-                    className={`h-auto w-full justify-start text-left border rounded-lg px-4 py-3 ${
+                    className={`h-auto w-full justify-start rounded-lg border px-4 py-3 text-left ${
                       isSelected
-                        ? "border-ctp-teal bg-ctp-teal/10 hover:bg-ctp-teal/20"
-                        : "border-ctp-surface0 bg-ctp-mantle/50 hover:border-ctp-surface1 hover:bg-ctp-mantle/70"
+                        ? "bg-ctp-teal/10 hover:bg-ctp-teal/20 border-ctp-teal"
+                        : "bg-ctp-mantle/50 hover:bg-ctp-mantle/70 border-ctp-surface0 hover:border-ctp-surface1"
                     }`}
                   >
                     <div className="w-full">
