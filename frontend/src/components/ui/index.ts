@@ -1,6 +1,8 @@
 export { Button, buttonVariants } from "./button";
 export type { ButtonProps } from "./button";
 
+export { StatusButton } from "./status-button";
+
 export { Input } from "./input";
 
 export { Textarea } from "./textarea";
@@ -20,7 +22,7 @@ export {
   GameRowSkeleton,
   SkeletonCard,
   SkeletonTable,
-} from "./skeleton";
+} from "./Skeleton";
 
 export { ScrollFade } from "./ScrollFade";
 
