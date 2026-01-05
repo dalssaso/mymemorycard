@@ -1,5 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Login } from "@/pages/Login";
+import { createFileRoute, redirect, lazyRouteComponent } from "@tanstack/react-router";
+
+const Login = lazyRouteComponent(() =>
+  import("@/pages/Login").then((module) => ({ default: module.Login }))
+);
 
 export const Route = createFileRoute("/login")({
   beforeLoad: ({ context }) => {

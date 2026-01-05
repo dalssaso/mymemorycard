@@ -20,6 +20,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as AiCuratorRouteImport } from './routes/ai-curator'
 import { Route as ActivityRouteImport } from './routes/activity'
+import { Route as NotFoundRouteImport } from './routes/_not-found'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformsIndexRouteImport } from './routes/platforms.index'
 import { Route as LibraryIndexRouteImport } from './routes/library.index'
@@ -85,6 +86,10 @@ const AiCuratorRoute = AiCuratorRouteImport.update({
 const ActivityRoute = ActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotFoundRoute = NotFoundRouteImport.update({
+  id: '/_not-found',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -191,6 +196,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_not-found': typeof NotFoundRoute
   '/activity': typeof ActivityRoute
   '/ai-curator': typeof AiCuratorRoute
   '/collections': typeof CollectionsRouteWithChildren
@@ -261,6 +267,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_not-found'
     | '/activity'
     | '/ai-curator'
     | '/collections'
@@ -286,6 +293,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  NotFoundRoute: typeof NotFoundRoute
   ActivityRoute: typeof ActivityRoute
   AiCuratorRoute: typeof AiCuratorRoute
   CollectionsRoute: typeof CollectionsRouteWithChildren
@@ -376,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/activity'
       fullPath: '/activity'
       preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_not-found': {
+      id: '/_not-found'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof NotFoundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -519,6 +534,7 @@ const PlatformsRouteWithChildren = PlatformsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  NotFoundRoute: NotFoundRoute,
   ActivityRoute: ActivityRoute,
   AiCuratorRoute: AiCuratorRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
