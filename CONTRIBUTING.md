@@ -203,19 +203,136 @@ Use shadcn/ui for all UI primitives. Never use raw HTML buttons or inputs.
 npx shadcn@latest add dialog
 ```
 
+**Common Component Patterns:**
+
 ```tsx
-// Good - use shadcn components
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+// Buttons
+import { Button } from "@/components/ui/button"
+<Button variant="default">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="ghost">Ghost</Button>
+<Button size="sm">Small</Button>
+<Button size="icon">📁</Button>
 
-<Button variant="secondary">Click</Button>
-<Input placeholder="Search..." />
+// Form Inputs
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 
-// Bad - raw HTML elements
-<button className="...">Click</button>
-<input type="text" />
+<Label htmlFor="name">Name</Label>
+<Input id="name" placeholder="Enter name" />
+<Textarea placeholder="Description" />
+<Checkbox id="agree" />
+<Switch checked={enabled} onCheckedChange={setEnabled} />
+
+// Dialogs
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Confirm Action</DialogTitle>
+    </DialogHeader>
+    {/* content */}
+  </DialogContent>
+</Dialog>
+
+// Alert Dialogs (for confirmations)
+import { AlertDialog, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog"
+
+<AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
+// Popovers (for floating content)
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline">Open</Button>
+  </PopoverTrigger>
+  <PopoverContent>Content here</PopoverContent>
+</Popover>
+
+// Tooltips
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+
+<Tooltip>
+  <TooltipTrigger>Hover me</TooltipTrigger>
+  <TooltipContent>Tooltip text</TooltipContent>
+</Tooltip>
+
+// Combobox (searchable select)
+import { Combobox } from "@/components/ui/combobox"
+
+<Combobox
+  options={[
+    { value: "1", label: "Option 1" },
+    { value: "2", label: "Option 2" },
+  ]}
+  value={selected}
+  onChange={setSelected}
+  placeholder="Select option"
+/>
+
+// Form Validation (with react-hook-form + zod)
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+})
+
+function MyForm() {
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: "" },
+  })
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
+  )
+}
 ```
+
+**When to Use Each Component:**
+
+- **Dialog** - Modals, forms, details
+- **AlertDialog** - Confirmations (delete, logout, etc.)
+- **Popover** - Contextual actions, small forms
+- **Tooltip** - Hover information
+- **Combobox** - Searchable dropdowns
+- **Form + FormField** - Form validation with error messages
 
 ### Custom Hooks
 
@@ -257,6 +374,307 @@ export const Route = createFileRoute("/library/")({
   component: Library,
 });
 ```
+
+### Custom Component Patterns
+
+**StatusButton Component** - Config-driven reusable components:
+
+```tsx
+// lib/constants/status.ts - Single source of truth
+export interface StatusConfig {
+  id: string
+  label: string
+  icon: string
+  color: string
+  bgStyle: CSSProperties
+  activeStyle: CSSProperties
+}
+
+// components/ui/status-button.tsx - Reusable component
+export function StatusButton({ id, mode, isActive, count, onClick }: StatusButtonProps) {
+  const config = getStatusConfig(id)
+  // Renders button using config
+}
+
+// Usage
+<StatusButton id="playing" mode="expanded" count={42} onClick={...} />
+```
+
+**When to Create Custom Components:**
+
+- Component is used in 3+ places
+- Component has complex logic/state
+- Component follows a consistent pattern (like StatusButton)
+- Component wraps shadcn with project-specific defaults
+
+**When to Use shadcn Directly:**
+
+- One-off usage
+- Simple wrapper with no logic
+- Standard UI pattern with no customization
+
+### API Module Guidelines
+
+Create domain-based API modules in `frontend/src/lib/api/`:
+
+**Structure:**
+
+```typescript
+// lib/api/games.ts
+import { api } from "./axios";
+
+export const gamesAPI = {
+  getAll: (params?: { platform?: string; status?: string }) => api.get("/games", { params }),
+  getOne: (id: string) => api.get(`/games/${id}`),
+  delete: (id: string, platformId: string) =>
+    api.delete(`/games/${id}`, { params: { platform_id: platformId } }),
+  updateStatus: (id: string, platformId: string, status: string) =>
+    api.patch(`/games/${id}/status`, { platform_id: platformId, status }),
+};
+
+// Export types if needed
+export interface Game {
+  id: string;
+  name: string;
+  // ...
+}
+```
+
+**Barrel Export** (`lib/api/index.ts`):
+
+```typescript
+export { api } from "./axios";
+export { gamesAPI } from "./games";
+export { collectionsAPI } from "./collections";
+export type { Game } from "./games";
+export type { Collection } from "./collections";
+```
+
+**Guidelines:**
+
+- Use camelCase for module names (`gamesAPI`, not `GamesAPI`)
+- Export const object with methods
+- Export types from same file
+- Use descriptive method names (`getAll`, `getOne`, `delete`, `updateStatus`)
+- Include TypeScript types for all parameters
+- Update barrel export in `index.ts`
+
+### Hook Creation Guidelines
+
+Create custom hooks in `frontend/src/hooks/`:
+
+**Query Hooks** - File naming: `useResourceName.ts`
+
+```typescript
+// hooks/useGames.ts
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { gamesAPI } from "@/lib/api";
+
+interface GamesResponse {
+  games: Game[];
+}
+
+export function useGames(filters: Filters): UseQueryResult<GamesResponse> {
+  return useQuery({
+    queryKey: ["games", filters],
+    queryFn: async () => {
+      const response = await gamesAPI.getAll(filters);
+      return response.data as GamesResponse;
+    },
+  });
+}
+```
+
+**Mutation Hooks** - File naming: `useResourceMutations.ts`
+
+```typescript
+// hooks/useGameMutations.ts
+import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
+import { gamesAPI } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+
+export function useToggleFavorite(): UseMutationResult<
+  unknown,
+  Error,
+  { gameId: string; platformId: string; isFavorite: boolean },
+  { previousData: GamesResponse | undefined }
+> {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ gameId, platformId, isFavorite }) => {
+      const response = await gamesAPI.toggleFavorite(gameId, platformId, isFavorite);
+      return response.data;
+    },
+    // Optimistic update
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+      const previousData = queryClient.getQueryData(["games"]);
+
+      queryClient.setQueriesData({ queryKey: ["games"] }, (old) => ({
+        ...old,
+        games: old.games.map((g) =>
+          g.id === variables.gameId ? { ...g, is_favorite: variables.isFavorite } : g
+        ),
+      }));
+
+      return { previousData };
+    },
+    // Rollback on error
+    onError: (_, __, context) => {
+      queryClient.setQueryData(["games"], context?.previousData);
+      showToast("Failed to update", "error");
+    },
+    // Show success toast
+    onSuccess: (_, variables) => {
+      showToast(variables.isFavorite ? "Added to favorites" : "Removed from favorites", "success");
+    },
+    // Invalidate to refetch
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+}
+```
+
+**Guidelines:**
+
+- **Query hooks** - One hook per resource, include filters in queryKey
+- **Mutation hooks** - Export individual hooks (not one big hook)
+- **Optimistic updates** - Use for instant UI feedback
+- **Error handling** - Rollback optimistic updates on error
+- **Toast notifications** - Show success/error feedback
+- **Explicit return types** - Always specify UseMutationResult types
+
+### Route Loader Guidelines
+
+Use `ensureQueryData` in route loaders for data prefetching:
+
+```typescript
+// routes/library.index.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { gamesAPI } from "@/lib/api";
+
+export const Route = createFileRoute("/library/")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({
+      queryKey: ["games"],
+      queryFn: async () => {
+        const response = await gamesAPI.getAll();
+        return response.data;
+      },
+    });
+  },
+  component: Library,
+});
+```
+
+**Prefetch Multiple Queries in Parallel:**
+
+```typescript
+loader: async ({ context }) => {
+  await Promise.all([
+    context.queryClient.ensureQueryData({
+      queryKey: ["games"],
+      queryFn: async () => (await gamesAPI.getAll()).data,
+    }),
+    context.queryClient.ensureQueryData({
+      queryKey: ["collections"],
+      queryFn: async () => (await collectionsAPI.getAll()).data,
+    }),
+  ]);
+};
+```
+
+**Guidelines:**
+
+- Use `ensureQueryData` (fetches if not in cache)
+- Include all route dependencies in loader
+- Prefetch in parallel with `Promise.all`
+- Match queryKey with hook queryKey exactly
+- Handle errors with try/catch if needed
+
+### Layout Customization
+
+Use `useLayout()` hook to customize page-specific layouts:
+
+```typescript
+import { useLayout } from "@/components/layout/LayoutContext"
+import { useEffect } from "react"
+
+function GameDetailPage() {
+  const { setLayout, resetLayout } = useLayout()
+
+  useEffect(() => {
+    setLayout({
+      sidebar: <GameDetailSidebar gameId={id} />,
+      customCollapsed: false,
+      showBackButton: true,
+    })
+
+    return () => resetLayout()
+  }, [setLayout, resetLayout, id])
+
+  return <div>Game details</div>
+}
+```
+
+**Layout Options:**
+
+- `sidebar` - Custom sidebar component (null for default)
+- `customCollapsed` - Force collapsed state
+- `showBackButton` - Show/hide back button
+
+**Guidelines:**
+
+- Always call `resetLayout()` in cleanup function
+- Include dependencies in useEffect deps array
+- Used for detail pages (game, collection, franchise)
+
+### Search Implementation
+
+Use `useSearchData` hook for global search:
+
+```typescript
+import { useSearchData } from "@/hooks/useSearchData"
+import { useState } from "react"
+
+function SearchComponent() {
+  const [query, setQuery] = useState("")
+  const { sections, totalCount } = useSearchData(query)
+
+  return (
+    <>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} />
+      {sections.map((section) => (
+        <div key={section.label}>
+          <h3>{section.label}</h3>
+          {section.items.map((item) => (
+            <a key={item.id} href={item.href}>
+              {item.name} - {item.subtitle}
+            </a>
+          ))}
+        </div>
+      ))}
+    </>
+  )
+}
+```
+
+**How it Works:**
+
+- Fetches search index (games, collections, franchises, platforms)
+- Caches for 5 minutes
+- Filters client-side for instant results
+- Returns structured sections
+
+**Adding New Searchable Entity Types:**
+
+1. Update `fetchSearchIndex` in `hooks/useSearchData.tsx`
+2. Add API call to fetch entity data
+3. Update `buildSearchResults` to filter and map entity
+4. Add entity section to results
 
 ### Database Queries
 
