@@ -63,7 +63,7 @@ export function Activity() {
           </div>
         </div>
 
-        <Card>
+        <Card padded={true}>
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(6)].map((_, i) => (

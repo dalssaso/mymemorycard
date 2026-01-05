@@ -24,7 +24,7 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps): JS
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort-select" className="whitespace-nowrap text-sm text-zinc-400">
+      <label htmlFor="sort-select" className="whitespace-nowrap text-sm text-ctp-subtext0">
         Sort by:
       </label>
       <Select

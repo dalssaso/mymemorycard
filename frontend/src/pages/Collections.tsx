@@ -225,7 +225,7 @@ export function Collections() {
       sidebar={<CollectionsSidebar onCreateCollection={() => setShowCreateModal(true)} />}
       customCollapsed={true}
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1440px]">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
@@ -244,10 +244,24 @@ export function Collections() {
 
         <div>
           {collections.length === 0 ? (
-            <Card>
-              <p className="py-8 text-center text-ctp-subtext0">
-                No collections yet. Create your first collection to organize your games!
-              </p>
+            <Card className="px-6 py-10" padded={true}>
+              <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
+                <div>
+                  <h2 className="mb-3 text-2xl font-bold text-ctp-text">No Collections Yet</h2>
+                  <p className="mb-6 text-ctp-subtext0">
+                    Group your games by theme, mood, or completion goals.
+                  </p>
+                  <Button onClick={() => setShowCreateModal(true)}>Create Collection</Button>
+                </div>
+                <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface1 p-4">
+                  <h3 className="text-sm font-semibold text-ctp-text">Ideas to try</h3>
+                  <div className="mt-2 space-y-2 text-sm text-ctp-subtext0">
+                    <p>Story-driven RPGs</p>
+                    <p>Short backlog wins</p>
+                    <p>Co-op with friends</p>
+                  </div>
+                </div>
+              </div>
             </Card>
           ) : (
             <>
@@ -392,7 +406,7 @@ export function Collections() {
                   );
 
                   const cardClassName = selectionMode
-                    ? `rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-zinc-500"}`
+                    ? `rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-ctp-surface2"}`
                     : "rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-3";
 
                   return selectionMode ? (

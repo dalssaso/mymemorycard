@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Button } from "@/components/ui";
 
 interface FilterSectionProps {
@@ -6,6 +6,7 @@ interface FilterSectionProps {
   icon: ReactNode;
   iconColor: string;
   defaultOpen?: boolean;
+  storageKey?: string;
   children: ReactNode;
   onClear?: () => void;
   hasSelection?: boolean;
@@ -16,11 +17,26 @@ export function FilterSection({
   icon,
   iconColor,
   defaultOpen = true,
+  storageKey,
   children,
   onClear,
   hasSelection = false,
 }: FilterSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = useState<boolean>(() => {
+    if (storageKey) {
+      const stored = localStorage.getItem(`library-sidebar-${storageKey}`);
+      if (stored !== null) {
+        return stored === "true";
+      }
+    }
+    return defaultOpen;
+  });
+
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(`library-sidebar-${storageKey}`, String(isOpen));
+    }
+  }, [isOpen, storageKey]);
 
   return (
     <div>

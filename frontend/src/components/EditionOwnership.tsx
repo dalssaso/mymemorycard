@@ -270,7 +270,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                 >
                   Select All
                 </Button>
-                <span className="text-gray-600">|</span>
+                <span className="text-ctp-overlay1">|</span>
                 <Button
                   onClick={handleDeselectAllDlcs}
                   disabled={updateDlcsMutation.isPending}

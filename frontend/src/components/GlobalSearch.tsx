@@ -110,7 +110,7 @@ export function GlobalSearch(): JSX.Element {
         }
       }}
     >
-      <DialogContent className="max-w-2xl overflow-hidden border border-ctp-surface1 bg-ctp-mantle p-0 text-ctp-text shadow-xl">
+      <DialogContent className="h-[100dvh] w-[100vw] max-w-none overflow-hidden border border-ctp-surface1 bg-ctp-mantle p-0 text-ctp-text shadow-xl sm:h-auto sm:w-full sm:max-w-2xl sm:rounded-lg">
         <DialogTitle className="sr-only">Global search</DialogTitle>
         <DialogDescription className="sr-only">
           Search games, collections, platforms, and more.
@@ -122,7 +122,7 @@ export function GlobalSearch(): JSX.Element {
             onValueChange={setSearchQuery}
             placeholder="Search games, collections, platforms..."
           />
-          <CommandList className="max-h-[70vh]">
+          <CommandList className="max-h-[calc(100dvh-8rem)] sm:max-h-[70vh]">
             {emptyLabel ? <CommandEmpty>{emptyLabel}</CommandEmpty> : null}
             {sections.map((section) => (
               <CommandGroup key={section.label} heading={section.label}>
@@ -134,12 +134,12 @@ export function GlobalSearch(): JSX.Element {
                     className="flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{item.name}</p>
+                      <p className="truncate text-sm font-medium text-ctp-text">{item.name}</p>
                       {item.subtitle ? (
-                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        <p className="truncate text-xs text-ctp-subtext1">{item.subtitle}</p>
                       ) : null}
                     </div>
-                    <span className="text-xs uppercase text-muted-foreground">{item.type}</span>
+                    <span className="text-xs uppercase text-ctp-subtext1">{item.type}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>

@@ -50,7 +50,7 @@ function PlatformIcon({
   return (
     <div
       className={`flex h-full w-full items-center justify-center text-6xl font-semibold ${
-        isLightBackground ? "text-gray-900" : "text-ctp-base dark:text-ctp-text"
+        isLightBackground ? "text-ctp-crust" : "text-ctp-base dark:text-ctp-text"
       }`}
       style={{ backgroundColor: colorValue }}
     >
@@ -62,6 +62,9 @@ function PlatformIcon({
 export function Platforms() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<string[]>([]);
+  const [platformTypeFilter, setPlatformTypeFilter] = useState<Platform["platform_type"] | "all">(
+    "all"
+  );
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -124,6 +127,9 @@ export function Platforms() {
   const filteredPlatforms = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     const filtered = rawgPlatforms.filter((platform) => {
+      if (platformTypeFilter !== "all" && platform.platform_type !== platformTypeFilter) {
+        return false;
+      }
       if (!term) return true;
       return (
         platform.display_name.toLowerCase().includes(term) ||
@@ -142,7 +148,22 @@ export function Platforms() {
       const bName = b.display_name || b.name;
       return aName.localeCompare(bName);
     });
-  }, [existingPlatformIds, rawgPlatforms, searchTerm]);
+  }, [existingPlatformIds, platformTypeFilter, rawgPlatforms, searchTerm]);
+
+  const groupedPlatforms = useMemo(() => {
+    const groups: Record<Platform["platform_type"], Platform[]> = {
+      pc: [],
+      console: [],
+      mobile: [],
+      physical: [],
+    };
+
+    filteredPlatforms.forEach((platform) => {
+      groups[platform.platform_type].push(platform);
+    });
+
+    return groups;
+  }, [filteredPlatforms]);
 
   const handleToggle = (platformId: string) => {
     if (existingPlatformIds.has(platformId)) {
@@ -173,7 +194,7 @@ export function Platforms() {
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl pt-2">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-3">
@@ -265,36 +286,89 @@ export function Platforms() {
           {isLoadingPlatforms ? (
             <div className="text-ctp-subtext0">Loading platforms...</div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredPlatforms.map((platform) => {
-                const isSelected = selectedPlatformIds.includes(platform.id);
-                const isLocked = existingPlatformIds.has(platform.id);
-                return (
+            <div className="space-y-6">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={platformTypeFilter === "all" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setPlatformTypeFilter("all")}
+                  className="rounded-full border border-ctp-surface1 px-3"
+                >
+                  All
+                </Button>
+                {(
+                  [
+                    { value: "pc", label: "Storefronts" },
+                    { value: "console", label: "Console" },
+                    { value: "mobile", label: "Mobile" },
+                    { value: "physical", label: "Physical" },
+                  ] as const
+                ).map((option) => (
                   <Button
-                    key={platform.id}
-                    variant="ghost"
-                    type="button"
-                    onClick={() => handleToggle(platform.id)}
-                    disabled={isLocked}
-                    className={`h-auto w-full justify-start rounded-lg border px-4 py-3 text-left ${
-                      isSelected
-                        ? "bg-ctp-teal/10 hover:bg-ctp-teal/20 border-ctp-teal"
-                        : "bg-ctp-mantle/50 hover:bg-ctp-mantle/70 border-ctp-surface0 hover:border-ctp-surface1"
-                    }`}
+                    key={option.value}
+                    variant={platformTypeFilter === option.value ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => setPlatformTypeFilter(option.value)}
+                    className="rounded-full border border-ctp-surface1 px-3"
                   >
-                    <div className="w-full">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="font-medium text-ctp-text">{platform.display_name}</div>
-                        {isLocked && <span className="text-xs text-ctp-teal">Saved</span>}
-                      </div>
-                      <PlatformTypeIcon
-                        type={platform.platform_type}
-                        size="sm"
-                        showLabel={true}
-                        color={platform.color_primary}
-                      />
-                    </div>
+                    {option.label}
                   </Button>
+                ))}
+              </div>
+
+              {(
+                [
+                  { type: "pc", label: "Storefronts" },
+                  { type: "console", label: "Console" },
+                  { type: "mobile", label: "Mobile & Handheld" },
+                  { type: "physical", label: "Physical" },
+                ] as const
+              ).map((group) => {
+                const platforms = groupedPlatforms[group.type];
+                if (platforms.length === 0) return null;
+
+                return (
+                  <div key={group.type}>
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ctp-subtext0">
+                      <PlatformTypeIcon type={group.type} size="sm" showLabel={false} />
+                      <span>{group.label}</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {platforms.map((platform) => {
+                        const isSelected = selectedPlatformIds.includes(platform.id);
+                        const isLocked = existingPlatformIds.has(platform.id);
+                        return (
+                          <Button
+                            key={platform.id}
+                            variant="ghost"
+                            type="button"
+                            onClick={() => handleToggle(platform.id)}
+                            disabled={isLocked}
+                            className={`h-auto w-full justify-start rounded-lg border px-5 py-4 text-left ${
+                              isSelected
+                                ? "bg-ctp-teal/10 hover:bg-ctp-teal/20 border-ctp-teal"
+                                : "bg-ctp-mantle/50 hover:bg-ctp-mantle/70 border-ctp-surface0 hover:border-ctp-surface1"
+                            }`}
+                          >
+                            <div className="w-full">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="font-medium text-ctp-text">
+                                  {platform.display_name}
+                                </div>
+                                {isLocked && <span className="text-xs text-ctp-teal">Saved</span>}
+                              </div>
+                              <PlatformTypeIcon
+                                type={platform.platform_type}
+                                size="sm"
+                                showLabel={true}
+                                color={platform.color_primary}
+                              />
+                            </div>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
 

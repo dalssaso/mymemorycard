@@ -21,6 +21,7 @@ import {
 } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI, gamesAPI } from "@/lib/api";
+import { cn } from "@/lib/cn";
 
 interface Game {
   id: string;
@@ -486,7 +487,14 @@ export function CollectionDetail() {
           {/* Sidebar - Cover and Controls */}
           <div className="lg:col-span-1">
             {/* Cover Art */}
-            <div className="mb-4 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
+            <div
+              className={cn(
+                "mb-4 overflow-hidden rounded-lg bg-ctp-surface0",
+                collection.cover_filename || collection.cover_art_url
+                  ? "aspect-[3/4]"
+                  : "aspect-[4/5] lg:aspect-[5/6]"
+              )}
+            >
               {collection.cover_filename ? (
                 <img
                   src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}

@@ -95,19 +95,19 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="bg-ctp-surface0/40 group relative cursor-pointer rounded-xl border border-ctp-surface1 p-0 transition-all hover:border-ctp-mauve sm:p-4"
+      className="bg-ctp-surface0/40 group relative cursor-pointer rounded-xl border border-ctp-surface1 p-0 transition-all hover:border-ctp-mauve sm:p-5"
     >
       {/* Mobile: Poster-only layout with overlay */}
       <div className="relative aspect-[3/4] overflow-hidden rounded-lg sm:hidden">
         {coverArtUrl ? (
           <img src={coverArtUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-zinc-800">
-            <span className="text-sm text-zinc-600">No image</span>
+          <div className="flex h-full w-full items-center justify-center bg-ctp-surface0">
+            <span className="text-sm text-ctp-overlay1">No image</span>
           </div>
         )}
         <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
-        <div className="bg-ctp-base/60 absolute bottom-0 left-0 right-0 p-2">
+        <div className="bg-ctp-base/60 absolute bottom-0 left-0 right-0 p-3">
           <div className="mb-1 flex gap-1">
             <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
           </div>
@@ -144,8 +144,8 @@ export function GameCard({
           {coverArtUrl ? (
             <img src={coverArtUrl} alt={name} className="h-32 w-24 rounded object-cover" />
           ) : (
-            <div className="flex h-32 w-24 items-center justify-center rounded bg-zinc-800">
-              <span className="text-xs text-zinc-600">No image</span>
+            <div className="flex h-32 w-24 items-center justify-center rounded bg-ctp-surface0">
+              <span className="text-xs text-ctp-overlay1">No image</span>
             </div>
           )}
           <Button
@@ -201,7 +201,7 @@ export function GameCard({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-ctp-subtext0">
             {metacriticScore && (
               <div className="flex items-center gap-1">
                 <span className="text-ctp-yellow">Metacritic:</span>
@@ -218,7 +218,7 @@ export function GameCard({
 
             {totalMinutes > 0 && (
               <div className="flex items-center gap-1">
-                <span className="text-zinc-500">Time:</span>
+                <span className="text-ctp-overlay0">Time:</span>
                 <span>
                   {hours > 0 && `${hours}h `}
                   {minutes}m

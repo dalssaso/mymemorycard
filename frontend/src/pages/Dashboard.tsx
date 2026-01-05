@@ -20,7 +20,15 @@ import { ActivityFeed } from "@/components/ActivityFeed";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
 import { BackButton, PageLayout } from "@/components/layout";
 import { DashboardSidebar } from "@/components/sidebar";
-import { Button, Card, ScrollFade } from "@/components/ui";
+import {
+  Button,
+  Card,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  ScrollFade,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { gamesAPI } from "@/lib/api";
@@ -248,8 +256,8 @@ export function Dashboard() {
 
   return (
     <PageLayout sidebar={<DashboardSidebar games={games} />} customCollapsed={true}>
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex items-center justify-between">
+      <div className="mx-auto max-w-[1440px]">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
@@ -257,7 +265,7 @@ export function Dashboard() {
             />
             <h1 className="text-4xl font-bold text-ctp-text">Dashboard</h1>
           </div>
-          <div className="flex gap-3">
+          <div className="hidden gap-3 sm:flex">
             <Link
               to="/platforms"
               className="flex items-center gap-2 rounded-lg bg-ctp-surface0 px-4 py-2 text-ctp-text transition-colors hover:bg-ctp-surface1"
@@ -280,12 +288,40 @@ export function Dashboard() {
               Import Games
             </Link>
           </div>
+          <div className="flex sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon" aria-label="Dashboard actions">
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 6h.01M12 12h.01M12 18h.01" />
+                  </svg>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => navigate({ to: "/platforms" })}>
+                  Manage Platforms
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/import" })}>
+                  Import Games
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Quick Stats Grid */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card
             className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.total}
             onClick={() => navigateToLibrary({})}
           >
@@ -295,6 +331,7 @@ export function Dashboard() {
 
           <Card
             className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.playing}
             onClick={() => navigateToLibrary({ status: "playing" })}
           >
@@ -304,6 +341,7 @@ export function Dashboard() {
 
           <Card
             className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.completed}
             onClick={() => navigateToLibrary({ status: "completed" })}
           >
@@ -313,6 +351,7 @@ export function Dashboard() {
 
           <Card
             className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.backlog}
             onClick={() => navigateToLibrary({ status: "backlog" })}
           >
@@ -323,7 +362,7 @@ export function Dashboard() {
 
         {/* Currently Playing Carousel */}
         {currentlyPlayingRecent.length > 0 && (
-          <Card className="bg-ctp-teal/5 border-ctp-teal/20 mb-8">
+          <Card className="bg-ctp-teal/5 border-ctp-teal/20 mb-8" padded={true}>
             <h2 className="mb-4 text-2xl font-bold text-ctp-teal">Currently Playing</h2>
             <div className="relative">
               <ScrollFade axis="x" className="flex gap-4 overflow-x-auto pb-4">
@@ -366,7 +405,7 @@ export function Dashboard() {
         {/* Activity Section */}
         <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <Card>
+            <Card padded={true}>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-ctp-mauve">Your Activity</h2>
                 <div className="flex gap-1 rounded-lg bg-ctp-surface0 p-1">
@@ -409,7 +448,7 @@ export function Dashboard() {
             </Card>
           </div>
           <div>
-            <Card className="lg:flex lg:h-[366px] lg:flex-col">
+            <Card className="lg:flex lg:h-[366px] lg:flex-col" padded={true}>
               <h2 className="mb-4 text-xl font-bold text-ctp-mauve">Recent Activity</h2>
               <ActivityFeed
                 desktopLimit={12}
@@ -431,7 +470,7 @@ export function Dashboard() {
         {totalGames > 0 && (
           <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Status Distribution */}
-            <Card>
+            <Card padded={true}>
               <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Status Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -479,7 +518,7 @@ export function Dashboard() {
             </Card>
 
             {/* Platform Distribution */}
-            <Card>
+            <Card padded={true}>
               <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Platform Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -525,7 +564,7 @@ export function Dashboard() {
 
             {/* Genre Distribution */}
             {genreChartData.length > 0 && (
-              <Card>
+              <Card padded={true}>
                 <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Top Genres</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
@@ -570,7 +609,7 @@ export function Dashboard() {
 
         {/* Favorites Section */}
         {favoriteGames.length > 0 && (
-          <Card className="bg-ctp-red/10 border-ctp-red/30 mb-6">
+          <Card className="bg-ctp-red/10 border-ctp-red/30 mb-6" padded={true}>
             <h2 className="mb-4 text-2xl font-bold text-ctp-red">
               <Button
                 type="button"

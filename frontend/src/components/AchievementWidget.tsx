@@ -148,7 +148,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
   if (isLoading) {
     return (
-      <Card className="bg-ctp-yellow/5 border-ctp-yellow/20">
+      <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
         <h2 className="mb-3 text-2xl font-bold text-ctp-yellow">Achievements</h2>
         <div className="animate-pulse space-y-4">
           <div className="bg-ctp-surface1/50 h-24 rounded-lg" />
@@ -160,7 +160,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
   if (!data || data.summary.totalAchievements === 0) {
     return (
-      <Card className="bg-ctp-yellow/5 border-ctp-yellow/20">
+      <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
         <h2 className="mb-3 text-2xl font-bold text-ctp-yellow">Achievements</h2>
         {isSyncing ? (
           <div className="py-8 text-center text-ctp-subtext0">Syncing achievement data...</div>
@@ -174,7 +174,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
   }
 
   return (
-    <Card className="bg-ctp-yellow/5 border-ctp-yellow/20">
+    <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
       <h2 className="mb-3 text-2xl font-bold text-ctp-yellow">Achievements</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-2.5">

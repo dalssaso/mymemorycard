@@ -20,7 +20,7 @@ import { franchisesAPI, type OwnedGame, type MissingGame } from "@/lib/api";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 
 const STATUS_COLORS: Record<string, string> = {
-  backlog: "bg-gray-600",
+  backlog: "bg-ctp-overlay0",
   playing: "bg-ctp-teal",
   finished: "bg-ctp-green",
   completed: "bg-ctp-mauve",
@@ -294,7 +294,7 @@ export function FranchiseDetail() {
                       </div>
                     )}
                     <div
-                      className={`absolute right-2 top-2 h-3 w-3 rounded-full ${STATUS_COLORS[game.status] || "bg-gray-600"}`}
+                      className={`absolute right-2 top-2 h-3 w-3 rounded-full ${STATUS_COLORS[game.status] || "bg-ctp-overlay0"}`}
                       title={game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     />
                   </div>
@@ -305,7 +305,7 @@ export function FranchiseDetail() {
                     {game.release_date && <span>{new Date(game.release_date).getFullYear()}</span>}
                     {game.platforms.length > 0 && (
                       <>
-                        <span className="text-gray-600">·</span>
+                        <span className="text-ctp-overlay1">·</span>
                         <span>{game.platforms.join(", ")}</span>
                       </>
                     )}
@@ -330,7 +330,7 @@ export function FranchiseDetail() {
                       variant="secondary"
                       size="sm"
                       onClick={handleSelectAll}
-                      className="bg-ctp-surface1 text-ctp-text hover:bg-gray-600"
+                      className="bg-ctp-surface1 text-ctp-text hover:bg-ctp-overlay0"
                     >
                       {selectedGames.size === missing_games.length ? "Deselect All" : "Select All"}
                     </Button>
@@ -338,7 +338,7 @@ export function FranchiseDetail() {
                       variant="secondary"
                       size="sm"
                       onClick={handleExitSelectionMode}
-                      className="bg-ctp-surface1 text-ctp-text hover:bg-gray-600"
+                      className="bg-ctp-surface1 text-ctp-text hover:bg-ctp-overlay0"
                     >
                       Cancel
                     </Button>
@@ -396,7 +396,7 @@ export function FranchiseDetail() {
                           }`}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-gray-600">
+                        <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                           No Image
                         </div>
                       )}
@@ -431,7 +431,7 @@ export function FranchiseDetail() {
                       {game.name}
                     </p>
                     {game.released && (
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-ctp-overlay1">
                         {new Date(game.released).getFullYear()}
                       </p>
                     )}

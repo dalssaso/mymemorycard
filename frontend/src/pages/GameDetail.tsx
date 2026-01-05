@@ -17,6 +17,7 @@ import { EditionSwitcher } from "@/components/EditionSwitcher";
 import { FranchisePreview } from "@/components/FranchisePreview";
 import { RawgIdCorrection } from "@/components/RawgIdCorrection";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
+import { STATUS_CONFIGS } from "@/lib/constants/status";
 
 interface GameDetails {
   id: string;
@@ -55,58 +56,6 @@ interface GamesQueryItem {
 interface GamesQueryData {
   games: GamesQueryItem[];
 }
-
-const STATUS_OPTIONS = [
-  {
-    value: "backlog",
-    label: "Backlog",
-    colorVar: "--ctp-subtext1",
-    textClass: "text-ctp-subtext1",
-    surfaceStrength: 35,
-    borderStrength: 55,
-  },
-  {
-    value: "playing",
-    label: "Playing",
-    colorVar: "--ctp-teal",
-    textClass: "text-ctp-teal",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-  {
-    value: "finished",
-    label: "Finished",
-    colorVar: "--ctp-green",
-    textClass: "text-ctp-green",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-  {
-    value: "completed",
-    label: "Completed",
-    colorVar: "--ctp-yellow",
-    textClass: "text-ctp-yellow",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-  {
-    value: "dropped",
-    label: "Dropped",
-    colorVar: "--ctp-red",
-    textClass: "text-ctp-red",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-];
-
-const getStatusSurfaceStyle = (option: {
-  colorVar: string;
-  surfaceStrength: number;
-  borderStrength: number;
-}) => ({
-  backgroundColor: `color-mix(in srgb, var(${option.colorVar}) ${option.surfaceStrength}%, transparent)`,
-  borderColor: `color-mix(in srgb, var(${option.colorVar}) ${option.borderStrength}%, transparent)`,
-});
 
 function normalizeGameName(name: string): string {
   const editionPatterns = [
@@ -555,8 +504,7 @@ export function GameDetail() {
   const activePlatformId = selectedPlatformId || game.platform_id;
   const activePlatform = platforms.find((p) => p.platform_id === activePlatformId) || game;
   const activeStatus = activePlatform.status || "backlog";
-  const activeStatusOption =
-    STATUS_OPTIONS.find((option) => option.value === activeStatus) || STATUS_OPTIONS[0];
+  const activeStatusConfig = STATUS_CONFIGS[activeStatus] || STATUS_CONFIGS["backlog"];
 
   // Compute platforms user has in profile but doesn't own the game on
   const ownedPlatformIds = new Set(platforms.map((p) => p.platform_id));
@@ -615,12 +563,12 @@ export function GameDetail() {
     <PageLayout sidebar={sidebarContent} customCollapsed={true} showBackButton={false}>
       {/* Background Image Header - hidden on mobile to avoid overlap with cover */}
       {activePlatform.background_image_url && (
-        <div className="relative -mx-4 -mt-4 mb-4 hidden h-64 w-full sm:-mx-6 sm:-mt-6 sm:mb-6 lg:mx-0 lg:block lg:h-96">
+        <div className="relative -mx-4 -mt-4 mb-4 hidden h-48 w-full sm:-mx-6 sm:-mt-6 sm:mb-6 lg:mx-0 lg:block lg:h-72 xl:h-80">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${activePlatform.background_image_url})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950" />
+          <div className="via-ctp-crust/50 absolute inset-0 bg-gradient-to-b from-transparent to-ctp-crust" />
         </div>
       )}
 
@@ -632,7 +580,7 @@ export function GameDetail() {
           />
           <h1 className="text-3xl font-bold">{activePlatform.name}</h1>
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {/* Cover Art */}
           <div className="lg:col-span-1">
             {activePlatform.cover_art_url ? (
@@ -762,11 +710,6 @@ export function GameDetail() {
               </div>
             )}
 
-            {/* Progress Display */}
-            <div className="mt-3">
-              <ProgressDisplay gameId={game.id} platformId={activePlatformId} />
-            </div>
-
             {/* Status Selector */}
             <div className="mt-4">
               <label
@@ -786,14 +729,16 @@ export function GameDetail() {
                   disabled={updateStatusMutation.isPending}
                   variant="ghost"
                   className="flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-ctp-text transition focus:border-ctp-mauve focus:outline-none disabled:opacity-60"
-                  style={getStatusSurfaceStyle(activeStatusOption)}
+                  style={activeStatusConfig.activeStyle}
                 >
                   <span className="flex items-center gap-2">
                     <span
                       className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: `var(${activeStatusOption.colorVar})` }}
+                      style={{ backgroundColor: `var(--${activeStatusConfig.color})` }}
                     />
-                    <span className={activeStatusOption.textClass}>{activeStatusOption.label}</span>
+                    <span className={`text-${activeStatusConfig.color}`}>
+                      {activeStatusConfig.label}
+                    </span>
                   </span>
                   <svg
                     className={`h-4 w-4 text-ctp-subtext0 transition-transform ${isStatusOpen ? "rotate-180" : ""}`}
@@ -825,48 +770,50 @@ export function GameDetail() {
                       aria-labelledby="game-status"
                     >
                       <div className="grid gap-2">
-                        {STATUS_OPTIONS.map((option) => (
-                          <Button
-                            key={option.value}
-                            type="button"
-                            role="option"
-                            aria-selected={option.value === activeStatus}
-                            onClick={() => {
-                              setIsStatusOpen(false);
-                              if (option.value !== activeStatus) {
-                                handleStatusChange(option.value);
-                              }
-                            }}
-                            variant="ghost"
-                            className={`flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
-                              option.value === activeStatus ? "ring-1 ring-ctp-mauve" : ""
-                            }`}
-                            style={getStatusSurfaceStyle(option)}
-                          >
-                            <span className="flex items-center gap-2">
-                              <span
-                                className="h-2.5 w-2.5 rounded-full"
-                                style={{ backgroundColor: `var(${option.colorVar})` }}
-                              />
-                              <span className={option.textClass}>{option.label}</span>
-                            </span>
-                            {option.value === activeStatus && (
-                              <svg
-                                className="h-4 w-4 text-ctp-mauve"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
+                        {Object.values(STATUS_CONFIGS)
+                          .filter((config) => config.id !== "total" && config.id !== "favorites")
+                          .map((config) => (
+                            <Button
+                              key={config.id}
+                              type="button"
+                              role="option"
+                              aria-selected={config.id === activeStatus}
+                              onClick={() => {
+                                setIsStatusOpen(false);
+                                if (config.id !== activeStatus) {
+                                  handleStatusChange(config.id);
+                                }
+                              }}
+                              variant="ghost"
+                              className={`flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
+                                config.id === activeStatus ? "ring-1 ring-ctp-mauve" : ""
+                              }`}
+                              style={config.activeStyle}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full"
+                                  style={{ backgroundColor: `var(--${config.color})` }}
                                 />
-                              </svg>
-                            )}
-                          </Button>
-                        ))}
+                                <span className={`text-${config.color}`}>{config.label}</span>
+                              </span>
+                              {config.id === activeStatus && (
+                                <svg
+                                  className="h-4 w-4 text-ctp-mauve"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </Button>
+                          ))}
                       </div>
                     </div>
                   </>
@@ -956,76 +903,6 @@ export function GameDetail() {
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Rating Selector */}
-            <div className="mt-4">
-              <span
-                className="mb-2 block text-sm font-medium text-ctp-subtext0"
-                id="user-rating-label"
-              >
-                Your Rating
-              </span>
-              <div
-                className="grid grid-cols-5 gap-1 sm:grid-cols-10"
-                role="group"
-                aria-labelledby="user-rating-label"
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                  <Button
-                    key={rating}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRatingChange(rating)}
-                    aria-label={`Rate ${rating} out of 10`}
-                    aria-pressed={activePlatform.user_rating === rating}
-                    className={
-                      activePlatform.user_rating === rating
-                        ? "shadow-ctp-mauve/50 hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base shadow-lg hover:text-ctp-base"
-                        : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
-                    }
-                  >
-                    {rating}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Favorite Toggle */}
-            <div className="mt-4">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  toggleFavoriteMutation.mutate({
-                    platformId: activePlatformId,
-                    isFavorite: !activePlatform.is_favorite,
-                  })
-                }
-                disabled={toggleFavoriteMutation.isPending}
-                className={`h-auto w-full py-3 font-semibold ${
-                  activePlatform.is_favorite
-                    ? "bg-ctp-red/20 hover:bg-ctp-red/30 border-2 border-ctp-red text-ctp-red hover:text-ctp-red"
-                    : "border-2 border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-red hover:bg-ctp-surface1 hover:text-ctp-red"
-                }`}
-              >
-                <span className="inline-flex items-center justify-center gap-2">
-                  <svg
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill={activePlatform.is_favorite ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                  {activePlatform.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
-                </span>
-              </Button>
             </div>
 
             {/* Remove from Library */}
@@ -1171,7 +1048,7 @@ export function GameDetail() {
           </div>
 
           {/* Game Details */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1 xl:col-span-2">
             <div className="mb-4 hidden items-center gap-3 md:flex">
               <BackButton
                 iconOnly={true}
@@ -1181,6 +1058,79 @@ export function GameDetail() {
             </div>
 
             <div>
+              <div className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <ProgressDisplay gameId={game.id} platformId={activePlatformId} />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <span
+                        className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                        id="user-rating-label"
+                      >
+                        Your Rating
+                      </span>
+                      <div
+                        className="grid grid-cols-5 gap-1 sm:grid-cols-10"
+                        role="group"
+                        aria-labelledby="user-rating-label"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+                          <Button
+                            key={rating}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRatingChange(rating)}
+                            aria-label={`Rate ${rating} out of 10`}
+                            aria-pressed={activePlatform.user_rating === rating}
+                            className={
+                              activePlatform.user_rating === rating
+                                ? "shadow-ctp-mauve/50 hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base shadow-lg hover:text-ctp-base"
+                                : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
+                            }
+                          >
+                            {rating}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        toggleFavoriteMutation.mutate({
+                          platformId: activePlatformId,
+                          isFavorite: !activePlatform.is_favorite,
+                        })
+                      }
+                      disabled={toggleFavoriteMutation.isPending}
+                      className={`h-auto w-full py-3 font-semibold ${
+                        activePlatform.is_favorite
+                          ? "bg-ctp-red/20 hover:bg-ctp-red/30 border-2 border-ctp-red text-ctp-red hover:text-ctp-red"
+                          : "border-2 border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-red hover:bg-ctp-surface1 hover:text-ctp-red"
+                      }`}
+                    >
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <svg
+                          className="h-5 w-5"
+                          viewBox="0 0 24 24"
+                          fill={activePlatform.is_favorite ? "currentColor" : "none"}
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
+                        {activePlatform.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
               {activePlatform.description && (
                 <div
                   id="about"

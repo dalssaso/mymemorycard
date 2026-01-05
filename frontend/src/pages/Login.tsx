@@ -29,7 +29,8 @@ export function Login(): JSX.Element {
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       await login(data.username, data.password);
-      navigate({ to: "/dashboard" });
+      // Navigate directly to dashboard
+      navigate({ to: "/dashboard", replace: true });
     } catch (error: unknown) {
       const message =
         error && typeof error === "object" && "response" in error
@@ -50,7 +51,7 @@ export function Login(): JSX.Element {
           <FormProvider {...form}>
             <form onSubmit={handleSubmit} className="space-y-4">
               {form.formState.errors.root?.message ? (
-                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <div className="border-ctp-red/30 bg-ctp-red/10 rounded-md border px-3 py-2 text-sm text-ctp-red">
                   {form.formState.errors.root.message}
                 </div>
               ) : null}

@@ -113,7 +113,7 @@ export function PlatformOnboarding() {
 
   return (
     <PageLayout sidebar={sidebarContent} customCollapsed={true}>
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-5xl pt-2">
         <div className="mb-8">
           <div className="flex items-center gap-3">
             <BackButton
