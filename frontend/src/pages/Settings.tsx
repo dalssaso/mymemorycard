@@ -1,13 +1,39 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { z } from "zod";
+import { useForm, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BackButton, PageLayout } from "@/components/layout";
+import {
+  Button,
+  Card,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { preferencesAPI, aiAPI } from "@/lib/api";
-import { Select } from "@/components/ui/Select";
-import type { SelectOption } from "@/components/ui/Select";
+import { useAIModels } from "@/hooks/useAIModels";
+import { useAISettings } from "@/hooks/useAISettings";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 
 type Theme = "light" | "dark" | "auto";
+
+const providerFormSchema = z.object({
+  base_url: z.string().optional().or(z.literal("")),
+  api_key: z.string().optional().or(z.literal("")),
+  model: z.string().optional().or(z.literal("")),
+  image_api_key: z.string().optional().or(z.literal("")),
+  image_model: z.string().optional().or(z.literal("")),
+  temperature: z.coerce.number().min(0).max(2).optional(),
+  max_tokens: z.coerce.number().min(100).max(16000).optional(),
+});
+
+type ProviderFormValues = z.infer<typeof providerFormSchema>;
 
 interface UserPreferences {
   default_view: "grid" | "table";
@@ -29,19 +55,55 @@ const PROVIDER_OPTIONS = [
   { value: "lmstudio", label: "LM Studio (Local)" },
 ];
 
+interface SelectOption {
+  value: string;
+  label: string;
+  metadata?: ReactNode;
+}
+
+interface SelectFieldProps {
+  id?: string;
+  value: string;
+  options: SelectOption[];
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+function SelectField({
+  id,
+  value,
+  options,
+  onChange,
+  placeholder,
+  className,
+}: SelectFieldProps): JSX.Element {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger id={id} className={className}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            <div className="flex flex-col gap-1">
+              <span>{option.label}</span>
+              {option.metadata ? <span className="text-xs text-ctp-overlay1">{option.metadata}</span> : null}
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export function Settings() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { theme, setTheme } = useTheme();
   const [isUpdatingTheme, setIsUpdatingTheme] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["preferences"],
-    queryFn: async () => {
-      const response = await preferencesAPI.get();
-      return response.data as { preferences: UserPreferences };
-    },
-  });
+  const { data, isLoading } = useUserPreferences();
 
   const updateMutation = useMutation({
     mutationFn: (prefs: Partial<UserPreferences>) => preferencesAPI.update(prefs),
@@ -98,50 +160,81 @@ export function Settings() {
     >
   >({});
 
-  const { data: aiData } = useQuery({
-    queryKey: ["ai-settings"],
-    queryFn: async () => {
-      const response = await aiAPI.getSettings();
-      const { providers, activeProvider } = response.data;
+  const currentForm = providerForms[selectedProvider] || {};
 
-      // Initialize forms for all configured providers
-      const forms: typeof providerForms = {};
-      providers.forEach((p) => {
-        forms[p.provider] = {
-          base_url: p.base_url,
-          api_key_masked: p.api_key_masked,
-          model: p.model,
-          image_api_key_masked: p.image_api_key_masked,
-          image_model: p.image_model,
-          temperature: p.temperature,
-          max_tokens: p.max_tokens,
-        };
-      });
-      setProviderForms(forms);
-
-      // Set selected provider to active one or first in list
-      if (activeProvider) {
-        setSelectedProvider(activeProvider.provider);
-      } else if (providers.length > 0) {
-        setSelectedProvider(providers[0].provider);
-      }
-
-      return response.data;
+  const providerForm = useForm<ProviderFormValues>({
+    resolver: zodResolver(providerFormSchema) as Resolver<ProviderFormValues>,
+    defaultValues: {
+      base_url: currentForm.base_url ?? "",
+      api_key: currentForm.api_key ?? "",
+      model: currentForm.model ?? "",
+      image_api_key: currentForm.image_api_key ?? "",
+      image_model: currentForm.image_model ?? "",
+      temperature: currentForm.temperature ?? 0.7,
+      max_tokens: currentForm.max_tokens ?? 12000,
     },
   });
 
-  const { data: modelsData, isLoading: modelsLoading } = useQuery({
-    queryKey: ["ai-models", selectedProvider],
-    queryFn: async () => {
-      if (!["openai", "openrouter"].includes(selectedProvider)) {
-        return { textModels: [], imageModels: [] };
-      }
-      const response = await aiAPI.getModels(selectedProvider);
-      return response.data;
-    },
-    enabled: ["openai", "openrouter"].includes(selectedProvider),
-    staleTime: 24 * 60 * 60 * 1000,
-  });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = providerForm;
+
+  const { data: aiData } = useAISettings();
+
+  useEffect(() => {
+    if (!aiData) {
+      return;
+    }
+
+    const forms: typeof providerForms = {};
+    aiData.providers.forEach((provider) => {
+      forms[provider.provider] = {
+        base_url: provider.base_url,
+        api_key_masked: provider.api_key_masked ?? null,
+        model: provider.model,
+        image_api_key_masked: provider.image_api_key_masked ?? null,
+        image_model: provider.image_model,
+        temperature: provider.temperature ?? undefined,
+        max_tokens: provider.max_tokens ?? undefined,
+      };
+    });
+
+    setProviderForms(forms);
+
+    if (aiData.activeProvider) {
+      setSelectedProvider(aiData.activeProvider.provider);
+    } else if (aiData.providers.length > 0) {
+      setSelectedProvider(aiData.providers[0].provider);
+    }
+  }, [aiData]);
+
+  const { data: modelsData, isLoading: modelsLoading } = useAIModels(
+    ["openai", "openrouter"].includes(selectedProvider) ? selectedProvider : null
+  );
+
+  const lastProviderRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (lastProviderRef.current === selectedProvider) {
+      return;
+    }
+    lastProviderRef.current = selectedProvider;
+    const formValues = providerForms[selectedProvider];
+    reset({
+      base_url: formValues?.base_url ?? "",
+      api_key: formValues?.api_key ?? "",
+      model: formValues?.model ?? "",
+      image_api_key: formValues?.image_api_key ?? "",
+      image_model: formValues?.image_model ?? "",
+      temperature: formValues?.temperature ?? 0.7,
+      max_tokens: formValues?.max_tokens ?? 12000,
+    });
+  }, [providerForms, reset, selectedProvider]);
 
   const updateAiMutation = useMutation({
     mutationFn: aiAPI.updateSettings,
@@ -167,39 +260,51 @@ export function Settings() {
     },
   });
 
-  const currentForm = providerForms[selectedProvider] || {};
-
   const updateCurrentForm = (updates: Partial<typeof currentForm>) => {
-    setProviderForms({
-      ...providerForms,
+    setProviderForms((prev) => ({
+      ...prev,
       [selectedProvider]: {
-        ...currentForm,
+        ...(prev[selectedProvider] || {}),
         ...updates,
       },
+    }));
+
+    Object.entries(updates).forEach(([key, value]) => {
+      setValue(key as keyof ProviderFormValues, value as ProviderFormValues[keyof ProviderFormValues], {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
     });
   };
 
-  const handleAiSettingsSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const form = providerForms[selectedProvider];
-    if (!form) return;
+  const temperatureValue = watch("temperature") ?? currentForm.temperature ?? 0.7;
+  const maxTokensValue = watch("max_tokens") ?? currentForm.max_tokens ?? 12000;
 
+  const handleAiSettingsSubmit = handleSubmit((values) => {
     // OpenRouter doesn't support image generation reliably - only allow for OpenAI
     const supportsImages = selectedProvider === "openai";
 
+    const apiKey =
+      currentForm.api_key_masked && values.api_key === currentForm.api_key_masked
+        ? undefined
+        : values.api_key || undefined;
+    const imageApiKey =
+      currentForm.image_api_key_masked && values.image_api_key === currentForm.image_api_key_masked
+        ? undefined
+        : values.image_api_key || undefined;
+
     updateAiMutation.mutate({
       provider: selectedProvider,
-      baseUrl: form.base_url,
-      apiKey: form.api_key !== undefined ? form.api_key : undefined,
-      model: form.model,
-      imageApiKey:
-        supportsImages && form.image_api_key !== undefined ? form.image_api_key : undefined,
-      imageModel: supportsImages ? form.image_model : undefined,
-      temperature: form.temperature,
-      maxTokens: form.max_tokens,
+      baseUrl: values.base_url || undefined,
+      apiKey,
+      model: values.model || undefined,
+      imageApiKey: supportsImages ? imageApiKey : undefined,
+      imageModel: supportsImages ? values.image_model || undefined : undefined,
+      temperature: values.temperature,
+      maxTokens: values.max_tokens,
       setActive: true, // Always set as active when saving
     });
-  };
+  });
 
   const handleProviderClick = (provider: string) => {
     setSelectedProvider(provider);
@@ -233,14 +338,14 @@ export function Settings() {
             />
             <h1 className="text-4xl font-bold text-ctp-text">Settings</h1>
           </div>
-          <div className="card">
+          <Card className="p-6">
             <div className="animate-pulse space-y-6">
               <div className="h-8 bg-ctp-surface1 rounded w-1/3"></div>
               <div className="h-12 bg-ctp-surface1 rounded"></div>
               <div className="h-8 bg-ctp-surface1 rounded w-1/3"></div>
               <div className="h-12 bg-ctp-surface1 rounded"></div>
             </div>
-          </div>
+          </Card>
         </div>
       </PageLayout>
     );
@@ -257,17 +362,18 @@ export function Settings() {
           <h1 className="text-4xl font-bold text-ctp-text">Settings</h1>
         </div>
 
-        <div className="card space-y-8">
+        <Card className="space-y-8 p-6">
           <div>
             <h2 className="text-xl font-semibold text-ctp-mauve mb-4">Library View</h2>
             <p className="text-sm text-ctp-subtext0 mb-4">
               Choose how your game library is displayed by default.
             </p>
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => handleViewChange("grid")}
                 disabled={updateMutation.isPending}
-                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                variant="ghost"
+                className={`h-auto flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
                   preferences.default_view === "grid"
                     ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
                     : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
@@ -291,11 +397,12 @@ export function Settings() {
                   <span className="font-medium">Grid View</span>
                   <span className="text-xs text-ctp-overlay1">Game covers in a grid</span>
                 </div>
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleViewChange("table")}
                 disabled={updateMutation.isPending}
-                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                variant="ghost"
+                className={`h-auto flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
                   preferences.default_view === "table"
                     ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
                     : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
@@ -319,7 +426,7 @@ export function Settings() {
                   <span className="font-medium">Table View</span>
                   <span className="text-xs text-ctp-overlay1">Sortable list format</span>
                 </div>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -330,18 +437,19 @@ export function Settings() {
             </p>
             <div className="flex gap-2">
               {PAGE_SIZE_OPTIONS.map((size) => (
-                <button
+                <Button
                   key={size}
                   onClick={() => handlePageSizeChange(size)}
                   disabled={updateMutation.isPending}
-                  className={`px-4 py-2 rounded-lg border transition-all ${
+                  variant="ghost"
+                  className={`h-auto px-4 py-2 rounded-lg border transition-all ${
                     preferences.items_per_page === size
                       ? "bg-ctp-teal/20 border-ctp-teal text-ctp-teal"
                       : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
                   }`}
                 >
                   {size}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -353,12 +461,13 @@ export function Settings() {
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {THEME_OPTIONS.map((option) => (
-                <button
+                <Button
                   key={option.value}
                   type="button"
                   onClick={() => handleThemeChange(option.value)}
                   disabled={isUpdatingTheme}
-                  className={`px-4 py-3 rounded-lg border-2 text-left transition-all ${
+                  variant="ghost"
+                  className={`h-auto px-4 py-3 rounded-lg border-2 text-left transition-all ${
                     theme === option.value
                       ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
                       : "bg-ctp-surface0 border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
@@ -366,7 +475,7 @@ export function Settings() {
                 >
                   <div className="font-medium">{option.label}</div>
                   <div className="text-xs text-ctp-overlay1">{option.description}</div>
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -388,11 +497,12 @@ export function Settings() {
                   const isSelected = selectedProvider === option.value;
 
                   return (
-                    <button
+                    <Button
                       key={option.value}
                       type="button"
                       onClick={() => handleProviderClick(option.value)}
-                      className={`relative w-full px-3 py-3 rounded-lg text-sm transition-all flex items-center justify-between ${
+                      variant="ghost"
+                      className={`relative h-auto w-full px-3 py-3 rounded-lg text-sm transition-all flex items-center justify-between ${
                         isSelected
                           ? "bg-ctp-mauve/20 text-ctp-mauve border-2 border-ctp-mauve/50"
                           : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-2 border-transparent"
@@ -415,7 +525,7 @@ export function Settings() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       )}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -482,14 +592,15 @@ export function Settings() {
                 </h3>
                 {isProviderConfigured(selectedProvider) &&
                   aiData?.activeProvider?.provider !== selectedProvider && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setActiveProviderMutation.mutate(selectedProvider)}
                       disabled={setActiveProviderMutation.isPending}
-                      className="text-sm px-3 py-1.5 bg-ctp-green/20 text-ctp-green border border-ctp-green/30 rounded-lg hover:bg-ctp-green/30 transition-colors disabled:opacity-50"
+                      variant="ghost"
+                      className="h-auto text-sm px-3 py-1.5 bg-ctp-green/20 text-ctp-green border border-ctp-green/30 rounded-lg hover:bg-ctp-green/30 transition-colors disabled:opacity-50"
                     >
                       Set as Active
-                    </button>
+                    </Button>
                   )}
               </div>
 
@@ -503,9 +614,10 @@ export function Settings() {
                   >
                     Base URL {selectedProvider === "openrouter" && "(Optional)"}
                   </label>
-                  <input
+                  <Input
                     id="provider-base-url"
                     type="url"
+                    {...register("base_url")}
                     value={currentForm.base_url || ""}
                     onChange={(e) => updateCurrentForm({ base_url: e.target.value || null })}
                     placeholder={
@@ -515,8 +627,11 @@ export function Settings() {
                           ? "http://localhost:1234/v1"
                           : "https://openrouter.ai/api/v1"
                     }
-                    className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                    className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                   />
+                  {errors.base_url && (
+                    <p className="text-xs text-ctp-red mt-1">{errors.base_url.message}</p>
+                  )}
                   <p className="text-xs text-ctp-overlay1 mt-1">
                     {selectedProvider === "ollama" && "Default: http://localhost:11434/v1"}
                     {selectedProvider === "lmstudio" && "Default: http://localhost:1234/v1"}
@@ -532,13 +647,14 @@ export function Settings() {
                 >
                   API Key
                 </label>
-                <input
+                <Input
                   id="provider-api-key"
                   type={
                     currentForm.api_key === undefined && currentForm.api_key_masked
                       ? "text"
                       : "password"
                   }
+                  {...register("api_key")}
                   value={
                     currentForm.api_key !== undefined
                       ? currentForm.api_key || ""
@@ -558,9 +674,12 @@ export function Settings() {
                         ? "Click to replace existing key"
                         : "Enter your API key"
                   }
-                  className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                  className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                   readOnly={currentForm.api_key === undefined && currentForm.api_key_masked != null}
                 />
+                {errors.api_key && (
+                  <p className="text-xs text-ctp-red mt-1">{errors.api_key.message}</p>
+                )}
                 <p className="text-xs text-ctp-overlay1 mt-1">
                   {currentForm.api_key_masked && currentForm.api_key === undefined
                     ? "API key configured. Click the field to replace it."
@@ -578,7 +697,7 @@ export function Settings() {
                 {selectedProvider === "openai" ? (
                   <>
                     {modelsData && modelsData.textModels.length > 0 ? (
-                      <Select
+                      <SelectField
                         id="model-select"
                         value={currentForm.model || ""}
                         options={modelsData.textModels.map(
@@ -599,16 +718,17 @@ export function Settings() {
                         className="w-full"
                       />
                     ) : (
-                      <input
+                      <Input
                         id="model-select"
                         type="text"
+                        {...register("model")}
                         value={currentForm.model || ""}
                         onChange={(e) => updateCurrentForm({ model: e.target.value })}
                         placeholder={
                           modelsLoading ? "Loading models..." : "e.g., gpt-4o, gpt-4o-mini"
                         }
                         disabled={modelsLoading}
-                        className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
+                        className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
                       />
                     )}
                     <p className="text-xs text-ctp-overlay1 mt-1">
@@ -622,7 +742,7 @@ export function Settings() {
                 ) : selectedProvider === "openrouter" ? (
                   <>
                     {modelsData && modelsData.textModels.length > 0 ? (
-                      <Select
+                      <SelectField
                         id="model-select"
                         value={currentForm.model || ""}
                         options={modelsData.textModels.map(
@@ -643,8 +763,9 @@ export function Settings() {
                         className="w-full"
                       />
                     ) : (
-                      <input
+                      <Input
                         type="text"
+                        {...register("model")}
                         value={currentForm.model || ""}
                         onChange={(e) => updateCurrentForm({ model: e.target.value })}
                         placeholder={
@@ -653,7 +774,7 @@ export function Settings() {
                             : "e.g., openai/gpt-4o, anthropic/claude-3.5-sonnet"
                         }
                         disabled={modelsLoading}
-                        className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
+                        className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
                       />
                     )}
                     <p className="text-xs text-ctp-overlay1 mt-1">
@@ -689,8 +810,9 @@ export function Settings() {
                   </>
                 ) : (
                   <>
-                    <input
+                    <Input
                       type="text"
+                      {...register("model")}
                       value={currentForm.model || ""}
                       onChange={(e) => updateCurrentForm({ model: e.target.value })}
                       placeholder={
@@ -698,7 +820,7 @@ export function Settings() {
                           ? "e.g., llama3.2:3b, mistral:latest"
                           : "e.g., gpt-4o-mini"
                       }
-                      className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                     />
                     <p className="text-xs text-ctp-overlay1 mt-1">
                       {selectedProvider === "ollama" &&
@@ -711,10 +833,11 @@ export function Settings() {
               </div>
 
               <div>
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="text-sm text-ctp-blue hover:underline flex items-center gap-1"
+                  variant="link"
+                  className="h-auto p-0 text-sm text-ctp-blue hover:underline flex items-center gap-1"
                 >
                   {showAdvanced ? "Hide" : "Show"} Advanced Options
                   <svg
@@ -730,7 +853,7 @@ export function Settings() {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-                </button>
+                </Button>
               </div>
 
               {showAdvanced && (
@@ -744,7 +867,7 @@ export function Settings() {
                         >
                           Image API Key (Optional)
                         </label>
-                        <input
+                        <Input
                           id="image-api-key"
                           type={
                             currentForm.image_api_key === undefined &&
@@ -752,6 +875,7 @@ export function Settings() {
                               ? "text"
                               : "password"
                           }
+                          {...register("image_api_key")}
                           value={
                             currentForm.image_api_key !== undefined
                               ? currentForm.image_api_key || ""
@@ -775,12 +899,17 @@ export function Settings() {
                               ? "Click to replace existing key"
                               : "Leave empty to use main API key"
                           }
-                          className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                          className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                           readOnly={
                             currentForm.image_api_key === undefined &&
                             currentForm.image_api_key_masked != null
                           }
                         />
+                        {errors.image_api_key && (
+                          <p className="text-xs text-ctp-red mt-1">
+                            {errors.image_api_key.message}
+                          </p>
+                        )}
                         <p className="text-xs text-ctp-overlay1 mt-1">
                           {currentForm.image_api_key_masked &&
                           currentForm.image_api_key === undefined
@@ -797,7 +926,7 @@ export function Settings() {
                         </label>
                         {modelsData && modelsData.imageModels.length > 0 ? (
                           <>
-                            <Select
+                            <SelectField
                               id="image-model-select"
                               value={currentForm.image_model || ""}
                               options={modelsData.imageModels.map(
@@ -823,16 +952,17 @@ export function Settings() {
                           </>
                         ) : (
                           <>
-                            <input
+                            <Input
                               id="image-model-select"
                               type="text"
+                              {...register("image_model")}
                               value={currentForm.image_model || ""}
                               onChange={(e) =>
                                 updateCurrentForm({ image_model: e.target.value || null })
                               }
                               placeholder={modelsLoading ? "Loading models..." : "dall-e-3"}
                               disabled={modelsLoading}
-                              className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve disabled:opacity-50"
+                              className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
                             />
                             <p className="text-xs text-ctp-overlay1 mt-1">
                               {modelsLoading
@@ -878,24 +1008,25 @@ export function Settings() {
                   )}
 
                   <div>
-                    <label
-                      className="block text-sm font-medium text-ctp-text mb-2"
-                      htmlFor="temperature"
-                    >
-                      Temperature: {currentForm.temperature ?? 0.7}
-                    </label>
-                    <input
-                      id="temperature"
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      value={currentForm.temperature ?? 0.7}
-                      onChange={(e) =>
-                        updateCurrentForm({ temperature: parseFloat(e.target.value) })
-                      }
-                      className="w-full"
-                    />
+                  <label
+                    className="block text-sm font-medium text-ctp-text mb-2"
+                    htmlFor="temperature"
+                  >
+                    Temperature: {temperatureValue}
+                  </label>
+                  <Input
+                    id="temperature"
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    {...register("temperature", { valueAsNumber: true })}
+                    value={temperatureValue}
+                    onChange={(e) =>
+                      updateCurrentForm({ temperature: parseFloat(e.target.value) })
+                    }
+                    className="w-full"
+                  />
                     <p className="text-xs text-ctp-overlay1 mt-1">
                       Lower = more focused, Higher = more creative
                     </p>
@@ -908,17 +1039,21 @@ export function Settings() {
                     >
                       Max Tokens
                     </label>
-                    <input
-                      id="max-tokens"
-                      type="number"
-                      min="100"
-                      max="16000"
-                      value={currentForm.max_tokens ?? 12000}
-                      onChange={(e) =>
-                        updateCurrentForm({ max_tokens: parseInt(e.target.value, 10) })
-                      }
-                      className="w-full px-4 py-2 rounded-lg bg-ctp-surface0 border border-ctp-surface1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                    />
+                  <Input
+                    id="max-tokens"
+                    type="number"
+                    min="100"
+                    max="16000"
+                    {...register("max_tokens", { valueAsNumber: true })}
+                    value={maxTokensValue}
+                    onChange={(e) =>
+                      updateCurrentForm({ max_tokens: parseInt(e.target.value, 10) })
+                    }
+                    className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                  />
+                  {errors.max_tokens && (
+                    <p className="text-xs text-ctp-red mt-1">{errors.max_tokens.message}</p>
+                  )}
                     <p className="text-xs text-ctp-overlay1 mt-1">
                       Maximum response length. Reasoning models (GPT-5 Nano, Mini) require 12000+
                       tokens
@@ -927,18 +1062,19 @@ export function Settings() {
                 </div>
               )}
 
-              <button
+              <Button
                 type="submit"
                 disabled={updateAiMutation.isPending}
-                className="px-6 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="ghost"
+                className="h-auto px-6 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updateAiMutation.isPending
                   ? "Saving..."
                   : `Save ${PROVIDER_OPTIONS.find((p) => p.value === selectedProvider)?.label} Settings`}
-              </button>
+              </Button>
             </form>
           </div>
-        </div>
+        </Card>
       </div>
     </PageLayout>
   );

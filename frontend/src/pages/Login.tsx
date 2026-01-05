@@ -1,89 +1,74 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link, useNavigate } from "@tanstack/react-router"
+import { z } from "zod"
+import { useForm, FormProvider } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { FormField } from "@/components/ui/form-field"
+import { useAuth } from "@/contexts/AuthContext"
 
-export function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
+type LoginForm = z.infer<typeof loginSchema>
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+export function Login(): JSX.Element {
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
+  const form = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  })
+
+  const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await login(username, password);
-      navigate({ to: "/dashboard" });
-    } catch (err: unknown) {
+      await login(data.username, data.password)
+      navigate({ to: "/dashboard" })
+    } catch (error: unknown) {
       const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null;
-      setError(message ?? "Failed to login");
-    } finally {
-      setIsLoading(false);
+        error && typeof error === "object" && "response" in error
+          ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
+          : null
+      form.setError("root", { message: message ?? "Failed to login" })
     }
-  };
+  })
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="card max-w-md w-full">
-        <h1 className="text-ctp-mauve mb-6 text-center">MyMemoryCard</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-ctp-red/20 border border-ctp-red text-ctp-red px-4 py-2 rounded">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="login-username">
-              Username
-            </label>
-            <input
-              id="login-username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input w-full"
-              placeholder="Enter username"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="login-password">
-              Password
-            </label>
-            <input
-              id="login-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input w-full"
-              placeholder="Enter password"
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        <p className="text-center mt-4 text-zinc-400">
-          Don&apos;t have an account?{" "}
-          <Link to="/register" className="text-ctp-teal hover:text-cyan-400 transition-colors">
-            Register
-          </Link>
-        </p>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-ctp-base px-4">
+      <Card className="w-full max-w-sm border-ctp-surface1 bg-ctp-surface0/60">
+        <CardHeader>
+          <h1 className="text-center text-2xl font-semibold text-ctp-mauve">MyMemoryCard</h1>
+          <p className="text-center text-sm text-ctp-subtext1">Welcome back</p>
+        </CardHeader>
+        <CardContent>
+          <FormProvider {...form}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {form.formState.errors.root?.message ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {form.formState.errors.root.message}
+                </div>
+              ) : null}
+              <FormField name="username" label="Username" />
+              <FormField name="password" label="Password" type="password" />
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Logging in..." : "Login"}
+              </Button>
+            </form>
+          </FormProvider>
+          <p className="mt-4 text-center text-sm text-ctp-subtext1">
+            Don&apos;t have an account?{" "}
+            <Link to="/register" className="text-ctp-teal hover:text-ctp-sky">
+              Register
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }

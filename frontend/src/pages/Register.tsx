@@ -1,151 +1,111 @@
-import { useState, type FormEvent } from "react";
-import validator from "validator";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link, useNavigate } from "@tanstack/react-router"
+import { z } from "zod"
+import { FormProvider, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { FormField } from "@/components/ui/form-field"
+import { useAuth } from "@/contexts/AuthContext"
 
-export function Register() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/
 
-  const isPasswordStrong =
-    password.length > 0 &&
-    validator.isStrongPassword(password, {
-      minLength: 8,
-      minLowercase: 1,
-      minUppercase: 1,
-      minNumbers: 1,
-      minSymbols: 1,
-    });
-  const showPasswordFeedback = password.length > 0;
-  const showConfirmFeedback = confirmPassword.length > 0;
-  const passwordsMatch = password === confirmPassword;
-  const canSubmit =
-    !!username &&
-    !!password &&
-    !!confirmPassword &&
-    passwordsMatch &&
-    isPasswordStrong &&
-    !isLoading;
+const registerSchema = z
+  .object({
+    username: z.string().min(1, "Username is required"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        strongPassword,
+        "Use upper, lower, number, and symbol characters"
+      ),
+    confirmPassword: z.string().min(1, "Confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  })
 
-  const { register } = useAuth();
-  const navigate = useNavigate();
+type RegisterForm = z.infer<typeof registerSchema>
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
+export function Register(): JSX.Element {
+  const { register } = useAuth()
+  const navigate = useNavigate()
 
-    if (!passwordsMatch) {
-      setError("Passwords do not match");
-      return;
-    }
+  const form = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
+  })
 
-    if (!isPasswordStrong) {
-      setError(
-        "Password must be at least 8 characters and include upper, lower, number, and symbol"
-      );
-      return;
-    }
+  const password = form.watch("password")
+  const confirmPassword = form.watch("confirmPassword")
+  const passwordsMatch = password.length > 0 && password === confirmPassword
+  const passwordStrong = strongPassword.test(password)
 
-    setIsLoading(true);
-
+  const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await register(username, password);
-      navigate({ to: "/platforms/onboarding" });
-    } catch (err: unknown) {
+      await register(data.username, data.password)
+      navigate({ to: "/platforms/onboarding" })
+    } catch (error: unknown) {
       const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null;
-      setError(message ?? "Failed to register");
-    } finally {
-      setIsLoading(false);
+        error && typeof error === "object" && "response" in error
+          ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
+          : null
+      form.setError("root", { message: message ?? "Failed to create account" })
     }
-  };
+  })
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="card max-w-md w-full">
-        <h1 className="text-ctp-mauve mb-6 text-center">Create Account</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-ctp-red/20 border border-ctp-red text-ctp-red px-4 py-2 rounded">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="register-username">
-              Username
-            </label>
-            <input
-              id="register-username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input w-full"
-              placeholder="Enter username"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="register-password">
-              Password
-            </label>
-            <input
-              id="register-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input w-full"
-              placeholder="Enter password"
-              required
-            />
-            {showPasswordFeedback && (
-              <p className={`mt-2 text-xs ${isPasswordStrong ? "text-ctp-green" : "text-ctp-red"}`}>
-                {isPasswordStrong
-                  ? "Password looks strong"
-                  : "Use 8+ characters with upper, lower, number, and symbol"}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="register-password-confirm">
-              Confirm Password
-            </label>
-            <input
-              id="register-password-confirm"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="input w-full"
-              placeholder="Confirm password"
-              required
-            />
-            {showConfirmFeedback && (
-              <p className={`mt-2 text-xs ${passwordsMatch ? "text-ctp-green" : "text-ctp-red"}`}>
-                {passwordsMatch ? "Passwords match" : "Passwords do not match"}
-              </p>
-            )}
-          </div>
-
-          <button type="submit" className="btn btn-primary w-full" disabled={!canSubmit}>
-            {isLoading ? "Creating account..." : "Register"}
-          </button>
-        </form>
-
-        <p className="text-center mt-4 text-zinc-400">
-          Already have an account?{" "}
-          <Link to="/login" className="text-ctp-teal hover:text-cyan-400 transition-colors">
-            Login
-          </Link>
-        </p>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-ctp-base px-4">
+      <Card className="w-full max-w-sm border-ctp-surface1 bg-ctp-surface0/60">
+        <CardHeader>
+          <h1 className="text-center text-2xl font-semibold text-ctp-mauve">Create Account</h1>
+          <p className="text-center text-sm text-ctp-subtext1">Start organizing your library</p>
+        </CardHeader>
+        <CardContent>
+          <FormProvider {...form}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {form.formState.errors.root?.message ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {form.formState.errors.root.message}
+                </div>
+              ) : null}
+              <FormField name="username" label="Username" />
+              <div className="space-y-2">
+                <FormField name="password" label="Password" type="password" />
+                {password.length > 0 ? (
+                  <p className={`text-xs ${passwordStrong ? "text-ctp-green" : "text-ctp-red"}`}>
+                    {passwordStrong
+                      ? "Password looks strong"
+                      : "Use 8+ chars with upper, lower, number, and symbol"}
+                  </p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <FormField name="confirmPassword" label="Confirm password" type="password" />
+                {confirmPassword.length > 0 ? (
+                  <p className={`text-xs ${passwordsMatch ? "text-ctp-green" : "text-ctp-red"}`}>
+                    {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                  </p>
+                ) : null}
+              </div>
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Creating account..." : "Register"}
+              </Button>
+            </form>
+          </FormProvider>
+          <p className="mt-4 text-center text-sm text-ctp-subtext1">
+            Already have an account?{" "}
+            <Link to="/login" className="text-ctp-teal hover:text-ctp-sky">
+              Login
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }

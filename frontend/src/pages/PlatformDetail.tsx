@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { PlatformDetailSidebar } from "@/components/sidebar";
 import { BackButton, PageLayout } from "@/components/layout";
+import { Button, Input, Textarea } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { PlatformIconBadge } from "@/components/PlatformIcon";
 import { PlatformTypeIcon } from "@/components/PlatformTypeIcon";
@@ -23,6 +27,19 @@ interface UserPlatformDetail {
   default_icon_url: string | null;
 }
 
+const profileSchema = z.object({
+  username: z.string().trim().max(60).optional().or(z.literal("")),
+  profileUrl: z.string().trim().url().optional().or(z.literal("")),
+  iconUrl: z.string().trim().url().optional().or(z.literal("")),
+});
+
+const notesSchema = z.object({
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
+type NotesFormValues = z.infer<typeof notesSchema>;
+
 export function PlatformDetail() {
   const { id } = useParams({ from: "/platforms/$id" });
   const queryClient = useQueryClient();
@@ -31,16 +48,28 @@ export function PlatformDetail() {
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [usernameValue, setUsernameValue] = useState("");
-  const [profileUrlValue, setProfileUrlValue] = useState("");
-  const [iconUrlValue, setIconUrlValue] = useState("");
-  const [notesValue, setNotesValue] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-platform", id],
     queryFn: async () => {
       const response = await userPlatformsAPI.getOne(id);
       return response.data as { platform: UserPlatformDetail };
+    },
+  });
+
+  const profileForm = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      username: "",
+      profileUrl: "",
+      iconUrl: "",
+    },
+  });
+
+  const notesForm = useForm<NotesFormValues>({
+    resolver: zodResolver(notesSchema),
+    defaultValues: {
+      notes: "",
     },
   });
 
@@ -51,29 +80,108 @@ export function PlatformDetail() {
       profileUrl?: string | null;
       notes?: string | null;
     }) => userPlatformsAPI.update(id, payload),
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ["user-platform", id] });
+      await queryClient.cancelQueries({ queryKey: ["user-platforms"] });
+
+      const previousPlatform = queryClient.getQueryData<{ platform: UserPlatformDetail }>([
+        "user-platform",
+        id,
+      ]);
+      const previousPlatforms = queryClient.getQueryData<{ platforms: UserPlatformDetail[] }>([
+        "user-platforms",
+      ]);
+
+      if (previousPlatform) {
+        queryClient.setQueryData(["user-platform", id], {
+          platform: {
+            ...previousPlatform.platform,
+            username: payload.username ?? previousPlatform.platform.username,
+            icon_url: payload.iconUrl ?? previousPlatform.platform.icon_url,
+            profile_url: payload.profileUrl ?? previousPlatform.platform.profile_url,
+            notes: payload.notes ?? previousPlatform.platform.notes,
+          },
+        });
+      }
+
+      if (previousPlatforms?.platforms) {
+        queryClient.setQueryData(["user-platforms"], {
+          platforms: previousPlatforms.platforms.map((platform) =>
+            platform.id === id
+              ? {
+                  ...platform,
+                  username: payload.username ?? platform.username,
+                  icon_url: payload.iconUrl ?? platform.icon_url,
+                  profile_url: payload.profileUrl ?? platform.profile_url,
+                  notes: payload.notes ?? platform.notes,
+                }
+              : platform
+          ),
+        });
+      }
+
+      return { previousPlatform, previousPlatforms };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-platform", id] });
       queryClient.invalidateQueries({ queryKey: ["user-platforms"] });
       showToast("Platform updated", "success");
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousPlatform) {
+        queryClient.setQueryData(["user-platform", id], context.previousPlatform);
+      }
+      if (context?.previousPlatforms) {
+        queryClient.setQueryData(["user-platforms"], context.previousPlatforms);
+      }
       showToast("Failed to update platform", "error");
     },
   });
 
   const deletePlatformMutation = useMutation({
     mutationFn: () => userPlatformsAPI.remove(id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["user-platforms"] });
+      const previousPlatforms = queryClient.getQueryData<{ platforms: UserPlatformDetail[] }>([
+        "user-platforms",
+      ]);
+
+      if (previousPlatforms?.platforms) {
+        queryClient.setQueryData(["user-platforms"], {
+          platforms: previousPlatforms.platforms.filter((platform) => platform.id !== id),
+        });
+      }
+
+      return { previousPlatforms };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-platforms"] });
       showToast("Platform removed", "success");
       navigate({ to: "/platforms" });
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousPlatforms) {
+        queryClient.setQueryData(["user-platforms"], context.previousPlatforms);
+      }
       showToast("Failed to remove platform", "error");
     },
   });
 
   const platform = data?.platform;
+
+  useEffect(() => {
+    if (!platform) {
+      return;
+    }
+    profileForm.reset({
+      username: platform.username ?? "",
+      profileUrl: platform.profile_url ?? "",
+      iconUrl: platform.icon_url ?? "",
+    });
+    notesForm.reset({
+      notes: platform.notes ?? "",
+    });
+  }, [platform, profileForm, notesForm]);
 
   const sidebarContent = platform ? (
     <PlatformDetailSidebar
@@ -93,21 +201,21 @@ export function PlatformDetail() {
     );
   }
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = profileForm.handleSubmit((values) => {
     updatePlatformMutation.mutate({
-      username: usernameValue.trim() || null,
-      profileUrl: profileUrlValue.trim() || null,
-      iconUrl: iconUrlValue.trim() || null,
+      username: values.username?.trim() || null,
+      profileUrl: values.profileUrl?.trim() || null,
+      iconUrl: values.iconUrl?.trim() || null,
     });
     setIsEditingProfile(false);
-  };
+  });
 
-  const handleSaveNotes = () => {
+  const handleSaveNotes = notesForm.handleSubmit((values) => {
     updatePlatformMutation.mutate({
-      notes: notesValue.trim() || null,
+      notes: values.notes?.trim() || null,
     });
     setIsEditingNotes(false);
-  };
+  });
 
   return (
     <PageLayout sidebar={sidebarContent} showBackButton={false} customCollapsed={true}>
@@ -139,21 +247,20 @@ export function PlatformDetail() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Link to="/platforms" className="btn btn-secondary">
-              Back to Platforms
-            </Link>
-            <button
+            <Button variant="secondary" asChild>
+              <Link to="/platforms">Back to Platforms</Link>
+            </Button>
+            <Button
               type="button"
               onClick={() => {
                 if (confirm(`Remove ${platform.display_name}?`)) {
                   deletePlatformMutation.mutate();
                 }
               }}
-              className="btn btn-danger"
               disabled={deletePlatformMutation.isPending}
             >
               Remove Platform
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -163,22 +270,25 @@ export function PlatformDetail() {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-semibold text-ctp-mauve">Profile</h2>
                 {!isEditingProfile && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => {
-                      setUsernameValue(platform.username || "");
-                      setProfileUrlValue(platform.profile_url || "");
-                      setIconUrlValue(platform.icon_url || "");
+                      profileForm.reset({
+                        username: platform.username ?? "",
+                        profileUrl: platform.profile_url ?? "",
+                        iconUrl: platform.icon_url ?? "",
+                      });
                       setIsEditingProfile(true);
                     }}
-                    className="text-sm text-ctp-teal hover:text-ctp-mauve"
+                    className="h-auto px-0 text-sm text-ctp-teal hover:text-ctp-mauve hover:bg-transparent"
                   >
                     Edit
-                  </button>
+                  </Button>
                 )}
               </div>
 
               {isEditingProfile ? (
-                <div className="space-y-3">
+                <form className="space-y-3" onSubmit={handleSaveProfile}>
                   <div>
                     <label
                       className="block text-xs font-medium mb-1 text-ctp-subtext0"
@@ -186,13 +296,16 @@ export function PlatformDetail() {
                     >
                       Username
                     </label>
-                    <input
+                    <Input
                       id="platform-username"
-                      value={usernameValue}
-                      onChange={(event) => setUsernameValue(event.target.value)}
-                      className="input w-full"
+                      {...profileForm.register("username")}
                       placeholder="Optional username"
                     />
+                    {profileForm.formState.errors.username && (
+                      <p className="text-xs text-ctp-red mt-1">
+                        {profileForm.formState.errors.username.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label
@@ -201,13 +314,16 @@ export function PlatformDetail() {
                     >
                       Profile URL
                     </label>
-                    <input
+                    <Input
                       id="platform-profile-url"
-                      value={profileUrlValue}
-                      onChange={(event) => setProfileUrlValue(event.target.value)}
-                      className="input w-full"
+                      {...profileForm.register("profileUrl")}
                       placeholder="Optional profile link"
                     />
+                    {profileForm.formState.errors.profileUrl && (
+                      <p className="text-xs text-ctp-red mt-1">
+                        {profileForm.formState.errors.profileUrl.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label
@@ -216,15 +332,18 @@ export function PlatformDetail() {
                     >
                       Icon URL (SVG only - overrides default)
                     </label>
-                    <input
+                    <Input
                       id="platform-icon-url"
-                      value={iconUrlValue}
-                      onChange={(event) => setIconUrlValue(event.target.value)}
-                      className="input w-full"
+                      {...profileForm.register("iconUrl")}
                       placeholder={
                         platform.default_icon_url || "https://cdn.simpleicons.org/steam/ffffff"
                       }
                     />
+                    {profileForm.formState.errors.iconUrl && (
+                      <p className="text-xs text-ctp-red mt-1">
+                        {profileForm.formState.errors.iconUrl.message}
+                      </p>
+                    )}
                     <p className="text-xs text-ctp-overlay1 mt-1">
                       Provide an SVG icon URL from{" "}
                       <a
@@ -242,21 +361,28 @@ export function PlatformDetail() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={handleSaveProfile}
+                    <Button
+                      type="submit"
                       disabled={updatePlatformMutation.isPending}
-                      className="btn btn-primary"
                     >
                       {updatePlatformMutation.isPending ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      onClick={() => setIsEditingProfile(false)}
-                      className="btn btn-secondary"
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      type="button"
+                      onClick={() => {
+                        profileForm.reset({
+                          username: platform.username ?? "",
+                          profileUrl: platform.profile_url ?? "",
+                          iconUrl: platform.icon_url ?? "",
+                        });
+                        setIsEditingProfile(false);
+                      }}
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
-                </div>
+                </form>
               ) : (
                 <div className="space-y-2 text-ctp-subtext1">
                   <div>
@@ -287,43 +413,54 @@ export function PlatformDetail() {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-semibold text-ctp-mauve">Notes</h2>
                 {!isEditingNotes && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => {
-                      setNotesValue(platform.notes || "");
+                      notesForm.reset({
+                        notes: platform.notes ?? "",
+                      });
                       setIsEditingNotes(true);
                     }}
-                    className="text-sm text-ctp-teal hover:text-ctp-mauve"
+                    className="h-auto px-0 text-sm text-ctp-teal hover:text-ctp-mauve hover:bg-transparent"
                   >
                     {platform.notes ? "Edit" : "Add Notes"}
-                  </button>
+                  </Button>
                 )}
               </div>
 
               {isEditingNotes ? (
-                <div>
-                  <textarea
-                    value={notesValue}
-                    onChange={(event) => setNotesValue(event.target.value)}
-                    className={[
-                      "w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg",
-                      "px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve",
-                      "min-h-24",
-                    ].join(" ")}
+                <form onSubmit={handleSaveNotes}>
+                  <Textarea
+                    {...notesForm.register("notes")}
+                    className="min-h-24 bg-ctp-mantle text-ctp-text focus-visible:ring-ctp-mauve"
                     placeholder="Add notes about this platform"
                   />
+                  {notesForm.formState.errors.notes && (
+                    <p className="text-xs text-ctp-red mt-1">
+                      {notesForm.formState.errors.notes.message}
+                    </p>
+                  )}
                   <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={handleSaveNotes}
+                    <Button
+                      type="submit"
                       disabled={updatePlatformMutation.isPending}
-                      className="btn btn-primary"
                     >
                       {updatePlatformMutation.isPending ? "Saving..." : "Save"}
-                    </button>
-                    <button onClick={() => setIsEditingNotes(false)} className="btn btn-secondary">
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      type="button"
+                      onClick={() => {
+                        notesForm.reset({
+                          notes: platform.notes ?? "",
+                        });
+                        setIsEditingNotes(false);
+                      }}
+                    >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
-                </div>
+                </form>
               ) : (
                 <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
                   {platform.notes || "No notes yet"}

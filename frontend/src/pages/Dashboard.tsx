@@ -20,7 +20,7 @@ import { ActivityFeed } from "@/components/ActivityFeed";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
 import { BackButton, PageLayout } from "@/components/layout";
 import { DashboardSidebar } from "@/components/sidebar";
-import { Card, ScrollFade } from "@/components/ui";
+import { Button, Card, ScrollFade } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { gamesAPI } from "@/lib/api";
@@ -370,36 +370,39 @@ export function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-ctp-mauve">Your Activity</h2>
                 <div className="flex gap-1 bg-ctp-surface0 rounded-lg p-1">
-                  <button
+                  <Button
                     onClick={() => setHeatmapType("activity")}
-                    className={`px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
+                    variant="ghost"
+                    className={`h-auto px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
                       heatmapType === "activity"
                         ? "bg-ctp-teal text-ctp-base"
                         : "text-ctp-subtext0 hover:text-ctp-text"
                     }`}
                   >
                     Play Sessions
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setHeatmapType("completion")}
-                    className={`px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
+                    variant="ghost"
+                    className={`h-auto px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
                       heatmapType === "completion"
                         ? "bg-ctp-mauve text-ctp-base"
                         : "text-ctp-subtext0 hover:text-ctp-text"
                     }`}
                   >
                     Completion
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setHeatmapType("achievement")}
-                    className={`px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
+                    variant="ghost"
+                    className={`h-auto px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
                       heatmapType === "achievement"
                         ? "bg-ctp-yellow text-ctp-base"
                         : "text-ctp-subtext0 hover:text-ctp-text"
                     }`}
                   >
                     Achievements
-                  </button>
+                  </Button>
                 </div>
               </div>
               <ActivityHeatmap type={heatmapType} />
@@ -569,13 +572,14 @@ export function Dashboard() {
         {favoriteGames.length > 0 && (
           <Card className="mb-6 bg-ctp-red/10 border-ctp-red/30">
             <h2 className="text-2xl font-bold text-ctp-red mb-4">
-              <button
+              <Button
                 type="button"
-                className="hover:text-ctp-red transition-colors"
+                variant="ghost"
+                className="h-auto p-0 hover:text-ctp-red transition-colors"
                 onClick={() => navigateToLibrary({ favorites: true })}
               >
                 Favorites
-              </button>
+              </Button>
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {favoriteGames.slice(0, 6).map((game) => (

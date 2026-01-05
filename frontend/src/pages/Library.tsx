@@ -1,6 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { useLibraryFilters } from "@/hooks/useLibraryFilters";
+import { useCollections } from "@/hooks/useCollections";
+import { useGames } from "@/hooks/useGames";
 import {
   useReactTable,
   getCoreRowModel,
@@ -17,8 +19,32 @@ import { GameCard } from "@/components/GameCard";
 import { BackButton, PageLayout } from "@/components/layout";
 import { LibrarySidebar } from "@/components/sidebar";
 import { PlatformIcons } from "@/components/PlatformIcon";
-import { Checkbox, ScrollFade, Select } from "@/components/ui";
-import { GameCardSkeleton } from "@/components/ui/Skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  SkeletonCard,
+  Input,
+  ScrollFade,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI, gamesAPI } from "@/lib/api";
 import { SortControl, ActiveFilterPills } from "@/components/filters";
@@ -125,41 +151,37 @@ export function Library() {
     }
   };
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["games", filters],
-    queryFn: async () => {
-      const response = await gamesAPI.getAll({
-        platform: filters.platform || undefined,
-        status: filters.status || undefined,
-        favorites: filters.favorites || undefined,
-        genre: filters.genre.length > 0 ? filters.genre.join(",") : undefined,
-        collection: filters.collection.length > 0 ? filters.collection.join(",") : undefined,
-        franchise: filters.franchise.length > 0 ? filters.franchise.join(",") : undefined,
-        sort: filters.sort || undefined,
-      });
-      return response.data as { games: Game[] };
-    },
-  });
+  const { data, isLoading, error } = useGames(filters);
+  const { data: collectionsData } = useCollections();
 
-  const { data: collectionsData } = useQuery({
-    queryKey: ["collections"],
-    queryFn: async () => {
-      const response = await collectionsAPI.getAll();
-      return response.data as { collections: Collection[] };
-    },
-  });
-
-  const collections = collectionsData?.collections || [];
+  const collections = (collectionsData?.collections as Collection[]) || [];
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (gameIds: string[]) => gamesAPI.bulkDelete(gameIds),
+    onMutate: async (gameIds) => {
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+      const previousGames = queryClient.getQueriesData({ queryKey: ["games"] });
+
+      queryClient.setQueriesData<{ games: Game[] }>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games.filter((game) => !gameIds.includes(game.id)),
+        };
+      });
+
+      return { previousGames };
+    },
     onSuccess: (_, gameIds) => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
       handleExitSelectionMode();
       showToast(`Deleted ${gameIds.length} game(s)`, "success");
       setShowDeleteConfirm(false);
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to delete games", "error");
     },
   });
@@ -167,17 +189,41 @@ export function Library() {
   const bulkAddToCollectionMutation = useMutation({
     mutationFn: ({ collectionId, gameIds }: { collectionId: string; gameIds: string[] }) =>
       collectionsAPI.bulkAddGames(collectionId, gameIds),
+    onMutate: async ({ collectionId, gameIds }) => {
+      await queryClient.cancelQueries({ queryKey: ["collections"] });
+      const previousCollections = queryClient.getQueriesData({ queryKey: ["collections"] });
+
+      queryClient.setQueriesData<{ collections: Collection[] }>(
+        { queryKey: ["collections"] },
+        (oldData) => {
+          if (!oldData?.collections) return oldData;
+        return {
+          ...oldData,
+          collections: oldData.collections.map((collection: Collection) =>
+            collection.id === collectionId
+              ? { ...collection, game_count: collection.game_count + gameIds.length }
+              : collection
+          ),
+        };
+        }
+      );
+
+      return { previousCollections };
+    },
     onSuccess: (_, { gameIds }) => {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
       handleExitSelectionMode();
       showToast(`Added ${gameIds.length} game(s) to collection`, "success");
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      context?.previousCollections?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to add games to collection", "error");
     },
   });
 
-  const games = useMemo(() => data?.games ?? [], [data?.games]);
+  const games = useMemo(() => (data?.games as Game[]) ?? [], [data?.games]);
 
   // Backend now returns aggregated games, use directly
   const aggregatedGames = useMemo(() => {
@@ -318,7 +364,7 @@ export function Library() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <GameCardSkeleton key={i} />
+              <SkeletonCard key={i} />
             ))}
           </div>
         </div>
@@ -330,10 +376,10 @@ export function Library() {
     return (
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="card max-w-md">
+          <Card className="max-w-md p-6">
             <h2 className="text-2xl font-bold text-ctp-red mb-4">Error</h2>
             <p className="text-zinc-400">Failed to load your library. Please try again.</p>
-          </div>
+          </Card>
         </div>
       </PageLayout>
     );
@@ -372,38 +418,41 @@ export function Library() {
 
           {/* Export Buttons */}
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="outline"
               onClick={() => handleExport("json")}
-              className="px-4 py-2 bg-ctp-teal/20 border border-ctp-teal/30 text-ctp-teal hover:bg-ctp-teal/30 rounded transition-all text-sm"
+              className="border-ctp-teal/30 bg-ctp-teal/20 text-ctp-teal hover:bg-ctp-teal/30"
             >
               Export JSON
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => handleExport("csv")}
-              className="px-4 py-2 bg-ctp-green/20 border border-ctp-green/30 text-ctp-green hover:bg-ctp-green/30 rounded transition-all text-sm"
+              className="border-ctp-green/30 bg-ctp-green/20 text-ctp-green hover:bg-ctp-green/30"
             >
               Export CSV
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Search and Column Settings */}
         <div className="mb-6 flex flex-wrap gap-4 items-center">
-          <input
+          <Input
             type="text"
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
             placeholder="Search games..."
             aria-label="Search games in your library"
-            className="input flex-1 min-w-[200px]"
+            className="min-w-[200px] flex-1"
           />
 
           {/* Column Visibility (Table View Only) */}
           {viewMode === "table" && (
             <div className="relative">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className="flex items-center gap-2 px-3 py-2 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg hover:border-ctp-mauve transition-colors text-sm text-ctp-subtext1"
+                className="border-ctp-surface1 bg-ctp-surface0/50 text-sm text-ctp-subtext1 hover:border-ctp-mauve"
                 aria-expanded={showColumnSettings}
                 aria-controls="column-settings"
               >
@@ -427,7 +476,7 @@ export function Library() {
                   />
                 </svg>
                 Columns
-              </button>
+              </Button>
               {showColumnSettings && (
                 <div
                   id="column-settings"
@@ -441,7 +490,9 @@ export function Library() {
                       >
                         <Checkbox
                           checked={column.getIsVisible()}
-                          onChange={column.getToggleVisibilityHandler()}
+                          onCheckedChange={(checked) =>
+                            column.toggleVisibility(checked === true)
+                          }
                         />
                         <span className="text-zinc-300">
                           {COLUMN_LABELS[column.id] ?? column.id}
@@ -484,9 +535,11 @@ export function Library() {
                   currentSort={filters.sort}
                   onSortChange={(s) => setFilter("sort", s)}
                 />
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setSelectionMode(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-ctp-text border border-zinc-700 hover:border-zinc-500 rounded transition-all"
+                  className="h-auto border-zinc-700 text-sm text-zinc-400 hover:border-zinc-500 hover:text-ctp-text"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -503,7 +556,7 @@ export function Library() {
                     />
                   </svg>
                   Select
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -512,16 +565,20 @@ export function Library() {
               Items per page:
             </label>
             <Select
-              id="pageSize"
-              value={table.getState().pagination.pageSize}
-              onChange={(value) => table.setPageSize(Number(value))}
-              options={PAGE_SIZE_OPTIONS.map((size) => ({
-                value: size,
-                label: String(size),
-              }))}
-              showCheckmark={false}
-              className="min-w-[90px] text-sm"
-            />
+              value={String(table.getState().pagination.pageSize)}
+              onValueChange={(value) => table.setPageSize(Number(value))}
+            >
+              <SelectTrigger id="pageSize" className="min-w-[90px] text-sm">
+                <SelectValue placeholder="Select size" />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -535,114 +592,129 @@ export function Library() {
                   : "Select games to manage"}
               </span>
               {filteredGames.length > 0 && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
-                  className="text-sm text-zinc-400 hover:text-ctp-text"
+                  className="h-auto px-2 text-sm text-zinc-400 hover:text-ctp-text hover:bg-transparent"
                 >
                   {allFilteredSelected ? "Deselect all" : "Select all"}
-                </button>
+                </Button>
               )}
               {selectedGameIds.length > 0 && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setRowSelection({})}
-                  className="text-sm text-zinc-400 hover:text-ctp-text"
+                  className="h-auto px-2 text-sm text-zinc-400 hover:text-ctp-text hover:bg-transparent"
                 >
                   Clear
-                </button>
+                </Button>
               )}
             </div>
             <div className="flex items-center gap-2">
               {selectedGameIds.length > 0 && (
                 <>
                   {/* Add to Collection */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
-                      className="px-3 py-1.5 bg-ctp-teal/20 border border-ctp-teal/30 text-ctp-teal hover:bg-ctp-teal/30 rounded text-sm transition-all"
+                  <DropdownMenu
+                    open={showCollectionDropdown}
+                    onOpenChange={setShowCollectionDropdown}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-auto border-ctp-teal/30 bg-ctp-teal/20 text-ctp-teal hover:bg-ctp-teal/30"
+                      >
+                        Add to Collection
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="min-w-[200px] border-ctp-surface1 bg-ctp-mantle"
                     >
-                      Add to Collection
-                    </button>
-                    {showCollectionDropdown && (
-                      <div className="absolute top-full right-0 mt-2 p-2 bg-ctp-mantle border border-ctp-surface1 rounded-lg shadow-lg z-20 min-w-[200px]">
-                        {collections.length === 0 ? (
-                          <p className="text-sm text-zinc-400 px-2 py-1">No collections yet</p>
-                        ) : (
-                          <div className="flex flex-col gap-1">
-                            {collections.map((collection) => (
-                              <button
-                                key={collection.id}
-                                onClick={() =>
-                                  bulkAddToCollectionMutation.mutate({
-                                    collectionId: collection.id,
-                                    gameIds: selectedGameIds,
-                                  })
-                                }
-                                disabled={bulkAddToCollectionMutation.isPending}
-                                className="text-left px-3 py-2 text-sm text-ctp-subtext1 hover:bg-ctp-surface1 hover:text-ctp-text rounded transition-colors"
-                              >
-                                {collection.name}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      {collections.length === 0 ? (
+                        <div className="px-2 py-1 text-sm text-zinc-400">
+                          No collections yet
+                        </div>
+                      ) : (
+                        collections.map((collection) => (
+                          <DropdownMenuItem
+                            key={collection.id}
+                            onClick={() =>
+                              bulkAddToCollectionMutation.mutate({
+                                collectionId: collection.id,
+                                gameIds: selectedGameIds,
+                              })
+                            }
+                            disabled={bulkAddToCollectionMutation.isPending}
+                          >
+                            {collection.name}
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   {/* Delete */}
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-3 py-1.5 bg-ctp-red/20 border border-ctp-red/30 text-ctp-red hover:bg-ctp-red/30 rounded text-sm transition-all"
+                    className="h-auto border-ctp-red/30 bg-ctp-red/20 text-ctp-red hover:bg-ctp-red/30"
                   >
                     Delete
-                  </button>
+                  </Button>
                 </>
               )}
 
               {/* Cancel/Done */}
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={handleExitSelectionMode}
-                className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-ctp-text rounded text-sm transition-all"
+                className="h-auto bg-zinc-700 text-ctp-text hover:bg-zinc-600"
               >
                 Done
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-ctp-base/50 flex items-center justify-center z-50">
-            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold mb-4">Delete Games</h3>
-              <p className="text-zinc-400 mb-6">
-                Are you sure you want to delete {selectedGameIds.length} game(s) from your library?
-                This action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowDeleteConfirm(false)} className="btn btn-secondary">
-                  Cancel
-                </button>
-                <button
-                  onClick={() => bulkDeleteMutation.mutate(selectedGameIds)}
-                  disabled={bulkDeleteMutation.isPending}
-                  className="px-4 py-2 bg-ctp-red text-ctp-base hover:bg-ctp-red/80 rounded transition-all"
-                >
-                  {bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-ctp-text">
+                Delete Games
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-zinc-400">
+                Are you sure you want to delete {selectedGameIds.length} game(s) from your
+                library? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <AlertDialogCancel className="border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => bulkDeleteMutation.mutate(selectedGameIds)}
+                className="bg-ctp-red text-ctp-base hover:bg-ctp-red/90"
+              >
+                {bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {games.length === 0 ? (
-          <div className="card text-center py-12">
+          <Card className="py-12 text-center">
             <h2 className="text-2xl font-bold mb-4">No Games Yet</h2>
             <p className="text-zinc-400 mb-6">Start building your library by importing games</p>
-            <Link to="/import" className="btn btn-primary inline-block">
-              Import Games
-            </Link>
-          </div>
+            <Button asChild>
+              <Link to="/import">Import Games</Link>
+            </Button>
+          </Card>
         ) : viewMode === "grid" ? (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
@@ -661,7 +733,7 @@ export function Library() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className={`card cursor-pointer transition-all relative p-0 sm:p-4 ${
+                      className={`rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 cursor-pointer transition-all relative p-0 sm:p-4 ${
                         isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-zinc-500"
                       }`}
                     >
@@ -725,10 +797,10 @@ export function Library() {
                               size="sm"
                               maxDisplay={5}
                             />
-                            <span className="badge text-zinc-400 border-zinc-600">
+                            <Badge className="border border-zinc-600 text-zinc-400">
                               {row.original.status.charAt(0).toUpperCase() +
                                 row.original.status.slice(1)}
-                            </span>
+                            </Badge>
                           </div>
                           {row.original.metacritic_score && (
                             <div className="flex items-center gap-1 text-sm text-zinc-400">
@@ -765,30 +837,31 @@ export function Library() {
 
             {table.getPageCount() > 1 && (
               <div className="flex justify-center items-center gap-4">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
-                  className="btn btn-secondary"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="text-zinc-400">
                   Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </span>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
-                  className="btn btn-secondary"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </>
         ) : (
           <>
-            <ScrollFade axis="x" className="card overflow-x-auto">
-              <table className="w-full">
+            <Card className="p-0">
+              <ScrollFade axis="x" className="overflow-x-auto">
+                <table className="w-full">
                 <thead>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id} className="border-b border-zinc-700">
@@ -832,28 +905,29 @@ export function Library() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </ScrollFade>
+                </table>
+              </ScrollFade>
+            </Card>
 
             {table.getPageCount() > 1 && (
               <div className="flex justify-center items-center gap-4 mt-6">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
-                  className="btn btn-secondary"
                 >
                   Previous
-                </button>
+                </Button>
                 <span className="text-zinc-400">
                   Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </span>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
-                  className="btn btn-secondary"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </>

@@ -3,8 +3,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BackButton, PageLayout } from "@/components/layout";
 import { ImportSidebar } from "@/components/sidebar";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { ScrollFade } from "@/components/ui/ScrollFade";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  ScrollFade,
+  Textarea,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { importAPI, userPlatformsAPI } from "@/lib/api";
 
@@ -302,36 +313,37 @@ export function Import() {
         </p>
 
         {platforms.length === 0 && (
-          <div className="card mb-8">
+          <Card className="mb-8 p-6">
             <p className="text-ctp-subtext0">
               You have not selected any platforms yet. Choose your platforms to start importing.
             </p>
             <div className="mt-4">
-              <Link to="/platforms" className="btn btn-primary">
-                Choose Platforms
-              </Link>
+              <Button asChild>
+                <Link to="/platforms">Choose Platforms</Link>
+              </Button>
             </div>
-          </div>
+          </Card>
         )}
 
-        <div className="card mb-8">
+        <Card className="mb-8 p-6">
           <div className="mb-6">
             <p className="block text-sm font-medium mb-3">Platform (Required)</p>
             <div className="flex gap-2 flex-wrap">
               {platforms.map((platform) => (
-                <button
+                <Button
                   key={platform.id}
+                  variant={selectedPlatform === platform.id ? "default" : "outline"}
                   type="button"
                   onClick={() => setSelectedPlatform(platform.id)}
                   disabled={importMutation.isPending}
-                  className={`px-4 py-2 rounded border transition-all ${
+                  className={
                     selectedPlatform === platform.id
-                      ? "bg-ctp-mauve border-ctp-mauve text-ctp-base shadow-glow-purple"
+                      ? "bg-ctp-mauve border-ctp-mauve text-ctp-base shadow-glow-purple hover:bg-ctp-mauve/90"
                       : "bg-ctp-mantle border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
-                  }`}
+                  }
                 >
                   {platform.display_name}
-                </button>
+                </Button>
               ))}
             </div>
             {selectedPlatform && (
@@ -345,42 +357,41 @@ export function Import() {
           <label className="block text-sm font-medium mb-2" htmlFor="import-game-names">
             Game Names
           </label>
-          <textarea
+          <Textarea
             id="import-game-names"
             value={gameNames}
             onChange={(e) => setGameNames(e.target.value)}
-            className="input w-full min-h-[300px] font-mono text-sm"
+            className="min-h-[300px] font-mono text-sm"
             placeholder={"The Witcher 3\nGod of War\nHalo Infinite\nCyberpunk 2077\nElden Ring"}
             disabled={importMutation.isPending}
           />
 
           <div className="mt-4 flex gap-4">
-            <button
+            <Button
               onClick={handleImport}
               disabled={importMutation.isPending || !gameNames.trim() || !selectedPlatform}
-              className="btn btn-primary"
             >
               {importMutation.isPending ? "Importing..." : "Import Games"}
-            </button>
+            </Button>
 
             {results && results.imported.length > 0 && results.needsReview.length === 0 && (
-              <Link to="/library" className="btn btn-primary">
-                View Library
-              </Link>
+              <Button asChild>
+                <Link to="/library">View Library</Link>
+              </Button>
             )}
 
             {results && (
-              <button
+              <Button
                 onClick={() => {
                   setGameNames("");
                   setResults(null);
                   setSelectedCandidates([]);
                   setIsSelectionModalOpen(false);
                 }}
-                className="btn btn-secondary"
+                variant="secondary"
               >
                 Clear
-              </button>
+              </Button>
             )}
           </div>
 
@@ -389,21 +400,21 @@ export function Import() {
               Failed to import games. Please try again.
             </div>
           )}
-        </div>
+        </Card>
 
         {importMutation.isPending && (
-          <div className="card">
+          <Card className="p-6">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 border-2 border-ctp-mauve border-t-transparent rounded-full animate-spin" />
               <span className="text-ctp-subtext0">Importing and enriching games...</span>
             </div>
-          </div>
+          </Card>
         )}
 
         {results && (
           <div className="space-y-6">
             {results.imported.length > 0 && (
-              <div className="card">
+              <Card className="p-6">
                 <h2 className="text-2xl font-bold mb-4 text-ctp-green">
                   Successfully Imported ({results.imported.length})
                 </h2>
@@ -448,11 +459,11 @@ export function Import() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
 
             {results.needsReview.length > 0 && (
-              <div className="card">
+              <Card className="p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-bold text-ctp-yellow">
@@ -463,138 +474,136 @@ export function Import() {
                       once.
                     </p>
                   </div>
-                  <button
+                  <Button
                     onClick={() => setIsSelectionModalOpen(true)}
-                    className="btn btn-secondary text-sm px-3 py-1"
+                    variant="secondary"
+                    size="sm"
                   >
                     Review selections
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             )}
           </div>
         )}
       </div>
 
-      {results && results.needsReview.length > 0 && isSelectionModalOpen && (
-        <div className="fixed inset-0 bg-ctp-base/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-3xl w-full max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-ctp-text">
-                  Select games ({selectedCandidates.length} selected)
-                </h2>
-                <p className="text-sm text-ctp-subtext0 mt-2">
-                  Select each match and import in bulk when ready.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsSelectionModalOpen(false)}
-                className="text-ctp-subtext0 hover:text-ctp-text"
-              >
-                Close
-              </button>
-            </div>
+      <Dialog
+        open={results !== null && results.needsReview.length > 0 && isSelectionModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsSelectionModalOpen(false);
+          }
+        }}
+      >
+        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col bg-ctp-mantle border-ctp-surface1">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-ctp-text">
+              Select games ({selectedCandidates.length} selected)
+            </DialogTitle>
+            <DialogDescription>
+              Select each match and import in bulk when ready.
+            </DialogDescription>
+          </DialogHeader>
 
-            <ScrollFade axis="y" className="flex-1 overflow-y-auto space-y-2 pr-2">
-              {results.needsReview.some((item) => item.error) && (
-                <div className="p-3 bg-ctp-red/10 border border-ctp-red/30 rounded text-sm text-ctp-red">
-                  Some items failed to search. You can retry those imports later.
-                </div>
-              )}
-              {getSelectionList(results.needsReview).length === 0 ? (
-                <div className="text-sm text-ctp-subtext0 text-center py-6">
-                  No matches found for the imported names.
-                </div>
-              ) : (
-                getSelectionList(results.needsReview).map(({ candidate, searchTerm }) => {
-                  const isSelected = selectedCandidates.includes(candidate.id);
-                  return (
-                    <div
-                      key={`${searchTerm}-${candidate.id}`}
-                      className={`flex items-center gap-3 p-3 rounded border transition-colors ${
-                        isSelected
-                          ? "border-ctp-mauve bg-ctp-mauve/10"
-                          : "border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1"
-                      }`}
-                    >
-                      <Checkbox
-                        id={`import-select-${candidate.id}`}
-                        checked={isSelected}
-                        onChange={() => toggleCandidateSelection(candidate.id)}
-                        disabled={bulkSelectMutation.isPending || selectMutation.isPending}
+          <ScrollFade axis="y" className="flex-1 overflow-y-auto space-y-2 pr-2">
+            {results?.needsReview.some((item) => item.error) && (
+              <div className="p-3 bg-ctp-red/10 border border-ctp-red/30 rounded text-sm text-ctp-red">
+                Some items failed to search. You can retry those imports later.
+              </div>
+            )}
+            {results && getSelectionList(results.needsReview).length === 0 ? (
+              <div className="text-sm text-ctp-subtext0 text-center py-6">
+                No matches found for the imported names.
+              </div>
+            ) : (
+              results &&
+              getSelectionList(results.needsReview).map(({ candidate, searchTerm }) => {
+                const isSelected = selectedCandidates.includes(candidate.id);
+                return (
+                  <div
+                    key={`${searchTerm}-${candidate.id}`}
+                    className={`flex items-center gap-3 p-3 rounded border transition-colors ${
+                      isSelected
+                        ? "border-ctp-mauve bg-ctp-mauve/10"
+                        : "border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1"
+                    }`}
+                  >
+                    <Checkbox
+                      id={`import-select-${candidate.id}`}
+                      checked={isSelected}
+                      onChange={() => toggleCandidateSelection(candidate.id)}
+                      disabled={bulkSelectMutation.isPending || selectMutation.isPending}
+                    />
+                    {candidate.background_image ? (
+                      <img
+                        src={candidate.background_image}
+                        alt={candidate.name}
+                        className="w-12 h-12 object-cover rounded"
                       />
-                      {candidate.background_image ? (
-                        <img
-                          src={candidate.background_image}
-                          alt={candidate.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-ctp-surface0 rounded flex items-center justify-center text-ctp-overlay1 text-xs">
-                          No image
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{candidate.name}</p>
-                        <div className="text-xs text-ctp-overlay1 flex items-center gap-2">
-                          {candidate.released && <span>{candidate.released}</span>}
-                          <span className="text-ctp-subtext0">From: {searchTerm}</span>
-                        </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-ctp-surface0 rounded flex items-center justify-center text-ctp-overlay1 text-xs">
+                        No image
                       </div>
-                      <button
-                        onClick={() => {
-                          setActiveSelectionId(candidate.id);
-                          selectMutation.mutate({
-                            rawgId: candidate.id,
-                            platformId: selectedPlatform,
-                          });
-                        }}
-                        disabled={
-                          bulkSelectMutation.isPending ||
-                          (selectMutation.isPending && activeSelectionId !== candidate.id)
-                        }
-                        className="btn btn-primary text-sm px-3 py-1"
-                      >
-                        {selectMutation.isPending && activeSelectionId === candidate.id
-                          ? "Importing..."
-                          : "Select"}
-                      </button>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{candidate.name}</p>
+                      <div className="text-xs text-ctp-overlay1 flex items-center gap-2">
+                        {candidate.released && <span>{candidate.released}</span>}
+                        <span className="text-ctp-subtext0">From: {searchTerm}</span>
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </ScrollFade>
+                    <Button
+                      onClick={() => {
+                        setActiveSelectionId(candidate.id);
+                        selectMutation.mutate({
+                          rawgId: candidate.id,
+                          platformId: selectedPlatform,
+                        });
+                      }}
+                      disabled={
+                        bulkSelectMutation.isPending ||
+                        (selectMutation.isPending && activeSelectionId !== candidate.id)
+                      }
+                      size="sm"
+                    >
+                      {selectMutation.isPending && activeSelectionId === candidate.id
+                        ? "Importing..."
+                        : "Select"}
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </ScrollFade>
 
-            <div className="flex items-center justify-between gap-3 mt-6">
-              <div className="text-sm text-ctp-subtext0">{selectedCandidates.length} selected</div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelectedCandidates([])}
-                  disabled={selectedCandidates.length === 0}
-                  className="btn btn-secondary"
-                >
-                  Clear selection
-                </button>
-                <button
-                  onClick={handleImportSelected}
-                  disabled={
-                    selectedCandidates.length === 0 ||
-                    !selectedPlatform ||
-                    bulkSelectMutation.isPending ||
-                    selectMutation.isPending
-                  }
-                  className="btn btn-primary"
-                >
-                  {bulkSelectMutation.isPending
-                    ? "Importing..."
-                    : `Import selected (${selectedCandidates.length})`}
-                </button>
-              </div>
+          <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
+            <div className="text-sm text-ctp-subtext0">{selectedCandidates.length} selected</div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setSelectedCandidates([])}
+                disabled={selectedCandidates.length === 0}
+                variant="secondary"
+              >
+                Clear selection
+              </Button>
+              <Button
+                onClick={handleImportSelected}
+                disabled={
+                  selectedCandidates.length === 0 ||
+                  !selectedPlatform ||
+                  bulkSelectMutation.isPending ||
+                  selectMutation.isPending
+                }
+              >
+                {bulkSelectMutation.isPending
+                  ? "Importing..."
+                  : `Import selected (${selectedCandidates.length})`}
+              </Button>
             </div>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

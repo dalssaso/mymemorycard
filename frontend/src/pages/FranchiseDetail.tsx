@@ -3,8 +3,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "@tanstack/react-router";
 import { BackButton, PageLayout } from "@/components/layout";
 import { FranchiseDetailSidebar } from "@/components/sidebar";
-import { Button, Card, Checkbox, ScrollFade, useToast } from "@/components/ui";
-import { franchisesAPI, userPlatformsAPI, type OwnedGame, type MissingGame } from "@/lib/api";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  ScrollFade,
+} from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { franchisesAPI, type OwnedGame, type MissingGame } from "@/lib/api";
+import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 
 const STATUS_COLORS: Record<string, string> = {
   backlog: "bg-gray-600",
@@ -13,14 +26,6 @@ const STATUS_COLORS: Record<string, string> = {
   completed: "bg-ctp-mauve",
   dropped: "bg-ctp-red",
 };
-
-interface UserPlatform {
-  id: string;
-  platform_id: string;
-  name: string;
-  display_name: string;
-  platform_type: string | null;
-}
 
 export function FranchiseDetail() {
   const { seriesName } = useParams({ from: "/franchises/$seriesName" });
@@ -39,13 +44,7 @@ export function FranchiseDetail() {
     },
   });
 
-  const { data: platformsData } = useQuery({
-    queryKey: ["user-platforms"],
-    queryFn: async () => {
-      const response = await userPlatformsAPI.getAll();
-      return response.data as { platforms: UserPlatform[] };
-    },
-  });
+  const { data: platformsData } = useUserPlatforms();
 
   const importMutation = useMutation({
     mutationFn: async ({
@@ -327,26 +326,32 @@ export function FranchiseDetail() {
               <div className="flex items-center gap-2">
                 {selectionMode ? (
                   <>
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={handleSelectAll}
-                      className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
+                      className="bg-ctp-surface1 text-ctp-text hover:bg-gray-600"
                     >
                       {selectedGames.size === missing_games.length ? "Deselect All" : "Select All"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={handleExitSelectionMode}
-                      className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
+                      className="bg-ctp-surface1 text-ctp-text hover:bg-gray-600"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setSelectionMode(true)}
-                    className="px-3 py-1.5 bg-ctp-mauve/20 border border-ctp-mauve/30 text-ctp-mauve hover:bg-ctp-mauve/30 rounded text-sm transition-all"
+                    className="border-ctp-mauve/30 bg-ctp-mauve/20 text-ctp-mauve hover:bg-ctp-mauve/30"
                   >
                     Select Games
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -459,72 +464,73 @@ export function FranchiseDetail() {
         )}
 
         {/* Platform Selection Modal */}
-        {selectedGame && (
-          <div className="fixed inset-0 bg-ctp-base/70 flex items-start md:items-center justify-center z-[60] overflow-y-auto px-4 py-6 pb-24 md:pb-6 scroll-container scrollbar-custom">
-            <button
-              type="button"
-              aria-label="Close platform selection"
-              className="absolute inset-0"
-              onClick={() => setSelectedGame(null)}
-            />
-            <div className="relative bg-ctp-mantle rounded-xl p-6 max-w-md w-full border border-ctp-surface1">
-              <h3 className="text-xl font-bold text-ctp-text mb-2">
+        <Dialog
+          open={Boolean(selectedGame)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedGame(null);
+            }
+          }}
+        >
+          <DialogContent className="max-w-md border-ctp-surface1 bg-ctp-mantle">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-ctp-text">
                 {isBulkImport ? "Bulk Import" : "Add to Library"}
-              </h3>
-              <p className="text-ctp-subtext0 mb-4">
+              </DialogTitle>
+              <DialogDescription className="text-ctp-subtext0">
                 {isBulkImport
                   ? `Import ${selectedGames.size} selected game${selectedGames.size !== 1 ? "s" : ""}`
-                  : selectedGame.name}
-              </p>
-              <p className="text-sm text-ctp-overlay1 mb-4">Select platform(s):</p>
-              <ScrollFade axis="y" className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                {platforms.map((platform) => {
-                  const isSelected = selectedPlatformIds.has(platform.id);
-                  return (
-                    <label
-                      key={platform.id}
-                      className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
-                        isSelected
-                          ? "border-ctp-mauve bg-ctp-mauve/20 text-ctp-mauve"
-                          : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1 hover:border-ctp-mauve/60"
-                      }`}
-                    >
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={() => togglePlatformSelection(platform.id)}
-                        disabled={importMutation.isPending || bulkImportMutation.isPending}
-                      />
-                      <span>{platform.display_name}</span>
-                    </label>
-                  );
-                })}
-              </ScrollFade>
-              <div className="flex items-center gap-2 mt-4">
-                <Button
-                  onClick={handleConfirmImport}
-                  disabled={
-                    selectedPlatformIds.size === 0 ||
-                    importMutation.isPending ||
-                    bulkImportMutation.isPending
-                  }
-                  className="flex-1"
-                >
-                  Import
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setSelectedGame(null);
-                    setSelectedPlatformIds(new Set());
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+                  : selectedGame?.name}
+              </DialogDescription>
+            </DialogHeader>
+            <p className="text-sm text-ctp-overlay1">Select platform(s):</p>
+            <ScrollFade axis="y" className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+              {platforms.map((platform) => {
+                const isSelected = selectedPlatformIds.has(platform.id);
+                return (
+                  <label
+                    key={platform.id}
+                    className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
+                      isSelected
+                        ? "border-ctp-mauve bg-ctp-mauve/20 text-ctp-mauve"
+                        : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1 hover:border-ctp-mauve/60"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => togglePlatformSelection(platform.id)}
+                      disabled={importMutation.isPending || bulkImportMutation.isPending}
+                    />
+                    <span>{platform.display_name}</span>
+                  </label>
+                );
+              })}
+            </ScrollFade>
+            <DialogFooter className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <Button
+                onClick={handleConfirmImport}
+                disabled={
+                  selectedPlatformIds.size === 0 ||
+                  importMutation.isPending ||
+                  bulkImportMutation.isPending
+                }
+                className="flex-1"
+              >
+                Import
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSelectedGame(null);
+                  setSelectedPlatformIds(new Set());
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PageLayout>
   );

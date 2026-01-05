@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { completionLogsAPI, gamesAPI, sessionsAPI, userPlatformsAPI } from "@/lib/api";
+import { completionLogsAPI, gamesAPI, sessionsAPI } from "@/lib/api";
 import { BackButton, PageLayout } from "@/components/layout";
 import { GameDetailSidebar } from "@/components/sidebar";
 import { useToast } from "@/components/ui/Toast";
+import { Button, Input, Textarea } from "@/components/ui";
 import { GameAchievements } from "@/components/GameAchievements";
 import { PlatformIconBadge } from "@/components/PlatformIcon";
 import { StartSessionButton } from "@/components/StartSessionButton";
@@ -15,6 +16,7 @@ import { EditionOwnership } from "@/components/EditionOwnership";
 import { EditionSwitcher } from "@/components/EditionSwitcher";
 import { FranchisePreview } from "@/components/FranchisePreview";
 import { RawgIdCorrection } from "@/components/RawgIdCorrection";
+import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 
 interface GameDetails {
   id: string;
@@ -42,14 +44,16 @@ interface GameDetails {
   expected_playtime: number | null;
 }
 
-interface UserPlatform {
+interface GamesQueryItem {
   id: string;
-  platform_id: string;
-  name: string;
-  display_name: string;
-  platform_type: string | null;
-  color_primary: string;
-  default_icon_url: string | null;
+  status?: string;
+  is_favorite?: boolean;
+  is_favorite_any?: boolean;
+  platforms?: Array<{ id?: string; platform_id?: string }>;
+}
+
+interface GamesQueryData {
+  games: GamesQueryItem[];
 }
 
 const STATUS_OPTIONS = [
@@ -147,13 +151,7 @@ export function GameDetail() {
     },
   });
 
-  const { data: userPlatformsData } = useQuery({
-    queryKey: ["user-platforms"],
-    queryFn: async () => {
-      const response = await userPlatformsAPI.getAll();
-      return response.data as { platforms: UserPlatform[] };
-    },
-  });
+  const { data: userPlatformsData } = useUserPlatforms();
 
   const mutationPlatformId = selectedPlatformId || data?.game?.platform_id || "";
 
@@ -212,12 +210,54 @@ export function GameDetail() {
   const updateStatusMutation = useMutation({
     mutationFn: ({ platformId, status }: { platformId: string; status: string }) =>
       gamesAPI.updateStatus(id, platformId, status),
+    onMutate: async ({ platformId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["game", id] });
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+
+      const previousGame = queryClient.getQueryData<{
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      }>(["game", id]);
+      const previousGames = queryClient.getQueriesData<GamesQueryData>({
+        queryKey: ["games"],
+      });
+
+      if (previousGame) {
+        queryClient.setQueryData(["game", id], {
+          ...previousGame,
+          game:
+            previousGame.game.platform_id === platformId
+              ? { ...previousGame.game, status }
+              : previousGame.game,
+          platforms: previousGame.platforms.map((platform) =>
+            platform.platform_id === platformId ? { ...platform, status } : platform
+          ),
+        });
+      }
+
+      queryClient.setQueriesData<GamesQueryData>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games.map((game) => (game.id === id ? { ...game, status } : game)),
+        };
+      });
+
+      return { previousGame, previousGames };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["game", id] });
       queryClient.invalidateQueries({ queryKey: ["games"] });
       showToast("Status updated successfully", "success");
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousGame) {
+        queryClient.setQueryData(["game", id], context.previousGame);
+      }
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to update status", "error");
     },
   });
@@ -251,18 +291,126 @@ export function GameDetail() {
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ platformId, isFavorite }: { platformId: string; isFavorite: boolean }) =>
       gamesAPI.toggleFavorite(id, platformId, isFavorite),
+    onMutate: async ({ platformId, isFavorite }) => {
+      await queryClient.cancelQueries({ queryKey: ["game", id] });
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+
+      const previousGame = queryClient.getQueryData<{
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      }>(["game", id]);
+      const previousGames = queryClient.getQueriesData<GamesQueryData>({
+        queryKey: ["games"],
+      });
+
+      if (previousGame) {
+        queryClient.setQueryData(["game", id], {
+          ...previousGame,
+          game:
+            previousGame.game.platform_id === platformId
+              ? { ...previousGame.game, is_favorite: isFavorite }
+              : previousGame.game,
+          platforms: previousGame.platforms.map((platform) =>
+            platform.platform_id === platformId
+              ? { ...platform, is_favorite: isFavorite }
+              : platform
+          ),
+        });
+      }
+
+      queryClient.setQueriesData<GamesQueryData>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games.map((game) =>
+            game.id === id
+              ? {
+                  ...game,
+                  is_favorite_any:
+                    typeof game.is_favorite_any === "boolean"
+                      ? isFavorite
+                      : game.is_favorite_any,
+                  is_favorite:
+                    typeof game.is_favorite === "boolean" ? isFavorite : game.is_favorite,
+                }
+              : game
+          ),
+        };
+      });
+
+      return { previousGame, previousGames };
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["game", id] });
       queryClient.invalidateQueries({ queryKey: ["games"] });
       showToast(variables.isFavorite ? "Added to favorites" : "Removed from favorites", "success");
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousGame) {
+        queryClient.setQueryData(["game", id], context.previousGame);
+      }
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to update favorite status", "error");
     },
   });
 
   const deleteGameMutation = useMutation({
     mutationFn: ({ platformId }: { platformId: string }) => gamesAPI.delete(id, platformId),
+    onMutate: async ({ platformId }) => {
+      await queryClient.cancelQueries({ queryKey: ["game", id] });
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+
+      const previousGame = queryClient.getQueryData<{
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      }>(["game", id]);
+      const previousGames = queryClient.getQueriesData<GamesQueryData>({
+        queryKey: ["games"],
+      });
+
+      if (previousGame) {
+        const remainingPlatforms = previousGame.platforms.filter(
+          (platform) => platform.platform_id !== platformId
+        );
+        queryClient.setQueryData(["game", id], {
+          ...previousGame,
+          platforms: remainingPlatforms,
+          game:
+            previousGame.game.platform_id === platformId && remainingPlatforms.length > 0
+              ? remainingPlatforms[0]
+              : previousGame.game,
+        });
+      }
+
+      queryClient.setQueriesData<GamesQueryData>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games
+            .map((game) => {
+              if (game.id !== id) return game;
+              if (Array.isArray(game.platforms)) {
+                const remaining = game.platforms.filter(
+                  (platform) =>
+                    platform.id !== platformId && platform.platform_id !== platformId
+                );
+                if (remaining.length === 0) {
+                  return null;
+                }
+                return { ...game, platforms: remaining };
+              }
+              return game;
+            })
+            .filter((game): game is GamesQueryItem => Boolean(game)),
+        };
+      });
+
+      return { previousGame, previousGames };
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
       queryClient.invalidateQueries({ queryKey: ["game", id] });
@@ -275,7 +423,13 @@ export function GameDetail() {
         setSelectedPlatformId(remainingPlatforms[0].platform_id);
       }
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousGame) {
+        queryClient.setQueryData(["game", id], context.previousGame);
+      }
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to remove game", "error");
     },
   });
@@ -511,11 +665,12 @@ export function GameDetail() {
                   {platforms.map((platform) => {
                     const isActivePlatform = platform.platform_id === activePlatformId;
                     return (
-                      <button
+                      <Button
                         key={platform.platform_id}
                         type="button"
                         onClick={() => handlePlatformChange(platform.platform_id)}
-                        className={`px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border ${
+                        variant="ghost"
+                        className={`h-auto px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border ${
                           isActivePlatform
                             ? "bg-ctp-teal/15 border-ctp-teal/50"
                             : "bg-ctp-mauve/10 border-ctp-mauve/30 hover:bg-ctp-mauve/20"
@@ -552,7 +707,7 @@ export function GameDetail() {
                             <span className="sr-only">Tracking progress on this platform</span>
                           </span>
                         )}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -570,14 +725,15 @@ export function GameDetail() {
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {availablePlatforms.map((platform) => (
-                        <button
+                        <Button
                           key={platform.platform_id}
                           type="button"
                           onClick={() =>
                             addToPlatformMutation.mutate({ platformId: platform.platform_id })
                           }
                           disabled={addToPlatformMutation.isPending}
-                          className="px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border border-dashed border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-mauve/50 hover:bg-ctp-mauve/10 disabled:opacity-50"
+                          variant="ghost"
+                          className="h-auto px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border border-dashed border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-mauve/50 hover:bg-ctp-mauve/10 disabled:opacity-50"
                         >
                           <PlatformIconBadge
                             platform={{
@@ -601,7 +757,7 @@ export function GameDetail() {
                               d="M12 4.5v15m7.5-7.5h-15"
                             />
                           </svg>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -623,7 +779,7 @@ export function GameDetail() {
                 Status
               </label>
               <div className="relative" ref={statusMenuRef}>
-                <button
+                <Button
                   id="game-status"
                   type="button"
                   aria-haspopup="listbox"
@@ -631,7 +787,8 @@ export function GameDetail() {
                   aria-describedby="status-description"
                   onClick={() => setIsStatusOpen((open) => !open)}
                   disabled={updateStatusMutation.isPending}
-                  className="w-full flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-ctp-text transition focus:outline-none focus:border-ctp-mauve disabled:opacity-60"
+                  variant="ghost"
+                  className="h-auto w-full flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-ctp-text transition focus:outline-none focus:border-ctp-mauve disabled:opacity-60"
                   style={getStatusSurfaceStyle(activeStatusOption)}
                 >
                   <span className="flex items-center gap-2">
@@ -654,14 +811,15 @@ export function GameDetail() {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-                </button>
+                </Button>
 
                 {isStatusOpen && (
                   <>
-                    <button
+                    <Button
                       type="button"
                       aria-label="Close status menu"
-                      className="fixed inset-0 z-40"
+                      variant="ghost"
+                      className="fixed inset-0 z-40 h-auto w-auto bg-transparent p-0 hover:bg-transparent"
                       onClick={() => setIsStatusOpen(false)}
                     />
                     <div
@@ -671,7 +829,7 @@ export function GameDetail() {
                     >
                       <div className="grid gap-2">
                         {STATUS_OPTIONS.map((option) => (
-                          <button
+                          <Button
                             key={option.value}
                             type="button"
                             role="option"
@@ -682,7 +840,8 @@ export function GameDetail() {
                                 handleStatusChange(option.value);
                               }
                             }}
-                            className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
+                            variant="ghost"
+                            className={`h-auto w-full flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
                               option.value === activeStatus ? "ring-1 ring-ctp-mauve" : ""
                             }`}
                             style={getStatusSurfaceStyle(option)}
@@ -709,7 +868,7 @@ export function GameDetail() {
                                 />
                               </svg>
                             )}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -732,8 +891,8 @@ export function GameDetail() {
                 <div className="mt-2">
                   {showPlaytimeInput ? (
                     <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <input
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <Input
                           type="number"
                           inputMode="numeric"
                           min={0}
@@ -741,10 +900,10 @@ export function GameDetail() {
                           placeholder="Hours"
                           value={playtimeHours}
                           onChange={(event) => setPlaytimeHours(event.target.value)}
-                          className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-2 py-1 text-sm text-ctp-text focus:outline-none focus:border-ctp-teal"
+                          className="bg-ctp-mantle border-ctp-surface1 text-sm focus:border-ctp-teal"
                           aria-label="Playtime hours"
                         />
-                        <input
+                        <Input
                           type="number"
                           inputMode="numeric"
                           min={0}
@@ -753,40 +912,42 @@ export function GameDetail() {
                           placeholder="Minutes"
                           value={playtimeMinutes}
                           onChange={(event) => setPlaytimeMinutes(event.target.value)}
-                          className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-2 py-1 text-sm text-ctp-text focus:outline-none focus:border-ctp-teal"
+                          className="bg-ctp-mantle border-ctp-surface1 text-sm focus:border-ctp-teal"
                           aria-label="Playtime minutes"
                         />
                       </div>
-                      <div className="flex gap-2">
-                        <button
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
                           type="button"
                           onClick={() => addPlaytimeMutation.mutate()}
                           disabled={addPlaytimeMutation.isPending || !hasValidPlaytimeInput}
-                          className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 bg-ctp-teal text-ctp-base hover:bg-ctp-teal/80"
+                          className="flex-1 bg-ctp-teal text-ctp-base hover:bg-ctp-teal/80"
                         >
                           {addPlaytimeMutation.isPending ? "Saving..." : "Add Playtime"}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
+                          variant="outline"
                           onClick={() => {
                             setShowPlaytimeInput(false);
                             setPlaytimeHours("");
                             setPlaytimeMinutes("");
                           }}
-                          className="px-3 py-1.5 text-sm rounded-lg border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1 transition-colors"
+                          className="flex-1 border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1"
                         >
                           Cancel
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <button
+                    <Button
+                      variant="link"
                       type="button"
                       onClick={() => setShowPlaytimeInput(true)}
-                      className="text-xs text-ctp-teal hover:text-ctp-mauve transition-colors"
+                      className="text-xs text-ctp-teal hover:text-ctp-mauve p-0 h-auto"
                     >
                       Add playtime
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -809,31 +970,34 @@ export function GameDetail() {
                 Your Rating
               </span>
               <div
-                className="grid grid-cols-10 gap-1"
+                className="grid grid-cols-5 gap-1 sm:grid-cols-10"
                 role="group"
                 aria-labelledby="user-rating-label"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                  <button
+                  <Button
                     key={rating}
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleRatingChange(rating)}
                     aria-label={`Rate ${rating} out of 10`}
                     aria-pressed={activePlatform.user_rating === rating}
-                    className={`py-2 text-sm rounded transition-all ${
+                    className={
                       activePlatform.user_rating === rating
-                        ? "bg-ctp-mauve text-ctp-base shadow-lg shadow-ctp-mauve/50"
+                        ? "bg-ctp-mauve text-ctp-base shadow-lg shadow-ctp-mauve/50 hover:bg-ctp-mauve/90 hover:text-ctp-base"
                         : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
-                    }`}
+                    }
                   >
                     {rating}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
             {/* Favorite Toggle */}
             <div className="mt-4">
-              <button
+              <Button
+                variant="outline"
                 onClick={() =>
                   toggleFavoriteMutation.mutate({
                     platformId: activePlatformId,
@@ -841,9 +1005,9 @@ export function GameDetail() {
                   })
                 }
                 disabled={toggleFavoriteMutation.isPending}
-                className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                className={`w-full py-3 h-auto font-semibold ${
                   activePlatform.is_favorite
-                    ? "bg-ctp-red/20 border-2 border-ctp-red text-ctp-red hover:bg-ctp-red/30"
+                    ? "bg-ctp-red/20 border-2 border-ctp-red text-ctp-red hover:bg-ctp-red/30 hover:text-ctp-red"
                     : "bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface1 hover:border-ctp-red hover:text-ctp-red"
                 }`}
               >
@@ -864,7 +1028,7 @@ export function GameDetail() {
                   </svg>
                   {activePlatform.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
                 </span>
-              </button>
+              </Button>
             </div>
 
             {/* Remove from Library */}
@@ -875,32 +1039,35 @@ export function GameDetail() {
                     Remove <strong>{activePlatform.platform_display_name}</strong> version from your
                     library? This will delete all progress, sessions, and notes for this platform.
                   </p>
-                  <div className="flex gap-2">
-                    <button
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      variant="destructive"
                       onClick={() => {
                         deleteGameMutation.mutate({ platformId: activePlatformId });
                         setShowDeleteConfirm(false);
                       }}
                       disabled={deleteGameMutation.isPending}
-                      className="flex-1 py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg font-semibold transition-all disabled:opacity-50"
+                      className="flex-1"
                     >
                       {deleteGameMutation.isPending ? "Removing..." : "Confirm Remove"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="secondary"
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-all"
+                      className="flex-1"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full py-3 rounded-lg font-semibold transition-all bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-red/20 hover:border-ctp-red/50 hover:text-ctp-red"
+                  className="w-full py-3 h-auto font-semibold bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-red/20 hover:border-ctp-red/50 hover:text-ctp-red"
                 >
                   Remove from Library
-                </button>
+                </Button>
               )}
             </div>
 
@@ -1035,37 +1202,37 @@ export function GameDetail() {
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-xl font-semibold text-ctp-mauve">Notes</h2>
                   {!isEditingNotes && (
-                    <button
+                    <Button
+                      variant="link"
                       onClick={startEditingNotes}
-                      className="text-sm text-ctp-teal hover:text-ctp-mauve"
+                      className="text-sm text-ctp-teal hover:text-ctp-mauve p-0 h-auto"
                     >
                       {activePlatform.notes ? "Edit" : "Add Notes"}
-                    </button>
+                    </Button>
                   )}
                 </div>
 
                 {isEditingNotes ? (
                   <div>
-                    <textarea
+                    <Textarea
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
-                      className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-32"
+                      className="w-full bg-ctp-mantle border-ctp-surface1 focus:border-ctp-mauve min-h-32"
                       placeholder="Add your notes about this game..."
                     />
                     <div className="flex gap-2 mt-2">
-                      <button
+                      <Button
                         onClick={handleSaveNotes}
                         disabled={updateNotesMutation.isPending}
-                        className="px-4 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg disabled:opacity-50"
                       >
                         {updateNotesMutation.isPending ? "Saving..." : "Save"}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="secondary"
                         onClick={() => setIsEditingNotes(false)}
-                        className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 rounded-lg"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (

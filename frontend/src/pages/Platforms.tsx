@@ -4,9 +4,11 @@ import { Link } from "@tanstack/react-router";
 import { CustomPlatformModal } from "@/components/CustomPlatformModal";
 import { BackButton, PageLayout } from "@/components/layout";
 import { PlatformsSidebar } from "@/components/sidebar";
+import { Button, Card, Input } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { PlatformTypeIcon } from "@/components/PlatformTypeIcon";
 import { platformsAPI, userPlatformsAPI } from "@/lib/api";
+import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 
 interface Platform {
   id: string;
@@ -19,21 +21,6 @@ interface Platform {
   color_primary: string;
   default_icon_url: string | null;
   sort_order: number;
-}
-
-interface UserPlatform {
-  id: string;
-  platform_id: string;
-  username: string | null;
-  icon_url: string | null;
-  profile_url: string | null;
-  notes: string | null;
-  created_at: string;
-  name: string;
-  display_name: string;
-  platform_type: "pc" | "console" | "mobile" | "physical";
-  color_primary: string;
-  default_icon_url: string | null;
 }
 
 function PlatformIcon({
@@ -87,13 +74,7 @@ export function Platforms() {
     },
   });
 
-  const { data: userPlatformsData } = useQuery({
-    queryKey: ["user-platforms"],
-    queryFn: async () => {
-      const response = await userPlatformsAPI.getAll();
-      return response.data as { platforms: UserPlatform[] };
-    },
-  });
+  const { data: userPlatformsData } = useUserPlatforms();
 
   const userPlatforms = useMemo(
     () => userPlatformsData?.platforms ?? [],
@@ -207,25 +188,21 @@ export function Platforms() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setIsCustomModalOpen(true)}
-              className="btn btn-secondary"
-            >
+            <Button variant="secondary" type="button" onClick={() => setIsCustomModalOpen(true)}>
               Add Custom Platform
-            </button>
-            <Link to="/import" className="btn btn-primary">
-              Import Games
-            </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/import">Import Games</Link>
+            </Button>
           </div>
         </div>
 
         {userPlatforms.length === 0 ? (
-          <div className="card mb-8">
-            <p className="text-ctp-subtext0 text-center py-8">
+          <Card className="mb-8 p-6">
+            <p className="py-8 text-center text-ctp-subtext0">
               No platforms saved yet. Add your first platform to get started.
             </p>
-          </div>
+          </Card>
         ) : (
           <div
             className={[
@@ -267,20 +244,19 @@ export function Platforms() {
           </div>
         )}
 
-        <div className="card mb-6">
+        <Card className="mb-6 p-6">
           <label className="block text-sm font-medium mb-2" htmlFor="platforms-search">
             Search platforms
           </label>
-          <input
+          <Input
             id="platforms-search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            className="input w-full"
             placeholder="Search by name"
           />
-        </div>
+        </Card>
 
-        <div className="card">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-ctp-text">Add Platforms</h2>
             <span className="text-sm text-ctp-subtext0">{selectedPlatformIds.length} selected</span>
@@ -294,28 +270,31 @@ export function Platforms() {
                 const isSelected = selectedPlatformIds.includes(platform.id);
                 const isLocked = existingPlatformIds.has(platform.id);
                 return (
-                  <button
+                  <Button
                     key={platform.id}
+                    variant="ghost"
                     type="button"
                     onClick={() => handleToggle(platform.id)}
                     disabled={isLocked}
-                    className={`text-left border rounded-lg px-4 py-3 transition-colors ${
+                    className={`h-auto w-full justify-start text-left border rounded-lg px-4 py-3 ${
                       isSelected
-                        ? "border-ctp-teal bg-ctp-teal/10"
-                        : "border-ctp-surface0 bg-ctp-mantle/50 hover:border-ctp-surface1"
-                    } disabled:cursor-not-allowed`}
+                        ? "border-ctp-teal bg-ctp-teal/10 hover:bg-ctp-teal/20"
+                        : "border-ctp-surface0 bg-ctp-mantle/50 hover:border-ctp-surface1 hover:bg-ctp-mantle/70"
+                    }`}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="font-medium text-ctp-text">{platform.display_name}</div>
-                      {isLocked && <span className="text-xs text-ctp-teal">Saved</span>}
+                    <div className="w-full">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-medium text-ctp-text">{platform.display_name}</div>
+                        {isLocked && <span className="text-xs text-ctp-teal">Saved</span>}
+                      </div>
+                      <PlatformTypeIcon
+                        type={platform.platform_type}
+                        size="sm"
+                        showLabel={true}
+                        color={platform.color_primary}
+                      />
                     </div>
-                    <PlatformTypeIcon
-                      type={platform.platform_type}
-                      size="sm"
-                      showLabel={true}
-                      color={platform.color_primary}
-                    />
-                  </button>
+                  </Button>
                 );
               })}
 
@@ -324,16 +303,12 @@ export function Platforms() {
               )}
             </div>
           )}
-        </div>
+        </Card>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            onClick={handleAddSelected}
-            disabled={addPlatformsMutation.isPending}
-            className="btn btn-primary"
-          >
+          <Button onClick={handleAddSelected} disabled={addPlatformsMutation.isPending}>
             {addPlatformsMutation.isPending ? "Saving..." : "Add Selected Platforms"}
-          </button>
+          </Button>
         </div>
       </div>
 

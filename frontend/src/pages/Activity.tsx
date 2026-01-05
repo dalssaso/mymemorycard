@@ -1,45 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo } from "react";
 import { ActivityFeedList } from "@/components/ActivityFeed";
 import { BackButton, PageLayout } from "@/components/layout";
 import { DashboardSidebar } from "@/components/sidebar";
 import { Button, Card } from "@/components/ui";
-import { gamesAPI, statsAPI } from "@/lib/api";
+import { useActivityFeed } from "@/hooks/useActivityFeed";
+import { useGameSummaries } from "@/hooks/useGameSummaries";
 import type { FeedItem } from "@/components/ActivityFeed";
-import type { ActivityFeedResponse } from "@/lib/api";
 import type { ActivitySearchParams } from "@/routes/activity";
 
 const PAGE_SIZE = 20;
-
-interface Game {
-  id: string;
-  name: string;
-  cover_art_url: string | null;
-  last_played: string | null;
-  status: string;
-  is_favorite?: boolean;
-}
 
 export function Activity() {
   const navigate = useNavigate();
   const searchParams = useSearch({ from: "/activity" }) as ActivitySearchParams;
   const currentPage = searchParams.page || 1;
 
-  const { data: gamesData } = useQuery({
-    queryKey: ["games"],
-    queryFn: async () => {
-      const response = await gamesAPI.getAll();
-      return response.data as { games: Game[] };
-    },
-  });
+  const { data: gamesData } = useGameSummaries();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["activityFeed", "page", currentPage, PAGE_SIZE],
-    queryFn: async () => {
-      const response = await statsAPI.getActivityFeed({ page: currentPage, pageSize: PAGE_SIZE });
-      return response.data as ActivityFeedResponse<FeedItem>;
-    },
+  const { data, isLoading } = useActivityFeed<FeedItem>({
+    page: currentPage,
+    pageSize: PAGE_SIZE,
   });
 
   const feed = data?.feed || [];
