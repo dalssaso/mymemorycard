@@ -53,48 +53,6 @@
   }
 }
 
-@layer components {
-  .btn {
-    @apply px-4 py-2 rounded font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ctp-mauve focus:ring-offset-2 focus:ring-offset-ctp-base;
-  }
-
-  .btn-primary {
-    @apply bg-ctp-mauve hover:bg-ctp-mauve text-ctp-base border border-ctp-mauve hover:shadow-glow-purple;
-  }
-
-  .btn-secondary {
-    @apply bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text border border-ctp-surface1;
-  }
-
-  .card {
-    @apply bg-ctp-surface0 bg-opacity-40 border border-ctp-surface1 rounded-lg p-6;
-  }
-
-  .input {
-    @apply bg-ctp-mantle border border-ctp-surface1 text-ctp-text px-4 py-2 rounded focus:outline-none focus:border-ctp-mauve focus:shadow-glow-purple transition-all placeholder-ctp-overlay1;
-  }
-
-  .badge {
-    @apply px-2 py-1 text-xs rounded font-medium;
-  }
-
-  .badge-steam {
-    @apply bg-blue-500/20 text-blue-400 border border-blue-500/50;
-  }
-
-  .badge-psn {
-    @apply bg-ctp-mauve bg-opacity-20 text-ctp-mauve border border-ctp-mauve border-opacity-50;
-  }
-
-  .badge-xbox {
-    @apply bg-green-500/20 text-green-400 border border-green-500/50;
-  }
-
-  .badge-epic {
-    @apply bg-ctp-surface2 bg-opacity-30 text-ctp-subtext0 border border-ctp-surface2 border-opacity-50;
-  }
-}
-
 @layer utilities {
   /* Style date input calendar icon for dark theme */
   input[type="date"]::-webkit-calendar-picker-indicator {
@@ -319,5 +277,16 @@
 
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
