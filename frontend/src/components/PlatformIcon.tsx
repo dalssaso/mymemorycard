@@ -98,7 +98,7 @@ export function PlatformIconBadge({
   return (
     <div className={`flex items-center gap-1 ${showLabel ? "" : "inline-flex"}`}>
       <div
-        className={`${SIZE_CLASSES[size]} ${PADDING_CLASSES[size]} rounded-lg flex items-center justify-center flex-shrink-0`}
+        className={`${SIZE_CLASSES[size]} ${PADDING_CLASSES[size]} flex flex-shrink-0 items-center justify-center rounded-lg`}
         style={{ backgroundColor: colorPrimary }}
         title={platform.displayName || "Unknown"}
       >
@@ -106,14 +106,14 @@ export function PlatformIconBadge({
           <img
             src={platform.iconUrl}
             alt={platform.displayName || "Platform"}
-            className={`w-full h-full object-contain ${
-              isLightBackground ? "filter brightness-0" : "filter brightness-0 invert"
+            className={`h-full w-full object-contain ${
+              isLightBackground ? "brightness-0 filter" : "brightness-0 invert filter"
             }`}
           />
         ) : (
           <span
             className={`font-semibold ${
-              isLightBackground ? "text-gray-900" : "text-ctp-base dark:text-ctp-text"
+              isLightBackground ? "text-ctp-crust" : "text-ctp-base dark:text-ctp-text"
             }`}
           >
             {initial}
@@ -171,7 +171,7 @@ export function PlatformIcons({ platforms, size = "md", maxDisplay = 5 }: Platfo
         }
       })}
       {remainingCount > 0 && (
-        <span className="text-xs text-ctp-subtext0 ml-1">+{remainingCount}</span>
+        <span className="ml-1 text-xs text-ctp-subtext0">+{remainingCount}</span>
       )}
     </div>
   );

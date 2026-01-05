@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { completionLogsAPI, gamesAPI, sessionsAPI, userPlatformsAPI } from "@/lib/api";
+import { completionLogsAPI, gamesAPI, sessionsAPI } from "@/lib/api";
 import { BackButton, PageLayout } from "@/components/layout";
 import { GameDetailSidebar } from "@/components/sidebar";
 import { useToast } from "@/components/ui/Toast";
+import { Button, Input, Textarea } from "@/components/ui";
 import { GameAchievements } from "@/components/GameAchievements";
 import { PlatformIconBadge } from "@/components/PlatformIcon";
 import { StartSessionButton } from "@/components/StartSessionButton";
@@ -15,6 +16,8 @@ import { EditionOwnership } from "@/components/EditionOwnership";
 import { EditionSwitcher } from "@/components/EditionSwitcher";
 import { FranchisePreview } from "@/components/FranchisePreview";
 import { RawgIdCorrection } from "@/components/RawgIdCorrection";
+import { useUserPlatforms } from "@/hooks/useUserPlatforms";
+import { STATUS_CONFIGS } from "@/lib/constants/status";
 
 interface GameDetails {
   id: string;
@@ -42,67 +45,17 @@ interface GameDetails {
   expected_playtime: number | null;
 }
 
-interface UserPlatform {
+interface GamesQueryItem {
   id: string;
-  platform_id: string;
-  name: string;
-  display_name: string;
-  platform_type: string | null;
-  color_primary: string;
-  default_icon_url: string | null;
+  status?: string;
+  is_favorite?: boolean;
+  is_favorite_any?: boolean;
+  platforms?: Array<{ id?: string; platform_id?: string }>;
 }
 
-const STATUS_OPTIONS = [
-  {
-    value: "backlog",
-    label: "Backlog",
-    colorVar: "--ctp-subtext1",
-    textClass: "text-ctp-subtext1",
-    surfaceStrength: 35,
-    borderStrength: 55,
-  },
-  {
-    value: "playing",
-    label: "Playing",
-    colorVar: "--ctp-teal",
-    textClass: "text-ctp-teal",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-  {
-    value: "finished",
-    label: "Finished",
-    colorVar: "--ctp-green",
-    textClass: "text-ctp-green",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-  {
-    value: "completed",
-    label: "Completed",
-    colorVar: "--ctp-yellow",
-    textClass: "text-ctp-yellow",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-  {
-    value: "dropped",
-    label: "Dropped",
-    colorVar: "--ctp-red",
-    textClass: "text-ctp-red",
-    surfaceStrength: 45,
-    borderStrength: 65,
-  },
-];
-
-const getStatusSurfaceStyle = (option: {
-  colorVar: string;
-  surfaceStrength: number;
-  borderStrength: number;
-}) => ({
-  backgroundColor: `color-mix(in srgb, var(${option.colorVar}) ${option.surfaceStrength}%, transparent)`,
-  borderColor: `color-mix(in srgb, var(${option.colorVar}) ${option.borderStrength}%, transparent)`,
-});
+interface GamesQueryData {
+  games: GamesQueryItem[];
+}
 
 function normalizeGameName(name: string): string {
   const editionPatterns = [
@@ -147,13 +100,7 @@ export function GameDetail() {
     },
   });
 
-  const { data: userPlatformsData } = useQuery({
-    queryKey: ["user-platforms"],
-    queryFn: async () => {
-      const response = await userPlatformsAPI.getAll();
-      return response.data as { platforms: UserPlatform[] };
-    },
-  });
+  const { data: userPlatformsData } = useUserPlatforms();
 
   const mutationPlatformId = selectedPlatformId || data?.game?.platform_id || "";
 
@@ -212,12 +159,54 @@ export function GameDetail() {
   const updateStatusMutation = useMutation({
     mutationFn: ({ platformId, status }: { platformId: string; status: string }) =>
       gamesAPI.updateStatus(id, platformId, status),
+    onMutate: async ({ platformId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["game", id] });
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+
+      const previousGame = queryClient.getQueryData<{
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      }>(["game", id]);
+      const previousGames = queryClient.getQueriesData<GamesQueryData>({
+        queryKey: ["games"],
+      });
+
+      if (previousGame) {
+        queryClient.setQueryData(["game", id], {
+          ...previousGame,
+          game:
+            previousGame.game.platform_id === platformId
+              ? { ...previousGame.game, status }
+              : previousGame.game,
+          platforms: previousGame.platforms.map((platform) =>
+            platform.platform_id === platformId ? { ...platform, status } : platform
+          ),
+        });
+      }
+
+      queryClient.setQueriesData<GamesQueryData>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games.map((game) => (game.id === id ? { ...game, status } : game)),
+        };
+      });
+
+      return { previousGame, previousGames };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["game", id] });
       queryClient.invalidateQueries({ queryKey: ["games"] });
       showToast("Status updated successfully", "success");
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousGame) {
+        queryClient.setQueryData(["game", id], context.previousGame);
+      }
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to update status", "error");
     },
   });
@@ -251,18 +240,123 @@ export function GameDetail() {
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ platformId, isFavorite }: { platformId: string; isFavorite: boolean }) =>
       gamesAPI.toggleFavorite(id, platformId, isFavorite),
+    onMutate: async ({ platformId, isFavorite }) => {
+      await queryClient.cancelQueries({ queryKey: ["game", id] });
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+
+      const previousGame = queryClient.getQueryData<{
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      }>(["game", id]);
+      const previousGames = queryClient.getQueriesData<GamesQueryData>({
+        queryKey: ["games"],
+      });
+
+      if (previousGame) {
+        queryClient.setQueryData(["game", id], {
+          ...previousGame,
+          game:
+            previousGame.game.platform_id === platformId
+              ? { ...previousGame.game, is_favorite: isFavorite }
+              : previousGame.game,
+          platforms: previousGame.platforms.map((platform) =>
+            platform.platform_id === platformId
+              ? { ...platform, is_favorite: isFavorite }
+              : platform
+          ),
+        });
+      }
+
+      queryClient.setQueriesData<GamesQueryData>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games.map((game) =>
+            game.id === id
+              ? {
+                  ...game,
+                  is_favorite_any:
+                    typeof game.is_favorite_any === "boolean" ? isFavorite : game.is_favorite_any,
+                  is_favorite:
+                    typeof game.is_favorite === "boolean" ? isFavorite : game.is_favorite,
+                }
+              : game
+          ),
+        };
+      });
+
+      return { previousGame, previousGames };
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["game", id] });
       queryClient.invalidateQueries({ queryKey: ["games"] });
       showToast(variables.isFavorite ? "Added to favorites" : "Removed from favorites", "success");
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousGame) {
+        queryClient.setQueryData(["game", id], context.previousGame);
+      }
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to update favorite status", "error");
     },
   });
 
   const deleteGameMutation = useMutation({
     mutationFn: ({ platformId }: { platformId: string }) => gamesAPI.delete(id, platformId),
+    onMutate: async ({ platformId }) => {
+      await queryClient.cancelQueries({ queryKey: ["game", id] });
+      await queryClient.cancelQueries({ queryKey: ["games"] });
+
+      const previousGame = queryClient.getQueryData<{
+        game: GameDetails;
+        platforms: GameDetails[];
+        genres: string[];
+      }>(["game", id]);
+      const previousGames = queryClient.getQueriesData<GamesQueryData>({
+        queryKey: ["games"],
+      });
+
+      if (previousGame) {
+        const remainingPlatforms = previousGame.platforms.filter(
+          (platform) => platform.platform_id !== platformId
+        );
+        queryClient.setQueryData(["game", id], {
+          ...previousGame,
+          platforms: remainingPlatforms,
+          game:
+            previousGame.game.platform_id === platformId && remainingPlatforms.length > 0
+              ? remainingPlatforms[0]
+              : previousGame.game,
+        });
+      }
+
+      queryClient.setQueriesData<GamesQueryData>({ queryKey: ["games"] }, (oldData) => {
+        if (!oldData?.games) return oldData;
+        return {
+          ...oldData,
+          games: oldData.games
+            .map((game) => {
+              if (game.id !== id) return game;
+              if (Array.isArray(game.platforms)) {
+                const remaining = game.platforms.filter(
+                  (platform) => platform.id !== platformId && platform.platform_id !== platformId
+                );
+                if (remaining.length === 0) {
+                  return null;
+                }
+                return { ...game, platforms: remaining };
+              }
+              return game;
+            })
+            .filter((game): game is GamesQueryItem => Boolean(game)),
+        };
+      });
+
+      return { previousGame, previousGames };
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
       queryClient.invalidateQueries({ queryKey: ["game", id] });
@@ -275,7 +369,13 @@ export function GameDetail() {
         setSelectedPlatformId(remainingPlatforms[0].platform_id);
       }
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousGame) {
+        queryClient.setQueryData(["game", id], context.previousGame);
+      }
+      context?.previousGames?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to remove game", "error");
     },
   });
@@ -379,7 +479,7 @@ export function GameDetail() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
@@ -389,7 +489,7 @@ export function GameDetail() {
   if (error || !data?.game) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-red">Game not found</div>
         </div>
       </PageLayout>
@@ -404,8 +504,7 @@ export function GameDetail() {
   const activePlatformId = selectedPlatformId || game.platform_id;
   const activePlatform = platforms.find((p) => p.platform_id === activePlatformId) || game;
   const activeStatus = activePlatform.status || "backlog";
-  const activeStatusOption =
-    STATUS_OPTIONS.find((option) => option.value === activeStatus) || STATUS_OPTIONS[0];
+  const activeStatusConfig = STATUS_CONFIGS[activeStatus] || STATUS_CONFIGS["backlog"];
 
   // Compute platforms user has in profile but doesn't own the game on
   const ownedPlatformIds = new Set(platforms.map((p) => p.platform_id));
@@ -464,24 +563,24 @@ export function GameDetail() {
     <PageLayout sidebar={sidebarContent} customCollapsed={true} showBackButton={false}>
       {/* Background Image Header - hidden on mobile to avoid overlap with cover */}
       {activePlatform.background_image_url && (
-        <div className="hidden lg:block relative h-64 lg:h-96 w-full -mx-4 sm:-mx-6 lg:mx-0 -mt-4 sm:-mt-6 mb-4 sm:mb-6">
+        <div className="relative -mx-4 -mt-4 mb-4 hidden h-48 w-full sm:-mx-6 sm:-mt-6 sm:mb-6 lg:mx-0 lg:block lg:h-72 xl:h-80">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${activePlatform.background_image_url})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-950/50 to-gray-950" />
+          <div className="via-ctp-crust/50 absolute inset-0 bg-gradient-to-b from-transparent to-ctp-crust" />
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-4 md:hidden">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-4 flex items-center gap-3 md:hidden">
           <BackButton
             iconOnly={true}
-            className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
           />
           <h1 className="text-3xl font-bold">{activePlatform.name}</h1>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+        <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {/* Cover Art */}
           <div className="lg:col-span-1">
             {activePlatform.cover_art_url ? (
@@ -491,7 +590,7 @@ export function GameDetail() {
                 className="w-full rounded-lg shadow-lg"
               />
             ) : (
-              <div className="w-full aspect-[3/4] bg-ctp-surface0 rounded-lg flex items-center justify-center">
+              <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg bg-ctp-surface0">
                 <span className="text-ctp-overlay1">No cover art</span>
               </div>
             )}
@@ -504,18 +603,19 @@ export function GameDetail() {
             {/* Platform Selector (for multi-platform games) */}
             {platforms.length > 0 && (
               <div className="mt-4">
-                <span className="block text-sm font-medium text-ctp-subtext0 mb-2">
+                <span className="mb-2 block text-sm font-medium text-ctp-subtext0">
                   {platforms.length === 1 ? "Platform" : "Platforms"}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {platforms.map((platform) => {
                     const isActivePlatform = platform.platform_id === activePlatformId;
                     return (
-                      <button
+                      <Button
                         key={platform.platform_id}
                         type="button"
                         onClick={() => handlePlatformChange(platform.platform_id)}
-                        className={`px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border ${
+                        variant="ghost"
+                        className={`flex h-auto items-center gap-2 rounded-lg border px-2 py-1.5 transition-all ${
                           isActivePlatform
                             ? "bg-ctp-teal/15 border-ctp-teal/50"
                             : "bg-ctp-mauve/10 border-ctp-mauve/30 hover:bg-ctp-mauve/20"
@@ -552,12 +652,12 @@ export function GameDetail() {
                             <span className="sr-only">Tracking progress on this platform</span>
                           </span>
                         )}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
                 {hasMultiplePlatforms && (
-                  <p className="text-xs text-ctp-overlay1 mt-1">
+                  <p className="mt-1 text-xs text-ctp-overlay1">
                     Stats and progress are tracked per platform
                   </p>
                 )}
@@ -565,19 +665,20 @@ export function GameDetail() {
                 {/* Add to Platform section */}
                 {availablePlatforms.length > 0 && (
                   <div className="mt-3">
-                    <span className="block text-xs font-medium text-ctp-overlay1 mb-2">
+                    <span className="mb-2 block text-xs font-medium text-ctp-overlay1">
                       Add to Platform
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {availablePlatforms.map((platform) => (
-                        <button
+                        <Button
                           key={platform.platform_id}
                           type="button"
                           onClick={() =>
                             addToPlatformMutation.mutate({ platformId: platform.platform_id })
                           }
                           disabled={addToPlatformMutation.isPending}
-                          className="px-2 py-1.5 rounded-lg flex items-center gap-2 transition-all border border-dashed border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-mauve/50 hover:bg-ctp-mauve/10 disabled:opacity-50"
+                          variant="ghost"
+                          className="bg-ctp-surface0/50 hover:border-ctp-mauve/50 hover:bg-ctp-mauve/10 flex h-auto items-center gap-2 rounded-lg border border-dashed border-ctp-surface1 px-2 py-1.5 transition-all disabled:opacity-50"
                         >
                           <PlatformIconBadge
                             platform={{
@@ -601,7 +702,7 @@ export function GameDetail() {
                               d="M12 4.5v15m7.5-7.5h-15"
                             />
                           </svg>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -609,21 +710,16 @@ export function GameDetail() {
               </div>
             )}
 
-            {/* Progress Display */}
-            <div className="mt-3">
-              <ProgressDisplay gameId={game.id} platformId={activePlatformId} />
-            </div>
-
             {/* Status Selector */}
             <div className="mt-4">
               <label
                 htmlFor="game-status"
-                className="block text-sm font-medium text-ctp-subtext0 mb-2"
+                className="mb-2 block text-sm font-medium text-ctp-subtext0"
               >
                 Status
               </label>
               <div className="relative" ref={statusMenuRef}>
-                <button
+                <Button
                   id="game-status"
                   type="button"
                   aria-haspopup="listbox"
@@ -631,15 +727,18 @@ export function GameDetail() {
                   aria-describedby="status-description"
                   onClick={() => setIsStatusOpen((open) => !open)}
                   disabled={updateStatusMutation.isPending}
-                  className="w-full flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-ctp-text transition focus:outline-none focus:border-ctp-mauve disabled:opacity-60"
-                  style={getStatusSurfaceStyle(activeStatusOption)}
+                  variant="ghost"
+                  className="flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-ctp-text transition focus:border-ctp-mauve focus:outline-none disabled:opacity-60"
+                  style={activeStatusConfig.activeStyle}
                 >
                   <span className="flex items-center gap-2">
                     <span
                       className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: `var(${activeStatusOption.colorVar})` }}
+                      style={{ backgroundColor: `var(--${activeStatusConfig.color})` }}
                     />
-                    <span className={activeStatusOption.textClass}>{activeStatusOption.label}</span>
+                    <span className={`text-${activeStatusConfig.color}`}>
+                      {activeStatusConfig.label}
+                    </span>
                   </span>
                   <svg
                     className={`h-4 w-4 text-ctp-subtext0 transition-transform ${isStatusOpen ? "rotate-180" : ""}`}
@@ -654,14 +753,15 @@ export function GameDetail() {
                       d="M19 9l-7 7-7-7"
                     />
                   </svg>
-                </button>
+                </Button>
 
                 {isStatusOpen && (
                   <>
-                    <button
+                    <Button
                       type="button"
                       aria-label="Close status menu"
-                      className="fixed inset-0 z-40"
+                      variant="ghost"
+                      className="fixed inset-0 z-40 h-auto w-auto bg-transparent p-0 hover:bg-transparent"
                       onClick={() => setIsStatusOpen(false)}
                     />
                     <div
@@ -670,47 +770,50 @@ export function GameDetail() {
                       aria-labelledby="game-status"
                     >
                       <div className="grid gap-2">
-                        {STATUS_OPTIONS.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            role="option"
-                            aria-selected={option.value === activeStatus}
-                            onClick={() => {
-                              setIsStatusOpen(false);
-                              if (option.value !== activeStatus) {
-                                handleStatusChange(option.value);
-                              }
-                            }}
-                            className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
-                              option.value === activeStatus ? "ring-1 ring-ctp-mauve" : ""
-                            }`}
-                            style={getStatusSurfaceStyle(option)}
-                          >
-                            <span className="flex items-center gap-2">
-                              <span
-                                className="h-2.5 w-2.5 rounded-full"
-                                style={{ backgroundColor: `var(${option.colorVar})` }}
-                              />
-                              <span className={option.textClass}>{option.label}</span>
-                            </span>
-                            {option.value === activeStatus && (
-                              <svg
-                                className="h-4 w-4 text-ctp-mauve"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
+                        {Object.values(STATUS_CONFIGS)
+                          .filter((config) => config.id !== "total" && config.id !== "favorites")
+                          .map((config) => (
+                            <Button
+                              key={config.id}
+                              type="button"
+                              role="option"
+                              aria-selected={config.id === activeStatus}
+                              onClick={() => {
+                                setIsStatusOpen(false);
+                                if (config.id !== activeStatus) {
+                                  handleStatusChange(config.id);
+                                }
+                              }}
+                              variant="ghost"
+                              className={`flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
+                                config.id === activeStatus ? "ring-1 ring-ctp-mauve" : ""
+                              }`}
+                              style={config.activeStyle}
+                            >
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full"
+                                  style={{ backgroundColor: `var(--${config.color})` }}
                                 />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
+                                <span className={`text-${config.color}`}>{config.label}</span>
+                              </span>
+                              {config.id === activeStatus && (
+                                <svg
+                                  className="h-4 w-4 text-ctp-mauve"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </Button>
+                          ))}
                       </div>
                     </div>
                   </>
@@ -723,7 +826,7 @@ export function GameDetail() {
 
             {/* Play Stats */}
             <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3">
+              <div className="bg-ctp-teal/10 border-ctp-teal/30 rounded-lg border p-3">
                 <div className="text-xs text-ctp-teal">Playtime</div>
                 <div className="text-lg font-semibold text-ctp-text">
                   {Math.floor(activePlatform.total_minutes / 60)}h{" "}
@@ -732,8 +835,8 @@ export function GameDetail() {
                 <div className="mt-2">
                   {showPlaytimeInput ? (
                     <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <input
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <Input
                           type="number"
                           inputMode="numeric"
                           min={0}
@@ -741,10 +844,10 @@ export function GameDetail() {
                           placeholder="Hours"
                           value={playtimeHours}
                           onChange={(event) => setPlaytimeHours(event.target.value)}
-                          className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-2 py-1 text-sm text-ctp-text focus:outline-none focus:border-ctp-teal"
+                          className="border-ctp-surface1 bg-ctp-mantle text-sm focus:border-ctp-teal"
                           aria-label="Playtime hours"
                         />
-                        <input
+                        <Input
                           type="number"
                           inputMode="numeric"
                           min={0}
@@ -753,45 +856,47 @@ export function GameDetail() {
                           placeholder="Minutes"
                           value={playtimeMinutes}
                           onChange={(event) => setPlaytimeMinutes(event.target.value)}
-                          className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-2 py-1 text-sm text-ctp-text focus:outline-none focus:border-ctp-teal"
+                          className="border-ctp-surface1 bg-ctp-mantle text-sm focus:border-ctp-teal"
                           aria-label="Playtime minutes"
                         />
                       </div>
-                      <div className="flex gap-2">
-                        <button
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
                           type="button"
                           onClick={() => addPlaytimeMutation.mutate()}
                           disabled={addPlaytimeMutation.isPending || !hasValidPlaytimeInput}
-                          className="flex-1 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 bg-ctp-teal text-ctp-base hover:bg-ctp-teal/80"
+                          className="hover:bg-ctp-teal/80 flex-1 bg-ctp-teal text-ctp-base"
                         >
                           {addPlaytimeMutation.isPending ? "Saving..." : "Add Playtime"}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
+                          variant="outline"
                           onClick={() => {
                             setShowPlaytimeInput(false);
                             setPlaytimeHours("");
                             setPlaytimeMinutes("");
                           }}
-                          className="px-3 py-1.5 text-sm rounded-lg border border-ctp-surface1 text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1 transition-colors"
+                          className="flex-1 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
                         >
                           Cancel
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <button
+                    <Button
+                      variant="link"
                       type="button"
                       onClick={() => setShowPlaytimeInput(true)}
-                      className="text-xs text-ctp-teal hover:text-ctp-mauve transition-colors"
+                      className="h-auto p-0 text-xs text-ctp-teal hover:text-ctp-mauve"
                     >
                       Add playtime
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
               {activePlatform.last_played && (
-                <div className="bg-ctp-mauve/10 border border-ctp-mauve/30 rounded-lg p-3">
+                <div className="bg-ctp-mauve/10 border-ctp-mauve/30 rounded-lg border p-3">
                   <div className="text-xs text-ctp-mauve">Last Played</div>
                   <div className="text-sm font-semibold text-ctp-text">
                     {new Date(activePlatform.last_played).toLocaleDateString()}
@@ -800,131 +905,67 @@ export function GameDetail() {
               )}
             </div>
 
-            {/* Rating Selector */}
-            <div className="mt-4">
-              <span
-                className="block text-sm font-medium text-ctp-subtext0 mb-2"
-                id="user-rating-label"
-              >
-                Your Rating
-              </span>
-              <div
-                className="grid grid-cols-10 gap-1"
-                role="group"
-                aria-labelledby="user-rating-label"
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                  <button
-                    key={rating}
-                    onClick={() => handleRatingChange(rating)}
-                    aria-label={`Rate ${rating} out of 10`}
-                    aria-pressed={activePlatform.user_rating === rating}
-                    className={`py-2 text-sm rounded transition-all ${
-                      activePlatform.user_rating === rating
-                        ? "bg-ctp-mauve text-ctp-base shadow-lg shadow-ctp-mauve/50"
-                        : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
-                    }`}
-                  >
-                    {rating}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Favorite Toggle */}
-            <div className="mt-4">
-              <button
-                onClick={() =>
-                  toggleFavoriteMutation.mutate({
-                    platformId: activePlatformId,
-                    isFavorite: !activePlatform.is_favorite,
-                  })
-                }
-                disabled={toggleFavoriteMutation.isPending}
-                className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                  activePlatform.is_favorite
-                    ? "bg-ctp-red/20 border-2 border-ctp-red text-ctp-red hover:bg-ctp-red/30"
-                    : "bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-surface1 hover:border-ctp-red hover:text-ctp-red"
-                }`}
-              >
-                <span className="inline-flex items-center justify-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    viewBox="0 0 24 24"
-                    fill={activePlatform.is_favorite ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                  {activePlatform.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
-                </span>
-              </button>
-            </div>
-
             {/* Remove from Library */}
             <div className="mt-4">
               {showDeleteConfirm ? (
-                <div className="bg-ctp-red/20 border border-ctp-red/50 rounded-lg p-4">
-                  <p className="text-sm text-ctp-subtext1 mb-3">
+                <div className="bg-ctp-red/20 border-ctp-red/50 rounded-lg border p-4">
+                  <p className="mb-3 text-sm text-ctp-subtext1">
                     Remove <strong>{activePlatform.platform_display_name}</strong> version from your
                     library? This will delete all progress, sessions, and notes for this platform.
                   </p>
-                  <div className="flex gap-2">
-                    <button
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      variant="destructive"
                       onClick={() => {
                         deleteGameMutation.mutate({ platformId: activePlatformId });
                         setShowDeleteConfirm(false);
                       }}
                       disabled={deleteGameMutation.isPending}
-                      className="flex-1 py-2 bg-ctp-red hover:bg-ctp-red/80 text-ctp-base rounded-lg font-semibold transition-all disabled:opacity-50"
+                      className="flex-1"
                     >
                       {deleteGameMutation.isPending ? "Removing..." : "Confirm Remove"}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="secondary"
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 py-2 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded-lg transition-all"
+                      className="flex-1"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full py-3 rounded-lg font-semibold transition-all bg-ctp-surface0 border-2 border-ctp-surface1 text-ctp-subtext0 hover:bg-ctp-red/20 hover:border-ctp-red/50 hover:text-ctp-red"
+                  className="hover:bg-ctp-red/20 hover:border-ctp-red/50 h-auto w-full border-2 border-ctp-surface1 bg-ctp-surface0 py-3 font-semibold text-ctp-subtext0 hover:text-ctp-red"
                 >
                   Remove from Library
-                </button>
+                </Button>
               )}
             </div>
 
             {/* Metadata */}
             <div className="mt-4 flex flex-wrap gap-2">
               {game.release_date && (
-                <span className="px-3 py-1 bg-ctp-surface0 rounded-lg text-ctp-subtext0 text-sm">
+                <span className="rounded-lg bg-ctp-surface0 px-3 py-1 text-sm text-ctp-subtext0">
                   {new Date(game.release_date).getFullYear()}
                 </span>
               )}
               {game.metacritic_score && (
-                <span className="px-3 py-1 bg-ctp-green/20 border border-ctp-green rounded-lg text-ctp-green text-sm">
+                <span className="bg-ctp-green/20 rounded-lg border border-ctp-green px-3 py-1 text-sm text-ctp-green">
                   Metacritic: {game.metacritic_score}
                 </span>
               )}
               {game.expected_playtime && game.expected_playtime > 0 && (
-                <span className="px-3 py-1 bg-ctp-teal/20 border border-ctp-teal rounded-lg text-ctp-teal text-sm inline-flex items-center gap-1.5 group relative">
+                <span className="bg-ctp-teal/20 group relative inline-flex items-center gap-1.5 rounded-lg border border-ctp-teal px-3 py-1 text-sm text-ctp-teal">
                   ~{game.expected_playtime}h to beat
                   <span className="cursor-help" title="Average playtime based on Steam player data">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      className="w-3.5 h-3.5 opacity-70"
+                      className="h-3.5 w-3.5 opacity-70"
                     >
                       <path
                         fillRule="evenodd"
@@ -936,7 +977,7 @@ export function GameDetail() {
                 </span>
               )}
               {game.esrb_rating && (
-                <span className="px-3 py-1 bg-ctp-surface0 rounded-lg text-ctp-subtext0 text-sm">
+                <span className="rounded-lg bg-ctp-surface0 px-3 py-1 text-sm text-ctp-subtext0">
                   {game.esrb_rating.toUpperCase()}
                 </span>
               )}
@@ -948,7 +989,7 @@ export function GameDetail() {
                 {genres.map((genre) => (
                   <span
                     key={genre}
-                    className="px-2 py-1 bg-ctp-teal/10 border border-ctp-teal/30 rounded text-ctp-teal text-xs"
+                    className="bg-ctp-teal/10 border-ctp-teal/30 rounded border px-2 py-1 text-xs text-ctp-teal"
                   >
                     {genre}
                   </span>
@@ -959,14 +1000,14 @@ export function GameDetail() {
             {/* Franchise */}
             {game.series_name && (
               <div className="mt-4">
-                <span className="block text-sm font-medium text-ctp-subtext0 mb-2">Franchise</span>
+                <span className="mb-2 block text-sm font-medium text-ctp-subtext0">Franchise</span>
                 <FranchisePreview seriesName={game.series_name} currentGameId={game.id} />
               </div>
             )}
 
             {/* External Resources */}
             <div className="mt-4">
-              <span className="block text-sm font-medium text-ctp-subtext0 mb-2">
+              <span className="mb-2 block text-sm font-medium text-ctp-subtext0">
                 External Resources
               </span>
               <div className="flex flex-col gap-2">
@@ -974,7 +1015,7 @@ export function GameDetail() {
                   href={`https://howlongtobeat.com/?q=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
+                  className="w-full rounded-lg border border-ctp-surface1 bg-ctp-surface0 px-3 py-2 text-center text-sm text-ctp-subtext1 transition-all hover:border-ctp-teal hover:bg-ctp-surface1 hover:text-ctp-teal"
                 >
                   HowLongToBeat
                 </a>
@@ -984,7 +1025,7 @@ export function GameDetail() {
                     .replace(/[^a-z0-9]+/g, "-")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
+                  className="w-full rounded-lg border border-ctp-surface1 bg-ctp-surface0 px-3 py-2 text-center text-sm text-ctp-subtext1 transition-all hover:border-ctp-teal hover:bg-ctp-surface1 hover:text-ctp-teal"
                 >
                   IGN Guide
                 </a>
@@ -992,7 +1033,7 @@ export function GameDetail() {
                   href={`https://www.powerpyx.com/?s=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full px-3 py-2 bg-ctp-surface0 border border-ctp-surface1 text-ctp-subtext1 hover:bg-ctp-surface1 hover:border-ctp-teal hover:text-ctp-teal rounded-lg transition-all text-center text-sm"
+                  className="w-full rounded-lg border border-ctp-surface1 bg-ctp-surface0 px-3 py-2 text-center text-sm text-ctp-subtext1 transition-all hover:border-ctp-teal hover:bg-ctp-surface1 hover:text-ctp-teal"
                 >
                   PowerPyx Guide
                 </a>
@@ -1000,76 +1041,143 @@ export function GameDetail() {
             </div>
 
             {/* Game Version */}
-            <div className="mt-4 rounded-lg border border-ctp-surface1 p-4 bg-ctp-surface0/30">
-              <span className="block text-sm font-medium text-ctp-subtext0 mb-2">Game Version</span>
+            <div className="bg-ctp-surface0/30 mt-4 rounded-lg border border-ctp-surface1 p-4">
+              <span className="mb-2 block text-sm font-medium text-ctp-subtext0">Game Version</span>
               <EditionSwitcher gameId={game.id} platformId={activePlatformId} />
             </div>
           </div>
 
           {/* Game Details */}
-          <div className="lg:col-span-2">
-            <div className="hidden md:flex items-center gap-3 mb-4">
+          <div className="lg:col-span-1 xl:col-span-2">
+            <div className="mb-4 hidden items-center gap-3 md:flex">
               <BackButton
                 iconOnly={true}
-                className="p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
               />
               <h1 className="text-4xl font-bold">{activePlatform.name}</h1>
             </div>
 
             <div>
+              <div className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <ProgressDisplay gameId={game.id} platformId={activePlatformId} />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <span
+                        className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                        id="user-rating-label"
+                      >
+                        Your Rating
+                      </span>
+                      <div
+                        className="grid grid-cols-5 gap-1 sm:grid-cols-10"
+                        role="group"
+                        aria-labelledby="user-rating-label"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+                          <Button
+                            key={rating}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRatingChange(rating)}
+                            aria-label={`Rate ${rating} out of 10`}
+                            aria-pressed={activePlatform.user_rating === rating}
+                            className={
+                              activePlatform.user_rating === rating
+                                ? "shadow-ctp-mauve/50 hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base shadow-lg hover:text-ctp-base"
+                                : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
+                            }
+                          >
+                            {rating}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        toggleFavoriteMutation.mutate({
+                          platformId: activePlatformId,
+                          isFavorite: !activePlatform.is_favorite,
+                        })
+                      }
+                      disabled={toggleFavoriteMutation.isPending}
+                      className={`h-auto w-full py-3 font-semibold ${
+                        activePlatform.is_favorite
+                          ? "bg-ctp-red/20 hover:bg-ctp-red/30 border-2 border-ctp-red text-ctp-red hover:text-ctp-red"
+                          : "border-2 border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-red hover:bg-ctp-surface1 hover:text-ctp-red"
+                      }`}
+                    >
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <svg
+                          className="h-5 w-5"
+                          viewBox="0 0 24 24"
+                          fill={activePlatform.is_favorite ? "currentColor" : "none"}
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
+                        {activePlatform.is_favorite ? "Remove from Favorites" : "Add to Favorites"}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
               {activePlatform.description && (
                 <div
                   id="about"
-                  className="mb-6 rounded-lg border border-ctp-surface1 p-4 bg-ctp-surface0/30"
+                  className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4"
                 >
-                  <h2 className="text-xl font-semibold mb-3 text-ctp-mauve">About</h2>
-                  <p className="text-ctp-subtext1 leading-relaxed">{activePlatform.description}</p>
+                  <h2 className="mb-3 text-xl font-semibold text-ctp-mauve">About</h2>
+                  <p className="leading-relaxed text-ctp-subtext1">{activePlatform.description}</p>
                 </div>
               )}
 
               {/* Notes Section */}
               <div
                 id="notes"
-                className="mb-6 bg-ctp-surface0/30 border border-ctp-surface1 rounded-lg p-4"
+                className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4"
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-xl font-semibold text-ctp-mauve">Notes</h2>
                   {!isEditingNotes && (
-                    <button
+                    <Button
+                      variant="link"
                       onClick={startEditingNotes}
-                      className="text-sm text-ctp-teal hover:text-ctp-mauve"
+                      className="h-auto p-0 text-sm text-ctp-teal hover:text-ctp-mauve"
                     >
                       {activePlatform.notes ? "Edit" : "Add Notes"}
-                    </button>
+                    </Button>
                   )}
                 </div>
 
                 {isEditingNotes ? (
                   <div>
-                    <textarea
+                    <Textarea
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
-                      className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-32"
+                      className="min-h-32 w-full border-ctp-surface1 bg-ctp-mantle focus:border-ctp-mauve"
                       placeholder="Add your notes about this game..."
                     />
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={handleSaveNotes}
-                        disabled={updateNotesMutation.isPending}
-                        className="px-4 py-2 bg-ctp-mauve hover:bg-ctp-mauve/80 rounded-lg disabled:opacity-50"
-                      >
+                    <div className="mt-2 flex gap-2">
+                      <Button onClick={handleSaveNotes} disabled={updateNotesMutation.isPending}>
                         {updateNotesMutation.isPending ? "Saving..." : "Save"}
-                      </button>
-                      <button
-                        onClick={() => setIsEditingNotes(false)}
-                        className="px-4 py-2 bg-ctp-surface1 hover:bg-gray-600 rounded-lg"
-                      >
+                      </Button>
+                      <Button variant="secondary" onClick={() => setIsEditingNotes(false)}>
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
+                  <div className="bg-ctp-mantle/50 rounded-lg p-4 text-ctp-subtext1">
                     {activePlatform.notes || "No notes yet"}
                   </div>
                 )}
@@ -1078,9 +1186,9 @@ export function GameDetail() {
               {/* Edition & DLC Ownership Section */}
               <div
                 id="ownership"
-                className="mb-6 bg-ctp-surface0/30 border border-ctp-surface1 rounded-lg p-4"
+                className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4"
               >
-                <h2 className="text-xl font-semibold text-ctp-mauve mb-4">
+                <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">
                   Edition & DLC Ownership
                 </h2>
                 <EditionOwnership gameId={game.id} platformId={activePlatformId} />
@@ -1090,9 +1198,9 @@ export function GameDetail() {
               <div
                 id="achievements"
                 tabIndex={-1}
-                className="mb-6 bg-ctp-surface0/30 border border-ctp-surface1 rounded-lg p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
+                className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
               >
-                <h2 className="text-xl font-semibold text-ctp-mauve mb-4">Achievements</h2>
+                <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">Achievements</h2>
                 <GameAchievements gameId={game.id} platformId={activePlatformId} />
               </div>
 
@@ -1100,7 +1208,7 @@ export function GameDetail() {
               <div
                 id="sessions"
                 tabIndex={-1}
-                className="mb-6 bg-ctp-surface0/30 border border-ctp-surface1 rounded-lg p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
+                className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
               >
                 <SessionsHistory gameId={game.id} platformId={activePlatformId} />
               </div>
@@ -1109,7 +1217,7 @@ export function GameDetail() {
               <div
                 id="stats"
                 tabIndex={-1}
-                className="mb-6 bg-ctp-surface0/30 border border-ctp-surface1 rounded-lg p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
+                className="bg-ctp-surface0/30 mb-6 rounded-lg border border-ctp-surface1 p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ctp-teal focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base"
               >
                 <ProgressHistory gameId={game.id} platformId={activePlatformId} />
               </div>

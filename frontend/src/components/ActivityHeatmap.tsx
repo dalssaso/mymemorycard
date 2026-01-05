@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { statsAPI, type CombinedHeatmapDay, type CombinedHeatmapSummary } from "@/lib/api";
+import { Button } from "@/components/ui";
 
 interface ActivityHeatmapProps {
   type?: "activity" | "completion" | "achievement";
@@ -194,10 +195,12 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
               : "Achievement Activity"}
         </h3>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={() => setYear((y) => y - 1)}
             disabled={year <= 2020}
-            className="p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
+            variant="ghost"
+            size="icon"
+            className="h-auto w-auto p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -205,16 +208,18 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5"
+              className="h-5 w-5"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
-          </button>
-          <span className="text-ctp-text font-medium min-w-[60px] text-center">{year}</span>
-          <button
+          </Button>
+          <span className="min-w-[60px] text-center font-medium text-ctp-text">{year}</span>
+          <Button
             onClick={() => setYear((y) => y + 1)}
             disabled={year >= currentYear}
-            className="p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
+            variant="ghost"
+            size="icon"
+            className="h-auto w-auto p-1 text-ctp-subtext0 hover:text-ctp-text disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -222,17 +227,17 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5"
+              className="h-5 w-5"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
 
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 shadow-sm">
             <div className="text-xs text-ctp-subtext0">
               {type === "activity"
                 ? "Total Sessions"
@@ -249,18 +254,18 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             </div>
           </div>
           {type === "activity" && (
-            <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+            <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 shadow-sm">
               <div className="text-xs text-ctp-subtext0">Total Playtime</div>
               <div className="text-xl font-bold text-ctp-green">
                 {formatMinutes(summary.totalMinutes)}
               </div>
             </div>
           )}
-          <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+          <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 shadow-sm">
             <div className="text-xs text-ctp-subtext0">Active Days</div>
             <div className="text-xl font-bold text-ctp-teal">{summary.activeDays}</div>
           </div>
-          <div className="bg-ctp-surface0/60 border border-ctp-surface1/50 rounded-lg p-3 shadow-sm">
+          <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 shadow-sm">
             <div className="text-xs text-ctp-subtext0">Current Streak</div>
             <div className="text-xl font-bold text-ctp-mauve">
               {summary.currentStreak} {summary.currentStreak === 1 ? "day" : "days"}
@@ -270,12 +275,12 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
       )}
 
       {isLoading ? (
-        <div className="h-[140px] flex items-center justify-center text-ctp-subtext0">
+        <div className="flex h-[140px] items-center justify-center text-ctp-subtext0">
           Loading activity data...
         </div>
       ) : (
         <div className="relative overflow-hidden">
-          <div className="relative h-4 ml-7 text-xs text-ctp-overlay1">
+          <div className="relative ml-7 h-4 text-xs text-ctp-overlay1">
             {displayMonthLabels.map(({ month, weekIndex }) => (
               <div
                 key={`${month}-${weekIndex}`}
@@ -287,11 +292,11 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             ))}
           </div>
           <div className="flex gap-[2px]">
-            <div className="flex flex-col gap-[2px] text-xs text-ctp-overlay1 mr-1 shrink-0">
+            <div className="mr-1 flex shrink-0 flex-col gap-[2px] text-xs text-ctp-overlay1">
               {DAYS.map((day, i) => (
                 <div
                   key={day}
-                  className="h-[10px] text-right pr-1 leading-[10px]"
+                  className="h-[10px] pr-1 text-right leading-[10px]"
                   style={{ visibility: i % 2 === 1 ? "visible" : "hidden" }}
                 >
                   {day}
@@ -300,17 +305,17 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             </div>
             <div className="flex gap-[2px] overflow-hidden">
               {displayCalendar.map((week, weekIndex) => (
-                <div key={weekIndex} className="flex flex-col gap-[2px] shrink-0">
+                <div key={weekIndex} className="flex shrink-0 flex-col gap-[2px]">
                   {week.map((day, dayIndex) => {
                     if (!day) {
-                      return <div key={dayIndex} className="w-[10px] h-[10px]" />;
+                      return <div key={dayIndex} className="h-[10px] w-[10px]" />;
                     }
                     const value = getValue(day.data);
                     const level = getLevel(value, maxValue);
                     return (
                       <div
                         key={dayIndex}
-                        className="w-[10px] h-[10px] rounded-sm cursor-pointer transition-all hover:ring-1 hover:ring-ctp-text"
+                        className="h-[10px] w-[10px] cursor-pointer rounded-sm transition-all hover:ring-1 hover:ring-ctp-text"
                         style={{ backgroundColor: colors[level] }}
                         onMouseEnter={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect();
@@ -332,15 +337,15 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
 
           {hoveredDay && (
             <div
-              className="fixed z-50 bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-sm pointer-events-none transform -translate-x-1/2 -translate-y-full"
+              className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full transform rounded-lg border border-ctp-surface1 bg-ctp-mantle px-3 py-2 text-sm"
               style={{ left: hoveredDay.x, top: hoveredDay.y }}
             >
-              <div className="font-medium text-ctp-text mb-1">{hoveredDay.date}</div>
+              <div className="mb-1 font-medium text-ctp-text">{hoveredDay.date}</div>
               {hoveredDay.data ? (
                 <div className="space-y-0.5">
                   {hoveredDay.data.sessions.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-ctp-teal" />
+                      <span className="h-2 w-2 rounded-full bg-ctp-teal" />
                       <span className="text-ctp-subtext1">
                         {hoveredDay.data.sessions.count} session
                         {hoveredDay.data.sessions.count > 1 ? "s" : ""}
@@ -355,7 +360,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
                   )}
                   {hoveredDay.data.completions.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-ctp-mauve" />
+                      <span className="h-2 w-2 rounded-full bg-ctp-mauve" />
                       <span className="text-ctp-subtext1">
                         {hoveredDay.data.completions.count} progress update
                         {hoveredDay.data.completions.count > 1 ? "s" : ""}
@@ -364,7 +369,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
                   )}
                   {hoveredDay.data.achievements.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-ctp-yellow" />
+                      <span className="h-2 w-2 rounded-full bg-ctp-yellow" />
                       <span className="text-ctp-subtext1">
                         {hoveredDay.data.achievements.count} achievement
                         {hoveredDay.data.achievements.count > 1 ? "s" : ""}
@@ -378,12 +383,12 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-1 mt-2 text-xs text-ctp-overlay1">
+          <div className="mt-2 flex items-center justify-end gap-1 text-xs text-ctp-overlay1">
             <span>Less</span>
             {colors.map((color, i) => (
               <div
                 key={i}
-                className="w-[10px] h-[10px] rounded-sm"
+                className="h-[10px] w-[10px] rounded-sm"
                 style={{ backgroundColor: color }}
               />
             ))}

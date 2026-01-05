@@ -26,6 +26,31 @@
   --ctp-base: #eff1f5;
   --ctp-mantle: #e6e9ef;
   --ctp-crust: #dce0e8;
+  --background: var(--ctp-base);
+  --foreground: var(--ctp-text);
+  --card: var(--ctp-surface0);
+  --card-foreground: var(--ctp-text);
+  --popover: var(--ctp-surface0);
+  --popover-foreground: var(--ctp-text);
+  --primary: var(--ctp-mauve);
+  --primary-foreground: var(--ctp-base);
+  --secondary: var(--ctp-teal);
+  --secondary-foreground: var(--ctp-base);
+  --muted: var(--ctp-surface1);
+  --muted-foreground: var(--ctp-subtext1);
+  --accent: var(--ctp-sky);
+  --accent-foreground: var(--ctp-base);
+  --destructive: var(--ctp-red);
+  --destructive-foreground: var(--ctp-base);
+  --border: var(--ctp-surface2);
+  --input: var(--ctp-surface0);
+  --ring: var(--ctp-mauve);
+  --chart-1: 267 83% 80%;
+  --chart-2: 180 75% 60%;
+  --chart-3: 210 35% 30%;
+  --chart-4: 45 90% 70%;
+  --chart-5: 10 80% 65%;
+  --radius: 0.5rem;
 }
 
 /* Catppuccin Mocha (Dark) */
@@ -56,4 +81,28 @@
   --ctp-base: #1e1e2e;
   --ctp-mantle: #181825;
   --ctp-crust: #11111b;
+  --background: var(--ctp-base);
+  --foreground: var(--ctp-text);
+  --card: var(--ctp-surface0);
+  --card-foreground: var(--ctp-text);
+  --popover: var(--ctp-surface0);
+  --popover-foreground: var(--ctp-text);
+  --primary: var(--ctp-mauve);
+  --primary-foreground: var(--ctp-base);
+  --secondary: var(--ctp-teal);
+  --secondary-foreground: var(--ctp-base);
+  --muted: var(--ctp-surface1);
+  --muted-foreground: var(--ctp-subtext1);
+  --accent: var(--ctp-sky);
+  --accent-foreground: var(--ctp-base);
+  --destructive: var(--ctp-red);
+  --destructive-foreground: var(--ctp-base);
+  --border: var(--ctp-surface2);
+  --input: var(--ctp-surface0);
+  --ring: var(--ctp-mauve);
+  --chart-1: 267 83% 80%;
+  --chart-2: 180 75% 60%;
+  --chart-3: 210 35% 30%;
+  --chart-4: 45 90% 70%;
+  --chart-5: 10 80% 65%;
 }

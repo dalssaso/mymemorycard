@@ -4,5 +4,6 @@ export type { SidebarProps } from "./Sidebar";
 export { MobileNav } from "./MobileNav";
 export { BackButton } from "./BackButton";
 export { BackToTopButton } from "./BackToTopButton";
+export { AppShell } from "./AppShell";
 export { PageLayout } from "./PageLayout";
 export type { PageLayoutProps } from "./PageLayout";

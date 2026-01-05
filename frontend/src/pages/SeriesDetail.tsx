@@ -29,7 +29,7 @@ export function SeriesDetail() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
@@ -39,7 +39,7 @@ export function SeriesDetail() {
   if (!data) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-red">Series not found</div>
         </div>
       </PageLayout>
@@ -50,19 +50,19 @@ export function SeriesDetail() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
           <Link
             to="/collections"
-            className="hidden md:inline-block text-ctp-teal hover:text-ctp-mauve transition-colors mb-4"
+            className="mb-4 hidden text-ctp-teal transition-colors hover:text-ctp-mauve md:inline-block"
           >
             Back to Collections
           </Link>
-          <div className="flex items-center gap-3 mb-2">
+          <div className="mb-2 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <h1 className="text-4xl font-bold text-ctp-text">{seriesName} Series</h1>
           </div>
@@ -74,28 +74,28 @@ export function SeriesDetail() {
         {/* Games Grid */}
         {games.length === 0 ? (
           <Card>
-            <p className="text-ctp-subtext0 text-center py-8">No games found in this series.</p>
+            <p className="py-8 text-center text-ctp-subtext0">No games found in this series.</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
             {games.map((game) => (
               <Link key={game.id} to="/library/$id" params={{ id: game.id }} className="group">
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
+                <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
                   {game.cover_art_url ? (
                     <img
                       src={game.cover_art_url}
                       alt={game.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                    <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                       No Cover
                     </div>
                   )}
                   {game.is_favorite && (
-                    <div className="absolute top-2 right-2 text-ctp-red">
+                    <div className="absolute right-2 top-2 text-ctp-red">
                       <svg
-                        className="w-5 h-5"
+                        className="h-5 w-5"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                         stroke="currentColor"
@@ -111,7 +111,7 @@ export function SeriesDetail() {
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-ctp-subtext1 truncate group-hover:text-ctp-text mb-1">
+                <p className="mb-1 truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
                   {game.name}
                 </p>
                 {game.release_date && (

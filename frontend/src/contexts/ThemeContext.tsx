@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { preferencesAPI } from "@/lib/api";
+import { getToken } from "@/lib/auth-storage";
 
 type Theme = "light" | "dark" | "auto";
 
@@ -16,9 +17,10 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const THEME_OPTIONS: Theme[] = ["light", "dark", "auto"];
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {
   const [theme, setThemeState] = useState<Theme>("auto");
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  const debounceRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) {
@@ -58,8 +60,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const loadTheme = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!getToken()) {
         return;
       }
 
@@ -71,27 +72,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           setThemeState(savedTheme);
         }
       } catch {
-        // Default to auto when preferences fail to load.
+        // Ignore preference load errors.
       }
     };
 
     loadTheme();
   }, []);
 
-  const setTheme = async (newTheme: Theme) => {
+  const setTheme = useCallback(async (newTheme: Theme) => {
     setThemeState(newTheme);
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!getToken()) {
       return;
     }
 
-    try {
-      await preferencesAPI.update({ theme: newTheme });
-    } catch (error) {
-      console.error("Failed to save theme preference:", error);
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current);
     }
-  };
+
+    debounceRef.current = window.setTimeout(() => {
+      preferencesAPI.update({ theme: newTheme }).catch(() => {
+        // Ignore failed preference updates.
+      });
+    }, 500);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
@@ -100,7 +104,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useTheme() {
+export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext);
 
   if (!context) {

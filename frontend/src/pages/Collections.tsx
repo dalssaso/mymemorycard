@@ -3,19 +3,30 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { BackButton, PageLayout } from "@/components/layout";
 import { CollectionsSidebar } from "@/components/sidebar";
-import { Card, Button, Checkbox } from "@/components/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+  Card,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Textarea,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI, aiAPI, type CollectionSuggestion } from "@/lib/api";
-
-interface Collection {
-  id: string;
-  name: string;
-  description: string | null;
-  game_count: number;
-  cover_art_url: string | null;
-  cover_filename: string | null;
-  created_at: string;
-}
+import { useCollections } from "@/hooks/useCollections";
 
 export function Collections() {
   const queryClient = useQueryClient();
@@ -38,13 +49,23 @@ export function Collections() {
   const [estimatedAICost, setEstimatedAICost] = useState(0);
   const [generateCoverOnCreate, setGenerateCoverOnCreate] = useState(false);
 
-  const { data: collectionsData } = useQuery({
-    queryKey: ["collections"],
-    queryFn: async () => {
-      const response = await collectionsAPI.getAll();
-      return response.data as { collections: Collection[] };
-    },
-  });
+  const resetCreateModal = () => {
+    setNewCollectionName("");
+    setNewCollectionDescription("");
+    setNewCollectionCoverFile(null);
+    setCoverPreviewUrl(null);
+    setUseAI(false);
+    setAiTheme("");
+    setAiSuggestion(null);
+    setGenerateCoverOnCreate(false);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+    resetCreateModal();
+  };
+
+  const { data: collectionsData } = useCollections();
 
   const { data: settingsData } = useQuery({
     queryKey: ["ai-settings"],
@@ -204,38 +225,56 @@ export function Collections() {
       sidebar={<CollectionsSidebar onCreateCollection={() => setShowCreateModal(true)} />}
       customCollapsed={true}
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
+      <div className="mx-auto max-w-[1440px]">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
               />
-              <h1 className="text-4xl font-bold text-ctp-text">Collections</h1>
+              <h1 className="text-3xl font-bold text-ctp-text sm:text-4xl">Collections</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">Organize your games into custom collections</p>
+            <p className="mt-1 text-ctp-subtext0">Organize your games into custom collections</p>
           </div>
-          <Button onClick={() => setShowCreateModal(true)}>Create Collection</Button>
+          <Button onClick={() => setShowCreateModal(true)} className="w-full sm:w-auto">
+            Create Collection
+          </Button>
         </div>
 
         <div>
           {collections.length === 0 ? (
-            <Card>
-              <p className="text-ctp-subtext0 text-center py-8">
-                No collections yet. Create your first collection to organize your games!
-              </p>
+            <Card className="px-6 py-10" padded={true}>
+              <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
+                <div>
+                  <h2 className="mb-3 text-2xl font-bold text-ctp-text">No Collections Yet</h2>
+                  <p className="mb-6 text-ctp-subtext0">
+                    Group your games by theme, mood, or completion goals.
+                  </p>
+                  <Button onClick={() => setShowCreateModal(true)}>Create Collection</Button>
+                </div>
+                <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface1 p-4">
+                  <h3 className="text-sm font-semibold text-ctp-text">Ideas to try</h3>
+                  <div className="mt-2 space-y-2 text-sm text-ctp-subtext0">
+                    <p>Story-driven RPGs</p>
+                    <p>Short backlog wins</p>
+                    <p>Co-op with friends</p>
+                  </div>
+                </div>
+              </div>
             </Card>
           ) : (
             <>
-              <div className="mb-4 flex items-center justify-between gap-4">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm text-ctp-subtext0">
                   {collections.length} {collections.length === 1 ? "collection" : "collections"}
                 </span>
                 {!selectionMode && collections.length > 0 && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setSelectionMode(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-ctp-subtext0 hover:text-ctp-text border border-ctp-surface1 hover:border-ctp-surface2 rounded transition-all"
+                    className="h-auto border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +282,7 @@ export function Collections() {
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-4 h-4"
+                      className="h-4 w-4"
                     >
                       <path
                         strokeLinecap="round"
@@ -252,91 +291,99 @@ export function Collections() {
                       />
                     </svg>
                     Select
-                  </button>
+                  </Button>
                 )}
               </div>
 
               {selectionMode && (
-                <div className="mb-4 p-3 bg-ctp-surface0/50 border border-ctp-surface1 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="bg-ctp-surface0/50 mb-4 flex flex-col gap-3 rounded-lg border border-ctp-surface1 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-3">
                     <span className="text-sm font-medium text-ctp-text">
                       {selectedCollectionIds.length > 0
                         ? `${selectedCollectionIds.length} collection(s) selected`
                         : "Select collections to manage"}
                     </span>
                     {collections.length > 0 && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() =>
                           setSelectedCollectionIds(
                             allSelected ? [] : collections.map((collection) => collection.id)
                           )
                         }
-                        className="text-sm text-ctp-subtext0 hover:text-ctp-text"
+                        className="h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
                       >
                         {allSelected ? "Deselect all" : "Select all"}
-                      </button>
+                      </Button>
                     )}
                     {selectedCollectionIds.length > 0 && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setSelectedCollectionIds([])}
-                        className="text-sm text-ctp-subtext0 hover:text-ctp-text"
+                        className="h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
                       >
                         Clear
-                      </button>
+                      </Button>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     {selectedCollectionIds.length > 0 && (
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="px-3 py-1.5 bg-ctp-red/20 border border-ctp-red/30 text-ctp-red hover:bg-ctp-red/30 rounded text-sm transition-all"
+                        className="border-ctp-red/30 bg-ctp-red/20 hover:bg-ctp-red/30 h-auto text-ctp-red"
                       >
                         Delete
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={handleExitSelectionMode}
-                      className="px-3 py-1.5 bg-ctp-surface1 hover:bg-ctp-surface2 text-ctp-text rounded text-sm transition-all"
+                      className="h-auto bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2"
                     >
                       Done
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {collections.map((collection) => {
                   const isSelected = selectedCollectionIds.includes(collection.id);
                   const cardContent = (
                     <>
-                      <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative">
+                      <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
                         {collection.cover_filename ? (
                           <img
                             src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}
                             alt={collection.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
                           />
                         ) : collection.cover_art_url ? (
                           <img
                             src={`${collection.cover_art_url}${collection.cover_art_url.includes("?") ? "&" : "?"}v=${coverKey}`}
                             alt={collection.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                          <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                             <span className="text-sm">No Cover</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
+                        <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                         {selectionMode && isSelected && (
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="w-4 h-4 text-ctp-text"
+                              className="h-4 w-4 text-ctp-text"
                             >
                               <path
                                 strokeLinecap="round"
@@ -348,7 +395,7 @@ export function Collections() {
                         )}
                       </div>
                       <div className="flex flex-col gap-1 px-2 pb-2 sm:px-0 sm:pb-0">
-                        <p className="text-ctp-text font-medium truncate group-hover:text-ctp-mauve transition-colors">
+                        <p className="truncate font-medium text-ctp-text transition-colors group-hover:text-ctp-mauve">
                           {collection.name}
                         </p>
                         <p className="text-sm text-ctp-mauve">
@@ -359,8 +406,8 @@ export function Collections() {
                   );
 
                   const cardClassName = selectionMode
-                    ? `card cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-zinc-500"}`
-                    : "card hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-3";
+                    ? `rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-ctp-surface2"}`
+                    : "rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-3";
 
                   return selectionMode ? (
                     <div
@@ -394,283 +441,287 @@ export function Collections() {
           )}
         </div>
 
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-ctp-base/50 flex items-center justify-center z-50">
-            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold mb-4">Delete Collections</h3>
-              <p className="text-ctp-subtext0 mb-6">
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-ctp-text">
+                Delete Collections
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-ctp-subtext0">
                 Are you sure you want to delete {selectedCollectionIds.length} collection(s)? This
                 action cannot be undone.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setShowDeleteConfirm(false)} className="btn btn-secondary">
-                  Cancel
-                </button>
-                <button
-                  onClick={() => bulkDeleteCollectionsMutation.mutate(selectedCollectionIds)}
-                  disabled={bulkDeleteCollectionsMutation.isPending}
-                  className="px-4 py-2 bg-ctp-red text-ctp-base hover:bg-ctp-red/80 rounded transition-all"
-                >
-                  {bulkDeleteCollectionsMutation.isPending ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <AlertDialogCancel className="border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => bulkDeleteCollectionsMutation.mutate(selectedCollectionIds)}
+                className="hover:bg-ctp-red/90 bg-ctp-red text-ctp-base"
+              >
+                {bulkDeleteCollectionsMutation.isPending ? "Deleting..." : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Create Collection Modal */}
-        {showCreateModal && (
-          <div className="fixed inset-0 bg-ctp-base/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold text-ctp-text mb-4">Create Collection</h2>
-              <div className="space-y-4">
-                {/* AI Toggle */}
-                <div className="flex items-center gap-3 p-3 bg-ctp-surface0 rounded-lg">
-                  <Checkbox
-                    id="use-ai"
-                    checked={useAI}
-                    onChange={(e) => {
-                      setUseAI(e.target.checked);
-                      if (!e.target.checked) {
-                        setAiSuggestion(null);
-                        setAiTheme("");
-                      }
-                    }}
-                  />
-                  <label htmlFor="use-ai" className="text-sm text-ctp-text cursor-pointer flex-1">
-                    Use AI to create collection
-                  </label>
-                </div>
+        <Dialog
+          open={showCreateModal}
+          onOpenChange={(open) => {
+            if (open) {
+              setShowCreateModal(true);
+            } else {
+              handleCloseCreateModal();
+            }
+          }}
+        >
+          <DialogContent className="max-w-md border-ctp-surface1 bg-ctp-mantle">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-ctp-text">
+                Create Collection
+              </DialogTitle>
+              <DialogDescription className="text-ctp-subtext0">
+                Organize your games into a custom collection.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* AI Toggle */}
+              <div className="flex items-center gap-3 rounded-lg bg-ctp-surface0 p-3">
+                <Checkbox
+                  id="use-ai"
+                  checked={useAI}
+                  onCheckedChange={(checked) => {
+                    const nextValue = checked === true;
+                    setUseAI(nextValue);
+                    if (!nextValue) {
+                      setAiSuggestion(null);
+                      setAiTheme("");
+                    }
+                  }}
+                />
+                <label htmlFor="use-ai" className="flex-1 cursor-pointer text-sm text-ctp-text">
+                  Use AI to create collection
+                </label>
+              </div>
 
-                {/* AI Theme Input (shown when AI is enabled and no suggestion yet) */}
-                {useAI && !aiSuggestion && (
-                  <div className="p-3 bg-ctp-mauve/10 border border-ctp-mauve/20 rounded-lg">
-                    <label
-                      className="block text-sm font-medium text-ctp-text mb-2"
-                      htmlFor="collection-theme"
-                    >
-                      Collection Theme
-                    </label>
-                    <input
-                      id="collection-theme"
-                      type="text"
-                      value={aiTheme}
-                      onChange={(e) => setAiTheme(e.target.value)}
-                      placeholder="e.g., Cozy games for rainy days"
-                      className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve mb-3"
-                    />
+              {/* AI Theme Input (shown when AI is enabled and no suggestion yet) */}
+              {useAI && !aiSuggestion && (
+                <div className="bg-ctp-mauve/10 border-ctp-mauve/20 rounded-lg border p-3">
+                  <label
+                    className="mb-2 block text-sm font-medium text-ctp-text"
+                    htmlFor="collection-theme"
+                  >
+                    Collection Theme
+                  </label>
+                  <Input
+                    id="collection-theme"
+                    type="text"
+                    value={aiTheme}
+                    onChange={(e) => setAiTheme(e.target.value)}
+                    placeholder="e.g., Cozy games for rainy days"
+                    className="mb-3 bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                  />
+                  <Button
+                    onClick={handleGenerateAISuggestion}
+                    disabled={isGeneratingAI || !aiTheme.trim()}
+                    className="w-full"
+                  >
+                    {isGeneratingAI ? "Generating..." : "Generate AI Suggestion"}
+                  </Button>
+                </div>
+              )}
+
+              {/* AI Suggestion Preview */}
+              {aiSuggestion && (
+                <div className="bg-ctp-green/10 border-ctp-green/20 rounded-lg border p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-ctp-green">AI Suggestion</span>
                     <Button
-                      onClick={handleGenerateAISuggestion}
-                      disabled={isGeneratingAI || !aiTheme.trim()}
-                      className="w-full"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setAiSuggestion(null);
+                        setNewCollectionName("");
+                        setNewCollectionDescription("");
+                      }}
+                      className="h-auto px-2 text-xs text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
                     >
-                      {isGeneratingAI ? "Generating..." : "Generate AI Suggestion"}
+                      Clear
                     </Button>
                   </div>
-                )}
+                  <p className="mb-1 text-xs text-ctp-overlay1">
+                    {aiSuggestion.gameIds.length} games will be added:{" "}
+                    {aiSuggestion.gameNames.slice(0, 3).join(", ")}
+                    {aiSuggestion.gameNames.length > 3 &&
+                      ` +${aiSuggestion.gameNames.length - 3} more`}
+                  </p>
+                  <p className="text-xs italic text-ctp-overlay2">{aiSuggestion.reasoning}</p>
+                </div>
+              )}
 
-                {/* AI Suggestion Preview */}
-                {aiSuggestion && (
-                  <div className="p-3 bg-ctp-green/10 border border-ctp-green/20 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-ctp-green">AI Suggestion</span>
-                      <button
-                        onClick={() => {
-                          setAiSuggestion(null);
-                          setNewCollectionName("");
-                          setNewCollectionDescription("");
-                        }}
-                        className="text-xs text-ctp-subtext0 hover:text-ctp-text"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                    <p className="text-xs text-ctp-overlay1 mb-1">
-                      {aiSuggestion.gameIds.length} games will be added:{" "}
-                      {aiSuggestion.gameNames.slice(0, 3).join(", ")}
-                      {aiSuggestion.gameNames.length > 3 &&
-                        ` +${aiSuggestion.gameNames.length - 3} more`}
-                    </p>
-                    <p className="text-xs text-ctp-overlay2 italic">{aiSuggestion.reasoning}</p>
+              {/* Manual fields - only show when AI is off OR suggestion exists */}
+              {(!useAI || aiSuggestion) && (
+                <>
+                  {/* Name field */}
+                  <div>
+                    <label
+                      className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                      htmlFor="collection-name"
+                    >
+                      Name {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
+                    </label>
+                    <Input
+                      id="collection-name"
+                      type="text"
+                      value={newCollectionName}
+                      onChange={(e) => setNewCollectionName(e.target.value)}
+                      placeholder="e.g., Couch Co-op Games"
+                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                    />
                   </div>
-                )}
 
-                {/* Manual fields - only show when AI is off OR suggestion exists */}
-                {(!useAI || aiSuggestion) && (
-                  <>
-                    {/* Name field */}
-                    <div>
-                      <label
-                        className="block text-sm font-medium text-ctp-subtext0 mb-2"
-                        htmlFor="collection-name"
-                      >
-                        Name{" "}
-                        {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
-                      </label>
-                      <input
-                        id="collection-name"
-                        type="text"
-                        value={newCollectionName}
-                        onChange={(e) => setNewCollectionName(e.target.value)}
-                        placeholder="e.g., Couch Co-op Games"
-                        className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                      />
-                    </div>
+                  {/* Description field */}
+                  <div>
+                    <label
+                      className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                      htmlFor="collection-description"
+                    >
+                      Description (optional){" "}
+                      {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
+                    </label>
+                    <Textarea
+                      id="collection-description"
+                      value={newCollectionDescription}
+                      onChange={(e) => setNewCollectionDescription(e.target.value)}
+                      placeholder="Describe your collection..."
+                      className="min-h-24 bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                    />
+                  </div>
 
-                    {/* Description field */}
-                    <div>
-                      <label
-                        className="block text-sm font-medium text-ctp-subtext0 mb-2"
-                        htmlFor="collection-description"
-                      >
-                        Description (optional){" "}
-                        {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
-                      </label>
-                      <textarea
-                        id="collection-description"
-                        value={newCollectionDescription}
-                        onChange={(e) => setNewCollectionDescription(e.target.value)}
-                        placeholder="Describe your collection..."
-                        className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-24"
-                      />
-                    </div>
-
-                    {/* Cover Image upload */}
-                    <div>
-                      <label
-                        className="block text-sm font-medium text-ctp-subtext0 mb-2"
-                        htmlFor="collection-cover"
-                      >
-                        Cover Image (optional)
-                      </label>
-                      <p className="text-xs text-ctp-overlay1 mb-2">
-                        Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
-                      </p>
-                      <input
-                        id="collection-cover"
-                        type="file"
-                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              showToast("Image must be under 5MB", "error");
-                              e.target.value = "";
-                              return;
-                            }
-                            setNewCollectionCoverFile(file);
-                            setCoverPreviewUrl(URL.createObjectURL(file));
+                  {/* Cover Image upload */}
+                  <div>
+                    <label
+                      className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                      htmlFor="collection-cover"
+                    >
+                      Cover Image (optional)
+                    </label>
+                    <p className="mb-2 text-xs text-ctp-overlay1">
+                      Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
+                    </p>
+                    <Input
+                      id="collection-cover"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            showToast("Image must be under 5MB", "error");
+                            e.target.value = "";
+                            return;
                           }
-                        }}
-                        className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-                      />
-                      {coverPreviewUrl && (
-                        <div className="mt-2">
-                          <img
-                            src={coverPreviewUrl}
-                            alt="Preview"
-                            className="max-h-48 rounded-lg mx-auto"
-                          />
-                          <button
-                            onClick={() => {
-                              setNewCollectionCoverFile(null);
-                              setCoverPreviewUrl(null);
-                            }}
-                            className="text-sm text-ctp-subtext0 hover:text-ctp-text mt-1"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                          setNewCollectionCoverFile(file);
+                          setCoverPreviewUrl(URL.createObjectURL(file));
+                        }
+                      }}
+                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                    />
+                    {coverPreviewUrl && (
+                      <div className="mt-2">
+                        <img
+                          src={coverPreviewUrl}
+                          alt="Preview"
+                          className="mx-auto max-h-48 rounded-lg"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setNewCollectionCoverFile(null);
+                            setCoverPreviewUrl(null);
+                          }}
+                          className="mt-1 h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
 
-                    {/* AI Cover Generation option */}
-                    {aiSuggestion &&
-                      !coverPreviewUrl &&
-                      settingsData?.activeProvider?.provider === "openai" && (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id="generate-cover"
-                            checked={generateCoverOnCreate}
-                            onChange={(e) => setGenerateCoverOnCreate(e.target.checked)}
-                          />
-                          <label
-                            htmlFor="generate-cover"
-                            className="text-sm text-ctp-subtext0 cursor-pointer"
-                          >
-                            Generate AI cover (~$0.04)
-                          </label>
-                        </div>
-                      )}
-                  </>
-                )}
-              </div>
-              <div className="flex gap-3 mt-6">
-                <Button
-                  onClick={handleCreateCollection}
-                  disabled={
-                    isUploadingCover || (useAI && !aiSuggestion && !newCollectionName.trim())
-                  }
-                  className="flex-1"
-                >
-                  {isUploadingCover
-                    ? "Creating..."
-                    : aiSuggestion
-                      ? `Create with ${aiSuggestion.gameIds.length} games`
-                      : "Create"}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setNewCollectionName("");
-                    setNewCollectionDescription("");
-                    setNewCollectionCoverFile(null);
-                    setCoverPreviewUrl(null);
-                    setUseAI(false);
-                    setAiTheme("");
-                    setAiSuggestion(null);
-                    setGenerateCoverOnCreate(false);
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
+                  {/* AI Cover Generation option */}
+                  {aiSuggestion &&
+                    !coverPreviewUrl &&
+                    settingsData?.activeProvider?.provider === "openai" && (
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="generate-cover"
+                          checked={generateCoverOnCreate}
+                          onCheckedChange={(checked) => setGenerateCoverOnCreate(checked === true)}
+                        />
+                        <label
+                          htmlFor="generate-cover"
+                          className="cursor-pointer text-sm text-ctp-subtext0"
+                        >
+                          Generate AI cover (~$0.04)
+                        </label>
+                      </div>
+                    )}
+                </>
+              )}
             </div>
-          </div>
-        )}
+            <DialogFooter className="mt-2 flex flex-col gap-3 sm:flex-row">
+              <Button
+                onClick={handleCreateCollection}
+                disabled={isUploadingCover || (useAI && !aiSuggestion && !newCollectionName.trim())}
+                className="flex-1"
+              >
+                {isUploadingCover
+                  ? "Creating..."
+                  : aiSuggestion
+                    ? `Create with ${aiSuggestion.gameIds.length} games`
+                    : "Create"}
+              </Button>
+              <Button variant="secondary" onClick={handleCloseCreateModal} className="flex-1">
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* AI Cost Confirmation Modal */}
-        {showAICostConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-            <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-ctp-text mb-4">Confirm AI Generation</h3>
-              <p className="text-sm text-ctp-subtext0 mb-4">
+        <AlertDialog open={showAICostConfirm} onOpenChange={setShowAICostConfirm}>
+          <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-ctp-text">
+                Confirm AI Generation
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm text-ctp-subtext0">
                 This will generate an AI-powered collection suggestion for theme: &quot;{aiTheme}
                 &quot;
-              </p>
-              <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-sm text-ctp-subtext0">Estimated cost:</span>
-                <span className="text-lg font-semibold text-ctp-mauve">
-                  ${estimatedAICost.toFixed(4)}
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowAICostConfirm(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleConfirmAIGeneration} className="flex-1">
-                  Continue
-                </Button>
-              </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm text-ctp-subtext0">Estimated cost:</span>
+              <span className="text-lg font-semibold text-ctp-mauve">
+                ${estimatedAICost.toFixed(4)}
+              </span>
             </div>
-          </div>
-        )}
+            <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <AlertDialogCancel className="flex-1 border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmAIGeneration}
+                className="hover:bg-ctp-mauve/90 flex-1 bg-ctp-mauve text-ctp-base"
+              >
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </PageLayout>
   );

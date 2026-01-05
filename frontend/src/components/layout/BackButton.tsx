@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { Button } from "@/components/ui";
 
 interface BackButtonProps {
   label?: string;
@@ -19,9 +20,16 @@ export function BackButton({ label = "Back", iconOnly = false, className = "" }:
   };
 
   return (
-    <button type="button" onClick={handleClick} aria-label={label} className={className}>
+    <Button
+      type="button"
+      onClick={handleClick}
+      aria-label={label}
+      variant="ghost"
+      size={iconOnly ? "icon" : "sm"}
+      className={className}
+    >
       <svg
-        className={iconOnly ? "w-5 h-5" : "w-4 h-4"}
+        className={iconOnly ? "h-5 w-5" : "h-4 w-4"}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -34,6 +42,6 @@ export function BackButton({ label = "Back", iconOnly = false, className = "" }:
         />
       </svg>
       {!iconOnly && <span>{label}</span>}
-    </button>
+    </Button>
   );
 }

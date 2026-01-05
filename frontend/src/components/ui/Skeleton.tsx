@@ -1,59 +1,46 @@
 import { type HTMLAttributes } from "react";
+import { cn } from "@/lib/cn";
 
-export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: "text" | "rectangular" | "circular";
-  width?: string | number;
-  height?: string | number;
+function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>): JSX.Element {
+  return <div className={cn("bg-ctp-mauve/10 animate-pulse rounded-md", className)} {...props} />;
 }
 
-export function Skeleton({
-  variant = "rectangular",
-  width,
-  height,
-  className = "",
-  ...props
-}: SkeletonProps) {
-  const baseStyles = "animate-pulse bg-ctp-surface0/50";
-
-  const variantStyles = {
-    text: "h-4 rounded",
-    rectangular: "rounded-lg",
-    circular: "rounded-full",
-  };
-
-  const style: React.CSSProperties = {};
-  if (width) style.width = typeof width === "number" ? `${width}px` : width;
-  if (height) style.height = typeof height === "number" ? `${height}px` : height;
-
+function GameCardSkeleton(): JSX.Element {
   return (
-    <div
-      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
-      style={style}
-      {...props}
-    />
-  );
-}
-
-// Pre-built skeleton components for common use cases
-export function GameCardSkeleton() {
-  return (
-    <div className="space-y-3">
-      <Skeleton variant="rectangular" className="aspect-[3/4] w-full" />
-      <Skeleton variant="text" width="80%" />
-      <Skeleton variant="text" width="60%" />
-    </div>
-  );
-}
-
-export function GameRowSkeleton() {
-  return (
-    <div className="flex items-center gap-4 p-4">
-      <Skeleton variant="rectangular" width={80} height={120} />
-      <div className="flex-1 space-y-2">
-        <Skeleton variant="text" width="60%" />
-        <Skeleton variant="text" width="40%" />
-        <Skeleton variant="text" width="30%" />
+    <div className="bg-ctp-surface0/40 rounded-xl border border-ctp-surface1 p-4">
+      <Skeleton className="h-40 w-full rounded-lg" />
+      <div className="mt-4 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <div className="flex gap-2">
+          <Skeleton className="h-4 w-10" />
+          <Skeleton className="h-4 w-10" />
+          <Skeleton className="h-4 w-10" />
+        </div>
       </div>
     </div>
   );
 }
+
+function GameRowSkeleton(): JSX.Element {
+  return (
+    <div className="bg-ctp-surface0/40 flex items-center gap-4 rounded-lg border border-ctp-surface1 p-4">
+      <Skeleton className="h-16 w-12 rounded-md" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-3 w-1/3" />
+      </div>
+      <Skeleton className="h-6 w-16" />
+    </div>
+  );
+}
+
+function SkeletonCard(): JSX.Element {
+  return <GameCardSkeleton />;
+}
+
+function SkeletonTable(): JSX.Element {
+  return <GameRowSkeleton />;
+}
+
+export { Skeleton, GameCardSkeleton, GameRowSkeleton, SkeletonCard, SkeletonTable };

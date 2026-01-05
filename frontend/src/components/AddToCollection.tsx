@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ScrollFade } from "@/components/ui";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  ScrollFade,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI } from "@/lib/api";
 
@@ -30,6 +37,27 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
 
   const addToCollectionMutation = useMutation({
     mutationFn: (collectionId: string) => collectionsAPI.addGame(collectionId, gameId),
+    onMutate: async (collectionId) => {
+      await queryClient.cancelQueries({ queryKey: ["collections"] });
+      const previousCollections = queryClient.getQueriesData({ queryKey: ["collections"] });
+
+      queryClient.setQueriesData<{ collections: Collection[] }>(
+        { queryKey: ["collections"] },
+        (oldData) => {
+          if (!oldData?.collections) return oldData;
+          return {
+            ...oldData,
+            collections: oldData.collections.map((collection: Collection) =>
+              collection.id === collectionId
+                ? { ...collection, game_count: collection.game_count + 1 }
+                : collection
+            ),
+          };
+        }
+      );
+
+      return { previousCollections };
+    },
     onSuccess: (_, collectionId) => {
       queryClient.invalidateQueries({ queryKey: ["collection", collectionId] });
       queryClient.invalidateQueries({ queryKey: ["collections"] });
@@ -38,7 +66,10 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
       setShowDropdown(false);
       onClose?.();
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      context?.previousCollections?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
       showToast("Failed to add to collection", "error");
     },
   });
@@ -46,56 +77,41 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
   const collections = data?.collections || [];
 
   return (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setShowDropdown(!showDropdown);
-        }}
-        className="px-3 py-1 bg-ctp-mauve/20 border border-ctp-mauve/30 text-ctp-mauve hover:bg-ctp-mauve/30 rounded-lg text-sm transition-all"
-      >
-        Add to Collection
-      </button>
-
-      {showDropdown && (
-        <>
-          <button
-            type="button"
-            aria-label="Close collection dropdown"
-            className="fixed inset-0 z-40"
-            onClick={() => setShowDropdown(false)}
-          />
-          <ScrollFade
-            axis="y"
-            className="absolute right-0 mt-2 w-64 bg-ctp-surface0 border border-ctp-surface1 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto"
-          >
-            <div className="py-1">
-              {collections.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-ctp-subtext0 text-center">
-                  No collections yet. Create one first!
-                </div>
-              ) : (
-                collections.map((collection) => (
-                  <button
-                    key={collection.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      addToCollectionMutation.mutate(collection.id);
-                    }}
-                    disabled={addToCollectionMutation.isPending}
-                    className="w-full text-left px-4 py-2 text-sm text-ctp-subtext1 hover:bg-ctp-surface1 hover:text-ctp-text disabled:opacity-50"
-                  >
-                    <div className="font-medium">{collection.name}</div>
-                    <div className="text-xs text-ctp-overlay1">{collection.game_count} games</div>
-                  </button>
-                ))
-              )}
+    <DropdownMenu open={showDropdown} onOpenChange={setShowDropdown}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="border-ctp-mauve/30 bg-ctp-mauve/20 hover:bg-ctp-mauve/30 text-ctp-mauve"
+        >
+          Add to Collection
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64 border-ctp-surface1 bg-ctp-surface0">
+        <ScrollFade axis="y" className="max-h-64 overflow-y-auto">
+          {collections.length === 0 ? (
+            <div className="px-4 py-3 text-center text-sm text-ctp-subtext0">
+              No collections yet. Create one first!
             </div>
-          </ScrollFade>
-        </>
-      )}
-    </div>
+          ) : (
+            collections.map((collection) => (
+              <DropdownMenuItem
+                key={collection.id}
+                onClick={() => addToCollectionMutation.mutate(collection.id)}
+                disabled={addToCollectionMutation.isPending}
+                className="flex flex-col items-start gap-0.5"
+              >
+                <span className="font-medium">{collection.name}</span>
+                <span className="text-xs text-ctp-overlay1">{collection.game_count} games</span>
+              </DropdownMenuItem>
+            ))
+          )}
+        </ScrollFade>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

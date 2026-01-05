@@ -1,10 +1,12 @@
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
+import { Button } from "@/components/ui";
 
 interface FilterSectionProps {
   title: string;
   icon: ReactNode;
   iconColor: string;
   defaultOpen?: boolean;
+  storageKey?: string;
   children: ReactNode;
   onClear?: () => void;
   hasSelection?: boolean;
@@ -15,22 +17,38 @@ export function FilterSection({
   icon,
   iconColor,
   defaultOpen = true,
+  storageKey,
   children,
   onClear,
   hasSelection = false,
 }: FilterSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = useState<boolean>(() => {
+    if (storageKey) {
+      const stored = localStorage.getItem(`library-sidebar-${storageKey}`);
+      if (stored !== null) {
+        return stored === "true";
+      }
+    }
+    return defaultOpen;
+  });
+
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(`library-sidebar-${storageKey}`, String(isOpen));
+    }
+  }, [isOpen, storageKey]);
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <button
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider cursor-pointer hover:text-ctp-text transition-colors"
+          variant="ghost"
+          className="flex h-auto cursor-pointer items-center gap-2 p-0 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0 transition-colors hover:text-ctp-text"
           aria-expanded={isOpen}
         >
           <svg
-            className={`w-3 h-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
+            className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -39,14 +57,15 @@ export function FilterSection({
           </svg>
           <span className={iconColor}>{icon}</span>
           {title}
-        </button>
+        </Button>
         {onClear && hasSelection && (
-          <button
+          <Button
             onClick={onClear}
-            className="text-xs text-ctp-subtext1 hover:text-ctp-text transition-colors px-2 py-0.5"
+            variant="ghost"
+            className="h-auto px-2 py-0.5 text-xs text-ctp-subtext1 transition-colors hover:text-ctp-text"
           >
             Clear
-          </button>
+          </Button>
         )}
       </div>
       {isOpen && <div className="mt-2">{children}</div>}

@@ -1,11 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BackButton, PageLayout } from "@/components/layout";
 import { CollectionDetailSidebar } from "@/components/sidebar/CollectionDetailSidebar";
-import { Button, Checkbox, ScrollFade } from "@/components/ui";
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  ScrollFade,
+  Textarea,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI, gamesAPI } from "@/lib/api";
+import { cn } from "@/lib/cn";
 
 interface Game {
   id: string;
@@ -25,6 +41,13 @@ interface Collection {
   cover_art_url: string | null;
 }
 
+const collectionSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(80),
+  description: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+
+type CollectionFormValues = z.infer<typeof collectionSchema>;
+
 interface LibraryGame {
   id: string;
   name: string;
@@ -39,8 +62,6 @@ export function CollectionDetail() {
   const { showToast } = useToast();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [nameValue, setNameValue] = useState("");
-  const [descriptionValue, setDescriptionValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddGamesModal, setShowAddGamesModal] = useState(false);
   const [selectedGameIds, setSelectedGameIds] = useState<string[]>([]);
@@ -81,6 +102,54 @@ export function CollectionDetail() {
 
   const addGameMutation = useMutation({
     mutationFn: (gameIds: string[]) => collectionsAPI.bulkAddGames(id, gameIds),
+    onMutate: async (gameIds) => {
+      await queryClient.cancelQueries({ queryKey: ["collection", id] });
+      await queryClient.cancelQueries({ queryKey: ["collections"] });
+
+      const previousCollection = queryClient.getQueryData<{
+        collection: Collection;
+        games: Game[];
+      }>(["collection", id]);
+      const previousCollections = queryClient.getQueryData<{
+        collections: Array<{ id: string; game_count: number }>;
+      }>(["collections"]);
+      const libraryGames = queryClient.getQueryData<{ games: LibraryGame[] }>(["library-games"]);
+
+      const existingIds = new Set(previousCollection?.games?.map((game) => game.id) ?? []);
+      const newGameIds = gameIds.filter((gameId) => !existingIds.has(gameId));
+      const newGames =
+        libraryGames?.games
+          ?.filter((game) => newGameIds.includes(game.id))
+          .map((game) => ({
+            id: game.id,
+            name: game.name,
+            cover_art_url: game.cover_art_url,
+            platform_display_name: game.platform_display_name,
+            status: "backlog",
+            user_rating: null,
+            is_favorite: false,
+          })) ?? [];
+
+      if (previousCollection) {
+        queryClient.setQueryData(["collection", id], {
+          ...previousCollection,
+          games: [...previousCollection.games, ...newGames],
+        });
+      }
+
+      if (previousCollections) {
+        queryClient.setQueryData(["collections"], {
+          ...previousCollections,
+          collections: previousCollections.collections.map((collection) =>
+            collection.id === id
+              ? { ...collection, game_count: collection.game_count + newGameIds.length }
+              : collection
+          ),
+        });
+      }
+
+      return { previousCollection, previousCollections };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collection", id] });
       queryClient.invalidateQueries({ queryKey: ["collections"] });
@@ -89,7 +158,13 @@ export function CollectionDetail() {
       setSearchQuery("");
       setShowAddGamesModal(false);
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousCollection) {
+        queryClient.setQueryData(["collection", id], context.previousCollection);
+      }
+      if (context?.previousCollections) {
+        queryClient.setQueryData(["collections"], context.previousCollections);
+      }
       showToast("Failed to add games", "error");
     },
   });
@@ -97,6 +172,42 @@ export function CollectionDetail() {
   const removeGameMutation = useMutation({
     mutationFn: (gameIds: string[]) =>
       Promise.all(gameIds.map((gameId) => collectionsAPI.removeGame(id, gameId))),
+    onMutate: async (gameIds) => {
+      await queryClient.cancelQueries({ queryKey: ["collection", id] });
+      await queryClient.cancelQueries({ queryKey: ["collections"] });
+
+      const previousCollection = queryClient.getQueryData<{
+        collection: Collection;
+        games: Game[];
+      }>(["collection", id]);
+      const previousCollections = queryClient.getQueryData<{
+        collections: Array<{ id: string; game_count: number }>;
+      }>(["collections"]);
+
+      const removedCount = previousCollection?.games
+        ? previousCollection.games.filter((game) => gameIds.includes(game.id)).length
+        : 0;
+
+      if (previousCollection) {
+        queryClient.setQueryData(["collection", id], {
+          ...previousCollection,
+          games: previousCollection.games.filter((game) => !gameIds.includes(game.id)),
+        });
+      }
+
+      if (previousCollections) {
+        queryClient.setQueryData(["collections"], {
+          ...previousCollections,
+          collections: previousCollections.collections.map((collection) =>
+            collection.id === id
+              ? { ...collection, game_count: Math.max(0, collection.game_count - removedCount) }
+              : collection
+          ),
+        });
+      }
+
+      return { previousCollection, previousCollections };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["collection", id] });
       queryClient.invalidateQueries({ queryKey: ["collections"] });
@@ -104,7 +215,13 @@ export function CollectionDetail() {
       setSelectedCollectionGameIds([]);
       setSelectionMode(false);
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      if (context?.previousCollection) {
+        queryClient.setQueryData(["collection", id], context.previousCollection);
+      }
+      if (context?.previousCollections) {
+        queryClient.setQueryData(["collections"], context.previousCollections);
+      }
       showToast("Failed to remove games", "error");
     },
   });
@@ -126,6 +243,22 @@ export function CollectionDetail() {
   const collectionGameIds = useMemo(() => new Set(games.map((game) => game.id)), [games]);
 
   const libraryItems = useMemo(() => libraryData?.games ?? [], [libraryData?.games]);
+
+  const collectionForm = useForm<CollectionFormValues>({
+    resolver: zodResolver(collectionSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  useEffect(() => {
+    if (!data?.collection) return;
+    collectionForm.reset({
+      name: data.collection.name ?? "",
+      description: data.collection.description ?? "",
+    });
+  }, [data?.collection, collectionForm]);
 
   const libraryGames = useMemo(() => {
     const items = libraryItems;
@@ -163,7 +296,7 @@ export function CollectionDetail() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
@@ -173,7 +306,7 @@ export function CollectionDetail() {
   if (!data) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-red">Collection not found</div>
         </div>
       </PageLayout>
@@ -200,17 +333,19 @@ export function CollectionDetail() {
     }
   };
 
-  const handleSaveName = () => {
-    if (!nameValue.trim()) {
-      showToast("Collection name cannot be empty", "error");
-      return;
-    }
-    updateCollectionMutation.mutate({ name: nameValue, description: collection.description || "" });
-  };
+  const handleSaveName = collectionForm.handleSubmit((values) => {
+    updateCollectionMutation.mutate({
+      name: values.name.trim(),
+      description: collection.description || "",
+    });
+  });
 
-  const handleSaveDescription = () => {
-    updateCollectionMutation.mutate({ name: collection.name, description: descriptionValue });
-  };
+  const handleSaveDescription = collectionForm.handleSubmit((values) => {
+    updateCollectionMutation.mutate({
+      name: collection.name,
+      description: values.description?.trim() || "",
+    });
+  });
 
   const handleUploadCover = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -272,92 +407,115 @@ export function CollectionDetail() {
         />
       }
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-6">
           <Link
             to="/collections"
-            className="hidden md:inline-block text-ctp-teal hover:text-ctp-mauve transition-colors mb-4"
+            className="mb-4 hidden text-ctp-teal transition-colors hover:text-ctp-mauve md:inline-block"
           >
             Back to Collections
           </Link>
           <div className="mb-4">
             {isEditingName ? (
-              <div>
-                <div className="flex items-center gap-3 mb-2">
+              <form onSubmit={handleSaveName}>
+                <div className="mb-2 flex items-center gap-3">
                   <BackButton
                     iconOnly={true}
-                    className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                    className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
                   />
-                  <input
+                  <Input
                     type="text"
-                    value={nameValue}
-                    onChange={(e) => setNameValue(e.target.value)}
-                    className="flex-1 text-4xl font-bold bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                    {...collectionForm.register("name")}
+                    className="flex-1 bg-ctp-mantle text-4xl font-bold text-ctp-text focus-visible:ring-ctp-mauve"
                   />
                 </div>
+                {collectionForm.formState.errors.name && (
+                  <p className="mb-2 text-xs text-ctp-red">
+                    {collectionForm.formState.errors.name.message}
+                  </p>
+                )}
                 <div className="flex gap-2">
-                  <Button
-                    onClick={handleSaveName}
-                    disabled={updateCollectionMutation.isPending}
-                    size="sm"
-                  >
+                  <Button type="submit" disabled={updateCollectionMutation.isPending} size="sm">
                     {updateCollectionMutation.isPending ? "Saving..." : "Save"}
                   </Button>
-                  <Button variant="secondary" size="sm" onClick={() => setIsEditingName(false)}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    type="button"
+                    onClick={() => {
+                      collectionForm.reset({
+                        name: collection.name ?? "",
+                        description: collection.description ?? "",
+                      });
+                      setIsEditingName(false);
+                    }}
+                  >
                     Cancel
                   </Button>
                 </div>
-              </div>
+              </form>
             ) : (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <BackButton
                     iconOnly={true}
-                    className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                    className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
                   />
                   <h1 className="text-4xl font-bold text-ctp-text">{collection.name}</h1>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
-                    setNameValue(collection.name);
+                    collectionForm.reset({
+                      name: collection.name ?? "",
+                      description: collection.description ?? "",
+                    });
                     setIsEditingName(true);
                   }}
-                  className="text-sm text-ctp-teal hover:text-ctp-mauve"
+                  className="text-ctp-teal hover:bg-transparent hover:text-ctp-mauve"
                 >
                   Edit
-                </button>
+                </Button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Sidebar - Cover and Controls */}
           <div className="lg:col-span-1">
             {/* Cover Art */}
-            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-4">
+            <div
+              className={cn(
+                "mb-4 overflow-hidden rounded-lg bg-ctp-surface0",
+                collection.cover_filename || collection.cover_art_url
+                  ? "aspect-[3/4]"
+                  : "aspect-[4/5] lg:aspect-[5/6]"
+              )}
+            >
               {collection.cover_filename ? (
                 <img
                   src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}
                   alt={collection.name}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : collection.cover_art_url ? (
                 <img
                   src={`${collection.cover_art_url}${collection.cover_art_url.includes("?") ? "&" : "?"}v=${coverKey}`}
                   alt={collection.name}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                   <span className="text-sm">No Cover</span>
                 </div>
               )}
             </div>
 
             {/* Cover Upload/Delete Buttons */}
-            <div className="flex gap-2 mb-4">
+            <div className="mb-4 flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -380,7 +538,7 @@ export function CollectionDetail() {
             </div>
 
             {/* Game Count */}
-            <div className="bg-ctp-teal/10 border border-ctp-teal/30 rounded-lg p-3 mb-4">
+            <div className="bg-ctp-teal/10 border-ctp-teal/30 mb-4 rounded-lg border p-3">
               <div className="text-xs text-ctp-teal">Games</div>
               <div className="text-lg font-semibold text-ctp-text">
                 {games.length} {games.length === 1 ? "game" : "games"}
@@ -388,7 +546,7 @@ export function CollectionDetail() {
             </div>
 
             {/* Delete Collection Button */}
-            <Button variant="danger" onClick={handleDeleteCollection} className="w-full">
+            <Button variant="destructive" onClick={handleDeleteCollection} className="w-full">
               Delete Collection
             </Button>
           </div>
@@ -396,62 +554,76 @@ export function CollectionDetail() {
           {/* Main Content - Collection Details and Games */}
           <div className="lg:col-span-2">
             {/* Collection Description */}
-            <div id="description" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div id="description" className="bg-ctp-surface0/30 mb-6 rounded-lg p-4">
+              <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-ctp-mauve">Description</h2>
                 {!isEditingDescription && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
-                      setDescriptionValue(collection.description || "");
+                      collectionForm.reset({
+                        name: collection.name ?? "",
+                        description: collection.description ?? "",
+                      });
                       setIsEditingDescription(true);
                     }}
-                    className="text-sm text-ctp-teal hover:text-ctp-mauve"
+                    className="text-ctp-teal hover:bg-transparent hover:text-ctp-mauve"
                   >
                     {collection.description ? "Edit" : "Add Description"}
-                  </button>
+                  </Button>
                 )}
               </div>
 
               {isEditingDescription ? (
-                <div>
-                  <textarea
-                    value={descriptionValue}
-                    onChange={(e) => setDescriptionValue(e.target.value)}
-                    className="w-full bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve min-h-24"
+                <form onSubmit={handleSaveDescription}>
+                  <Textarea
+                    {...collectionForm.register("description")}
+                    className="min-h-24 bg-ctp-mantle text-ctp-text focus-visible:ring-ctp-mauve"
                     placeholder="Describe your collection..."
                   />
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      onClick={handleSaveDescription}
-                      disabled={updateCollectionMutation.isPending}
-                      size="sm"
-                    >
+                  {collectionForm.formState.errors.description && (
+                    <p className="mt-1 text-xs text-ctp-red">
+                      {collectionForm.formState.errors.description.message}
+                    </p>
+                  )}
+                  <div className="mt-2 flex gap-2">
+                    <Button type="submit" disabled={updateCollectionMutation.isPending} size="sm">
                       {updateCollectionMutation.isPending ? "Saving..." : "Save"}
                     </Button>
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => setIsEditingDescription(false)}
+                      type="button"
+                      onClick={() => {
+                        collectionForm.reset({
+                          name: collection.name ?? "",
+                          description: collection.description ?? "",
+                        });
+                        setIsEditingDescription(false);
+                      }}
                     >
                       Cancel
                     </Button>
                   </div>
-                </div>
+                </form>
               ) : (
-                <div className="text-ctp-subtext1 bg-ctp-mantle/50 rounded-lg p-4">
+                <div className="bg-ctp-mantle/50 rounded-lg p-4 text-ctp-subtext1">
                   {collection.description || "No description yet"}
                 </div>
               )}
             </div>
 
             {/* Games Section */}
-            <div id="games" className="mb-6 bg-ctp-surface0/30 rounded-lg p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div id="games" className="bg-ctp-surface0/30 mb-6 rounded-lg p-4">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-xl font-semibold text-ctp-mauve">Games in Collection</h2>
                 <div className="flex items-center gap-2">
                   {selectionMode ? (
                     <>
-                      <button
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => {
                           if (selectedCollectionGameIds.length === games.length) {
                             setSelectedCollectionGameIds([]);
@@ -459,31 +631,35 @@ export function CollectionDetail() {
                             setSelectedCollectionGameIds(games.map((game) => game.id));
                           }
                         }}
-                        className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
+                        className="bg-ctp-surface1 hover:bg-ctp-surface2"
                       >
                         {selectedCollectionGameIds.length === games.length
                           ? "Deselect All"
                           : "Select All"}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => {
                           setSelectionMode(false);
                           setSelectedCollectionGameIds([]);
                         }}
-                        className="px-3 py-1.5 bg-ctp-surface1 hover:bg-gray-600 text-ctp-text rounded text-sm transition-all"
+                        className="bg-ctp-surface1 hover:bg-ctp-surface2"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </>
                   ) : (
                     <>
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setSelectionMode(true)}
                         disabled={games.length === 0}
-                        className="px-3 py-1.5 bg-ctp-mauve/20 border border-ctp-mauve/30 text-ctp-mauve hover:bg-ctp-mauve/30 rounded text-sm transition-all disabled:opacity-50"
+                        className="bg-ctp-mauve/20 border-ctp-mauve/30 hover:bg-ctp-mauve/30 text-ctp-mauve"
                       >
                         Select Games
-                      </button>
+                      </Button>
                       <Button
                         size="sm"
                         onClick={() => setShowAddGamesModal(true)}
@@ -496,11 +672,11 @@ export function CollectionDetail() {
                 </div>
               </div>
               {games.length === 0 ? (
-                <p className="text-ctp-subtext0 text-center py-8">
+                <p className="py-8 text-center text-ctp-subtext0">
                   No games in this collection yet. Add games from your library!
                 </p>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                   {games.map((game) => {
                     const isSelected = selectedCollectionGameIds.includes(game.id);
                     if (selectionMode) {
@@ -519,9 +695,9 @@ export function CollectionDetail() {
                           tabIndex={0}
                         >
                           <div
-                            className={`aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative border transition-colors ${
+                            className={`relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-ctp-surface0 transition-colors ${
                               isSelected
-                                ? "border-ctp-mauve bg-ctp-mauve/20"
+                                ? "bg-ctp-mauve/20 border-ctp-mauve"
                                 : "border-dashed border-ctp-surface1 hover:border-ctp-mauve"
                             }`}
                           >
@@ -529,26 +705,26 @@ export function CollectionDetail() {
                               <img
                                 src={game.cover_art_url}
                                 alt={game.name}
-                                className={`w-full h-full object-cover transition-all ${
+                                className={`h-full w-full object-cover transition-all ${
                                   isSelected
                                     ? "opacity-100 grayscale-0"
                                     : "opacity-60 group-hover:opacity-100"
                                 }`}
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                              <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                                 No Cover
                               </div>
                             )}
                             {isSelected && (
-                              <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-ctp-mauve flex items-center justify-center">
+                              <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   strokeWidth={3}
                                   stroke="currentColor"
-                                  className="w-4 h-4 text-ctp-text"
+                                  className="h-4 w-4 text-ctp-text"
                                 >
                                   <path
                                     strokeLinecap="round"
@@ -559,7 +735,7 @@ export function CollectionDetail() {
                               </div>
                             )}
                           </div>
-                          <p className="text-sm text-ctp-subtext0 truncate group-hover:text-ctp-subtext1 mb-1">
+                          <p className="mb-1 truncate text-sm text-ctp-subtext0 group-hover:text-ctp-subtext1">
                             {game.name}
                           </p>
                         </div>
@@ -569,30 +745,32 @@ export function CollectionDetail() {
                     return (
                       <div key={game.id} className="group relative">
                         <Link to="/library/$id" params={{ id: game.id }}>
-                          <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2">
+                          <div className="mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
                             {game.cover_art_url ? (
                               <img
                                 src={game.cover_art_url}
                                 alt={game.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                className="h-full w-full object-cover transition-transform group-hover:scale-105"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                              <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                                 No Cover
                               </div>
                             )}
                           </div>
-                          <p className="text-sm text-ctp-subtext1 truncate group-hover:text-ctp-text">
+                          <p className="truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
                             {game.name}
                           </p>
                         </Link>
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => removeGameMutation.mutate([game.id])}
-                          className="absolute top-2 right-2 bg-ctp-red/80 hover:bg-ctp-red text-ctp-base rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="bg-ctp-red/80 absolute right-2 top-2 h-6 w-6 rounded-full text-ctp-base opacity-0 hover:bg-ctp-red group-hover:opacity-100"
                           title="Remove from collection"
                         >
                           ×
-                        </button>
+                        </Button>
                       </div>
                     );
                   })}
@@ -604,128 +782,125 @@ export function CollectionDetail() {
       </div>
 
       {selectionMode && selectedCollectionGameIds.length > 0 && (
-        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 bg-ctp-mantle border border-ctp-surface1 rounded-xl px-6 py-4 shadow-xl z-40 flex items-center gap-4">
-          <span className="text-ctp-text font-medium">
+        <div className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border border-ctp-surface1 bg-ctp-mantle px-6 py-4 shadow-xl md:bottom-6">
+          <span className="font-medium text-ctp-text">
             {selectedCollectionGameIds.length} game
             {selectedCollectionGameIds.length !== 1 ? "s" : ""} selected
           </span>
           <div className="h-6 w-px bg-ctp-surface1" />
           <Button
-            variant="danger"
+            variant="destructive"
             onClick={() => removeGameMutation.mutate(selectedCollectionGameIds)}
             disabled={removeGameMutation.isPending}
-            className="text-sm py-1 px-3"
+            className="px-3 py-1 text-sm"
           >
             {removeGameMutation.isPending ? "Removing..." : "Remove from Collection"}
           </Button>
         </div>
       )}
 
-      {showAddGamesModal && (
-        <div className="fixed inset-0 bg-ctp-base/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg p-6 max-w-2xl w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-ctp-text">Add Games</h2>
-              <button
+      <Dialog
+        open={showAddGamesModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddGamesModal(false);
+            setSelectedGameIds([]);
+            setSearchQuery("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl border-ctp-surface1 bg-ctp-mantle">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-ctp-text">Add Games</DialogTitle>
+            <DialogDescription className="flex items-center justify-between">
+              <span>Search your library and select multiple games to add.</span>
+              {selectedGameIds.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedGameIds([])}
+                  className="h-auto py-0 text-xs text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                >
+                  Clear selection
+                </Button>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search your library..."
+            className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+          />
+          {normalizedQuery && (
+            <ScrollFade axis="y" className="max-h-80 space-y-2 overflow-y-auto">
+              {searchResults.length === 0 ? (
+                <div className="py-6 text-center text-sm text-ctp-subtext0">
+                  No games matched your search.
+                </div>
+              ) : (
+                searchResults.map((game) => (
+                  <label
+                    key={game.id}
+                    className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border p-2 text-left transition-colors ${
+                      selectedGameIds.includes(game.id)
+                        ? "bg-ctp-mauve/10 border-ctp-mauve"
+                        : "bg-ctp-surface0/60 border-ctp-surface1 hover:bg-ctp-surface1"
+                    }`}
+                  >
+                    <Checkbox
+                      id={`collection-add-${game.id}`}
+                      checked={selectedGameIds.includes(game.id)}
+                      onCheckedChange={() => toggleSelectedGame(game.id)}
+                    />
+                    <div className="h-14 w-10 flex-shrink-0 overflow-hidden rounded-md bg-ctp-surface0">
+                      {game.cover_art_url ? (
+                        <img
+                          src={game.cover_art_url}
+                          alt={game.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs text-ctp-overlay1">
+                          No Cover
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm text-ctp-text">{game.name}</div>
+                      <div className="truncate text-xs text-ctp-subtext0">
+                        {game.platform_display_name}
+                      </div>
+                    </div>
+                  </label>
+                ))
+              )}
+            </ScrollFade>
+          )}
+          <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
+            <div className="text-sm text-ctp-subtext0">{selectedGameIds.length} selected</div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setShowAddGamesModal(false);
                   setSelectedGameIds([]);
                   setSearchQuery("");
                 }}
-                className="text-ctp-subtext0 hover:text-ctp-text"
               >
-                Close
-              </button>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => addGameMutation.mutate(selectedGameIds)}
+                disabled={selectedGameIds.length === 0 || addGameMutation.isPending}
+              >
+                {addGameMutation.isPending ? "Adding..." : "Add Selected"}
+              </Button>
             </div>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm text-ctp-subtext0">
-                Search your library and select multiple games to add.
-              </p>
-              {selectedGameIds.length > 0 && (
-                <button
-                  onClick={() => setSelectedGameIds([])}
-                  className="text-xs text-ctp-subtext0 hover:text-ctp-text"
-                >
-                  Clear selection
-                </button>
-              )}
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search your library..."
-              className="w-full bg-ctp-surface0 border border-ctp-surface1 rounded-lg px-3 py-2 text-ctp-text focus:outline-none focus:border-ctp-mauve"
-            />
-            {normalizedQuery && (
-              <ScrollFade axis="y" className="mt-4 max-h-80 overflow-y-auto space-y-2">
-                {searchResults.length === 0 ? (
-                  <div className="text-sm text-ctp-subtext0 text-center py-6">
-                    No games matched your search.
-                  </div>
-                ) : (
-                  searchResults.map((game) => (
-                    <label
-                      key={game.id}
-                      className={`w-full flex items-center gap-3 border rounded-lg p-2 text-left transition-colors cursor-pointer ${
-                        selectedGameIds.includes(game.id)
-                          ? "border-ctp-mauve bg-ctp-mauve/10"
-                          : "border-ctp-surface1 bg-ctp-surface0/60 hover:bg-ctp-surface1"
-                      }`}
-                    >
-                      <Checkbox
-                        id={`collection-add-${game.id}`}
-                        checked={selectedGameIds.includes(game.id)}
-                        onChange={() => toggleSelectedGame(game.id)}
-                      />
-                      <div className="w-10 h-14 rounded-md overflow-hidden bg-ctp-surface0 flex-shrink-0">
-                        {game.cover_art_url ? (
-                          <img
-                            src={game.cover_art_url}
-                            alt={game.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-ctp-overlay1 text-xs">
-                            No Cover
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-ctp-text truncate">{game.name}</div>
-                        <div className="text-xs text-ctp-subtext0 truncate">
-                          {game.platform_display_name}
-                        </div>
-                      </div>
-                    </label>
-                  ))
-                )}
-              </ScrollFade>
-            )}
-            <div className="flex items-center justify-between gap-3 mt-6">
-              <div className="text-sm text-ctp-subtext0">{selectedGameIds.length} selected</div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setShowAddGamesModal(false);
-                    setSelectedGameIds([]);
-                    setSearchQuery("");
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => addGameMutation.mutate(selectedGameIds)}
-                  disabled={selectedGameIds.length === 0 || addGameMutation.isPending}
-                >
-                  {addGameMutation.isPending ? "Adding..." : "Add Selected"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

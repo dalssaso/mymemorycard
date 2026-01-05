@@ -1,25 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { gamesAPI } from "@/lib/api";
-import { ScrollFade } from "@/components/ui";
+import { Button, ScrollFade } from "@/components/ui";
+import { useGenreStats } from "@/hooks/useGenreStats";
 
 interface GenreFilterProps {
   selectedGenres: string[];
   onGenresChange: (genres: string[]) => void;
 }
 
-interface GenreStat {
-  name: string;
-  count: number;
-}
-
 export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["genreStats"],
-    queryFn: async () => {
-      const response = await gamesAPI.getGenreStats();
-      return response.data as { genres: GenreStat[] };
-    },
-  });
+  const { data, isLoading } = useGenreStats();
 
   const genres = data?.genres || [];
 
@@ -40,22 +28,23 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
   }
 
   return (
-    <ScrollFade axis="y" className="space-y-1 max-h-48 overflow-y-auto">
+    <ScrollFade axis="y" className="max-h-48 space-y-1 overflow-y-auto">
       {genres.map((genre) => {
         const isSelected = selectedGenres.includes(genre.name);
         return (
-          <button
+          <Button
             key={genre.name}
             onClick={() => toggleGenre(genre.name)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between border ${
+            variant="ghost"
+            className={`flex h-auto w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-all ${
               isSelected
-                ? "bg-ctp-peach/20 text-ctp-peach border-ctp-peach"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
+                ? "bg-ctp-peach/20 border-ctp-peach text-ctp-peach"
+                : "border-transparent text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
             }`}
           >
             <span>{genre.name}</span>
             <span className="text-xs text-ctp-subtext1">{genre.count}</span>
-          </button>
+          </Button>
         );
       })}
     </ScrollFade>

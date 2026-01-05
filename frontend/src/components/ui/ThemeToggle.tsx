@@ -1,3 +1,4 @@
+import { Button } from "./button";
 import { useTheme } from "@/contexts/ThemeContext";
 
 function SunIcon() {
@@ -75,14 +76,16 @@ export function ThemeToggle() {
   const labelTheme = theme === "auto" ? `auto (${resolvedTheme})` : theme;
 
   return (
-    <button
+    <Button
       type="button"
       onClick={toggleTheme}
-      className="p-2 rounded-lg text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0 transition-colors"
+      variant="ghost"
+      size="icon"
+      className="rounded-lg p-2 text-ctp-subtext0 transition-colors hover:bg-ctp-surface0 hover:text-ctp-text"
       aria-label={`Current theme: ${labelTheme}. Click to toggle light or dark.`}
       title={`Theme: ${labelTheme}`}
     >
       {renderIcon()}
-    </button>
+    </Button>
   );
 }

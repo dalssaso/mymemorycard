@@ -20,7 +20,15 @@ import { ActivityFeed } from "@/components/ActivityFeed";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
 import { BackButton, PageLayout } from "@/components/layout";
 import { DashboardSidebar } from "@/components/sidebar";
-import { Card, ScrollFade } from "@/components/ui";
+import {
+  Button,
+  Card,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  ScrollFade,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { gamesAPI } from "@/lib/api";
@@ -235,9 +243,9 @@ export function Dashboard() {
     const color = data?.color || "#a1a1aa";
 
     return (
-      <div className="bg-ctp-mantle border border-ctp-surface1 rounded-lg px-3 py-2 text-sm">
+      <div className="rounded-lg border border-ctp-surface1 bg-ctp-mantle px-3 py-2 text-sm">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
           <span className="text-ctp-subtext1">
             {name}: {value}
           </span>
@@ -248,21 +256,21 @@ export function Dashboard() {
 
   return (
     <PageLayout sidebar={<DashboardSidebar games={games} />} customCollapsed={true}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="mx-auto max-w-[1440px]">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
             />
             <h1 className="text-4xl font-bold text-ctp-text">Dashboard</h1>
           </div>
-          <div className="flex gap-3">
+          <div className="hidden gap-3 sm:flex">
             <Link
               to="/platforms"
-              className="flex items-center gap-2 px-4 py-2 bg-ctp-surface0 text-ctp-text rounded-lg hover:bg-ctp-surface1 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-ctp-surface0 px-4 py-2 text-ctp-text transition-colors hover:bg-ctp-surface1"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -274,57 +282,88 @@ export function Dashboard() {
             </Link>
             <Link
               to="/import"
-              className="flex items-center gap-2 px-4 py-2 bg-ctp-mauve text-ctp-base rounded-lg hover:bg-ctp-mauve/80 transition-colors"
+              className="hover:bg-ctp-mauve/80 flex items-center gap-2 rounded-lg bg-ctp-mauve px-4 py-2 text-ctp-base transition-colors"
             >
               <span className="material-symbols-outlined text-xl">download</span>
               Import Games
             </Link>
           </div>
+          <div className="flex sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon" aria-label="Dashboard actions">
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 6h.01M12 12h.01M12 18h.01" />
+                  </svg>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => navigate({ to: "/platforms" })}>
+                  Manage Platforms
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/import" })}>
+                  Import Games
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card
-            className="cursor-pointer hover:brightness-110 transition"
+            className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.total}
             onClick={() => navigateToLibrary({})}
           >
-            <h3 className="text-ctp-subtext0 text-sm mb-2">Total Games</h3>
+            <h3 className="mb-2 text-sm text-ctp-subtext0">Total Games</h3>
             <p className="text-3xl font-bold text-ctp-text">{animatedTotalGames}</p>
           </Card>
 
           <Card
-            className="cursor-pointer hover:brightness-110 transition"
+            className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.playing}
             onClick={() => navigateToLibrary({ status: "playing" })}
           >
-            <h3 className="text-ctp-subtext0 text-sm mb-2">Currently Playing</h3>
+            <h3 className="mb-2 text-sm text-ctp-subtext0">Currently Playing</h3>
             <p className="text-3xl font-bold text-ctp-text">{animatedInProgressGames}</p>
           </Card>
 
           <Card
-            className="cursor-pointer hover:brightness-110 transition"
+            className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.completed}
             onClick={() => navigateToLibrary({ status: "completed" })}
           >
-            <h3 className="text-ctp-subtext0 text-sm mb-2">Completed</h3>
+            <h3 className="mb-2 text-sm text-ctp-subtext0">Completed</h3>
             <p className="text-3xl font-bold text-ctp-text">{animatedCompletedGames}</p>
           </Card>
 
           <Card
-            className="cursor-pointer hover:brightness-110 transition"
+            className="cursor-pointer transition hover:brightness-110"
+            padded={true}
             style={counterCardStyles.backlog}
             onClick={() => navigateToLibrary({ status: "backlog" })}
           >
-            <h3 className="text-ctp-subtext0 text-sm mb-2">Backlog</h3>
+            <h3 className="mb-2 text-sm text-ctp-subtext0">Backlog</h3>
             <p className="text-3xl font-bold text-ctp-text">{animatedBacklogGames}</p>
           </Card>
         </div>
 
         {/* Currently Playing Carousel */}
         {currentlyPlayingRecent.length > 0 && (
-          <Card className="mb-8 bg-ctp-teal/5 border-ctp-teal/20">
-            <h2 className="text-2xl font-bold text-ctp-teal mb-4">Currently Playing</h2>
+          <Card className="bg-ctp-teal/5 border-ctp-teal/20 mb-8" padded={true}>
+            <h2 className="mb-4 text-2xl font-bold text-ctp-teal">Currently Playing</h2>
             <div className="relative">
               <ScrollFade axis="x" className="flex gap-4 overflow-x-auto pb-4">
                 {currentlyPlayingRecent.map((game) => (
@@ -334,21 +373,21 @@ export function Dashboard() {
                     params={{ id: game.id }}
                     className="group flex-shrink-0"
                   >
-                    <div className="w-32 aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 relative">
+                    <div className="relative aspect-[3/4] w-32 overflow-hidden rounded-lg bg-ctp-surface0">
                       {game.cover_art_url ? (
                         <img
                           src={game.cover_art_url}
                           alt={game.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                        <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                           No Cover
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent opacity-0 transition-opacity dark:from-ctp-crust/80 dark:via-transparent group-hover:opacity-100" />
+                      <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:via-transparent" />
                     </div>
-                    <p className="mt-2 text-sm text-ctp-subtext1 truncate w-32 group-hover:text-ctp-text">
+                    <p className="mt-2 w-32 truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
                       {game.name}
                     </p>
                     {game.last_played && (
@@ -364,50 +403,53 @@ export function Dashboard() {
         )}
 
         {/* Activity Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <Card>
-              <div className="flex items-center justify-between mb-4">
+            <Card padded={true}>
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-ctp-mauve">Your Activity</h2>
-                <div className="flex gap-1 bg-ctp-surface0 rounded-lg p-1">
-                  <button
+                <div className="flex gap-1 rounded-lg bg-ctp-surface0 p-1">
+                  <Button
                     onClick={() => setHeatmapType("activity")}
-                    className={`px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
+                    variant="ghost"
+                    className={`h-auto rounded px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
                       heatmapType === "activity"
                         ? "bg-ctp-teal text-ctp-base"
                         : "text-ctp-subtext0 hover:text-ctp-text"
                     }`}
                   >
                     Play Sessions
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setHeatmapType("completion")}
-                    className={`px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
+                    variant="ghost"
+                    className={`h-auto rounded px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
                       heatmapType === "completion"
                         ? "bg-ctp-mauve text-ctp-base"
                         : "text-ctp-subtext0 hover:text-ctp-text"
                     }`}
                   >
                     Completion
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setHeatmapType("achievement")}
-                    className={`px-3 py-1 rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
+                    variant="ghost"
+                    className={`h-auto rounded px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 focus-visible:ring-offset-ctp-base ${
                       heatmapType === "achievement"
                         ? "bg-ctp-yellow text-ctp-base"
                         : "text-ctp-subtext0 hover:text-ctp-text"
                     }`}
                   >
                     Achievements
-                  </button>
+                  </Button>
                 </div>
               </div>
               <ActivityHeatmap type={heatmapType} />
             </Card>
           </div>
           <div>
-            <Card className="lg:h-[366px] lg:flex lg:flex-col">
-              <h2 className="text-xl font-bold text-ctp-mauve mb-4">Recent Activity</h2>
+            <Card className="lg:flex lg:h-[366px] lg:flex-col" padded={true}>
+              <h2 className="mb-4 text-xl font-bold text-ctp-mauve">Recent Activity</h2>
               <ActivityFeed
                 desktopLimit={12}
                 mobileLimit={5}
@@ -426,10 +468,10 @@ export function Dashboard() {
 
         {/* Data Visualizations */}
         {totalGames > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Status Distribution */}
-            <Card>
-              <h2 className="text-2xl font-bold text-ctp-mauve mb-4">Status Distribution</h2>
+            <Card padded={true}>
+              <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Status Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -451,7 +493,7 @@ export function Dashboard() {
                       <Cell
                         key={`cell-${index}`}
                         fill={entry.color}
-                        className="hover:opacity-80 transition-opacity"
+                        className="transition-opacity hover:opacity-80"
                       />
                     ))}
                   </Pie>
@@ -476,8 +518,8 @@ export function Dashboard() {
             </Card>
 
             {/* Platform Distribution */}
-            <Card>
-              <h2 className="text-2xl font-bold text-ctp-mauve mb-4">Platform Distribution</h2>
+            <Card padded={true}>
+              <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Platform Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -498,7 +540,7 @@ export function Dashboard() {
                       <Cell
                         key={`cell-${index}`}
                         fill={entry.color}
-                        className="hover:opacity-80 transition-opacity"
+                        className="transition-opacity hover:opacity-80"
                       />
                     ))}
                   </Pie>
@@ -522,8 +564,8 @@ export function Dashboard() {
 
             {/* Genre Distribution */}
             {genreChartData.length > 0 && (
-              <Card>
-                <h2 className="text-2xl font-bold text-ctp-mauve mb-4">Top Genres</h2>
+              <Card padded={true}>
+                <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Top Genres</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={genreChartData}
@@ -567,17 +609,18 @@ export function Dashboard() {
 
         {/* Favorites Section */}
         {favoriteGames.length > 0 && (
-          <Card className="mb-6 bg-ctp-red/10 border-ctp-red/30">
-            <h2 className="text-2xl font-bold text-ctp-red mb-4">
-              <button
+          <Card className="bg-ctp-red/10 border-ctp-red/30 mb-6" padded={true}>
+            <h2 className="mb-4 text-2xl font-bold text-ctp-red">
+              <Button
                 type="button"
-                className="hover:text-ctp-red transition-colors"
+                variant="ghost"
+                className="h-auto p-0 transition-colors hover:text-ctp-red"
                 onClick={() => navigateToLibrary({ favorites: true })}
               >
                 Favorites
-              </button>
+              </Button>
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
               {favoriteGames.slice(0, 6).map((game) => (
                 <Link
                   key={game.id}
@@ -585,21 +628,21 @@ export function Dashboard() {
                   params={{ id: game.id }}
                   className="group relative"
                 >
-                  <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 relative">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
                     {game.cover_art_url ? (
                       <img
                         src={game.cover_art_url}
                         alt={game.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                      <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                         No Cover
                       </div>
                     )}
-                    <div className="absolute top-2 right-2 text-ctp-red">
+                    <div className="absolute right-2 top-2 text-ctp-red">
                       <svg
-                        className="w-5 h-5"
+                        className="h-5 w-5"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                         stroke="currentColor"
@@ -614,7 +657,7 @@ export function Dashboard() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-ctp-subtext1 truncate group-hover:text-ctp-text">
+                  <p className="mt-2 truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
                     {game.name}
                   </p>
                 </Link>

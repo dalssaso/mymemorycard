@@ -2,7 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useSearch, useNavigate } from "@tanstack/react-router";
-import { ScrollFade } from "@/components/ui";
+import {
+  Button,
+  Input,
+  ScrollFade,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { completionLogsAPI, additionsAPI, type CompletionType, type GameAddition } from "@/lib/api";
 
@@ -366,15 +375,16 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-ctp-text">Progress Over Time</h3>
 
-      <div className="flex gap-1 p-1 bg-ctp-surface0/50 rounded-lg">
+      <div className="bg-ctp-surface0/50 flex gap-1 rounded-lg p-1">
         {visibleTabs.map((tab) => (
-          <button
+          <Button
             key={tab}
+            variant="ghost"
             onClick={() => handleTabChange(tab)}
-            className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`h-auto flex-1 rounded-md px-2 py-1.5 text-xs font-medium ${
               activeTab === tab
                 ? "text-ctp-text shadow-sm"
-                : "text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface1/50"
+                : "hover:bg-ctp-surface1/50 text-ctp-subtext0 hover:text-ctp-text"
             }`}
             style={
               activeTab === tab
@@ -382,61 +392,68 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 : {}
             }
           >
-            <div>{getTabLabel(tab)}</div>
-            <div className="text-[10px] opacity-70">{getTabPercentage(tab)}%</div>
-          </button>
+            <div className="flex flex-col">
+              <div>{getTabLabel(tab)}</div>
+              <div className="text-[10px] opacity-70">{getTabPercentage(tab)}%</div>
+            </div>
+          </Button>
         ))}
       </div>
 
       {activeTab === "dlc" && additions.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-ctp-subtext0">Select DLC (only owned DLCs affect progress)</p>
-          <ScrollFade axis="y" className="space-y-2 max-h-60 overflow-y-auto">
+          <ScrollFade axis="y" className="max-h-60 space-y-2 overflow-y-auto">
             {additions.map((dlc) => {
               const dlcSummary = summary.dlcs.find((d) => d.dlcId === dlc.id);
               const pct = dlcSummary?.percentage || 0;
               const isOwned = dlcSummary?.owned ?? dlc.owned;
               return (
-                <button
+                <Button
                   key={dlc.id}
+                  variant="ghost"
                   onClick={() => {
                     setSelectedDlcId(dlc.id);
                     setSliderValue(null);
                     setNotes("");
                   }}
-                  className={`text-left p-3 rounded-lg border transition-all ${
+                  className={`h-auto w-full rounded-lg border p-3 text-left ${
                     selectedDlcId === dlc.id
                       ? "border-purple-500 bg-purple-500/10"
                       : isOwned
-                        ? "border-ctp-surface1 bg-ctp-surface0/50 hover:border-ctp-surface2"
-                        : "border-ctp-surface0 bg-ctp-mantle/30 opacity-60 hover:opacity-80"
+                        ? "bg-ctp-surface0/50 border-ctp-surface1 hover:border-ctp-surface2"
+                        : "bg-ctp-mantle/30 border-ctp-surface0 opacity-60 hover:opacity-80"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="text-sm font-medium text-ctp-text truncate">{dlc.name}</span>
-                      {!isOwned && (
-                        <span className="text-[10px] text-ctp-overlay1 px-1.5 py-0.5 bg-ctp-surface0 rounded">
-                          Not Owned
+                  <div className="w-full">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="truncate text-sm font-medium text-ctp-text">
+                          {dlc.name}
                         </span>
-                      )}
+                        {!isOwned && (
+                          <span className="rounded bg-ctp-surface0 px-1.5 py-0.5 text-[10px] text-ctp-overlay1">
+                            Not Owned
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-sm font-bold" style={{ color: TAB_COLORS.dlc }}>
+                        {pct}%
+                      </span>
                     </div>
-                    <span className="text-sm font-bold" style={{ color: TAB_COLORS.dlc }}>
-                      {pct}%
-                    </span>
+                    <div className="mt-1 h-1.5 w-full rounded-full bg-ctp-surface1">
+                      <div
+                        className="h-1.5 rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: TAB_COLORS.dlc }}
+                      />
+                    </div>
+                    {dlc.released && (
+                      <span className="mt-1 block text-[10px] text-ctp-overlay1">
+                        Released: {new Date(dlc.released).toLocaleDateString()}
+                      </span>
+                    )}
                   </div>
-                  <div className="mt-1 w-full bg-ctp-surface1 rounded-full h-1.5">
-                    <div
-                      className="h-1.5 rounded-full transition-all"
-                      style={{ width: `${pct}%`, backgroundColor: TAB_COLORS.dlc }}
-                    />
-                  </div>
-                  {dlc.released && (
-                    <span className="text-[10px] text-ctp-overlay1 mt-1 block">
-                      Released: {new Date(dlc.released).toLocaleDateString()}
-                    </span>
-                  )}
-                </button>
+                </Button>
               );
             })}
           </ScrollFade>
@@ -444,14 +461,14 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {activeTab === "dlc" && additions.length === 0 && (
-        <div className="text-sm text-ctp-subtext0 bg-ctp-surface0/50 rounded-lg p-4">
+        <div className="bg-ctp-surface0/50 rounded-lg p-4 text-sm text-ctp-subtext0">
           No DLCs found for this game.
         </div>
       )}
 
       {(activeTab === "full" || activeTab === "completionist") && (
-        <div className="bg-ctp-surface0/50 rounded-lg p-4 space-y-3">
-          <div className="flex items-center justify-between">
+        <div className="bg-ctp-surface0/50 space-y-3 rounded-lg p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-sm text-ctp-subtext0">
               {activeTab === "full" ? "Full Game Progress" : "Completionist Progress"}
             </span>
@@ -459,7 +476,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               {currentPercentage}%
             </span>
           </div>
-          <div className="w-full bg-ctp-surface1 rounded-full h-2">
+          <div className="h-2 w-full rounded-full bg-ctp-surface1">
             <div
               className="h-2 rounded-full transition-all"
               style={{ width: `${currentPercentage}%`, backgroundColor: activeColor }}
@@ -471,7 +488,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               : "Auto-calculated from Full game + Achievements completion"}
           </p>
           {activeTab === "completionist" && (
-            <div className="flex gap-4 text-xs text-ctp-subtext0 mt-2">
+            <div className="mt-2 flex flex-wrap gap-4 text-xs text-ctp-subtext0">
               <span>Full: {summary.full}%</span>
               <span>Achievements: {summary.achievementPercentage}%</span>
             </div>
@@ -480,9 +497,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {canEdit && (
-        <div className="bg-ctp-mantle/70 rounded-xl p-4 space-y-4 border border-ctp-surface0">
-          <div className="flex items-center justify-between gap-4">
-            <div>
+        <div className="bg-ctp-mantle/70 space-y-4 rounded-xl border border-ctp-surface0 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h4 className="text-sm font-semibold text-ctp-text">
                 {activeTab === "main"
                   ? "Main Story"
@@ -494,10 +511,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 type="number"
                 inputMode="numeric"
-                pattern="[0-9]*"
                 min={0}
                 max={100}
                 step={1}
@@ -509,25 +525,25 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                   handlePercentageBlur();
                 }}
                 aria-label="Progress percentage"
-                className="progress-percentage-input w-16 sm:w-20 text-center text-2xl font-bold bg-ctp-crust/70 border border-ctp-surface1 rounded-lg px-2 py-1 text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                className="progress-percentage-input bg-ctp-crust/70 w-16 border-ctp-surface1 text-center text-2xl font-bold focus:border-ctp-mauve sm:w-20"
               />
               <span className="text-sm text-ctp-subtext0">%</span>
             </div>
           </div>
 
           <div className="relative h-3">
-            <div className="absolute inset-0 bg-ctp-surface0 rounded-full" />
+            <div className="absolute inset-0 rounded-full bg-ctp-surface0" />
             <div
               className="absolute inset-0 rounded-full transition-all duration-200"
               style={{ width: `${displayValue}%`, backgroundColor: activeColor }}
             />
-            <input
+            <Input
               type="range"
               min={0}
               max={100}
               value={displayValue}
               onChange={(event) => handleSliderChange(parseInt(event.target.value, 10))}
-              className="progress-slider-inline absolute inset-0 w-full h-3"
+              className="progress-slider-inline absolute inset-0 h-3 w-full"
               style={{ accentColor: activeColor }}
               aria-label="Progress slider"
             />
@@ -535,11 +551,13 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
 
           <div className="flex flex-wrap gap-2">
             {QUICK_PRESETS.map((value) => (
-              <button
+              <Button
                 key={value}
+                variant="ghost"
+                size="sm"
                 type="button"
                 onClick={() => handleSliderChange(value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border bg-ctp-mantle/80 ${
+                className={`bg-ctp-mantle/80 h-auto rounded-full border px-3 py-1.5 text-xs font-medium ${
                   displayValue === value
                     ? "bg-opacity-20"
                     : "border-ctp-surface1/80 text-ctp-subtext0 hover:text-ctp-text"
@@ -555,48 +573,46 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 }
               >
                 {value}%
-              </button>
+              </Button>
             ))}
           </div>
 
           {displayValue === 100 && (
-            <div className="text-xs text-ctp-subtext0 bg-ctp-surface0/50 rounded-lg px-3 py-2">
+            <div className="bg-ctp-surface0/50 rounded-lg px-3 py-2 text-xs text-ctp-subtext0">
               Logging Completionist will update the Full and Completionist progress automatically
             </div>
           )}
 
           {hasChanged && (
-            <div className="pt-3 mt-1 border-t border-ctp-surface0/80 space-y-3">
-              <input
+            <div className="border-ctp-surface0/80 mt-1 space-y-3 border-t pt-3">
+              <Input
                 type="text"
                 placeholder="Add a note about this update (optional)"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-ctp-crust/80 border border-ctp-surface1 rounded-lg px-3 py-2 
-                           text-sm text-ctp-text placeholder:text-ctp-overlay1
-                           focus:outline-none focus:ring-1 focus:ring-ctp-mauve focus:border-ctp-mauve"
+                className="bg-ctp-crust/80 border-ctp-surface1 text-sm focus:border-ctp-mauve focus:ring-1 focus:ring-ctp-mauve"
               />
-              <div className="flex justify-end gap-2">
-                <button
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <Button
+                  variant="outline"
                   type="button"
                   onClick={() => {
                     setSliderValue(null);
                     setNotes("");
                   }}
-                  className="px-3 py-1.5 text-sm text-ctp-subtext1 rounded-lg border border-ctp-surface1 
-                             bg-ctp-mantle/60 hover:bg-ctp-surface0/80 transition-colors"
+                  className="bg-ctp-mantle/60 hover:bg-ctp-surface0/80 w-full border-ctp-surface1 text-sm text-ctp-subtext1 sm:w-auto"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => logProgressMutation.mutate()}
                   disabled={logProgressMutation.isPending}
-                  className="px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+                  className="w-full text-sm font-semibold sm:w-auto"
                   style={{ backgroundColor: activeColor, color: "#111" }}
                 >
                   {logProgressMutation.isPending ? "Saving..." : "Log Progress"}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -604,10 +620,10 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {(chartData.length > 0 || logs.length > 0) && (
-        <div className="bg-ctp-mantle/60 rounded-xl p-4 border border-ctp-surface0/80">
-          <div className="flex items-center justify-between mb-3 gap-3">
+        <div className="bg-ctp-mantle/60 border-ctp-surface0/80 rounded-xl border p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h4 className="text-xs font-semibold tracking-wide text-ctp-subtext0 uppercase">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-ctp-subtext0">
                 {getTabLabel(activeTab)} Trend
               </h4>
               {rangeLogs[0] && (
@@ -616,20 +632,27 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 </span>
               )}
             </div>
-            <label className="text-xs text-ctp-subtext0">
+            <div className="text-xs text-ctp-subtext0">
               <span className="sr-only">Select range</span>
-              <select
+              <Select
                 value={selectedRange}
-                onChange={(event) => setSelectedRange(event.target.value as RangeOption)}
-                className="bg-ctp-mantle border border-ctp-surface1 rounded-lg px-2 py-1 text-xs text-ctp-text focus:outline-none focus:border-ctp-mauve"
+                onValueChange={(value) => setSelectedRange(value as RangeOption)}
               >
-                {RANGE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <SelectTrigger
+                  aria-label="Select range"
+                  className="h-7 w-[110px] border-ctp-surface1 bg-ctp-mantle text-xs text-ctp-text focus:ring-ctp-mauve"
+                >
+                  <SelectValue placeholder="Range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {RANGE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={120}>
@@ -666,7 +689,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-xs text-ctp-subtext0 bg-ctp-surface0/50 rounded-lg p-3">
+            <div className="bg-ctp-surface0/50 rounded-lg p-3 text-xs text-ctp-subtext0">
               No progress logged in this range yet.
             </div>
           )}
@@ -674,10 +697,11 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {logs.length > 0 && (
-        <div className="bg-ctp-mantle/40 rounded-xl p-3 border border-ctp-surface0/60">
-          <button
+        <div className="bg-ctp-mantle/40 border-ctp-surface0/60 rounded-xl border p-3">
+          <Button
+            variant="ghost"
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center justify-between w-full text-xs text-ctp-subtext0 hover:text-ctp-text transition-colors"
+            className="flex h-auto w-full items-center justify-between p-0 text-xs text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
           >
             <span className="flex items-center gap-2">
               <svg
@@ -686,25 +710,25 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className={`w-4 h-4 transition-transform ${showHistory ? "rotate-90" : ""}`}
+                className={`h-4 w-4 transition-transform ${showHistory ? "rotate-90" : ""}`}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
               </svg>
               History ({logs.length} {logs.length === 1 ? "entry" : "entries"})
             </span>
             <span className="text-xs text-ctp-overlay1">{showHistory ? "Hide" : "View"}</span>
-          </button>
+          </Button>
 
           {showHistory && (
-            <ScrollFade axis="y" className="mt-3 space-y-2 max-h-60 overflow-y-auto pr-1">
+            <ScrollFade axis="y" className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-1">
               {logs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-start justify-between bg-ctp-mantle/70 rounded-lg p-2.5"
+                  className="bg-ctp-mantle/70 flex items-start justify-between rounded-lg p-2.5"
                 >
                   <div className="flex-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="font-medium text-sm" style={{ color: activeColor }}>
+                      <span className="text-sm font-medium" style={{ color: activeColor }}>
                         {log.percentage}%
                       </span>
                       <span className="text-xs text-ctp-overlay1">
@@ -718,14 +742,16 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                       </span>
                     </div>
                     {log.notes && (
-                      <p className="text-xs text-ctp-subtext0 mt-1 line-clamp-2">{log.notes}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-ctp-subtext0">{log.notes}</p>
                     )}
                   </div>
                   {canEdit && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => deleteLogMutation.mutate(log.id)}
                       disabled={deleteLogMutation.isPending}
-                      className="p-1.5 text-ctp-overlay1 hover:text-ctp-red transition-colors disabled:opacity-50"
+                      className="h-7 w-7 p-1.5 text-ctp-overlay1 hover:bg-transparent hover:text-ctp-red"
                       title="Delete log entry"
                     >
                       <svg
@@ -734,7 +760,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="w-3.5 h-3.5"
+                        className="h-3.5 w-3.5"
                       >
                         <path
                           strokeLinecap="round"
@@ -742,7 +768,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                           d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                         />
                       </svg>
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
@@ -751,7 +777,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
         </div>
       )}
 
-      {isLoading && <div className="text-ctp-subtext0 text-sm">Loading progress history...</div>}
+      {isLoading && <div className="text-sm text-ctp-subtext0">Loading progress history...</div>}
     </div>
   );
 }

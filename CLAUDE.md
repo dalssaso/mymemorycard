@@ -14,7 +14,25 @@ platforms.
 **Tech Stack:**
 
 - **Backend**: Bun, TypeScript, PostgreSQL 16+, Redis, Drizzle ORM
-- **Frontend**: React 18, Vite, TanStack (Router, Query, Table), Tailwind CSS
+- **Frontend**: React 18, Vite, TanStack (Router, Query, Table), Tailwind CSS, shadcn/ui
+
+## Documentation Lookup
+
+When implementing features, use **Context7 MCP** (if available) to fetch up-to-date documentation:
+
+```
+# Resolve library ID first
+resolve-library-id: "tanstack query"
+
+# Then query docs
+query-docs: libraryId="/tanstack/query", query="optimistic updates mutation"
+```
+
+Useful libraries to query:
+- `/tanstack/query` - Server state, mutations, optimistic updates
+- `/tanstack/router` - File-based routing, loaders
+- `/shadcn-ui/ui` - UI components, installation
+- `/tailwindlabs/tailwindcss` - Styling utilities
 
 ## Quick Start
 
@@ -158,3 +176,11 @@ refactor: extract api client to separate module
 Releases are automated via release-please based on conventional commits.
 
 **Commit only after user tests and confirms changes work.**
+
+## Frontend Patterns
+
+See [frontend/CLAUDE.md](frontend/CLAUDE.md) for detailed patterns on:
+- shadcn/ui component usage and creation
+- Custom hooks for queries and mutations
+- Route loaders with `ensureQueryData`
+- Optimistic updates

@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { gamesAPI } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Badge, Button } from "@/components/ui";
 import { AddToCollection } from "./AddToCollection";
 import { PlatformIcons } from "./PlatformIcon";
 
@@ -24,7 +25,7 @@ interface GameCardProps {
   series_name?: string | null;
 }
 
-const STATUS_STYLES: Record<string, React.CSSProperties> = {
+const STATUS_STYLES: Record<string, CSSProperties> = {
   backlog: {
     backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)",
     borderColor: "color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)",
@@ -47,7 +48,7 @@ const STATUS_STYLES: Record<string, React.CSSProperties> = {
   },
 };
 
-const FRANCHISE_STYLE: React.CSSProperties = {
+const FRANCHISE_STYLE: CSSProperties = {
   backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 45%, transparent)",
   borderColor: "color-mix(in srgb, var(--ctp-mauve) 65%, transparent)",
 };
@@ -94,33 +95,35 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="card hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-4"
+      className="bg-ctp-surface0/40 group relative cursor-pointer rounded-xl border border-ctp-surface1 p-0 transition-all hover:border-ctp-mauve sm:p-5"
     >
       {/* Mobile: Poster-only layout with overlay */}
-      <div className="sm:hidden relative aspect-[3/4] overflow-hidden rounded-lg">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-lg sm:hidden">
         {coverArtUrl ? (
-          <img src={coverArtUrl} alt={name} className="w-full h-full object-cover" />
+          <img src={coverArtUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-            <span className="text-zinc-600 text-sm">No image</span>
+          <div className="flex h-full w-full items-center justify-center bg-ctp-surface0">
+            <span className="text-sm text-ctp-overlay1">No image</span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 bg-ctp-base/60 p-2">
-          <div className="flex gap-1 mb-1">
+        <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
+        <div className="bg-ctp-base/60 absolute bottom-0 left-0 right-0 p-3">
+          <div className="mb-1 flex gap-1">
             <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
           </div>
-          <h3 className="text-sm font-bold text-ctp-text line-clamp-2 group-hover:text-ctp-mauve transition-colors">
+          <h3 className="line-clamp-2 text-sm font-bold text-ctp-text transition-colors group-hover:text-ctp-mauve">
             {name}
           </h3>
         </div>
-        <button
+        <Button
           onClick={handleFavoriteClick}
-          className="absolute top-2 right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
+          variant="ghost"
+          size="icon"
+          className="absolute right-2 top-2 z-10 text-ctp-red transition-transform hover:scale-110"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
-            className="w-5 h-5"
+            className="h-5 w-5"
             viewBox="0 0 24 24"
             fill={isFavorite ? "currentColor" : "none"}
             stroke="currentColor"
@@ -132,26 +135,28 @@ export function GameCard({
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>
-        </button>
+        </Button>
       </div>
 
       {/* Desktop: Full card layout */}
-      <div className="hidden sm:flex gap-4">
+      <div className="hidden gap-4 sm:flex">
         <div className="relative shrink-0">
           {coverArtUrl ? (
-            <img src={coverArtUrl} alt={name} className="w-24 h-32 object-cover rounded" />
+            <img src={coverArtUrl} alt={name} className="h-32 w-24 rounded object-cover" />
           ) : (
-            <div className="w-24 h-32 bg-zinc-800 rounded flex items-center justify-center">
-              <span className="text-zinc-600 text-xs">No image</span>
+            <div className="flex h-32 w-24 items-center justify-center rounded bg-ctp-surface0">
+              <span className="text-xs text-ctp-overlay1">No image</span>
             </div>
           )}
-          <button
+          <Button
             onClick={handleFavoriteClick}
-            className="absolute -top-2 -right-2 z-10 text-ctp-red hover:scale-110 transition-transform"
+            variant="ghost"
+            size="icon"
+            className="absolute -right-2 -top-2 z-10 text-ctp-red transition-transform hover:scale-110"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <svg
-              className="w-5 h-5"
+              className="h-5 w-5"
               viewBox="0 0 24 24"
               fill={isFavorite ? "currentColor" : "none"}
               stroke="currentColor"
@@ -163,39 +168,40 @@ export function GameCard({
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold mb-2 group-hover:text-ctp-mauve transition-colors break-words">
+        <div className="min-w-0 flex-1">
+          <h3 className="mb-2 break-words text-lg font-bold transition-colors group-hover:text-ctp-mauve">
             {name}
           </h3>
 
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
-            <span
-              className="badge border text-ctp-text"
+            <Badge
+              className="border text-ctp-text"
               style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
-            </span>
+            </Badge>
             {seriesName && (
-              <button
+              <Button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   navigate({ to: "/franchises/$seriesName", params: { seriesName } });
                 }}
-                className="badge border text-ctp-text hover:opacity-90 transition-colors"
+                variant="ghost"
+                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-ctp-text transition-colors hover:opacity-90"
                 style={FRANCHISE_STYLE}
               >
                 {seriesName}
-              </button>
+              </Button>
             )}
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-zinc-400 flex-wrap">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-ctp-subtext0">
             {metacriticScore && (
               <div className="flex items-center gap-1">
                 <span className="text-ctp-yellow">Metacritic:</span>
@@ -212,7 +218,7 @@ export function GameCard({
 
             {totalMinutes > 0 && (
               <div className="flex items-center gap-1">
-                <span className="text-zinc-500">Time:</span>
+                <span className="text-ctp-overlay0">Time:</span>
                 <span>
                   {hours > 0 && `${hours}h `}
                   {minutes}m

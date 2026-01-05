@@ -35,7 +35,7 @@ export function Franchises() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-ctp-subtext0">Loading...</div>
         </div>
       </PageLayout>
@@ -52,17 +52,17 @@ export function Franchises() {
       }
       customCollapsed={true}
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="mx-auto max-w-[1440px]">
+        <div className="mb-8 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="md:hidden p-2 rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
               />
               <h1 className="text-4xl font-bold text-ctp-text">Franchises</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">Game series in your library</p>
+            <p className="mt-1 text-ctp-subtext0">Game series in your library</p>
           </div>
           <Button
             onClick={() => syncMutation.mutate()}
@@ -74,14 +74,33 @@ export function Franchises() {
         </div>
 
         {franchises.length === 0 ? (
-          <Card>
-            <p className="text-ctp-subtext0 text-center py-8">
-              No franchises found. Add games that belong to a series, or click &quot;Sync
-              Franchises&quot; to detect series for your existing games.
-            </p>
+          <Card className="px-6 py-10" padded={true}>
+            <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
+              <div>
+                <h2 className="mb-3 text-2xl font-bold text-ctp-text">No Franchises Yet</h2>
+                <p className="mb-6 text-ctp-subtext0">
+                  Add games from a series or sync to detect franchises automatically.
+                </p>
+                <Button
+                  onClick={() => syncMutation.mutate()}
+                  disabled={syncMutation.isPending}
+                  variant="secondary"
+                >
+                  {syncMutation.isPending ? "Syncing..." : "Sync Franchises"}
+                </Button>
+              </div>
+              <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface1 p-4">
+                <h3 className="text-sm font-semibold text-ctp-text">Tips</h3>
+                <div className="mt-2 space-y-2 text-sm text-ctp-subtext0">
+                  <p>Import more games to enrich series data.</p>
+                  <p>Use search to jump to a specific series.</p>
+                  <p>Add missing entries from a franchise page.</p>
+                </div>
+              </div>
+            </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {franchises.map((franchise: FranchiseSummary) => (
               <Link
                 key={franchise.series_name}
@@ -89,24 +108,28 @@ export function Franchises() {
                 params={{ seriesName: franchise.series_name }}
                 className="group focus-visible:outline-none"
               >
-                <div className="aspect-[3/4] rounded-lg overflow-hidden bg-ctp-surface0 mb-2 relative ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ctp-mauve group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-ctp-base">
+                <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0 ring-0 ring-transparent transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ctp-mauve group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-ctp-base">
                   {franchise.cover_art_url ? (
                     <img
                       src={franchise.cover_art_url}
                       alt={franchise.series_name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-ctp-overlay1">
+                    <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
                       <span className="text-sm">No Cover</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-ctp-base/70 via-ctp-base/20 to-transparent dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent" />
+                  <div className="from-ctp-crust/80 via-ctp-crust/30 dark:from-ctp-crust/90 dark:via-ctp-crust/50 absolute inset-0 bg-gradient-to-t to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-ctp-text font-medium truncate">{franchise.series_name}</p>
-                    <p className="text-sm text-ctp-teal">
-                      {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
-                    </p>
+                    <div className="bg-ctp-base/85 dark:bg-ctp-crust/70 inline-flex max-w-full flex-col gap-1 rounded-md px-2 py-1 shadow-sm backdrop-blur">
+                      <p className="truncate text-sm font-semibold text-ctp-text sm:text-base">
+                        {franchise.series_name}
+                      </p>
+                      <p className="text-xs text-ctp-teal sm:text-sm">
+                        {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Link>

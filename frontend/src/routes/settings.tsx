@@ -1,5 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Settings } from "@/pages/Settings";
+import { createFileRoute, redirect, lazyRouteComponent } from "@tanstack/react-router";
+import { preferencesAPI } from "@/lib/api";
+
+const Settings = lazyRouteComponent(() =>
+  import("@/pages/Settings").then((module) => ({ default: module.Settings }))
+);
 
 export const Route = createFileRoute("/settings")({
   beforeLoad: ({ context }) => {
@@ -8,4 +12,13 @@ export const Route = createFileRoute("/settings")({
     }
   },
   component: Settings,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({
+      queryKey: ["preferences"],
+      queryFn: async () => {
+        const response = await preferencesAPI.get();
+        return response.data;
+      },
+    });
+  },
 });

@@ -1,4 +1,5 @@
 import { useSidebar } from "@/contexts/SidebarContext";
+import { Button } from "@/components/ui";
 
 interface PlatformsSidebarProps {
   platformCount: number;
@@ -10,23 +11,25 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 pt-3 border-t border-ctp-surface0">
+      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
         <div className="flex justify-center">
           <div
-            className="w-10 h-10 rounded-lg bg-ctp-surface0/50 border border-ctp-surface0 flex items-center justify-center text-sm text-ctp-teal"
+            className="bg-ctp-surface0/50 flex h-10 w-10 items-center justify-center rounded-lg border border-ctp-surface0 text-sm text-ctp-teal"
             title="Platforms Saved"
           >
             {platformCount}
           </div>
         </div>
-        <div className="flex justify-center pt-2 border-t border-ctp-surface0">
-          <button
+        <div className="flex justify-center border-t border-ctp-surface0 pt-2">
+          <Button
             type="button"
             onClick={onAddCustomPlatform}
-            className="p-2 rounded-lg text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text transition-all"
+            variant="ghost"
+            size="icon"
+            className="rounded-lg p-2 text-ctp-teal transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
             title="Add Custom Platform"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -34,7 +37,7 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
                 d="M12 4v16m8-8H4"
               />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -42,42 +45,43 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
 
   return (
     <div className="space-y-6">
-      <div className="bg-ctp-surface0/40 border border-ctp-surface0 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-ctp-text mb-1">Manage Platforms</h3>
+      <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface0 p-4">
+        <h3 className="mb-1 text-sm font-semibold text-ctp-text">Manage Platforms</h3>
         <p className="text-xs text-ctp-subtext0">
           Keep your platform list current for accurate imports.
         </p>
         <div className="mt-3 text-sm text-ctp-teal">{platformCount} saved</div>
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={onAddCustomPlatform}
+        variant="ghost"
         className={[
-          "flex items-center justify-center gap-2 w-full px-4 py-2.5",
+          "flex w-full items-center justify-center gap-2 px-4 py-2.5",
           "bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal",
-          "rounded-lg transition-colors font-medium",
+          "rounded-lg font-medium transition-colors",
         ].join(" ")}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         Add Custom Platform
-      </button>
+      </Button>
 
       <div>
-        <h3 className="text-xs font-semibold text-ctp-subtext0 uppercase tracking-wider mb-3">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
           Tips
         </h3>
         <div className="space-y-3 text-sm text-ctp-subtext0">
-          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
-            <p className="font-medium text-ctp-subtext1 mb-1">Add new platforms anytime</p>
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-ctp-subtext1">Add new platforms anytime</p>
             <p className="text-xs">
               Use the available list to add platforms as you expand your library.
             </p>
           </div>
-          <div className="p-3 bg-ctp-surface0/50 rounded-lg">
-            <p className="font-medium text-ctp-subtext1 mb-1">Keep notes updated</p>
+          <div className="bg-ctp-surface0/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-ctp-subtext1">Keep notes updated</p>
             <p className="text-xs">Add usernames or links to help you remember account details.</p>
           </div>
         </div>
