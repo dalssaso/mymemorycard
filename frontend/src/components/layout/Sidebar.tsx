@@ -58,7 +58,7 @@ export function Sidebar({
         onClick={toggleSidebar}
         variant="ghost"
         size="icon"
-        className={`fixed top-20 z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-ctp-surface1 bg-ctp-surface0 transition-all duration-300 hover:border-ctp-surface2 hover:bg-ctp-surface1 md:flex ${
+        className={`fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-ctp-surface1 bg-ctp-surface0 transition-all duration-300 hover:border-ctp-surface2 hover:bg-ctp-surface1 md:flex ${
           isCollapsed ? "left-[52px]" : "left-[228px]"
         }`}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -74,16 +74,16 @@ export function Sidebar({
       </Button>
 
       <aside
-        className={`fixed bottom-0 left-0 top-16 hidden border-r border-ctp-surface0 bg-ctp-mantle transition-all duration-300 md:block ${
+        className={`fixed bottom-0 left-0 top-0 hidden border-r border-ctp-surface0 bg-ctp-mantle transition-all duration-300 md:block ${
           isCollapsed ? "w-16" : "w-60"
         }`}
       >
         <ScrollFade axis="y" className="h-full overflow-y-auto">
           {/* Collapsed View - Icons Only */}
           {isCollapsed && (
-            <div className="space-y-4 p-2 pt-10">
+            <div className="p-2 pt-[4.5rem]">
               {showBackButton && (
-                <div className="flex justify-center border-b border-ctp-surface0 pb-3">
+                <div className="mb-4 flex justify-center border-b border-ctp-surface0 pb-3">
                   <BackButton
                     iconOnly={true}
                     className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
@@ -91,7 +91,7 @@ export function Sidebar({
                 </div>
               )}
               {/* User Avatar */}
-              <div className="flex justify-center border-b border-ctp-surface0 pb-3">
+              <div className="mb-4 flex justify-center border-b border-ctp-surface0 pb-3">
                 <div
                   className="flex h-8 w-8 items-center justify-center rounded-full border border-ctp-surface2 bg-ctp-surface1"
                   title={user?.username}
@@ -104,11 +104,11 @@ export function Sidebar({
 
               {/* Context-Sensitive Content - replaces default content when provided and customCollapsed is true */}
               {children && customCollapsed ? (
-                <div>{children}</div>
+                <div className="space-y-4">{children}</div>
               ) : (
                 <>
                   {/* Quick Stats Icons */}
-                  <div className="space-y-3">
+                  <div className="mb-4 space-y-3">
                     <Link
                       to="/library"
                       className="flex flex-col items-center gap-1 rounded-lg p-1 transition hover:brightness-110"
@@ -196,7 +196,7 @@ export function Sidebar({
 
                   {/* Collections Icon */}
                   {collections.length > 0 && (
-                    <div className="border-t border-ctp-surface0 pt-3">
+                    <div className="mb-4 border-t border-ctp-surface0 pt-3">
                       <Link
                         to="/collections"
                         className="flex flex-col items-center gap-1 transition-colors hover:text-ctp-mauve"
@@ -224,7 +224,7 @@ export function Sidebar({
 
                   {/* Franchises Icon */}
                   {franchises.length > 0 && (
-                    <div className="border-t border-ctp-surface0 pt-3">
+                    <div className="mb-4 border-t border-ctp-surface0 pt-3">
                       <Link
                         to="/franchises"
                         className="flex flex-col items-center gap-1 transition-colors hover:text-ctp-teal"
@@ -256,33 +256,35 @@ export function Sidebar({
 
           {/* Expanded View - Full Content */}
           {!isCollapsed && (
-            <div className="space-y-6 p-4">
+            <div className="p-4 pt-[4.5rem]">
               {showBackButton && (
-                <div>
+                <div className="mb-6">
                   <BackButton className="flex items-center gap-2 rounded-lg border border-ctp-surface1 bg-ctp-surface0 px-3 py-2 text-sm text-ctp-subtext1 transition-colors hover:border-ctp-surface2 hover:text-ctp-text" />
                 </div>
               )}
-              {/* User Section */}
-              <div className="border-b border-ctp-surface0 pb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-ctp-surface2 bg-ctp-surface1">
-                    <span className="font-medium text-ctp-text">
-                      {user?.username?.charAt(0).toUpperCase() || "U"}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ctp-text">{user?.username}</p>
+              {/* User Section - only show when no custom sidebar content */}
+              {!children && (
+                <div className="mb-6 border-b border-ctp-surface0 pb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-ctp-surface2 bg-ctp-surface1">
+                      <span className="font-medium text-ctp-text">
+                        {user?.username?.charAt(0).toUpperCase() || "U"}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ctp-text">{user?.username}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Context-Sensitive Content - replaces default content when provided */}
               {children ? (
-                <div>{children}</div>
+                <div className="space-y-6">{children}</div>
               ) : (
                 <>
                   {/* Quick Stats */}
-                  <div>
+                  <div className="mb-6">
                     <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
                       Quick Stats
                     </h3>
@@ -380,7 +382,7 @@ export function Sidebar({
 
                   {/* Collections */}
                   {collections.length > 0 && (
-                    <div>
+                    <div className="mb-6">
                       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
                         My Collections
                       </h3>
@@ -412,7 +414,7 @@ export function Sidebar({
 
                   {/* Franchises */}
                   {franchises.length > 0 && (
-                    <div>
+                    <div className="mb-6">
                       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
                         Franchises
                       </h3>

@@ -14,8 +14,8 @@ export function MobileNav(): JSX.Element {
     }`;
 
   return (
-    <nav className="bg-ctp-mantle/95 fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-ctp-surface0 backdrop-blur md:hidden">
-      <div className="grid h-full grid-cols-5 gap-1 px-2">
+    <nav className="supports-[backdrop-filter]:bg-ctp-mantle/90 fixed bottom-0 left-0 right-0 z-50 h-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] border-t border-ctp-surface0 bg-ctp-mantle pb-[env(safe-area-inset-bottom)] supports-[backdrop-filter]:backdrop-blur md:hidden">
+      <div className="grid h-[var(--mobile-nav-height)] grid-cols-5 gap-1 px-2">
         <Link to="/dashboard" className={getNavLinkClass(locationHref.includes("/dashboard"))}>
           <span className="text-xs">Home</span>
         </Link>

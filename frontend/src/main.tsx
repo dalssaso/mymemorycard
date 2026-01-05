@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { GlobalSearchProvider } from "@/components/GlobalSearch";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LayoutProvider } from "@/components/layout/LayoutContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -49,11 +50,13 @@ function App(): JSX.Element {
       <AuthProvider>
         <ThemeProvider>
           <SidebarProvider>
-            <GlobalSearchProvider>
-              <ErrorBoundary>
-                <InnerApp />
-              </ErrorBoundary>
-            </GlobalSearchProvider>
+            <LayoutProvider>
+              <GlobalSearchProvider>
+                <ErrorBoundary>
+                  <InnerApp />
+                </ErrorBoundary>
+              </GlobalSearchProvider>
+            </LayoutProvider>
           </SidebarProvider>
         </ThemeProvider>
       </AuthProvider>
