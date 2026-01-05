@@ -43,7 +43,7 @@
   --destructive: var(--ctp-red);
   --destructive-foreground: var(--ctp-base);
   --border: var(--ctp-surface2);
-  --input: var(--ctp-mantle);
+  --input: var(--ctp-surface0);
   --ring: var(--ctp-mauve);
   --chart-1: 267 83% 80%;
   --chart-2: 180 75% 60%;
@@ -98,7 +98,7 @@
   --destructive: var(--ctp-red);
   --destructive-foreground: var(--ctp-base);
   --border: var(--ctp-surface2);
-  --input: var(--ctp-mantle);
+  --input: var(--ctp-surface0);
   --ring: var(--ctp-mauve);
   --chart-1: 267 83% 80%;
   --chart-2: 180 75% 60%;

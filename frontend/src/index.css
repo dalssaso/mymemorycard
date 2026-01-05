@@ -9,6 +9,10 @@
     @apply border-ctp-surface2;
   }
 
+  :root {
+    --mobile-nav-height: 4rem;
+  }
+
   body {
     @apply bg-ctp-base text-ctp-text antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -284,9 +288,9 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-ctp-surface2;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-ctp-base text-ctp-text;
   }
 }

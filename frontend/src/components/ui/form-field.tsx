@@ -19,7 +19,7 @@ export function FormField({ name, label, type = "text" }: FormFieldProps): JSX.E
     <div className="space-y-1">
       <Label htmlFor={name}>{label}</Label>
       <Input id={name} type={type} {...register(name)} />
-      {error && <p className="text-sm text-destructive">{String(error.message)}</p>}
+      {error && <p className="text-sm text-ctp-red">{String(error.message)}</p>}
     </div>
   );
 }
