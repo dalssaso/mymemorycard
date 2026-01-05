@@ -184,7 +184,7 @@ interface GameCardProps {
   onUpdate: (game: Game) => void;
 }
 
-export function GameCard({ game, onUpdate }: GameCardProps) {
+export function GameCard({ game, onUpdate }: GameCardProps): JSX.Element {
   return <div>{game.name}</div>;
 }
 
@@ -192,6 +192,70 @@ export function GameCard({ game, onUpdate }: GameCardProps) {
 export function GameCard({ game, onUpdate }: any) {
   return <div>{game.name}</div>;
 }
+```
+
+### shadcn/ui Components
+
+Use shadcn/ui for all UI primitives. Never use raw HTML buttons or inputs.
+
+```bash
+# Add a new shadcn component
+npx shadcn@latest add dialog
+```
+
+```tsx
+// Good - use shadcn components
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+
+<Button variant="secondary">Click</Button>
+<Input placeholder="Search..." />
+
+// Bad - raw HTML elements
+<button className="...">Click</button>
+<input type="text" />
+```
+
+### Custom Hooks
+
+Encapsulate TanStack Query logic in dedicated hooks:
+
+```typescript
+// src/hooks/useGames.ts
+export function useGames(filters: Filters): UseQueryResult<GamesResponse> {
+  return useQuery({
+    queryKey: ["games", filters],
+    queryFn: async () => (await gamesAPI.getAll(filters)).data,
+  })
+}
+
+// src/hooks/useGameMutations.ts
+export function useToggleFavorite(): UseMutationResult<...> {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ...,
+    onMutate: async (vars) => { /* optimistic update */ },
+    onError: (_, __, ctx) => { /* rollback */ },
+    onSettled: () => { queryClient.invalidateQueries(...) },
+  })
+}
+```
+
+### Route Loaders
+
+Prefetch data in route loaders:
+
+```typescript
+export const Route = createFileRoute("/library/")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({
+      queryKey: ["games"],
+      queryFn: async () => (await gamesAPI.getAll()).data,
+    });
+  },
+  component: Library,
+});
 ```
 
 ### Database Queries
@@ -537,8 +601,17 @@ make db-studio
 
 - Backend: `cd backend && bun add package-name`
 - Frontend: `cd frontend && npm install package-name`
+- shadcn components: `cd frontend && npx shadcn@latest add component-name`
 - Always commit lock files (`bun.lock`, `package-lock.json`)
 - Justify new dependencies in PR description
+
+### Adding Frontend UI Components
+
+1. **Check if shadcn has it**: `npx shadcn@latest add <component>`
+2. **Components go in** `frontend/src/components/ui/`
+3. **Use Catppuccin colors** via `ctp-*` CSS variables
+4. **Add explicit return types** to all functions and hooks
+5. **Create dedicated hooks** for query/mutation logic in `src/hooks/`
 
 ### Performance Considerations
 

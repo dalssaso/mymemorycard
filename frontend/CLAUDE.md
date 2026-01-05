@@ -10,8 +10,18 @@ Frontend-specific instructions for Claude Code. See also the root [CLAUDE.md](..
 - **State**: TanStack Query (server state), React Context (auth/theme)
 - **Tables**: TanStack Table
 - **Styling**: Tailwind CSS with Catppuccin Mocha dark theme
+- **UI Components**: shadcn/ui (Radix primitives)
 - **Build**: Vite
 - **Testing**: Vitest + Testing Library
+
+## Documentation Lookup
+
+Use **Context7 MCP** (if available) for up-to-date docs:
+
+```
+resolve-library-id: "shadcn ui"
+query-docs: libraryId="/shadcn-ui/ui", query="dialog component"
+```
 
 ## Commands
 
@@ -51,6 +61,56 @@ src/
   pages/            # Page components (Library, GameDetail, Collections, etc.)
   routes/           # TanStack Router file-based routes
   routeTree.gen.ts  # Auto-generated route tree (do not edit)
+```
+
+## shadcn/ui Components
+
+### Adding New Components
+
+```bash
+# Install a shadcn component
+npx shadcn@latest add dialog
+
+# This creates: src/components/ui/dialog.tsx
+# Configuration: components.json
+```
+
+### Component Standards
+
+1. **Use shadcn components** for all UI primitives (Button, Input, Dialog, etc.)
+2. **Never use raw HTML** elements like `<button>` or `<input>` - import from `@/components/ui`
+3. **Extend shadcn variants** in the component file when needed
+4. **Catppuccin theming** is pre-configured via CSS variables
+
+```tsx
+// Good - use shadcn Button
+import { Button } from "@/components/ui/Button"
+<Button variant="secondary" size="sm">Click</Button>
+
+// Bad - raw button
+<button className="...">Click</button>
+```
+
+### Dialog/Modal Pattern
+
+Use shadcn Dialog for all modals:
+
+```tsx
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Title</DialogTitle>
+    </DialogHeader>
+    {/* content */}
+  </DialogContent>
+</Dialog>
 ```
 
 ## Key Patterns
@@ -94,6 +154,90 @@ const { data, isLoading } = useQuery({
 })
 ```
 
+### Custom Hooks
+
+Encapsulate query/mutation logic in dedicated hooks under `src/hooks/`:
+
+```typescript
+// src/hooks/useGames.ts - Query hook
+export function useGames(filters: LibraryFilters): UseQueryResult<GamesResponse> {
+  return useQuery({
+    queryKey: ["games", filters],
+    queryFn: async () => {
+      const response = await gamesAPI.getAll(filters)
+      return response.data as GamesResponse
+    },
+  })
+}
+
+// src/hooks/useGameMutations.ts - Mutation hooks
+export function useToggleFavorite(): UseMutationResult<...> {
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  return useMutation({ ... })
+}
+```
+
+**Existing hooks:**
+- `useGames`, `useCollections`, `useUserPlatforms` - Query hooks
+- `useGameMutations` - Toggle favorite, update status, delete, rating
+- `useCollectionMutations` - CRUD operations for collections
+- `useAISettings`, `usePreferences`, `useActivityFeed`, `useAchievementStats`
+
+### Route Loaders
+
+Prefetch data in route loaders using `ensureQueryData`:
+
+```typescript
+// src/routes/library.index.tsx
+export const Route = createFileRoute("/library/")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({
+      queryKey: ["games"],
+      queryFn: async () => {
+        const response = await gamesAPI.getAll()
+        return response.data
+      },
+    })
+  },
+  component: Library,
+})
+```
+
+### Optimistic Updates
+
+For mutations that update UI immediately:
+
+```typescript
+export function useToggleFavorite(): UseMutationResult<...> {
+  return useMutation({
+    mutationFn: async (variables) => { ... },
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["games"] })
+      const previousData = queryClient.getQueryData(["games"])
+
+      // Optimistically update cache
+      queryClient.setQueryData(["games"], (old) => ({
+        ...old,
+        games: old.games.map((g) =>
+          g.id === variables.gameId ? { ...g, is_favorite: variables.isFavorite } : g
+        ),
+      }))
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      // Rollback on error
+      queryClient.setQueryData(["games"], context?.previousData)
+      showToast("Failed to update", "error")
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] })
+    },
+  })
+}
+```
+
 ### Styling
 
 Use Tailwind with Catppuccin theme colors (`ctp-*` prefix):
@@ -126,6 +270,11 @@ Status colors:
 | ScrollFade | Scrollable container with fade effects |
 | Toast | Notification system via useToast hook |
 | Skeleton | Loading state placeholders |
+| Dialog | Modal dialogs (shadcn) |
+| AlertDialog | Confirmation dialogs (shadcn) |
+| DropdownMenu | Context menus (shadcn) |
+| Tabs | Tab navigation (shadcn) |
+| Command | Command palette/combobox (shadcn) |
 
 ### Location: `components/filters/`
 
@@ -144,6 +293,8 @@ Status colors:
 3. Use `ctp-*` theme colors for consistency
 4. Use `@/*` path alias for imports
 5. Follow code style rules from root [CLAUDE.md](../CLAUDE.md)
+6. Use shadcn/ui components - never raw HTML buttons/inputs
+7. Use explicit return types on all functions (including hooks)
 
 ## Reference Files
 

@@ -22,7 +22,7 @@ A self-hosted, privacy-focused game library aggregator that helps you track and 
 ## Tech Stack
 
 - **Backend**: Bun, PostgreSQL 16+, Redis, Drizzle ORM, TypeScript
-- **Frontend**: React 19, TanStack (Router, Query, Table), Tailwind CSS, Recharts
+- **Frontend**: React 19, TanStack (Router, Query, Table), Tailwind CSS, shadcn/ui, react-hook-form, zod, sonner, Recharts
 
 ## Quick Start
 
@@ -97,6 +97,17 @@ make typecheck        # TypeScript checking
 make lint             # ESLint
 make format           # Prettier formatting
 ```
+
+### Frontend UI (shadcn + Catppuccin)
+
+The frontend uses shadcn/ui primitives. Catppuccin tokens are defined in `frontend/src/styles/theme.css` and mapped to shadcn semantic variables.
+
+```bash
+cd frontend
+npx shadcn@latest init --yes --base-color neutral
+```
+
+After updating Catppuccin colors, ensure the semantic tokens in `frontend/src/styles/theme.css` remain in sync.
 
 ## Project Structure
 
