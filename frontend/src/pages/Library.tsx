@@ -550,9 +550,9 @@ export function Library() {
                 />
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="lg"
                   onClick={() => setSelectionMode(true)}
-                  className="h-auto border-ctp-surface1 text-sm text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
+                  className="border-ctp-surface1 text-sm text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -597,7 +597,7 @@ export function Library() {
 
         {/* Selection Mode Bar */}
         {selectionMode && (
-          <div className="bg-ctp-surface0/50 mb-4 flex items-center justify-between rounded-lg border border-ctp-surface1 p-3">
+          <div className="bg-ctp-surface0/50 mb-4 flex items-center justify-between rounded-lg border border-ctp-surface1 p-4">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-ctp-text">
                 {selectedGameIds.length > 0
@@ -607,9 +607,9 @@ export function Library() {
               {filteredGames.length > 0 && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="lg"
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
-                  className="h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                  className="px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
                 >
                   {allFilteredSelected ? "Deselect all" : "Select all"}
                 </Button>
@@ -617,9 +617,9 @@ export function Library() {
               {selectedGameIds.length > 0 && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="lg"
                   onClick={() => setRowSelection({})}
-                  className="h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                  className="px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
                 >
                   Clear
                 </Button>
@@ -636,8 +636,8 @@ export function Library() {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="border-ctp-teal/30 bg-ctp-teal/20 hover:bg-ctp-teal/30 h-auto text-ctp-teal"
+                        size="lg"
+                        className="border-ctp-teal/30 bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal"
                       >
                         Add to Collection
                       </Button>
@@ -672,9 +672,9 @@ export function Library() {
                   {/* Delete */}
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="lg"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="border-ctp-red/30 bg-ctp-red/20 hover:bg-ctp-red/30 h-auto text-ctp-red"
+                    className="border-ctp-red/30 bg-ctp-red/20 hover:bg-ctp-red/30 text-ctp-red"
                   >
                     Delete
                   </Button>
@@ -684,9 +684,9 @@ export function Library() {
               {/* Cancel/Done */}
               <Button
                 variant="secondary"
-                size="sm"
+                size="lg"
                 onClick={handleExitSelectionMode}
-                className="h-auto bg-ctp-surface2 text-ctp-text hover:bg-ctp-surface1"
+                className="bg-ctp-surface2 text-ctp-text hover:bg-ctp-surface1"
               >
                 Done
               </Button>
