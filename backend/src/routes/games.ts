@@ -928,62 +928,80 @@ router.delete(
         });
       }
 
-      // Delete related user data (cascading from user_games deletion handles most)
-      // But some tables reference game_id + platform_id directly, not user_games
+      // Delete related user data in a transaction for atomicity
+      await withTransaction(async (client) => {
+        // Delete play sessions
+        await client.query(
+          "DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete play sessions
-      await query(
-        "DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete completion logs
+        await client.query(
+          "DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete completion logs
-      await query(
-        "DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete user playtime
+        await client.query(
+          "DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete user playtime
-      await query(
-        "DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete user game progress
+        await client.query(
+          "DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete user game progress
-      await query(
-        "DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete custom fields
+        await client.query(
+          "DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete custom fields
-      await query(
-        "DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete display edition preference
+        await client.query(
+          "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete display edition preference
-      await query(
-        "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete edition ownership
+        await client.query(
+          "DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete edition ownership
-      await query(
-        "DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Delete DLC ownership
+        await client.query(
+          "DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Delete DLC ownership
-      await query(
-        "DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Finally delete the user_games entry
+        await client.query(
+          "DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+          [user.id, gameId, platformId]
+        );
 
-      // Finally delete the user_games entry
-      await query(
-        "DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-        [user.id, gameId, platformId]
-      );
+        // Check if user still owns this game on any other platform
+        const remainingPlatforms = await client.query(
+          "SELECT COUNT(*) as count FROM user_games WHERE user_id = $1 AND game_id = $2",
+          [user.id, gameId]
+        );
+
+        // Only remove from collections if this was the last platform
+        // Use Number() to handle string/number type mismatch from PostgreSQL
+        const count = Number(remainingPlatforms.rows[0].count);
+        if (count === 0) {
+          await client.query(
+            `DELETE FROM collection_games
+             WHERE game_id = $1
+               AND collection_id IN (SELECT id FROM collections WHERE user_id = $2)`,
+            [gameId, user.id]
+          );
+        }
+      });
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -1023,52 +1041,74 @@ router.post(
 
       let deletedCount = 0;
 
-      for (const gameId of gameIds) {
-        const userGames = await queryMany<{ platform_id: string }>(
-          "SELECT platform_id FROM user_games WHERE user_id = $1 AND game_id = $2",
-          [user.id, gameId]
-        );
+      // Wrap entire bulk delete operation in transaction for atomicity
+      await withTransaction(async (client) => {
+        for (const gameId of gameIds) {
+          const userGamesResult = await client.query(
+            "SELECT platform_id FROM user_games WHERE user_id = $1 AND game_id = $2",
+            [user.id, gameId]
+          );
+          const userGames = userGamesResult.rows as { platform_id: string }[];
 
-        for (const { platform_id: platformId } of userGames) {
-          await query(
-            "DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
+          for (const { platform_id: platformId } of userGames) {
+            await client.query(
+              "DELETE FROM play_sessions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            await client.query(
+              "DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
+              [user.id, gameId, platformId]
+            );
+            deletedCount++;
+          }
+
+          // After deleting all platforms for this game, check if any remain
+          const remainingPlatforms = await client.query(
+            "SELECT COUNT(*) as count FROM user_games WHERE user_id = $1 AND game_id = $2",
+            [user.id, gameId]
           );
-          await query(
-            "DELETE FROM completion_logs WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_playtime WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_game_progress WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_game_custom_fields WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_game_display_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_game_editions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_game_additions WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          await query(
-            "DELETE FROM user_games WHERE user_id = $1 AND game_id = $2 AND platform_id = $3",
-            [user.id, gameId, platformId]
-          );
-          deletedCount++;
+
+          // Remove from collections if no platforms remain
+          // Use Number() to handle string/number type mismatch from PostgreSQL
+          const count = Number(remainingPlatforms.rows[0].count);
+          if (count === 0) {
+            await client.query(
+              `DELETE FROM collection_games
+               WHERE game_id = $1
+                 AND collection_id IN (SELECT id FROM collections WHERE user_id = $2)`,
+              [gameId, user.id]
+            );
+          }
         }
-      }
+      });
 
       return new Response(JSON.stringify({ success: true, deletedCount }), {
         status: 200,

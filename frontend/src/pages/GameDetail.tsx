@@ -360,6 +360,9 @@ export function GameDetail() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
       queryClient.invalidateQueries({ queryKey: ["game", id] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["achievementStats"] });
       showToast("Game removed from library", "success");
 
       const remainingPlatforms = platforms.filter((p) => p.platform_id !== variables.platformId);
