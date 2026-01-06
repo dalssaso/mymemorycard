@@ -174,6 +174,9 @@ export function Library() {
     },
     onSuccess: (_, gameIds) => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["achievementStats"] });
       handleExitSelectionMode();
       showToast(`Deleted ${gameIds.length} game(s)`, "success");
       setShowDeleteConfirm(false);
