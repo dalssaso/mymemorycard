@@ -344,11 +344,7 @@ export function FranchiseDetail() {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    variant="outline-mauve"
-                    size="sm"
-                    onClick={() => setSelectionMode(true)}
-                  >
+                  <Button variant="outline-mauve" size="sm" onClick={() => setSelectionMode(true)}>
                     Select Games
                   </Button>
                 )}

@@ -12,19 +12,19 @@ const buttonVariants = cva(
         default: "bg-ctp-mauve text-ctp-base shadow hover:bg-ctp-lavender hover:text-ctp-base",
         destructive: "bg-ctp-red text-ctp-base shadow-sm hover:bg-ctp-maroon hover:text-ctp-text",
         outline:
-          "border border-ctp-surface1 bg-ctp-base shadow-sm hover:bg-ctp-surface0 hover:text-ctp-text hover:border-ctp-surface2",
+          "border border-ctp-surface1 bg-ctp-base shadow-sm hover:border-ctp-surface2 hover:bg-ctp-surface0 hover:text-ctp-text",
         secondary: "bg-ctp-teal text-ctp-base shadow-sm hover:bg-ctp-sapphire hover:text-ctp-base",
         ghost: "hover:bg-ctp-surface0 hover:text-ctp-text",
-        link: "text-ctp-mauve underline-offset-4 hover:underline hover:text-ctp-lavender",
+        link: "text-ctp-mauve underline-offset-4 hover:text-ctp-lavender hover:underline",
         // New specialized variants for colored action buttons
         "outline-teal":
-          "border border-ctp-teal/40 bg-ctp-teal/15 text-ctp-teal shadow-sm hover:bg-ctp-teal hover:text-ctp-base hover:border-ctp-teal",
+          "border-ctp-teal/40 bg-ctp-teal/15 border text-ctp-teal shadow-sm hover:border-ctp-teal hover:bg-ctp-teal hover:text-ctp-base",
         "outline-green":
-          "border border-ctp-green/40 bg-ctp-green/15 text-ctp-green shadow-sm hover:bg-ctp-green hover:text-ctp-base hover:border-ctp-green",
+          "border-ctp-green/40 bg-ctp-green/15 border text-ctp-green shadow-sm hover:border-ctp-green hover:bg-ctp-green hover:text-ctp-base",
         "outline-red":
-          "border border-ctp-red/40 bg-ctp-red/15 text-ctp-red shadow-sm hover:bg-ctp-red hover:text-ctp-base hover:border-ctp-red",
+          "border-ctp-red/40 bg-ctp-red/15 border text-ctp-red shadow-sm hover:border-ctp-red hover:bg-ctp-red hover:text-ctp-base",
         "outline-mauve":
-          "border border-ctp-mauve/40 bg-ctp-mauve/15 text-ctp-mauve shadow-sm hover:bg-ctp-mauve hover:text-ctp-base hover:border-ctp-mauve",
+          "border-ctp-mauve/40 bg-ctp-mauve/15 border text-ctp-mauve shadow-sm hover:border-ctp-mauve hover:bg-ctp-mauve hover:text-ctp-base",
         // Text-only hover variant (no background change)
         "ghost-text": "text-ctp-subtext0 hover:text-ctp-text",
         // Backwards-compatible aliases
