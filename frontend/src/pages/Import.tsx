@@ -56,6 +56,14 @@ interface ImportResult {
   needsReview: NeedsReview[];
 }
 
+interface ConfirmationGame {
+  rawgId: number;
+  name: string;
+  background_image: string | null;
+  released: string | null;
+  searchTerm: string;
+}
+
 export function Import() {
   const [gameNames, setGameNames] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
@@ -63,6 +71,8 @@ export function Import() {
   const [selectedCandidates, setSelectedCandidates] = useState<number[]>([]);
   const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
   const [activeSelectionId, setActiveSelectionId] = useState<number | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [gamesForConfirmation, setGamesForConfirmation] = useState<ConfirmationGame[]>([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -218,6 +228,7 @@ export function Import() {
 
       setSelectedCandidates([]);
       setIsSelectionModalOpen(false);
+      setIsConfirmModalOpen(false);
       await refreshDashboardData();
       importedGames.forEach((game) => {
         queryClient.invalidateQueries({ queryKey: ["game", game.game.id] });
@@ -263,10 +274,40 @@ export function Import() {
       return;
     }
 
+    // Map selected rawgIds to full game data
+    const gamesData = selectedCandidates
+      .map((rawgId) => {
+        for (const reviewItem of results!.needsReview) {
+          const candidate = reviewItem.candidates.find((c) => c.id === rawgId);
+          if (candidate) {
+            return {
+              rawgId: candidate.id,
+              name: candidate.name,
+              background_image: candidate.background_image,
+              released: candidate.released,
+              searchTerm: reviewItem.searchTerm,
+            };
+          }
+        }
+        return null;
+      })
+      .filter((game): game is ConfirmationGame => game !== null);
+
+    setGamesForConfirmation(gamesData);
+    setIsSelectionModalOpen(false);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmImport = () => {
     bulkSelectMutation.mutate({
       rawgIds: selectedCandidates,
       platformId: selectedPlatform,
     });
+  };
+
+  const handleCancelConfirmation = (): void => {
+    setIsConfirmModalOpen(false);
+    setIsSelectionModalOpen(true);
   };
 
   const getSelectionList = (needsReview: NeedsReview[]) => {
@@ -287,6 +328,11 @@ export function Import() {
 
       return a.candidate.name.localeCompare(b.candidate.name);
     });
+  };
+
+  const getPlatformDisplayName = (): string => {
+    const platform = platforms.find((p) => p.id === selectedPlatform);
+    return platform?.display_name || "your platform";
   };
 
   const sidebarContent = (
@@ -610,6 +656,65 @@ export function Import() {
                   : `Import selected (${selectedCandidates.length})`}
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Modal */}
+      <Dialog
+        open={isConfirmModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCancelConfirmation();
+          }
+        }}
+      >
+        <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col border-ctp-surface1 bg-ctp-mantle">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-ctp-text">Confirm Import</DialogTitle>
+            <DialogDescription>
+              You are about to import {gamesForConfirmation.length} game(s) to{" "}
+              {getPlatformDisplayName()}
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollFade axis="y" className="flex-1 space-y-2 overflow-y-auto pr-2">
+            {gamesForConfirmation.map((game) => (
+              <div
+                key={game.rawgId}
+                className="bg-ctp-surface0/60 flex items-center gap-3 rounded border border-ctp-surface1 p-3"
+              >
+                {game.background_image ? (
+                  <img
+                    src={game.background_image}
+                    alt={game.name}
+                    className="h-16 w-16 rounded object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded bg-ctp-surface0">
+                    <span className="text-xs text-ctp-overlay1">No image</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-medium text-ctp-text">{game.name}</p>
+                  <div className="flex items-center gap-2 text-sm text-ctp-overlay1">
+                    {game.released && <span>{game.released}</span>}
+                    <span className="text-ctp-subtext0">From: {game.searchTerm}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </ScrollFade>
+
+          <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
+            <Button variant="secondary" onClick={handleCancelConfirmation}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmImport} disabled={bulkSelectMutation.isPending}>
+              {bulkSelectMutation.isPending
+                ? "Importing..."
+                : `Confirm Import (${gamesForConfirmation.length})`}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
