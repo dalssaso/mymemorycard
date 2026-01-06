@@ -433,18 +433,10 @@ export function Library() {
 
           {/* Export Buttons */}
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleExport("json")}
-              className="border-ctp-teal/30 bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal"
-            >
+            <Button variant="outline-teal" onClick={() => handleExport("json")}>
               Export JSON
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleExport("csv")}
-              className="border-ctp-green/30 bg-ctp-green/20 hover:bg-ctp-green/30 text-ctp-green"
-            >
+            <Button variant="outline-green" onClick={() => handleExport("csv")}>
               Export CSV
             </Button>
           </div>
@@ -552,7 +544,7 @@ export function Library() {
                   variant="outline"
                   size="lg"
                   onClick={() => setSelectionMode(true)}
-                  className="border-ctp-surface1 text-sm text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
+                  className="text-sm"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -606,20 +598,20 @@ export function Library() {
               </span>
               {filteredGames.length > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="ghost-text"
                   size="lg"
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
-                  className="px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                  className="px-2 text-sm"
                 >
                   {allFilteredSelected ? "Deselect all" : "Select all"}
                 </Button>
               )}
               {selectedGameIds.length > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="ghost-text"
                   size="lg"
                   onClick={() => setRowSelection({})}
-                  className="px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                  className="px-2 text-sm"
                 >
                   Clear
                 </Button>
@@ -634,11 +626,7 @@ export function Library() {
                     onOpenChange={setShowCollectionDropdown}
                   >
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="border-ctp-teal/30 bg-ctp-teal/20 hover:bg-ctp-teal/30 text-ctp-teal"
-                      >
+                      <Button variant="outline-teal" size="lg">
                         Add to Collection
                       </Button>
                     </DropdownMenuTrigger>
@@ -671,10 +659,9 @@ export function Library() {
 
                   {/* Delete */}
                   <Button
-                    variant="outline"
+                    variant="outline-red"
                     size="lg"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="border-ctp-red/30 bg-ctp-red/20 hover:bg-ctp-red/30 text-ctp-red"
                   >
                     Delete
                   </Button>
@@ -682,12 +669,7 @@ export function Library() {
               )}
 
               {/* Cancel/Done */}
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={handleExitSelectionMode}
-                className="bg-ctp-surface2 text-ctp-text hover:bg-ctp-surface1"
-              >
+              <Button variant="secondary" size="lg" onClick={handleExitSelectionMode}>
                 Done
               </Button>
             </div>

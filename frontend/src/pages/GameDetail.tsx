@@ -936,9 +936,9 @@ export function GameDetail() {
                 </div>
               ) : (
                 <Button
-                  variant="outline"
+                  variant="outline-red"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="hover:bg-ctp-red/20 hover:border-ctp-red/50 h-auto w-full border-2 border-ctp-surface1 bg-ctp-surface0 py-3 font-semibold text-ctp-subtext0 hover:text-ctp-red"
+                  className="h-auto w-full border-2 py-3 font-semibold"
                 >
                   Remove from Library
                 </Button>
