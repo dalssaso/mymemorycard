@@ -521,7 +521,16 @@ export function Import() {
                 return (
                   <div
                     key={`${searchTerm}-${candidate.id}`}
-                    className={`flex items-center gap-3 rounded border p-3 transition-colors ${
+                    onClick={() => toggleCandidateSelection(candidate.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        toggleCandidateSelection(candidate.id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    className={`flex cursor-pointer items-center gap-3 rounded border p-3 transition-colors ${
                       isSelected
                         ? "bg-ctp-mauve/10 border-ctp-mauve"
                         : "bg-ctp-surface0/60 border-ctp-surface1 hover:bg-ctp-surface1"
@@ -530,7 +539,7 @@ export function Import() {
                     <Checkbox
                       id={`import-select-${candidate.id}`}
                       checked={isSelected}
-                      onChange={() => toggleCandidateSelection(candidate.id)}
+                      onCheckedChange={() => toggleCandidateSelection(candidate.id)}
                       disabled={bulkSelectMutation.isPending || selectMutation.isPending}
                     />
                     {candidate.background_image ? (
@@ -552,7 +561,9 @@ export function Import() {
                       </div>
                     </div>
                     <Button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         setActiveSelectionId(candidate.id);
                         selectMutation.mutate({
                           rawgId: candidate.id,
