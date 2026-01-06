@@ -652,11 +652,10 @@ export function CollectionDetail() {
                   ) : (
                     <>
                       <Button
-                        variant="outline"
+                        variant="outline-mauve"
                         size="sm"
                         onClick={() => setSelectionMode(true)}
                         disabled={games.length === 0}
-                        className="bg-ctp-mauve/20 border-ctp-mauve/30 hover:bg-ctp-mauve/30 text-ctp-mauve"
                       >
                         Select Games
                       </Button>

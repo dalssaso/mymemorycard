@@ -9,16 +9,27 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base shadow",
-        destructive: "hover:bg-ctp-red/90 bg-ctp-red text-ctp-base shadow-sm",
+        default: "bg-ctp-mauve text-ctp-base shadow hover:bg-ctp-lavender hover:text-ctp-base",
+        destructive: "bg-ctp-red text-ctp-base shadow-sm hover:bg-ctp-maroon hover:text-ctp-text",
         outline:
-          "border border-ctp-surface1 bg-ctp-base shadow-sm hover:bg-ctp-sky hover:text-ctp-base",
-        secondary: "hover:bg-ctp-teal/80 bg-ctp-teal text-ctp-base shadow-sm",
-        ghost: "hover:bg-ctp-sky hover:text-ctp-base",
-        link: "text-ctp-mauve underline-offset-4 hover:underline",
+          "border border-ctp-surface1 bg-ctp-base shadow-sm hover:bg-ctp-surface0 hover:text-ctp-text hover:border-ctp-surface2",
+        secondary: "bg-ctp-teal text-ctp-base shadow-sm hover:bg-ctp-sapphire hover:text-ctp-base",
+        ghost: "hover:bg-ctp-surface0 hover:text-ctp-text",
+        link: "text-ctp-mauve underline-offset-4 hover:underline hover:text-ctp-lavender",
+        // New specialized variants for colored action buttons
+        "outline-teal":
+          "border border-ctp-teal/40 bg-ctp-teal/15 text-ctp-teal shadow-sm hover:bg-ctp-teal hover:text-ctp-base hover:border-ctp-teal",
+        "outline-green":
+          "border border-ctp-green/40 bg-ctp-green/15 text-ctp-green shadow-sm hover:bg-ctp-green hover:text-ctp-base hover:border-ctp-green",
+        "outline-red":
+          "border border-ctp-red/40 bg-ctp-red/15 text-ctp-red shadow-sm hover:bg-ctp-red hover:text-ctp-base hover:border-ctp-red",
+        "outline-mauve":
+          "border border-ctp-mauve/40 bg-ctp-mauve/15 text-ctp-mauve shadow-sm hover:bg-ctp-mauve hover:text-ctp-base hover:border-ctp-mauve",
+        // Text-only hover variant (no background change)
+        "ghost-text": "text-ctp-subtext0 hover:text-ctp-text",
         // Backwards-compatible aliases
-        primary: "hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base shadow",
-        danger: "hover:bg-ctp-red/90 bg-ctp-red text-ctp-base shadow-sm",
+        primary: "bg-ctp-mauve text-ctp-base shadow hover:bg-ctp-lavender hover:text-ctp-base",
+        danger: "bg-ctp-red text-ctp-base shadow-sm hover:bg-ctp-maroon hover:text-ctp-text",
       },
       size: {
         default: "h-9 px-4 py-2",

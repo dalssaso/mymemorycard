@@ -35,11 +35,8 @@ export function StatusButton({
         variant="ghost"
         size="icon"
         onClick={onClick}
-        className={cn(
-          "rounded-lg p-2 transition-all hover:bg-ctp-surface0 hover:text-ctp-text",
-          `text-${config.color}`,
-          className
-        )}
+        className={cn("rounded-lg p-2", className)}
+        style={{ color: `var(--${config.color})` }}
         title={config.label}
       >
         <svg
@@ -61,14 +58,15 @@ export function StatusButton({
       onClick={onClick}
       style={isActive ? config.activeStyle : config.bgStyle}
       className={cn(
-        "flex h-auto w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm transition hover:brightness-110",
-        isActive && "border",
+        "flex h-auto w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm",
+        isActive && "border border-ctp-surface1 bg-ctp-surface0",
         className
       )}
     >
       <div className="flex items-center gap-2">
         <svg
-          className={cn("h-4 w-4", `text-${config.color}`)}
+          className="h-4 w-4"
+          style={{ color: `var(--${config.color})` }}
           fill={config.iconFill ? "currentColor" : "none"}
           stroke="currentColor"
           viewBox="0 0 24 24"

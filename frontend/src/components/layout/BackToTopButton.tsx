@@ -26,9 +26,9 @@ export function BackToTopButton() {
   return (
     <Button
       aria-label="Back to the top"
-      variant="ghost"
+      variant="default"
       size="icon"
-      className="border-ctp-mauve/40 fixed bottom-20 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border bg-ctp-mauve text-ctp-base shadow-lg transition-colors hover:bg-ctp-teal md:hidden"
+      className="fixed bottom-20 right-4 z-40 h-11 w-11 rounded-full shadow-lg md:hidden"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       type="button"
     >

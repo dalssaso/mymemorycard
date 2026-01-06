@@ -345,10 +345,9 @@ export function FranchiseDetail() {
                   </>
                 ) : (
                   <Button
-                    variant="outline"
+                    variant="outline-mauve"
                     size="sm"
                     onClick={() => setSelectionMode(true)}
-                    className="border-ctp-mauve/30 bg-ctp-mauve/20 hover:bg-ctp-mauve/30 text-ctp-mauve"
                   >
                     Select Games
                   </Button>

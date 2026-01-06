@@ -274,7 +274,7 @@ export function Collections() {
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectionMode(true)}
-                    className="h-auto border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
+                    className="h-auto text-sm"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -305,24 +305,24 @@ export function Collections() {
                     </span>
                     {collections.length > 0 && (
                       <Button
-                        variant="ghost"
+                        variant="ghost-text"
                         size="sm"
                         onClick={() =>
                           setSelectedCollectionIds(
                             allSelected ? [] : collections.map((collection) => collection.id)
                           )
                         }
-                        className="h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                        className="h-auto px-2 text-sm"
                       >
                         {allSelected ? "Deselect all" : "Select all"}
                       </Button>
                     )}
                     {selectedCollectionIds.length > 0 && (
                       <Button
-                        variant="ghost"
+                        variant="ghost-text"
                         size="sm"
                         onClick={() => setSelectedCollectionIds([])}
-                        className="h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                        className="h-auto px-2 text-sm"
                       >
                         Clear
                       </Button>
@@ -331,10 +331,9 @@ export function Collections() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     {selectedCollectionIds.length > 0 && (
                       <Button
-                        variant="outline"
+                        variant="outline-red"
                         size="sm"
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="border-ctp-red/30 bg-ctp-red/20 hover:bg-ctp-red/30 h-auto text-ctp-red"
                       >
                         Delete
                       </Button>
@@ -539,14 +538,14 @@ export function Collections() {
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-ctp-green">AI Suggestion</span>
                     <Button
-                      variant="ghost"
+                      variant="ghost-text"
                       size="sm"
                       onClick={() => {
                         setAiSuggestion(null);
                         setNewCollectionName("");
                         setNewCollectionDescription("");
                       }}
-                      className="h-auto px-2 text-xs text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                      className="h-auto px-2 text-xs"
                     >
                       Clear
                     </Button>
@@ -637,13 +636,13 @@ export function Collections() {
                           className="mx-auto max-h-48 rounded-lg"
                         />
                         <Button
-                          variant="ghost"
+                          variant="ghost-text"
                           size="sm"
                           onClick={() => {
                             setNewCollectionCoverFile(null);
                             setCoverPreviewUrl(null);
                           }}
-                          className="mt-1 h-auto px-2 text-sm text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                          className="mt-1 h-auto px-2 text-sm"
                         >
                           Remove
                         </Button>
