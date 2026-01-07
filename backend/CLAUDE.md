@@ -116,6 +116,41 @@ await db.transaction(async (tx) => {
 })
 ```
 
+### Database Migrations
+
+**IMPORTANT**: Never create SQL migration files manually. Always use Drizzle's migration workflow:
+
+```bash
+# 1. Modify schema.ts with your changes
+# 2. Generate migration from schema changes
+bun run db:generate
+
+# 3. Review the generated SQL in drizzle/ directory
+# 4. Apply migration (runs automatically on backend startup)
+bun run db:migrate
+```
+
+**For data migrations** (e.g., deleting records, transforming data):
+1. Create the schema-only migration using `db:generate`
+2. Manually edit the generated SQL file to add data migration logic
+3. Apply with `db:migrate`
+
+Example workflow:
+```typescript
+// 1. Update schema.ts
+export const aiProviderEnum = pgEnum("ai_provider", ["openai"]) // was ["openai", "openrouter", "ollama", "lmstudio"]
+
+// 2. Generate migration
+// $ bun run db:generate
+// ✓ Generated migration: drizzle/0017_update_ai_provider.sql
+
+// 3. Edit generated SQL to add data cleanup (if needed)
+// Add: DELETE FROM user_ai_settings WHERE provider != 'openai';
+
+// 4. Apply migration
+// $ bun run db:migrate
+```
+
 ## Router
 
 Custom lightweight router in `lib/router.ts`:

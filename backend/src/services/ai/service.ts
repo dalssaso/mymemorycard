@@ -94,12 +94,6 @@ function createOpenAIClient(settings: AiSettings): OpenAI {
 
   if (settings.baseUrl) {
     config.baseURL = settings.baseUrl;
-  } else if (settings.provider === "openrouter") {
-    config.baseURL = "https://openrouter.ai/api/v1";
-  } else if (settings.provider === "ollama") {
-    config.baseURL = "http://localhost:11434/v1";
-  } else if (settings.provider === "lmstudio") {
-    config.baseURL = "http://localhost:1234/v1";
   }
 
   return new OpenAI(config);
@@ -116,18 +110,16 @@ function createImageClient(settings: AiSettings): { client: OpenAI; provider: st
     throw new Error("Image API key not configured");
   }
 
-  const imageModel = settings.imageModel || "dall-e-3";
-  const isOpenRouter = imageModel.includes("/") || settings.provider === "openrouter";
-
   const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey };
 
-  if (isOpenRouter) {
-    config.baseURL = "https://openrouter.ai/api/v1";
+  // Support custom base URL for image API (e.g., Azure)
+  if (settings.baseUrl) {
+    config.baseURL = settings.baseUrl;
   }
 
   return {
     client: new OpenAI(config),
-    provider: isOpenRouter ? "openrouter" : "openai",
+    provider: "openai",
   };
 }
 
@@ -258,26 +250,17 @@ export async function suggestCollections(
       ],
     };
 
-    // Use max_completion_tokens for OpenAI (newer models require it), max_tokens for others
+    // Use max_completion_tokens for OpenAI (newer models require it)
     // Note: OpenAI reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support custom temperature
-    if (settings.provider === "openai") {
-      completionParams.max_completion_tokens = settings.maxTokens;
-      completionParams.response_format = { type: "json_object" };
-      // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
-      if (
-        !settings.model.startsWith("gpt-5") &&
-        !settings.model.includes("o1") &&
-        !settings.model.includes("o3")
-      ) {
-        completionParams.temperature = settings.temperature;
-      }
-    } else {
-      completionParams.max_tokens = settings.maxTokens;
+    completionParams.max_completion_tokens = settings.maxTokens;
+    completionParams.response_format = { type: "json_object" };
+    // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
+    if (
+      !settings.model.startsWith("gpt-5") &&
+      !settings.model.includes("o1") &&
+      !settings.model.includes("o3")
+    ) {
       completionParams.temperature = settings.temperature;
-      // Only add response_format for GPT models on other providers
-      if (settings.model.includes("gpt")) {
-        completionParams.response_format = { type: "json_object" };
-      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
@@ -384,26 +367,17 @@ export async function suggestNextGame(
       ],
     };
 
-    // Use max_completion_tokens for OpenAI (newer models require it), max_tokens for others
+    // Use max_completion_tokens for OpenAI (newer models require it)
     // Note: OpenAI reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support custom temperature
-    if (settings.provider === "openai") {
-      completionParams.max_completion_tokens = settings.maxTokens;
-      completionParams.response_format = { type: "json_object" };
-      // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
-      if (
-        !settings.model.startsWith("gpt-5") &&
-        !settings.model.includes("o1") &&
-        !settings.model.includes("o3")
-      ) {
-        completionParams.temperature = settings.temperature;
-      }
-    } else {
-      completionParams.max_tokens = settings.maxTokens;
+    completionParams.max_completion_tokens = settings.maxTokens;
+    completionParams.response_format = { type: "json_object" };
+    // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
+    if (
+      !settings.model.startsWith("gpt-5") &&
+      !settings.model.includes("o1") &&
+      !settings.model.includes("o3")
+    ) {
       completionParams.temperature = settings.temperature;
-      // Only add response_format for GPT models on other providers
-      if (settings.model.includes("gpt")) {
-        completionParams.response_format = { type: "json_object" };
-      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
@@ -487,14 +461,7 @@ export async function generateCollectionCover(
     throw new Error("No active AI provider configured");
   }
 
-  const { client, provider } = createImageClient(settings);
-
-  // Only OpenAI is supported for image generation
-  if (provider !== "openai") {
-    throw new Error(
-      "Image generation is only supported with OpenAI (DALL-E models). Please configure an OpenAI provider in Settings."
-    );
-  }
+  const { client } = createImageClient(settings);
 
   const model = settings.imageModel || "dall-e-3";
   const size = "1024x1536"; // Portrait orientation for collection covers (options: '1024x1024', '1024x1536', '1536x1024', 'auto')
@@ -546,7 +513,7 @@ export async function generateCollectionCover(
     await logActivity(
       userId,
       "generate_cover_image",
-      provider,
+      "openai",
       model,
       usage,
       Date.now() - startTime,
@@ -561,7 +528,7 @@ export async function generateCollectionCover(
     await logActivity(
       userId,
       "generate_cover_image",
-      provider,
+      "openai",
       model,
       null,
       Date.now() - startTime,

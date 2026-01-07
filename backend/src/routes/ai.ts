@@ -80,21 +80,10 @@ router.get(
 );
 
 router.get(
-  "/api/ai/models/:provider",
+  "/api/ai/models/openai",
   requireAuth(async (req, user) => {
     try {
-      const url = new URL(req.url);
-      const pathParts = url.pathname.split("/");
-      const provider = pathParts[pathParts.length - 1];
-
-      if (!provider || !["openai", "openrouter"].includes(provider)) {
-        return new Response(JSON.stringify({ textModels: [], imageModels: [] }), {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders() },
-        });
-      }
-
-      const cached = await getCachedModels(provider);
+      const cached = await getCachedModels("openai");
       if (cached) {
         return new Response(JSON.stringify(cached), {
           status: 200,
@@ -103,14 +92,13 @@ router.get(
       }
 
       const settings = await queryOne<{
-        provider: string;
         base_url: string | null;
         api_key_encrypted: string | null;
       }>(
-        `SELECT provider, base_url, api_key_encrypted
+        `SELECT base_url, api_key_encrypted
          FROM user_ai_settings
-         WHERE user_id = $1 AND provider = $2::ai_provider`,
-        [user.id, provider]
+         WHERE user_id = $1 AND provider = 'openai'::ai_provider`,
+        [user.id]
       );
 
       if (!settings || !settings.api_key_encrypted) {
@@ -121,21 +109,14 @@ router.get(
       }
 
       const apiKey = decrypt(settings.api_key_encrypted);
-      let client: OpenAI | undefined;
-      let models;
-
-      if (provider === "openai") {
-        const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey };
-        if (settings.base_url) {
-          config.baseURL = settings.base_url;
-        }
-        client = new OpenAI(config);
-        models = await getModelsForProvider(provider, client);
-      } else {
-        models = await getModelsForProvider(provider, undefined, apiKey);
+      const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey };
+      if (settings.base_url) {
+        config.baseURL = settings.base_url;
       }
+      const client = new OpenAI(config);
+      const models = await getModelsForProvider("openai", client);
 
-      await setCachedModels(provider, models);
+      await setCachedModels("openai", models);
 
       return new Response(JSON.stringify(models), {
         status: 200,
@@ -179,8 +160,8 @@ router.put(
         setActive,
       } = body;
 
-      if (!provider || !["openai", "openrouter", "ollama", "lmstudio"].includes(provider)) {
-        return new Response(JSON.stringify({ error: "Valid provider is required" }), {
+      if (!provider || provider !== "openai") {
+        return new Response(JSON.stringify({ error: "Only OpenAI provider is supported" }), {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders() },
         });
@@ -213,21 +194,20 @@ router.put(
           user_id, provider, base_url, api_key_encrypted, model,
           image_api_key_encrypted, image_model, temperature, max_tokens, is_active, updated_at
         )
-        VALUES ($1, $2::ai_provider, $3, $4, COALESCE($5, 'gpt-4.1-mini'), $6, $7, COALESCE($8, 0.7), COALESCE($9, 12000), COALESCE($10, false), NOW())
+        VALUES ($1, 'openai'::ai_provider, $2, $3, COALESCE($4, 'gpt-4.1-mini'), $5, $6, COALESCE($7, 0.7), COALESCE($8, 12000), COALESCE($9, false), NOW())
         ON CONFLICT (user_id, provider)
         DO UPDATE SET
-          base_url = CASE WHEN $3 IS NOT NULL THEN $3 ELSE user_ai_settings.base_url END,
-          api_key_encrypted = COALESCE($4, user_ai_settings.api_key_encrypted),
-          model = COALESCE($5, user_ai_settings.model),
-          image_api_key_encrypted = CASE WHEN $6 IS NOT NULL THEN $6 ELSE user_ai_settings.image_api_key_encrypted END,
-          image_model = COALESCE($7, user_ai_settings.image_model),
-          temperature = COALESCE($8, user_ai_settings.temperature),
-          max_tokens = COALESCE($9, user_ai_settings.max_tokens),
-          is_active = COALESCE($10, user_ai_settings.is_active),
+          base_url = CASE WHEN $2 IS NOT NULL THEN $2 ELSE user_ai_settings.base_url END,
+          api_key_encrypted = COALESCE($3, user_ai_settings.api_key_encrypted),
+          model = COALESCE($4, user_ai_settings.model),
+          image_api_key_encrypted = CASE WHEN $5 IS NOT NULL THEN $5 ELSE user_ai_settings.image_api_key_encrypted END,
+          image_model = COALESCE($6, user_ai_settings.image_model),
+          temperature = COALESCE($7, user_ai_settings.temperature),
+          max_tokens = COALESCE($8, user_ai_settings.max_tokens),
+          is_active = COALESCE($9, user_ai_settings.is_active),
           updated_at = NOW()`,
         [
           user.id,
-          provider,
           baseUrl ?? null,
           apiKeyEncrypted ?? null,
           model ?? null,
@@ -260,8 +240,8 @@ router.post(
       const body = (await req.json()) as { provider: string };
       const { provider } = body;
 
-      if (!provider || !["openai", "openrouter", "ollama", "lmstudio"].includes(provider)) {
-        return new Response(JSON.stringify({ error: "Valid provider is required" }), {
+      if (!provider || provider !== "openai") {
+        return new Response(JSON.stringify({ error: "Only OpenAI provider is supported" }), {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders() },
         });
@@ -270,10 +250,10 @@ router.post(
       // Deactivate all providers
       await query("UPDATE user_ai_settings SET is_active = false WHERE user_id = $1", [user.id]);
 
-      // Activate the selected provider
+      // Activate the OpenAI provider
       await query(
-        "UPDATE user_ai_settings SET is_active = true WHERE user_id = $1 AND provider = $2::ai_provider",
-        [user.id, provider]
+        "UPDATE user_ai_settings SET is_active = true WHERE user_id = $1 AND provider = 'openai'::ai_provider",
+        [user.id]
       );
 
       return new Response(JSON.stringify({ success: true }), {
