@@ -76,9 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   );
 
   const logout = useCallback(() => {
-    void queryClient.cancelQueries({ queryKey: ["auth", "me"] });
     clearToken();
-    queryClient.removeQueries({ queryKey: ["auth", "me"] });
+    queryClient.clear();
   }, [queryClient]);
 
   const value = useMemo<AuthContextType>(
