@@ -39,6 +39,9 @@ export {
   SelectValue,
 } from "./select";
 
+export { SelectField } from "./select-field";
+export type { SelectFieldOption, SelectFieldProps } from "./select-field";
+
 export { Combobox } from "./combobox";
 
 export {

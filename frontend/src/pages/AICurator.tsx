@@ -559,16 +559,14 @@ export function AICurator() {
                   {collection.gameNames.join(", ")}
                 </div>
                 <div className="mb-3 text-xs italic text-ctp-overlay2">{collection.reasoning}</div>
-                {settingsData?.activeProvider?.provider === "openai" && (
-                  <div className="mb-3 flex items-center gap-2 text-sm text-ctp-subtext0">
-                    <Checkbox
-                      id={`generate-cover-${index}`}
-                      checked={generateCoverOnCreate}
-                      onCheckedChange={(checked) => setGenerateCoverOnCreate(checked === true)}
-                    />
-                    <label htmlFor={`generate-cover-${index}`}>Generate AI cover (~$0.04)</label>
-                  </div>
-                )}
+                <div className="mb-3 flex items-center gap-2 text-sm text-ctp-subtext0">
+                  <Checkbox
+                    id={`generate-cover-${index}`}
+                    checked={generateCoverOnCreate}
+                    onCheckedChange={(checked) => setGenerateCoverOnCreate(checked === true)}
+                  />
+                  <label htmlFor={`generate-cover-${index}`}>Generate AI cover (~$0.04)</label>
+                </div>
                 <Button
                   onClick={() => {
                     createCollectionMutation.mutate({

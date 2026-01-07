@@ -1,0 +1,2 @@
+# Mark auto-generated Drizzle migration metadata as generated
+backend/drizzle/meta/* linguist-generated=true

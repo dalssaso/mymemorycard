@@ -93,142 +93,17 @@ export async function discoverOpenAIModels(client: OpenAI): Promise<ModelsRespon
   }
 }
 
-interface OpenRouterModel {
-  id: string;
-  name?: string;
-  pricing?: {
-    prompt?: string;
-    completion?: string;
-    image?: string;
-  };
-  context_length?: number;
-}
-
-const OPENROUTER_TEXT_MODELS = [
-  "openai/gpt-5-nano",
-  "openai/gpt-5-mini",
-  "openai/gpt-4o-mini",
-  "deepseek/deepseek-v3.2",
-  "allenai/olmo-3.1-32b-think:free",
-];
-
-const OPENROUTER_IMAGE_MODELS = [
-  "openai/gpt-image-1.5",
-  "google/gemini-2.5-flash-image",
-  "black-forest-labs/flux-1.1-pro",
-  "black-forest-labs/flux-pro",
-  "anthropic/claude-3-5-sonnet:beta", // Can generate images via artifacts
-];
-
-export async function discoverOpenRouterModels(apiKey: string): Promise<ModelsResponse> {
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/models", {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenRouter API error: ${response.status}`);
-    }
-
-    const data = (await response.json()) as { data: OpenRouterModel[] };
-    const models = data.data || [];
-
-    const modelsMap = new Map<string, OpenRouterModel>(models.map((m) => [m.id, m]));
-
-    const textModels: ModelCapability[] = [];
-    const imageModels: ModelCapability[] = [];
-
-    for (const modelId of OPENROUTER_TEXT_MODELS) {
-      const model = modelsMap.get(modelId);
-      if (model) {
-        const inputCost = model.pricing?.prompt ? parseFloat(model.pricing.prompt) * 1000000 : 0;
-        const outputCost = model.pricing?.completion
-          ? parseFloat(model.pricing.completion) * 1000000
-          : 0;
-
-        textModels.push({
-          id: model.id,
-          name: model.name || model.id,
-          displayName: model.name || model.id,
-          pricing: {
-            input: inputCost,
-            output: outputCost,
-          },
-          capabilities: ["text"],
-          provider: "openrouter",
-          context: model.context_length,
-        });
-      }
-    }
-
-    // Debug: Log available image models
-    const availableImageModels = models.filter(
-      (m) =>
-        m.id.includes("image") ||
-        m.id.includes("flux") ||
-        m.id.includes("dream") ||
-        m.id.includes("dall-e")
-    );
-    console.log(
-      "Available OpenRouter image models:",
-      availableImageModels.map((m) => m.id)
-    );
-
-    for (const modelId of OPENROUTER_IMAGE_MODELS) {
-      const model = modelsMap.get(modelId);
-      if (model) {
-        const perImage = model.pricing?.image
-          ? parseFloat(model.pricing.image)
-          : model.pricing?.prompt
-            ? parseFloat(model.pricing.prompt)
-            : 0.01;
-
-        imageModels.push({
-          id: model.id,
-          name: model.name || model.id,
-          displayName: model.name || model.id,
-          pricing: {
-            perImage,
-          },
-          capabilities: ["image"],
-          provider: "openrouter",
-          context: model.context_length,
-        });
-      } else {
-        console.warn(`OpenRouter image model not found in API: ${modelId}`);
-      }
-    }
-
-    return {
-      textModels,
-      imageModels,
-    };
-  } catch (error) {
-    console.error("Error discovering OpenRouter models:", error);
-    return { textModels: [], imageModels: [] };
-  }
-}
-
 export async function getModelsForProvider(
   provider: string,
-  client?: OpenAI,
-  apiKey?: string
+  client?: OpenAI
 ): Promise<ModelsResponse> {
-  if (provider === "openai") {
-    if (!client) {
-      return { textModels: [], imageModels: [] };
-    }
-    return await discoverOpenAIModels(client);
+  if (provider !== "openai") {
+    throw new Error("Only OpenAI provider is supported");
   }
 
-  if (provider === "openrouter") {
-    if (!apiKey) {
-      return { textModels: [], imageModels: [] };
-    }
-    return await discoverOpenRouterModels(apiKey);
+  if (!client) {
+    throw new Error("OpenAI client is required");
   }
 
-  return { textModels: [], imageModels: [] };
+  return await discoverOpenAIModels(client);
 }

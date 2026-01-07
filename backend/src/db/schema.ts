@@ -666,7 +666,7 @@ export const userPreferences = pgTable(
 // AI CURATOR SETTINGS & ACTIVITY
 // ============================================================================
 
-export const aiProviderEnum = pgEnum("ai_provider", ["openai", "openrouter", "ollama", "lmstudio"]);
+export const aiProviderEnum = pgEnum("ai_provider", ["openai"]);
 
 export const userAiSettings = pgTable(
   "user_ai_settings",
