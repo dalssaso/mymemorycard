@@ -81,23 +81,24 @@ function createImageClient(settings: AiSettings): { client: OpenAI; provider: st
     ? decrypt(settings.imageApiKeyEncrypted)
     : settings.apiKeyEncrypted
       ? decrypt(settings.apiKeyEncrypted)
-      : null;
+      : null
 
   if (!apiKey) {
-    throw new Error("Image API key not configured");
+    throw new Error("Image API key not configured")
   }
 
-  const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey };
-
-  // Support custom base URL for image API (e.g., Azure)
-  if (settings.baseUrl) {
-    config.baseURL = settings.baseUrl;
-  }
+  // Note: We use OpenAI SDK directly for image generation since Vercel AI SDK v6
+  // doesn't provide a stable image generation API yet. The client is created with
+  // the same credentials as the Vercel provider for consistency.
+  const client = new OpenAI({
+    apiKey,
+    baseURL: settings.baseUrl || undefined,
+  })
 
   return {
-    client: new OpenAI(config),
+    client,
     provider: "openai",
-  };
+  }
 }
 
 function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
