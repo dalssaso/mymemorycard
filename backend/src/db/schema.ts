@@ -14,6 +14,7 @@ import {
   index,
   check,
   primaryKey,
+  vector,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -722,5 +723,33 @@ export const aiActivityLogs = pgTable(
     index("idx_ai_activity_user").on(table.userId),
     index("idx_ai_activity_action").on(table.actionType),
     index("idx_ai_activity_date").on(table.createdAt),
+  ]
+);
+
+// ============================================================================
+// EMBEDDINGS
+// ============================================================================
+
+export const gameEmbeddings = pgTable(
+  "game_embeddings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    gameId: uuid("game_id")
+      .unique()
+      .notNull()
+      .references(() => games.id, { onDelete: "cascade" }),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    textHash: varchar("text_hash", { length: 64 }).notNull(),
+    model: varchar("model", { length: 50 }).notNull().default("text-embedding-3-small"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("idx_game_embeddings_game").on(table.gameId),
+    index("idx_game_embeddings_text_hash").on(table.textHash),
+    index("idx_game_embeddings_vector").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops")
+    ),
   ]
 );
