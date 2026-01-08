@@ -1,5 +1,4 @@
-import OpenAI from "openai"; // Keep temporarily
-import { generateText } from 'ai'
+import { generateText, generateImage } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { queryOne, queryMany, query } from "@/services/db";
 import { decrypt } from "@/lib/encryption";
@@ -76,7 +75,7 @@ async function getUserAiSettings(userId: string): Promise<AiSettings | null> {
 }
 
 
-function createImageClient(settings: AiSettings): { client: OpenAI; provider: string } {
+function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   const apiKey = settings.imageApiKeyEncrypted
     ? decrypt(settings.imageApiKeyEncrypted)
     : settings.apiKeyEncrypted
@@ -87,18 +86,10 @@ function createImageClient(settings: AiSettings): { client: OpenAI; provider: st
     throw new Error("Image API key not configured")
   }
 
-  // Note: We use OpenAI SDK directly for image generation since Vercel AI SDK v6
-  // doesn't provide a stable image generation API yet. The client is created with
-  // the same credentials as the Vercel provider for consistency.
-  const client = new OpenAI({
+  return createOpenAI({
     apiKey,
     baseURL: settings.baseUrl || undefined,
   })
-
-  return {
-    client,
-    provider: "openai",
-  }
 }
 
 function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
@@ -431,57 +422,32 @@ export async function generateCollectionCover(
     throw new Error("No active AI provider configured");
   }
 
-  const { client } = createImageClient(settings);
-
+  const client = createImageClient(settings);
   const model = settings.imageModel || "dall-e-3";
-  const size = "1024x1536"; // Portrait orientation for collection covers (options: '1024x1024', '1024x1536', '1536x1024', 'auto')
-
-  // gpt-image models return base64, DALL-E models return URLs
-  const isGptImageModel = model.includes("gpt-image");
+  const size = "1024x1536"; // Portrait orientation for collection covers
 
   try {
-    // Build image generation params based on model type
-    const imageParams: Record<string, unknown> = {
-      model,
+    const result = await generateImage({
+      model: client.image(model),
       prompt: buildCoverImagePrompt(collectionName, collectionDescription),
-      n: 1,
       size,
-      moderation: "low", // Less restrictive content filtering for game-related prompts
+      providerOptions: {
+        openai: {
+          quality: "standard",
+          style: "vivid",
+        },
+      },
+    });
+
+    // Vercel AI SDK returns base64 encoded image
+    if (!result.image.base64) {
+      throw new Error("No image data in response");
     }
 
-    if (isGptImageModel) {
-      // gpt-image models use output_format instead of quality
-      imageParams.output_format = "png"
-    } else {
-      // DALL-E models support quality parameter
-      imageParams.quality = "medium" // Options: 'low', 'medium', 'high', 'auto'
-    }
+    const imageUrl = `data:${result.image.mediaType};base64,${result.image.base64}`;
 
-    // Note: Vercel AI SDK doesn't have a dedicated image generation API yet
-    // We'll use the OpenAI client directly through the Vercel wrapper
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple image providers
-    const response = await client.images.generate(imageParams as any)
-
-    if (!response.data || response.data.length === 0) {
-      throw new Error("No image data in response")
-    }
-
-    // Handle both URL and base64 response formats
-    const urlResponse = response.data[0]?.url
-    const b64Response = response.data[0]?.b64_json
-
-    let imageUrl: string
-    if (urlResponse) {
-      imageUrl = urlResponse
-    } else if (b64Response) {
-      // Convert base64 to data URL for gpt-image models
-      imageUrl = `data:image/png;base64,${b64Response}`
-    } else {
-      throw new Error("No image data in response (neither URL nor base64)")
-    }
-
-    const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
-    const cost = calculateCost(model, usage)
+    const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+    const cost = calculateCost(model, usage);
 
     await logActivity(
       userId,
@@ -494,9 +460,9 @@ export async function generateCollectionCover(
       null,
       collectionId,
       `${collectionName}: ${collectionDescription}`
-    )
+    );
 
-    return { imageUrl, cost }
+    return { imageUrl, cost };
   } catch (error) {
     await logActivity(
       userId,
