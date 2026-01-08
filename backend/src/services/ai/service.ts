@@ -32,17 +32,6 @@ interface TokenUsage {
   totalTokens: number;
 }
 
-// Extended usage type for reasoning models (not in official OpenAI types)
-interface ExtendedUsage {
-  completion_tokens_details?: {
-    reasoning_tokens?: number;
-  };
-}
-
-// Extended message type for reasoning models (not in official OpenAI types)
-interface ExtendedMessage {
-  reasoning?: string;
-}
 
 const MODEL_COSTS = {
   "gpt-4.1-mini": { input: 0.003, output: 0.012 },
@@ -86,20 +75,6 @@ async function getUserAiSettings(userId: string): Promise<AiSettings | null> {
   return settings;
 }
 
-function createOpenAIClient(settings: AiSettings): OpenAI {
-  if (!settings.apiKeyEncrypted) {
-    throw new Error("API key not configured");
-  }
-
-  const apiKey = decrypt(settings.apiKeyEncrypted);
-  const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey };
-
-  if (settings.baseUrl) {
-    config.baseURL = settings.baseUrl;
-  }
-
-  return new OpenAI(config);
-}
 
 function createImageClient(settings: AiSettings): { client: OpenAI; provider: string } {
   const apiKey = settings.imageApiKeyEncrypted
@@ -355,7 +330,7 @@ export async function suggestNextGame(
     throw new Error("No active AI provider configured");
   }
 
-  const client = createOpenAIClient(settings);
+  const client = createVercelAIClient(settings);
   const library = await getLibrarySummary(userId);
 
   if (library.length === 0) {
@@ -364,18 +339,18 @@ export async function suggestNextGame(
 
   try {
     const completionParams: Record<string, unknown> = {
-      model: settings.model,
+      model: client(settings.model),
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.curator },
         { role: "user", content: buildNextGameSuggestionPrompt(library, userInput) },
       ],
     };
 
-    // Use max_completion_tokens for OpenAI (newer models require it)
-    // Note: OpenAI reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support custom temperature
-    completionParams.max_completion_tokens = settings.maxTokens;
-    completionParams.response_format = { type: "json_object" };
-    // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
+    // Use max_completion_tokens for newer models
+    completionParams.maxTokens = settings.maxTokens;
+    completionParams.responseFormat = { type: "json_object" };
+
+    // Only set temperature for non-reasoning models
     if (
       !settings.model.startsWith("gpt-5") &&
       !settings.model.includes("o1") &&
@@ -385,39 +360,29 @@ export async function suggestNextGame(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
-    const completion = await client.chat.completions.create(completionParams as any);
+    const result = await generateText(completionParams as any);
 
-    const message = completion.choices[0]?.message;
-    const content = message?.content;
+    const content = result.text;
 
     // Check if we hit token limit
-    if (completion.choices[0]?.finish_reason === "length") {
-      console.warn(
-        "Response was truncated due to max_tokens limit. Reasoning tokens:",
-        (completion.usage as ExtendedUsage)?.completion_tokens_details?.reasoning_tokens
-      );
+    if (result.finishReason === "length") {
+      console.warn("Response was truncated due to max_tokens limit");
       throw new Error(
         "Response truncated - increase max_tokens to at least 12000 for reasoning models"
       );
     }
 
     if (!content) {
-      console.error("No content in next game response. Full completion:", completion);
-      const reasoning = (message as ExtendedMessage)?.reasoning;
-      if (reasoning) {
-        console.error(
-          "Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning."
-        );
-        throw new Error("Model reasoning exhausted max_tokens - increase to at least 12000");
-      }
+      console.error("No content in next game response. Full result:", result);
       throw new Error("No response from AI");
     }
 
-    const result = JSON.parse(content) as NextGameSuggestion;
+    const suggestion = JSON.parse(content) as NextGameSuggestion;
+
     const usage: TokenUsage = {
-      promptTokens: completion.usage?.prompt_tokens ?? 0,
-      completionTokens: completion.usage?.completion_tokens ?? 0,
-      totalTokens: completion.usage?.total_tokens ?? 0,
+      promptTokens: result.usage?.inputTokens ?? 0,
+      completionTokens: result.usage?.outputTokens ?? 0,
+      totalTokens: result.usage?.totalTokens ?? 0,
     };
     const cost = calculateCost(settings.model, usage);
 
@@ -434,7 +399,7 @@ export async function suggestNextGame(
       userInput ?? null
     );
 
-    return { suggestion: result, cost };
+    return { suggestion, cost };
   } catch (error) {
     await logActivity(
       userId,
