@@ -447,39 +447,41 @@ export async function generateCollectionCover(
       n: 1,
       size,
       moderation: "low", // Less restrictive content filtering for game-related prompts
-    };
+    }
 
     if (isGptImageModel) {
       // gpt-image models use output_format instead of quality
-      imageParams.output_format = "png";
+      imageParams.output_format = "png"
     } else {
       // DALL-E models support quality parameter
-      imageParams.quality = "medium"; // Options: 'low', 'medium', 'high', 'auto'
+      imageParams.quality = "medium" // Options: 'low', 'medium', 'high', 'auto'
     }
 
+    // Note: Vercel AI SDK doesn't have a dedicated image generation API yet
+    // We'll use the OpenAI client directly through the Vercel wrapper
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple image providers
-    const response = await client.images.generate(imageParams as any);
+    const response = await client.images.generate(imageParams as any)
 
     if (!response.data || response.data.length === 0) {
-      throw new Error("No image data in response");
+      throw new Error("No image data in response")
     }
 
     // Handle both URL and base64 response formats
-    const urlResponse = response.data[0]?.url;
-    const b64Response = response.data[0]?.b64_json;
+    const urlResponse = response.data[0]?.url
+    const b64Response = response.data[0]?.b64_json
 
-    let imageUrl: string;
+    let imageUrl: string
     if (urlResponse) {
-      imageUrl = urlResponse;
+      imageUrl = urlResponse
     } else if (b64Response) {
       // Convert base64 to data URL for gpt-image models
-      imageUrl = `data:image/png;base64,${b64Response}`;
+      imageUrl = `data:image/png;base64,${b64Response}`
     } else {
-      throw new Error("No image data in response (neither URL nor base64)");
+      throw new Error("No image data in response (neither URL nor base64)")
     }
 
-    const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
-    const cost = calculateCost(model, usage);
+    const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
+    const cost = calculateCost(model, usage)
 
     await logActivity(
       userId,
@@ -492,9 +494,9 @@ export async function generateCollectionCover(
       null,
       collectionId,
       `${collectionName}: ${collectionDescription}`
-    );
+    )
 
-    return { imageUrl, cost };
+    return { imageUrl, cost }
   } catch (error) {
     await logActivity(
       userId,
