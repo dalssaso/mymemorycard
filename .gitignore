@@ -96,3 +96,6 @@ docs/_build/
 # Local agent instructions (not tracked)
 CLAUDE.local.md
 AGENTS.override.md
+
+# Git worktrees
+.worktrees/
