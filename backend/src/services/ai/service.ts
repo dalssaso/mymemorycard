@@ -125,7 +125,6 @@ function createImageClient(settings: AiSettings): { client: OpenAI; provider: st
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Will be used in migration
 function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   if (!settings.apiKeyEncrypted) {
     throw new Error("API key not configured")
@@ -251,6 +250,7 @@ export async function suggestCollections(
   }
 
   const client = createOpenAIClient(settings);
+  const vercelClient = createVercelAIClient(settings); // eslint-disable-line @typescript-eslint/no-unused-vars -- Will be used in Part 2
   const library = await getLibrarySummary(userId);
 
   if (library.length === 0) {
