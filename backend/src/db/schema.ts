@@ -777,3 +777,27 @@ export const collectionEmbeddings = pgTable(
     ),
   ]
 );
+
+export const achievementEmbeddings = pgTable(
+  "achievement_embeddings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    achievementId: uuid("achievement_id")
+      .unique()
+      .notNull()
+      .references(() => achievements.id, { onDelete: "cascade" }),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    textHash: varchar("text_hash", { length: 64 }).notNull(),
+    model: varchar("model", { length: 50 }).notNull().default("text-embedding-3-small"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("idx_achievement_embeddings_achievement").on(table.achievementId),
+    index("idx_achievement_embeddings_text_hash").on(table.textHash),
+    index("idx_achievement_embeddings_vector").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops")
+    ),
+  ]
+);
