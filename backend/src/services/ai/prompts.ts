@@ -145,14 +145,17 @@ export function buildCoverImagePrompt(
   collectionName: string,
   collectionDescription: string
 ): string {
-  return `Create a cover image for a video game collection titled "${collectionName}".
+  return `Create an artistic poster-style cover image for a video game collection titled "${collectionName}".
 
 Description: ${collectionDescription}
 
-The image should:
-- Visually represent the theme of this game collection
-- Be suitable as a collection poster (portrait orientation, 4:3 ratio preferred)
-- Have a cohesive color scheme that fits the theme
-- Be visually appealing and professional
-- Not include text (the collection name will be overlaid separately)`;
+Design Requirements:
+- Abstract, artistic representation emphasizing mood and atmosphere (not literal game scenes)
+- Suitable for a digital collection poster (portrait orientation, 4:3 ratio)
+- Cohesive color palette that reflects the theme and genre
+- Stylized, illustration-like quality with bold composition
+- No text, logos, or copyrighted characters
+- Professional, family-friendly artistic interpretation
+
+Style: Modern digital art poster with clean composition and thematic visual elements.`;
 }

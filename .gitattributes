@@ -1,2 +1,3 @@
-# Mark auto-generated Drizzle migration metadata as generated
-backend/drizzle/meta/* linguist-generated=true
+# Mark auto-generated Drizzle migration metadata as generated and exclude from diffs
+backend/drizzle/meta/* linguist-generated=true -diff
+backend/drizzle/meta/**/* linguist-generated=true -diff
