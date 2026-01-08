@@ -801,3 +801,27 @@ export const achievementEmbeddings = pgTable(
     ),
   ]
 );
+
+export const userPreferenceEmbeddings = pgTable(
+  "user_preference_embeddings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    preferenceType: varchar("preference_type", { length: 50 }).notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    confidence: real("confidence").notNull().default(0.5),
+    sampleSize: integer("sample_size").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.preferenceType),
+    index("idx_user_pref_embeddings_user").on(table.userId),
+    index("idx_user_pref_embeddings_vector").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops")
+    ),
+  ]
+);
