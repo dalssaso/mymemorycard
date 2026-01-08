@@ -426,18 +426,28 @@ export async function generateCollectionCover(
   const model = settings.imageModel || "dall-e-3";
   const size = "1024x1536"; // Portrait orientation for collection covers
 
+  // gpt-image models don't support quality/style parameters - only DALL-E models do
+  const isDalleModel = model.includes("dall-e");
+
   try {
-    const result = await generateImage({
+    const imageParams: Record<string, unknown> = {
       model: client.image(model),
       prompt: buildCoverImagePrompt(collectionName, collectionDescription),
       size,
-      providerOptions: {
+    };
+
+    // Only add providerOptions for DALL-E models
+    if (isDalleModel) {
+      imageParams.providerOptions = {
         openai: {
           quality: "standard",
           style: "vivid",
         },
-      },
-    });
+      };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple image models
+    const result = await generateImage(imageParams as any);
 
     // Vercel AI SDK returns base64 encoded image
     if (!result.image.base64) {
