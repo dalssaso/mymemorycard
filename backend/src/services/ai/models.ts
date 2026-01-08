@@ -1,4 +1,4 @@
-import type { createOpenAI } from '@ai-sdk/openai'
+import type { createOpenAI } from "@ai-sdk/openai";
 
 export interface ModelCapability {
   id: string;
@@ -36,7 +36,9 @@ const OPENAI_IMAGE_MODEL_PRICING: Record<string, { perImage: number }> = {
   "dall-e-3": { perImage: 0.04 },
 };
 
-export async function discoverOpenAIModels(_client: ReturnType<typeof createOpenAI>): Promise<ModelsResponse> {
+export async function discoverOpenAIModels(
+  _client: ReturnType<typeof createOpenAI>
+): Promise<ModelsResponse> {
   // Vercel AI SDK doesn't expose models.list(), use hardcoded list instead
   // This is more reliable as model availability can be checked via API on demand
 

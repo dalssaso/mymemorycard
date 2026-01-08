@@ -1,5 +1,5 @@
-import { generateText, generateImage } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
+import { generateText, generateImage } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { queryOne, queryMany, query } from "@/services/db";
 import { decrypt } from "@/lib/encryption";
 import { getCachedLibrary, setCachedLibrary } from "./cache";
@@ -30,7 +30,6 @@ interface TokenUsage {
   completionTokens: number;
   totalTokens: number;
 }
-
 
 const MODEL_COSTS = {
   "gpt-4.1-mini": { input: 0.003, output: 0.012 },
@@ -74,35 +73,34 @@ async function getUserAiSettings(userId: string): Promise<AiSettings | null> {
   return settings;
 }
 
-
 function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   const apiKey = settings.imageApiKeyEncrypted
     ? decrypt(settings.imageApiKeyEncrypted)
     : settings.apiKeyEncrypted
       ? decrypt(settings.apiKeyEncrypted)
-      : null
+      : null;
 
   if (!apiKey) {
-    throw new Error("Image API key not configured")
+    throw new Error("Image API key not configured");
   }
 
   return createOpenAI({
     apiKey,
     baseURL: settings.baseUrl || undefined,
-  })
+  });
 }
 
 function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   if (!settings.apiKeyEncrypted) {
-    throw new Error("API key not configured")
+    throw new Error("API key not configured");
   }
 
-  const apiKey = decrypt(settings.apiKeyEncrypted)
+  const apiKey = decrypt(settings.apiKeyEncrypted);
 
   return createOpenAI({
     apiKey,
     baseURL: settings.baseUrl || undefined,
-  })
+  });
 }
 
 async function getLibrarySummary(userId: string): Promise<GameSummary[]> {
@@ -224,29 +222,22 @@ export async function suggestCollections(
   }
 
   try {
-    const completionParams: Record<string, unknown> = {
+    // Only set temperature for non-reasoning models
+    const isReasoningModel =
+      settings.model.startsWith("gpt-5") ||
+      settings.model.includes("o1") ||
+      settings.model.includes("o3");
+
+    const result = await generateText({
       model: vercelClient(settings.model),
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.organizer },
         { role: "user", content: buildCollectionSuggestionsPrompt(library, theme) },
       ],
-    };
-
-    // Use max_completion_tokens for newer models
-    completionParams.maxTokens = settings.maxTokens;
-    completionParams.responseFormat = { type: "json_object" };
-
-    // Only set temperature for non-reasoning models
-    if (
-      !settings.model.startsWith("gpt-5") &&
-      !settings.model.includes("o1") &&
-      !settings.model.includes("o3")
-    ) {
-      completionParams.temperature = settings.temperature;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
-    const result = await generateText(completionParams as any);
+      maxOutputTokens: settings.maxTokens,
+      temperature: isReasoningModel ? undefined : settings.temperature,
+      experimental_telemetry: { isEnabled: false },
+    });
 
     const content = result.text;
 
@@ -330,29 +321,22 @@ export async function suggestNextGame(
   }
 
   try {
-    const completionParams: Record<string, unknown> = {
+    // Only set temperature for non-reasoning models
+    const isReasoningModel =
+      settings.model.startsWith("gpt-5") ||
+      settings.model.includes("o1") ||
+      settings.model.includes("o3");
+
+    const result = await generateText({
       model: client(settings.model),
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.curator },
         { role: "user", content: buildNextGameSuggestionPrompt(library, userInput) },
       ],
-    };
-
-    // Use max_completion_tokens for newer models
-    completionParams.maxTokens = settings.maxTokens;
-    completionParams.responseFormat = { type: "json_object" };
-
-    // Only set temperature for non-reasoning models
-    if (
-      !settings.model.startsWith("gpt-5") &&
-      !settings.model.includes("o1") &&
-      !settings.model.includes("o3")
-    ) {
-      completionParams.temperature = settings.temperature;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
-    const result = await generateText(completionParams as any);
+      maxOutputTokens: settings.maxTokens,
+      temperature: isReasoningModel ? undefined : settings.temperature,
+      experimental_telemetry: { isEnabled: false },
+    });
 
     const content = result.text;
 
@@ -430,24 +414,23 @@ export async function generateCollectionCover(
   const isDalleModel = model.includes("dall-e");
 
   try {
-    const imageParams: Record<string, unknown> = {
-      model: client.image(model),
-      prompt: buildCoverImagePrompt(collectionName, collectionDescription),
-      size,
-    };
-
-    // Only add providerOptions for DALL-E models
-    if (isDalleModel) {
-      imageParams.providerOptions = {
-        openai: {
-          quality: "standard",
-          style: "vivid",
-        },
-      };
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple image models
-    const result = await generateImage(imageParams as any);
+    const result = isDalleModel
+      ? await generateImage({
+          model: client.image(model),
+          prompt: buildCoverImagePrompt(collectionName, collectionDescription),
+          size,
+          providerOptions: {
+            openai: {
+              quality: "standard",
+              style: "vivid",
+            },
+          },
+        })
+      : await generateImage({
+          model: client.image(model),
+          prompt: buildCoverImagePrompt(collectionName, collectionDescription),
+          size,
+        });
 
     // Vercel AI SDK returns base64 encoded image
     if (!result.image.base64) {
