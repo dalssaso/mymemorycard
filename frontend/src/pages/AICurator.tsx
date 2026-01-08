@@ -11,15 +11,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Badge,
   Button,
   Card,
   Checkbox,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   Input,
+  ScrollFade,
 } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -29,6 +32,35 @@ import {
   type NextGameSuggestion,
 } from "@/lib/api";
 import { AICuratorSidebar } from "@/components/sidebar";
+import { cn } from "@/lib/cn";
+
+interface CollectionCreationData {
+  name: string;
+  description: string;
+  gameIds: string[];
+  generateCover: boolean;
+  index: number;
+}
+
+interface CollectionCreationResult {
+  collection: {
+    id: string;
+    name: string;
+  };
+  addedCount: number;
+  coverCost: number;
+  coverError?: unknown;
+}
+
+interface CollectionCreationError {
+  collectionName: string;
+  error: unknown;
+}
+
+interface BulkCreationResponse {
+  results: CollectionCreationResult[];
+  errors: CollectionCreationError[];
+}
 
 export function AICurator() {
   const queryClient = useQueryClient();
@@ -53,7 +85,12 @@ export function AICurator() {
   const [expandedCard, setExpandedCard] = useState<
     "collections" | "nextGame" | "generateCover" | null
   >(null);
-  const [generateCoverOnCreate, setGenerateCoverOnCreate] = useState(false);
+  const [collectionsWithCover, setCollectionsWithCover] = useState<Set<number>>(new Set());
+  const [selectedCollectionIndexes, setSelectedCollectionIndexes] = useState<number[]>([]);
+  const [isConfirmCollectionsModalOpen, setIsConfirmCollectionsModalOpen] = useState(false);
+  const [collectionsForConfirmation, setCollectionsForConfirmation] = useState<
+    CollectionSuggestion[]
+  >([]);
 
   const getApiErrorMessage = (error: unknown): string | null => {
     if (!error || typeof error !== "object") {
@@ -121,50 +158,6 @@ export function AICurator() {
     },
   });
 
-  const createCollectionMutation = useMutation({
-    mutationFn: async (data: {
-      name: string;
-      description: string;
-      gameIds: string[];
-      generateCover?: boolean;
-    }) => {
-      const createResult = await collectionsAPI.create(data.name, data.description);
-      const collectionId = createResult.data.collection.id;
-
-      if (data.gameIds.length > 0) {
-        await collectionsAPI.bulkAddGames(collectionId, data.gameIds);
-      }
-
-      let coverCost = 0;
-      if (data.generateCover) {
-        const coverResult = await aiAPI.generateCover(data.name, data.description, collectionId);
-        coverCost = coverResult.data.cost;
-      }
-
-      return {
-        collection: createResult.data.collection,
-        addedCount: data.gameIds.length,
-        coverCost,
-      };
-    },
-    onSuccess: (result, variables) => {
-      const gameCount = result.addedCount;
-      let message =
-        gameCount > 0
-          ? `Created "${variables.name}" with ${gameCount} games`
-          : `Created collection: ${variables.name}`;
-      if (result.coverCost > 0) {
-        message += ` (cover: $${result.coverCost.toFixed(4)})`;
-      }
-      showToast(message, "success");
-      queryClient.invalidateQueries({ queryKey: ["collections"] });
-      queryClient.invalidateQueries({ queryKey: ["ai-activity"] });
-    },
-    onError: () => {
-      showToast("Failed to create collection", "error");
-    },
-  });
-
   const generateCoverMutation = useMutation({
     mutationFn: (data: {
       collectionName: string;
@@ -182,6 +175,105 @@ export function AICurator() {
     },
     onError: (error: unknown) => {
       showToast(getApiErrorMessage(error) ?? "Failed to generate cover", "error");
+    },
+  });
+
+  const bulkCreateCollectionsMutation = useMutation({
+    mutationFn: async (data: {
+      collections: CollectionCreationData[];
+    }): Promise<BulkCreationResponse> => {
+      const results: CollectionCreationResult[] = [];
+      const errors: CollectionCreationError[] = [];
+
+      for (const collection of data.collections) {
+        try {
+          const createResult = await collectionsAPI.create(collection.name, collection.description);
+          const collectionId = createResult.data.collection.id;
+
+          if (collection.gameIds.length > 0) {
+            await collectionsAPI.bulkAddGames(collectionId, collection.gameIds);
+          }
+
+          let coverCost = 0;
+          let coverError = null;
+
+          if (collection.generateCover) {
+            try {
+              const coverResult = await aiAPI.generateCover(
+                collection.name,
+                collection.description,
+                collectionId
+              );
+              coverCost = coverResult.data.cost;
+            } catch (err) {
+              // Cover generation failed, but collection was created successfully
+              coverError = err;
+            }
+          }
+
+          results.push({
+            collection: createResult.data.collection,
+            addedCount: collection.gameIds.length,
+            coverCost,
+            coverError,
+          });
+        } catch (error) {
+          errors.push({
+            collectionName: collection.name,
+            error,
+          });
+        }
+      }
+
+      return { results, errors };
+    },
+    onSuccess: (data) => {
+      const { results, errors } = data;
+
+      // Count successful and failed cover generations
+      const successfulCovers = results.filter((r) => r.coverCost > 0).length;
+      const failedCovers = results.filter((r) => r.coverError).length;
+      const totalCost = results.reduce((sum, r) => sum + r.coverCost, 0);
+
+      // Show success toast
+      if (results.length > 0) {
+        let message = `Created ${results.length} collection(s)`;
+        if (successfulCovers > 0) {
+          message += ` with ${successfulCovers} cover${successfulCovers > 1 ? "s" : ""} ($${totalCost.toFixed(4)})`;
+        }
+        showToast(message, "success");
+      }
+
+      // Show cover generation errors (non-fatal)
+      if (failedCovers > 0) {
+        showToast(
+          `${failedCovers} cover generation${failedCovers > 1 ? "s" : ""} failed (collections were still created)`,
+          "warning"
+        );
+      }
+
+      // Show collection creation errors (fatal)
+      if (errors.length > 0) {
+        showToast(`Failed to create ${errors.length} collection(s)`, "error");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["ai-activity"] });
+
+      setIsConfirmCollectionsModalOpen(false);
+      setShowCollectionsModal(false);
+      setSelectedCollectionIndexes([]);
+      setCollectionsWithCover(new Set());
+
+      // Navigate based on TOTAL collections created (not just successful covers)
+      if (results.length === 1) {
+        navigate({ to: "/collections/$id", params: { id: results[0].collection.id } });
+      } else if (results.length > 1) {
+        navigate({ to: "/collections" });
+      }
+    },
+    onError: () => {
+      showToast("Failed to create collections", "error");
     },
   });
 
@@ -229,6 +321,51 @@ export function AICurator() {
       console.error("Failed to estimate cost:", error);
       showToast("Failed to estimate cost", "error");
     }
+  };
+
+  const toggleCollectionSelection = (index: number): void => {
+    setSelectedCollectionIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  const selectAllCollections = (): void => {
+    setSelectedCollectionIndexes(suggestedCollections.map((_, index) => index));
+  };
+
+  const clearCollectionSelection = (): void => {
+    setSelectedCollectionIndexes([]);
+  };
+
+  const handleCreateSelected = (): void => {
+    if (selectedCollectionIndexes.length === 0) return;
+
+    const collectionsData = selectedCollectionIndexes
+      .map((index) => suggestedCollections[index])
+      .filter((col): col is CollectionSuggestion => col !== undefined);
+
+    setCollectionsForConfirmation(collectionsData);
+    setShowCollectionsModal(false);
+    setIsConfirmCollectionsModalOpen(true);
+  };
+
+  const handleCancelCollectionsConfirmation = (): void => {
+    setIsConfirmCollectionsModalOpen(false);
+    setShowCollectionsModal(true);
+  };
+
+  const handleConfirmCollectionsCreation = (): void => {
+    const collectionsToCreate: CollectionCreationData[] = selectedCollectionIndexes.map(
+      (index) => ({
+        name: suggestedCollections[index].name,
+        description: suggestedCollections[index].description,
+        gameIds: suggestedCollections[index].gameIds,
+        generateCover: collectionsWithCover.has(index),
+        index,
+      })
+    );
+
+    bulkCreateCollectionsMutation.mutate({ collections: collectionsToCreate });
   };
 
   const handleConfirmAction = () => {
@@ -372,6 +509,7 @@ export function AICurator() {
                     placeholder="e.g., Scary games, To play with my S.O., Short games..."
                     className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                   />
                   <p className="mt-1 text-xs text-ctp-overlay1">
                     Leave empty for general suggestions, or specify themes for targeted collections
@@ -550,40 +688,169 @@ export function AICurator() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {suggestedCollections.map((collection, index) => (
-              <div key={index} className="rounded-lg border border-ctp-surface1 p-4">
-                <h3 className="mb-2 text-lg font-semibold text-ctp-mauve">{collection.name}</h3>
-                <p className="mb-3 text-sm text-ctp-subtext0">{collection.description}</p>
-                <div className="mb-3 break-words text-xs text-ctp-overlay1">
-                  <strong>Games ({collection.gameNames.length}):</strong>{" "}
-                  {collection.gameNames.join(", ")}
-                </div>
-                <div className="mb-3 text-xs italic text-ctp-overlay2">{collection.reasoning}</div>
-                <div className="mb-3 flex items-center gap-2 text-sm text-ctp-subtext0">
-                  <Checkbox
-                    id={`generate-cover-${index}`}
-                    checked={generateCoverOnCreate}
-                    onCheckedChange={(checked) => setGenerateCoverOnCreate(checked === true)}
-                  />
-                  <label htmlFor={`generate-cover-${index}`}>Generate AI cover (~$0.04)</label>
-                </div>
-                <Button
-                  onClick={() => {
-                    createCollectionMutation.mutate({
-                      name: collection.name,
-                      description: collection.description,
-                      gameIds: collection.gameIds,
-                      generateCover: generateCoverOnCreate,
-                    });
-                  }}
-                  disabled={createCollectionMutation.isPending}
-                  className="hover:bg-ctp-mauve/90 w-full bg-ctp-mauve text-ctp-base sm:w-auto"
+            {suggestedCollections.map((collection, index) => {
+              const isSelected = selectedCollectionIndexes.includes(index);
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    "rounded-lg border p-4 transition-colors",
+                    isSelected ? "bg-ctp-mauve/10 border-ctp-mauve" : "border-ctp-surface1"
+                  )}
                 >
-                  {createCollectionMutation.isPending ? "Creating..." : "Create Collection"}
-                </Button>
-              </div>
-            ))}
+                  <div className="mb-3 flex items-start gap-3">
+                    <Checkbox
+                      id={`select-collection-${index}`}
+                      checked={isSelected}
+                      onCheckedChange={() => toggleCollectionSelection(index)}
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-ctp-mauve">{collection.name}</h3>
+                      <p className="mt-1 text-sm text-ctp-subtext0">{collection.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 break-words text-xs text-ctp-overlay1">
+                    <strong>Games ({collection.gameNames.length}):</strong>{" "}
+                    {collection.gameNames.join(", ")}
+                  </div>
+
+                  <div className="mb-3 text-xs italic text-ctp-overlay2">
+                    {collection.reasoning}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-ctp-subtext0">
+                    <Checkbox
+                      id={`generate-cover-${index}`}
+                      checked={collectionsWithCover.has(index)}
+                      onCheckedChange={(checked) => {
+                        setCollectionsWithCover((prev) => {
+                          const next = new Set(prev);
+                          if (checked) {
+                            next.add(index);
+                          } else {
+                            next.delete(index);
+                          }
+                          return next;
+                        });
+                      }}
+                    />
+                    <label htmlFor={`generate-cover-${index}`}>Generate AI cover (~$0.04)</label>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          <DialogFooter className="mt-4 flex items-center justify-between gap-3 sm:justify-between">
+            <div className="text-sm text-ctp-subtext0">
+              {selectedCollectionIndexes.length} selected
+              {collectionsWithCover.size > 0 && ` (${collectionsWithCover.size} with covers)`}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={selectAllCollections}
+                disabled={selectedCollectionIndexes.length === suggestedCollections.length}
+                variant="secondary"
+                size="sm"
+              >
+                Select all
+              </Button>
+
+              <Button
+                onClick={clearCollectionSelection}
+                disabled={selectedCollectionIndexes.length === 0}
+                variant="secondary"
+                size="sm"
+              >
+                Clear
+              </Button>
+
+              <Button
+                onClick={handleCreateSelected}
+                disabled={
+                  selectedCollectionIndexes.length === 0 || bulkCreateCollectionsMutation.isPending
+                }
+                className="hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base"
+              >
+                {bulkCreateCollectionsMutation.isPending
+                  ? "Creating..."
+                  : `Create selected (${selectedCollectionIndexes.length})`}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Collections Confirmation Modal */}
+      <Dialog
+        open={isConfirmCollectionsModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedCollectionIndexes([]);
+            setCollectionsWithCover(new Set());
+            handleCancelCollectionsConfirmation();
+          }
+        }}
+      >
+        <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col border-ctp-surface1 bg-ctp-mantle">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-ctp-text">
+              Confirm Collection Creation
+            </DialogTitle>
+            <DialogDescription>
+              You are about to create {collectionsForConfirmation.length} collection(s)
+              {collectionsWithCover.size > 0 &&
+                ` with ${collectionsWithCover.size} AI-generated cover(s)`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollFade axis="y" className="flex-1 space-y-2 overflow-y-auto pr-2">
+            {collectionsForConfirmation.map((collection, confirmIndex) => {
+              const originalIndex = selectedCollectionIndexes[confirmIndex];
+              const hasCover = collectionsWithCover.has(originalIndex);
+
+              return (
+                <div
+                  key={confirmIndex}
+                  className="bg-ctp-surface0/60 rounded border border-ctp-surface1 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-ctp-mauve">{collection.name}</h3>
+                      <p className="mt-1 text-sm text-ctp-subtext0">{collection.description}</p>
+                      <p className="mt-2 text-xs text-ctp-overlay1">
+                        {collection.gameNames.length} game(s)
+                      </p>
+                    </div>
+                    {hasCover && (
+                      <Badge className="bg-ctp-green/20 text-ctp-green">With cover</Badge>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </ScrollFade>
+
+          <DialogFooter className="mt-4 flex items-center justify-between gap-3 sm:justify-between">
+            <Button
+              variant="secondary"
+              onClick={handleCancelCollectionsConfirmation}
+              disabled={bulkCreateCollectionsMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmCollectionsCreation}
+              disabled={bulkCreateCollectionsMutation.isPending}
+              className="hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base"
+            >
+              {bulkCreateCollectionsMutation.isPending
+                ? "Creating..."
+                : `Create ${collectionsForConfirmation.length} collection(s)`}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
