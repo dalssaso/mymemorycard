@@ -12,7 +12,7 @@ import {
 } from "@/services/ai/service";
 import { getModelsForProvider } from "@/services/ai/models";
 import { getCachedModels, setCachedModels } from "@/services/ai/cache";
-import OpenAI from "openai";
+import { createOpenAI } from "@ai-sdk/openai";
 
 function maskApiKey(encryptedKey: string | null): string | null {
   if (!encryptedKey) return null;
@@ -109,11 +109,10 @@ router.get(
       }
 
       const apiKey = decrypt(settings.api_key_encrypted);
-      const config: ConstructorParameters<typeof OpenAI>[0] = { apiKey };
-      if (settings.base_url) {
-        config.baseURL = settings.base_url;
-      }
-      const client = new OpenAI(config);
+      const client = createOpenAI({
+        apiKey,
+        baseURL: settings.base_url || undefined,
+      });
       const models = await getModelsForProvider("openai", client);
 
       await setCachedModels("openai", models);

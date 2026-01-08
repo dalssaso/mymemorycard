@@ -1,4 +1,4 @@
-import type OpenAI from "openai";
+import type { createOpenAI } from '@ai-sdk/openai'
 
 export interface ModelCapability {
   id: string;
@@ -36,66 +36,55 @@ const OPENAI_IMAGE_MODEL_PRICING: Record<string, { perImage: number }> = {
   "dall-e-3": { perImage: 0.04 },
 };
 
-export async function discoverOpenAIModels(client: OpenAI): Promise<ModelsResponse> {
-  try {
-    const response = await client.models.list();
-    const availableModels = Array.from(response.data);
+export async function discoverOpenAIModels(_client: ReturnType<typeof createOpenAI>): Promise<ModelsResponse> {
+  // Vercel AI SDK doesn't expose models.list(), use hardcoded list instead
+  // This is more reliable as model availability can be checked via API on demand
 
-    const textModels: ModelCapability[] = [];
-    const imageModels: ModelCapability[] = [];
+  const textModels: ModelCapability[] = [];
+  const imageModels: ModelCapability[] = [];
 
-    for (const modelId of OPENAI_TEXT_MODEL_RANKING) {
-      const model = availableModels.find((m) => m.id === modelId);
-      if (model) {
-        const pricing = OPENAI_MODEL_PRICING[modelId];
-        if (pricing) {
-          textModels.push({
-            id: modelId,
-            name: modelId,
-            displayName: modelId,
-            pricing: {
-              input: pricing.input,
-              output: pricing.output,
-            },
-            capabilities: ["text"],
-            provider: "openai",
-          });
-        }
-      }
+  for (const modelId of OPENAI_TEXT_MODEL_RANKING) {
+    const pricing = OPENAI_MODEL_PRICING[modelId];
+    if (pricing) {
+      textModels.push({
+        id: modelId,
+        name: modelId,
+        displayName: modelId,
+        pricing: {
+          input: pricing.input,
+          output: pricing.output,
+        },
+        capabilities: ["text"],
+        provider: "openai",
+      });
     }
-
-    for (const modelId of OPENAI_IMAGE_MODELS) {
-      const model = availableModels.find((m) => m.id === modelId);
-      if (model) {
-        const pricing = OPENAI_IMAGE_MODEL_PRICING[modelId];
-        if (pricing) {
-          imageModels.push({
-            id: modelId,
-            name: modelId,
-            displayName: modelId,
-            pricing: {
-              perImage: pricing.perImage,
-            },
-            capabilities: ["image"],
-            provider: "openai",
-          });
-        }
-      }
-    }
-
-    return {
-      textModels: textModels.slice(0, 5),
-      imageModels: imageModels.slice(0, 5),
-    };
-  } catch (error) {
-    console.error("Error discovering OpenAI models:", error);
-    return { textModels: [], imageModels: [] };
   }
+
+  for (const modelId of OPENAI_IMAGE_MODELS) {
+    const pricing = OPENAI_IMAGE_MODEL_PRICING[modelId];
+    if (pricing) {
+      imageModels.push({
+        id: modelId,
+        name: modelId,
+        displayName: modelId,
+        pricing: {
+          perImage: pricing.perImage,
+        },
+        capabilities: ["image"],
+        provider: "openai",
+      });
+    }
+  }
+
+  return {
+    textModels: textModels.slice(0, 5),
+    imageModels: imageModels.slice(0, 5),
+  };
 }
 
 export async function getModelsForProvider(
   provider: string,
-  client?: OpenAI
+  client?: ReturnType<typeof createOpenAI>
 ): Promise<ModelsResponse> {
   if (provider !== "openai") {
     throw new Error("Only OpenAI provider is supported");
