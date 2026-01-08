@@ -753,3 +753,27 @@ export const gameEmbeddings = pgTable(
     ),
   ]
 );
+
+export const collectionEmbeddings = pgTable(
+  "collection_embeddings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    collectionId: uuid("collection_id")
+      .unique()
+      .notNull()
+      .references(() => collections.id, { onDelete: "cascade" }),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    textHash: varchar("text_hash", { length: 64 }).notNull(),
+    model: varchar("model", { length: 50 }).notNull().default("text-embedding-3-small"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("idx_collection_embeddings_collection").on(table.collectionId),
+    index("idx_collection_embeddings_text_hash").on(table.textHash),
+    index("idx_collection_embeddings_vector").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops")
+    ),
+  ]
+);
