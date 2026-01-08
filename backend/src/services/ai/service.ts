@@ -1,5 +1,5 @@
 import OpenAI from "openai"; // Keep temporarily
-import { generateText } from 'ai' // eslint-disable-line @typescript-eslint/no-unused-vars -- Will be used in migration
+import { generateText } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { queryOne, queryMany, query } from "@/services/db";
 import { decrypt } from "@/lib/encryption";
@@ -249,8 +249,7 @@ export async function suggestCollections(
     throw new Error("No active AI provider configured");
   }
 
-  const client = createOpenAIClient(settings);
-  const vercelClient = createVercelAIClient(settings); // eslint-disable-line @typescript-eslint/no-unused-vars -- Will be used in Part 2
+  const vercelClient = createVercelAIClient(settings);
   const library = await getLibrarySummary(userId);
 
   if (library.length === 0) {
@@ -259,18 +258,18 @@ export async function suggestCollections(
 
   try {
     const completionParams: Record<string, unknown> = {
-      model: settings.model,
+      model: vercelClient(settings.model),
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.organizer },
         { role: "user", content: buildCollectionSuggestionsPrompt(library, theme) },
       ],
     };
 
-    // Use max_completion_tokens for OpenAI (newer models require it)
-    // Note: OpenAI reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support custom temperature
-    completionParams.max_completion_tokens = settings.maxTokens;
-    completionParams.response_format = { type: "json_object" };
-    // Only set temperature for non-reasoning models (gpt-4o, gpt-4o-mini, etc.)
+    // Use max_completion_tokens for newer models
+    completionParams.maxTokens = settings.maxTokens;
+    completionParams.responseFormat = { type: "json_object" };
+
+    // Only set temperature for non-reasoning models
     if (
       !settings.model.startsWith("gpt-5") &&
       !settings.model.includes("o1") &&
@@ -280,38 +279,27 @@ export async function suggestCollections(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic params for multiple AI providers
-    const completion = await client.chat.completions.create(completionParams as any);
+    const result = await generateText(completionParams as any);
 
-    const message = completion.choices[0]?.message;
-    const content = message?.content;
+    const content = result.text;
 
     // Check if we hit token limit
-    if (completion.choices[0]?.finish_reason === "length") {
-      console.warn(
-        "Response was truncated due to max_tokens limit. Reasoning tokens:",
-        (completion.usage as ExtendedUsage)?.completion_tokens_details?.reasoning_tokens
-      );
+    if (result.finishReason === "length") {
+      console.warn("Response was truncated due to max_tokens limit");
       throw new Error(
         "Response truncated - increase max_tokens to at least 12000 for reasoning models"
       );
     }
 
     if (!content) {
-      console.error("No content in response. Full completion:", completion);
-      const reasoning = (message as ExtendedMessage)?.reasoning;
-      if (reasoning) {
-        console.error(
-          "Model used reasoning but did not produce final content. This means max_tokens was exhausted by reasoning."
-        );
-        throw new Error("Model reasoning exhausted max_tokens - increase to at least 12000");
-      }
+      console.error("No content in response. Full result:", result);
       throw new Error("No response from AI");
     }
 
-    const result = JSON.parse(content) as { collections: Omit<CollectionSuggestion, "gameIds">[] };
+    const parsed = JSON.parse(content) as { collections: Omit<CollectionSuggestion, "gameIds">[] };
 
     // Map game names to IDs using the library we already fetched
-    const collectionsWithIds: CollectionSuggestion[] = result.collections.map((suggestion) => {
+    const collectionsWithIds: CollectionSuggestion[] = parsed.collections.map((suggestion) => {
       const gameIds = suggestion.gameNames
         .map((name) => library.find((g) => g.name === name)?.id)
         .filter((id): id is string => id !== undefined);
@@ -319,9 +307,9 @@ export async function suggestCollections(
     });
 
     const usage: TokenUsage = {
-      promptTokens: completion.usage?.prompt_tokens ?? 0,
-      completionTokens: completion.usage?.completion_tokens ?? 0,
-      totalTokens: completion.usage?.total_tokens ?? 0,
+      promptTokens: result.usage?.inputTokens ?? 0,
+      completionTokens: result.usage?.outputTokens ?? 0,
+      totalTokens: result.usage?.totalTokens ?? 0,
     };
     const cost = calculateCost(settings.model, usage);
 
