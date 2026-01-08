@@ -1,4 +1,6 @@
-import OpenAI from "openai";
+import OpenAI from "openai"; // Keep temporarily
+import { generateText } from 'ai' // eslint-disable-line @typescript-eslint/no-unused-vars -- Will be used in migration
+import { createOpenAI } from '@ai-sdk/openai'
 import { queryOne, queryMany, query } from "@/services/db";
 import { decrypt } from "@/lib/encryption";
 import { getCachedLibrary, setCachedLibrary } from "./cache";
@@ -121,6 +123,20 @@ function createImageClient(settings: AiSettings): { client: OpenAI; provider: st
     client: new OpenAI(config),
     provider: "openai",
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Will be used in migration
+function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
+  if (!settings.apiKeyEncrypted) {
+    throw new Error("API key not configured")
+  }
+
+  const apiKey = decrypt(settings.apiKeyEncrypted)
+
+  return createOpenAI({
+    apiKey,
+    baseURL: settings.baseUrl || undefined,
+  })
 }
 
 async function getLibrarySummary(userId: string): Promise<GameSummary[]> {
