@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.3.0](https://github.com/dalssaso/mymemorycard/compare/frontend-v1.2.2...frontend-v1.3.0) (2026-01-08)
+
+
+### Features
+
+* add confirmation modal to import flow ([#21](https://github.com/dalssaso/mymemorycard/issues/21)) ([6965127](https://github.com/dalssaso/mymemorycard/commit/696512728ce7b6b0dd91201e8d192fac065ef64c))
+* increase selection bar and component heights ([#18](https://github.com/dalssaso/mymemorycard/issues/18)) ([cd09781](https://github.com/dalssaso/mymemorycard/commit/cd09781a46a24fc636700cee2e48a2d6e925e35a))
+* simplify ai providers to openai only ([#23](https://github.com/dalssaso/mymemorycard/issues/23)) ([a8cd2f4](https://github.com/dalssaso/mymemorycard/commit/a8cd2f45f80a18f94608ecf6a02c74bdb6516f90))
+
+
+### Bug Fixes
+
+* ai curator improvements ([#24](https://github.com/dalssaso/mymemorycard/issues/24)) ([e72e1ec](https://github.com/dalssaso/mymemorycard/commit/e72e1ec3feca1895ba7b6957079c71f660d4faae))
+* enable multi-selection in import game dialog ([#20](https://github.com/dalssaso/mymemorycard/issues/20)) ([d0e14d6](https://github.com/dalssaso/mymemorycard/commit/d0e14d64f8c63b9a028f37a01e61d8911ec11a14))
+* improve button hover visibility in dark mode ([#19](https://github.com/dalssaso/mymemorycard/issues/19)) ([9f4e475](https://github.com/dalssaso/mymemorycard/commit/9f4e475aa3c3f78935b9e3af410062ddea7e0ce5))
+* invalidate collection cache when deleting games from library ([#22](https://github.com/dalssaso/mymemorycard/issues/22)) ([6a379da](https://github.com/dalssaso/mymemorycard/commit/6a379daff052220d41a5aced5e267ea791ce9524))
+
+
+### Code Refactoring
+
+* **frontend:** shadcn migration completion and layout improvements ([#17](https://github.com/dalssaso/mymemorycard/issues/17)) ([1656b21](https://github.com/dalssaso/mymemorycard/commit/1656b219746ff15080c0e8268f4fafa8ea494d2e))
+
 ## [1.2.2](https://github.com/dalssaso/mymemorycard/compare/frontend-v1.2.1...frontend-v1.2.2) (2026-01-04)
 
 

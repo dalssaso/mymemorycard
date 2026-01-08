@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.3...backend-v1.3.0) (2026-01-08)
+
+
+### Features
+
+* simplify ai providers to openai only ([#23](https://github.com/dalssaso/mymemorycard/issues/23)) ([a8cd2f4](https://github.com/dalssaso/mymemorycard/commit/a8cd2f45f80a18f94608ecf6a02c74bdb6516f90))
+
+
+### Bug Fixes
+
+* ai curator improvements ([#24](https://github.com/dalssaso/mymemorycard/issues/24)) ([e72e1ec](https://github.com/dalssaso/mymemorycard/commit/e72e1ec3feca1895ba7b6957079c71f660d4faae))
+* invalidate collection cache when deleting games from library ([#22](https://github.com/dalssaso/mymemorycard/issues/22)) ([6a379da](https://github.com/dalssaso/mymemorycard/commit/6a379daff052220d41a5aced5e267ea791ce9524))
+* use upsert for games and genres in franchise sync ([#15](https://github.com/dalssaso/mymemorycard/issues/15)) ([5568a48](https://github.com/dalssaso/mymemorycard/commit/5568a48fbf646504d3c14bb8e0337dc61e4875ca))
+
 ## [1.2.3](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.2...backend-v1.2.3) (2026-01-04)
 
 
