@@ -476,6 +476,7 @@ export async function generateCollectionCover(
       prompt: buildCoverImagePrompt(collectionName, collectionDescription),
       n: 1,
       size,
+      moderation: "low", // Less restrictive content filtering for game-related prompts
     };
 
     if (isGptImageModel) {
