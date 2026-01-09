@@ -42,6 +42,9 @@ interface TokenUsage {
 }
 
 const MODEL_COSTS = {
+  "gpt-5": { input: 1.25, output: 10 },
+  "gpt-5-mini": { input: 0.25, output: 2 },
+  "gpt-5-nano": { input: 0.05, output: 0.4 },
   "gpt-4.1-mini": { input: 0.003, output: 0.012 },
   "gpt-4o-mini": { input: 0.15, output: 0.6 },
   "gpt-4o": { input: 5, output: 15 },
