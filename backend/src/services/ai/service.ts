@@ -543,17 +543,26 @@ export async function generateCollectionCover(
     throw new Error("No active AI provider configured");
   }
 
+  // Get available models
+  const availableModels = await getAvailableModels(settings);
+
+  // Select optimal model for this task
+  const modelSelection = await selectModelForTask(
+    "generate_cover_image",
+    settings,
+    availableModels
+  );
+
   const client = createImageClient(settings);
-  const model = settings.imageModel || "dall-e-3";
   const size = "1024x1536"; // Portrait orientation for collection covers
 
   // gpt-image models don't support quality/style parameters - only DALL-E models do
-  const isDalleModel = model.includes("dall-e");
+  const isDalleModel = modelSelection.model.includes("dall-e");
 
   try {
     const result = isDalleModel
       ? await generateImage({
-          model: client.image(model),
+          model: client.image(modelSelection.model),
           prompt: buildCoverImagePrompt(collectionName, collectionDescription),
           size,
           providerOptions: {
@@ -564,7 +573,7 @@ export async function generateCollectionCover(
           },
         })
       : await generateImage({
-          model: client.image(model),
+          model: client.image(modelSelection.model),
           prompt: buildCoverImagePrompt(collectionName, collectionDescription),
           size,
         });
@@ -577,13 +586,13 @@ export async function generateCollectionCover(
     const imageUrl = `data:${result.image.mediaType};base64,${result.image.base64}`;
 
     const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
-    const cost = calculateCost(model, usage);
+    const cost = calculateCost(modelSelection.model, usage);
 
     await logActivity(
       userId,
       "generate_cover_image",
-      "openai",
-      model,
+      settings.provider,
+      modelSelection.model,
       usage,
       Date.now() - startTime,
       true,
@@ -597,8 +606,8 @@ export async function generateCollectionCover(
     await logActivity(
       userId,
       "generate_cover_image",
-      "openai",
-      model,
+      settings.provider,
+      modelSelection.model,
       null,
       Date.now() - startTime,
       false,
