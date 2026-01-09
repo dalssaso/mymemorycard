@@ -747,10 +747,7 @@ export const gameEmbeddings = pgTable(
   (table) => [
     index("idx_game_embeddings_game").on(table.gameId),
     index("idx_game_embeddings_text_hash").on(table.textHash),
-    index("idx_game_embeddings_vector").using(
-      "hnsw",
-      table.embedding.op("vector_cosine_ops")
-    ),
+    index("idx_game_embeddings_vector").using("hnsw", table.embedding.op("vector_cosine_ops")),
   ]
 );
 
@@ -819,9 +816,6 @@ export const userPreferenceEmbeddings = pgTable(
   (table) => [
     unique().on(table.userId, table.preferenceType),
     index("idx_user_pref_embeddings_user").on(table.userId),
-    index("idx_user_pref_embeddings_vector").using(
-      "hnsw",
-      table.embedding.op("vector_cosine_ops")
-    ),
+    index("idx_user_pref_embeddings_vector").using("hnsw", table.embedding.op("vector_cosine_ops")),
   ]
 );

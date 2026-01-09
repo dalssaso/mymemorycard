@@ -13,6 +13,7 @@
 ## Task 1: Baseline Verification
 
 **Files:**
+
 - Read: `backend/src/services/ai/service.ts`
 - Read: `backend/src/services/ai/models.ts`
 - Read: `backend/package.json`
@@ -22,6 +23,7 @@
 Run: `cd backend && grep -n "import.*openai" src/services/ai/*.ts`
 
 Expected output:
+
 ```
 src/services/ai/service.ts:1:import OpenAI from "openai";
 src/services/ai/models.ts:1:import type OpenAI from "openai";
@@ -50,6 +52,7 @@ Expected: `✓ No linting errors`
 Run: `cd backend && grep -A2 '"openai"' package.json`
 
 Expected output:
+
 ```json
 "openai": "^6.15.0",
 ```
@@ -59,6 +62,7 @@ Expected output:
 ## Task 2: Install Vercel AI SDK
 
 **Files:**
+
 - Modify: `backend/package.json`
 
 **Step 1: Add Vercel AI SDK dependencies**
@@ -75,6 +79,7 @@ Expected: Dependencies added to package.json
 Run: `cd backend && grep -E '"(ai|@ai-sdk/openai)"' package.json`
 
 Expected output:
+
 ```json
 "ai": "^4.0.0",
 "@ai-sdk/openai": "^1.0.0",
@@ -99,6 +104,7 @@ git commit -m "chore: add vercel ai sdk dependencies"
 ## Task 3: Create Vercel AI Client Factory
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:1-100`
 
 **Step 1: Add Vercel AI SDK imports (keep OpenAI for now)**
@@ -107,8 +113,8 @@ In `backend/src/services/ai/service.ts` at line 1, add:
 
 ```typescript
 import OpenAI from "openai"; // Keep temporarily
-import { generateText } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
+import { generateText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
 ```
 
 **Step 2: Create new client factory function**
@@ -118,15 +124,15 @@ After the `createImageClient` function (around line 124), add:
 ```typescript
 function createVercelAIClient(settings: AiSettings) {
   if (!settings.apiKeyEncrypted) {
-    throw new Error("API key not configured")
+    throw new Error("API key not configured");
   }
 
-  const apiKey = decrypt(settings.apiKeyEncrypted)
+  const apiKey = decrypt(settings.apiKeyEncrypted);
 
   return createOpenAI({
     apiKey,
     baseURL: settings.baseUrl || undefined,
-  })
+  });
 }
 ```
 
@@ -155,6 +161,7 @@ git commit -m "feat: add vercel ai sdk client factory"
 ## Task 4: Refactor suggestCollections - Part 1 (Setup)
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:226-341`
 
 **Step 1: Update suggestCollections to use both clients**
@@ -162,8 +169,8 @@ git commit -m "feat: add vercel ai sdk client factory"
 In `suggestCollections` function (line 226), after creating the OpenAI client, add:
 
 ```typescript
-const client = createOpenAIClient(settings)
-const vercelClient = createVercelAIClient(settings) // NEW
+const client = createOpenAIClient(settings);
+const vercelClient = createVercelAIClient(settings); // NEW
 ```
 
 **Step 2: Verify typecheck passes**
@@ -191,6 +198,7 @@ git commit -m "refactor: add vercel client to suggestCollections"
 ## Task 5: Refactor suggestCollections - Part 2 (API Call)
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:244-293`
 
 **Step 1: Replace OpenAI completion call with Vercel AI SDK**
@@ -300,6 +308,7 @@ git commit -m "refactor: use vercel ai sdk in suggestCollections"
 ## Task 6: Refactor suggestNextGame
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:343-449`
 
 **Step 1: Update client creation**
@@ -307,13 +316,13 @@ git commit -m "refactor: use vercel ai sdk in suggestCollections"
 In `suggestNextGame` function (line 343), replace:
 
 ```typescript
-const client = createOpenAIClient(settings)
+const client = createOpenAIClient(settings);
 ```
 
 With:
 
 ```typescript
-const client = createVercelAIClient(settings)
+const client = createVercelAIClient(settings);
 ```
 
 **Step 2: Replace completion call**
@@ -411,6 +420,7 @@ git commit -m "refactor: use vercel ai sdk in suggestNextGame"
 ## Task 7: Refactor generateCollectionCover - Part 1 (Client)
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:451-543`
 
 **Step 1: Update image client to use Vercel AI SDK**
@@ -418,26 +428,29 @@ git commit -m "refactor: use vercel ai sdk in suggestNextGame"
 In `createImageClient` function (line 102), update to:
 
 ```typescript
-function createImageClient(settings: AiSettings): { client: ReturnType<typeof createOpenAI>; provider: string } {
+function createImageClient(settings: AiSettings): {
+  client: ReturnType<typeof createOpenAI>;
+  provider: string;
+} {
   const apiKey = settings.imageApiKeyEncrypted
     ? decrypt(settings.imageApiKeyEncrypted)
     : settings.apiKeyEncrypted
       ? decrypt(settings.apiKeyEncrypted)
-      : null
+      : null;
 
   if (!apiKey) {
-    throw new Error("Image API key not configured")
+    throw new Error("Image API key not configured");
   }
 
   const client = createOpenAI({
     apiKey,
     baseURL: settings.baseUrl || undefined,
-  })
+  });
 
   return {
     client,
     provider: "openai",
-  }
+  };
 }
 ```
 
@@ -466,6 +479,7 @@ git commit -m "refactor: update image client to vercel ai sdk"
 ## Task 8: Refactor generateCollectionCover - Part 2 (Image Generation)
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:451-543`
 
 **Step 1: Update to use Vercel AI SDK image generation**
@@ -558,6 +572,7 @@ git commit -m "refactor: use vercel ai sdk for image generation"
 ## Task 9: Remove Old OpenAI SDK Import
 
 **Files:**
+
 - Modify: `backend/src/services/ai/service.ts:1`
 - Modify: `backend/src/services/ai/models.ts:1`
 
@@ -572,8 +587,8 @@ import OpenAI from "openai";
 Keep only:
 
 ```typescript
-import { generateText } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
+import { generateText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
 ```
 
 **Step 2: Update models.ts import**
@@ -587,7 +602,7 @@ import type OpenAI from "openai";
 With:
 
 ```typescript
-import type { createOpenAI } from '@ai-sdk/openai'
+import type { createOpenAI } from "@ai-sdk/openai";
 ```
 
 **Step 3: Verify typecheck passes**
@@ -615,6 +630,7 @@ git commit -m "refactor: remove old openai sdk imports"
 ## Task 10: Update Model Discovery
 
 **Files:**
+
 - Modify: `backend/src/services/ai/models.ts:39-94`
 
 **Step 1: Update function signature**
@@ -630,15 +646,17 @@ export async function discoverOpenAIModels(client: ReturnType<typeof createOpenA
 Replace the implementation (lines 40-89) with hardcoded model list:
 
 ```typescript
-export async function discoverOpenAIModels(client: ReturnType<typeof createOpenAI>): Promise<ModelsResponse> {
+export async function discoverOpenAIModels(
+  client: ReturnType<typeof createOpenAI>
+): Promise<ModelsResponse> {
   // Vercel AI SDK doesn't expose models.list(), use hardcoded list instead
   // This is more reliable as model availability can be checked via API on demand
 
-  const textModels: ModelCapability[] = []
-  const imageModels: ModelCapability[] = []
+  const textModels: ModelCapability[] = [];
+  const imageModels: ModelCapability[] = [];
 
   for (const modelId of OPENAI_TEXT_MODEL_RANKING) {
-    const pricing = OPENAI_MODEL_PRICING[modelId]
+    const pricing = OPENAI_MODEL_PRICING[modelId];
     if (pricing) {
       textModels.push({
         id: modelId,
@@ -650,12 +668,12 @@ export async function discoverOpenAIModels(client: ReturnType<typeof createOpenA
         },
         capabilities: ["text"],
         provider: "openai",
-      })
+      });
     }
   }
 
   for (const modelId of OPENAI_IMAGE_MODELS) {
-    const pricing = OPENAI_IMAGE_MODEL_PRICING[modelId]
+    const pricing = OPENAI_IMAGE_MODEL_PRICING[modelId];
     if (pricing) {
       imageModels.push({
         id: modelId,
@@ -666,14 +684,14 @@ export async function discoverOpenAIModels(client: ReturnType<typeof createOpenA
         },
         capabilities: ["image"],
         provider: "openai",
-      })
+      });
     }
   }
 
   return {
     textModels: textModels.slice(0, 5),
     imageModels: imageModels.slice(0, 5),
-  }
+  };
 }
 ```
 
@@ -713,6 +731,7 @@ git commit -m "refactor: use hardcoded model list with vercel ai sdk"
 ## Task 11: Update AI Routes
 
 **Files:**
+
 - Modify: `backend/src/routes/ai.ts:95-120`
 
 **Step 1: Update model listing endpoint to use Vercel client**
@@ -727,57 +746,57 @@ router.get(
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders() },
-      })
+      });
     }
 
     try {
       const settings = await queryOne<{
-        apiKeyEncrypted: string | null
-        baseUrl: string | null
+        apiKeyEncrypted: string | null;
+        baseUrl: string | null;
       }>(
         `SELECT api_key_encrypted as "apiKeyEncrypted", base_url as "baseUrl"
          FROM user_ai_settings
          WHERE user_id = $1 AND provider = 'openai' AND is_active = true`,
         [user.id]
-      )
+      );
 
       if (!settings?.apiKeyEncrypted) {
         return new Response(JSON.stringify({ error: "OpenAI API key not configured" }), {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders() },
-        })
+        });
       }
 
-      const apiKey = decrypt(settings.apiKeyEncrypted)
+      const apiKey = decrypt(settings.apiKeyEncrypted);
       const client = createOpenAI({
         apiKey,
         baseURL: settings.baseUrl || undefined,
-      })
+      });
 
-      const cached = await getCachedModels("openai")
+      const cached = await getCachedModels("openai");
       if (cached) {
         return new Response(JSON.stringify(cached), {
           status: 200,
           headers: { "Content-Type": "application/json", ...corsHeaders() },
-        })
+        });
       }
 
-      const models = await discoverOpenAIModels(client)
-      await setCachedModels("openai", models)
+      const models = await discoverOpenAIModels(client);
+      await setCachedModels("openai", models);
 
       return new Response(JSON.stringify(models), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders() },
-      })
+      });
     } catch (error) {
-      console.error("Get models error:", error)
+      console.error("Get models error:", error);
       return new Response(JSON.stringify({ error: "Failed to fetch models" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders() },
-      })
+      });
     }
   })
-)
+);
 ```
 
 **Step 2: Add Vercel AI SDK imports to routes file**
@@ -785,7 +804,7 @@ router.get(
 At the top of `backend/src/routes/ai.ts` (around line 1), add:
 
 ```typescript
-import { createOpenAI } from '@ai-sdk/openai'
+import { createOpenAI } from "@ai-sdk/openai";
 ```
 
 **Step 3: Verify typecheck passes**
@@ -813,6 +832,7 @@ git commit -m "refactor: update ai routes to use vercel ai sdk"
 ## Task 12: Remove OpenAI SDK Dependency
 
 **Files:**
+
 - Modify: `backend/package.json`
 
 **Step 1: Remove OpenAI SDK**
@@ -851,6 +871,7 @@ git commit -m "chore: remove openai sdk dependency"
 ## Task 13: Manual Testing - Collection Suggestions
 
 **Files:**
+
 - Test: All AI endpoints
 
 **Step 1: Start development server**
@@ -898,18 +919,21 @@ Create file: `backend/test-results-phase1.md`
 # Phase 1 Test Results
 
 ## Collection Suggestions (No Theme)
+
 - Status: PASS/FAIL
 - Response time: Xs
 - Token usage: X tokens
 - Cost: $X
 
 ## Collection Suggestions (With Theme)
+
 - Status: PASS/FAIL
 - Response time: Xs
 - Token usage: X tokens
 - Cost: $X
 
 ## Activity Logging
+
 - Status: PASS/FAIL
 - Tokens logged correctly: YES/NO
 - Cost calculated correctly: YES/NO
@@ -920,6 +944,7 @@ Create file: `backend/test-results-phase1.md`
 ## Task 14: Manual Testing - Next Game Suggestions
 
 **Files:**
+
 - Test: Next game endpoint
 
 **Step 1: Test next game suggestion without user input**
@@ -959,12 +984,14 @@ Append to `backend/test-results-phase1.md`:
 
 ```markdown
 ## Next Game Suggestion (No Input)
+
 - Status: PASS/FAIL
 - Response time: Xs
 - Token usage: X tokens
 - Game suggested: [name]
 
 ## Next Game Suggestion (With Input)
+
 - Status: PASS/FAIL
 - Response time: Xs
 - Token usage: X tokens
@@ -977,6 +1004,7 @@ Append to `backend/test-results-phase1.md`:
 ## Task 15: Manual Testing - Cover Generation
 
 **Files:**
+
 - Test: Cover generation endpoint
 
 **Step 1: Create test collection**
@@ -1009,7 +1037,7 @@ Expected: JSON response with imageUrl
 
 Run: `ls -lh backend/uploads/collection-covers/`
 
-Expected: New cover file created (*.webp)
+Expected: New cover file created (\*.webp)
 
 **Step 4: Update test results**
 
@@ -1017,6 +1045,7 @@ Append to `backend/test-results-phase1.md`:
 
 ```markdown
 ## Cover Generation
+
 - Status: PASS/FAIL
 - Response time: Xs
 - Image model used: [model name]
@@ -1030,6 +1059,7 @@ Append to `backend/test-results-phase1.md`:
 ## Task 16: Manual Testing - Cost Tracking Verification
 
 **Files:**
+
 - Test: Cost calculation accuracy
 
 **Step 1: Get baseline costs from activity logs**
@@ -1044,9 +1074,10 @@ Expected: JSON array with recent activities
 **Step 2: Calculate expected costs manually**
 
 For each activity:
+
 - Model: gpt-4o-mini (input: $0.15/1M, output: $0.6/1M)
 - Example: 2000 prompt tokens + 500 completion tokens
-- Expected cost: (2000 * 0.15 + 500 * 0.6) / 1000000 = $0.0006
+- Expected cost: (2000 _ 0.15 + 500 _ 0.6) / 1000000 = $0.0006
 
 **Step 3: Compare actual vs expected costs**
 
@@ -1058,6 +1089,7 @@ Append to `backend/test-results-phase1.md`:
 
 ```markdown
 ## Cost Tracking Accuracy
+
 - Test 1 (Collection): Expected $X, Actual $Y, Diff: $Z
 - Test 2 (Next Game): Expected $X, Actual $Y, Diff: $Z
 - Test 3 (Cover): Expected $X, Actual $Y, Diff: $Z
@@ -1069,11 +1101,13 @@ Append to `backend/test-results-phase1.md`:
 ## Task 17: Response Format Compatibility Check
 
 **Files:**
+
 - Test: Response format consistency
 
 **Step 1: Compare collection response format**
 
 Verify collection suggestions response has:
+
 - `collections` array
 - Each collection has: `name`, `description`, `gameNames`, `gameIds`, `reasoning`
 - `cost` field at root level
@@ -1081,12 +1115,14 @@ Verify collection suggestions response has:
 **Step 2: Compare next game response format**
 
 Verify next game response has:
+
 - `suggestion` object with: `gameName`, `reasoning`, `estimatedHours`
 - `cost` field at root level
 
 **Step 3: Compare cover response format**
 
 Verify cover generation response has:
+
 - `imageUrl` field
 - `cost` field
 
@@ -1096,6 +1132,7 @@ Append to `backend/test-results-phase1.md`:
 
 ```markdown
 ## Response Format Compatibility
+
 - Collection suggestions: COMPATIBLE/INCOMPATIBLE
 - Next game suggestions: COMPATIBLE/INCOMPATIBLE
 - Cover generation: COMPATIBLE/INCOMPATIBLE
@@ -1107,11 +1144,13 @@ Append to `backend/test-results-phase1.md`:
 ## Task 18: Performance Baseline Comparison
 
 **Files:**
+
 - Test: Performance metrics
 
 **Step 1: Measure response times**
 
 For each endpoint, measure average response time over 3 requests:
+
 - Collection suggestions: Avg Xs
 - Next game suggestions: Avg Xs
 - Cover generation: Avg Xs
@@ -1126,6 +1165,7 @@ Append to `backend/test-results-phase1.md`:
 
 ```markdown
 ## Performance Metrics
+
 - Collection suggestions: Avg Xs (baseline: Ys, diff: Z%)
 - Next game suggestions: Avg Xs (baseline: Ys, diff: Z%)
 - Cover generation: Avg Xs (baseline: Ys, diff: Z%)
@@ -1137,6 +1177,7 @@ Append to `backend/test-results-phase1.md`:
 ## Task 19: Final Verification
 
 **Files:**
+
 - Verify: All checks pass
 
 **Step 1: Run full typecheck**
@@ -1174,6 +1215,7 @@ git commit -m "docs: add phase 1 test results"
 ## Task 20: Phase 1 Completion Report
 
 **Files:**
+
 - Create: `backend/docs/phase1-completion-report.md`
 
 **Step 1: Create completion report**
@@ -1184,9 +1226,11 @@ Create file: `backend/docs/phase1-completion-report.md`
 # Phase 1 Completion Report: Vercel AI SDK Migration
 
 ## Summary
+
 Successfully migrated from OpenAI SDK to Vercel AI SDK with zero breaking changes.
 
 ## Changes Made
+
 1. Replaced `openai` dependency with `ai` and `@ai-sdk/openai`
 2. Updated `createOpenAIClient` → `createVercelAIClient`
 3. Refactored `suggestCollections` to use `generateText()`
@@ -1196,6 +1240,7 @@ Successfully migrated from OpenAI SDK to Vercel AI SDK with zero breaking change
 7. Updated AI routes to use Vercel client
 
 ## Test Results
+
 - ✅ All endpoints functional
 - ✅ Response formats unchanged
 - ✅ Cost tracking accurate (±$0.0001)
@@ -1203,17 +1248,21 @@ Successfully migrated from OpenAI SDK to Vercel AI SDK with zero breaking change
 - ✅ Activity logging correct
 
 ## Metrics
-| Metric | Phase 0 | Phase 1 | Delta |
-|--------|---------|---------|-------|
-| Token usage | X | Y | Z% |
-| Cost per request | $X | $Y | Z% |
-| Response time | Xs | Ys | Z% |
+
+| Metric           | Phase 0 | Phase 1 | Delta |
+| ---------------- | ------- | ------- | ----- |
+| Token usage      | X       | Y       | Z%    |
+| Cost per request | $X      | $Y      | Z%    |
+| Response time    | Xs      | Ys      | Z%    |
 
 ## Breaking Changes
+
 None. All endpoints maintain identical behavior.
 
 ## Next Steps
+
 Phase 2: Embedding Infrastructure
+
 - Add pgvector extension
 - Create embedding tables
 - Implement embedding generation service
