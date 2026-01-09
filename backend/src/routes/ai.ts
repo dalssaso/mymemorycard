@@ -332,7 +332,7 @@ router.put(
       updates.push(`updated_at = NOW()`);
 
       await query(
-        `UPDATE user_ai_settings SET ${updates.join(", ")} WHERE user_id = $1`,
+        `UPDATE user_ai_settings SET ${updates.join(", ")} WHERE user_id = $1 AND provider = 'openai'::ai_provider`,
         values
       );
 
