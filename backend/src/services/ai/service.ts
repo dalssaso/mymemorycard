@@ -53,6 +53,7 @@ const MODEL_COSTS = {
   "dall-e-2": { perImage: 0.02 },
   "gpt-image-1.5": { perImage: 0.04 },
   "openai/gpt-image-1.5": { perImage: 0.04 },
+  "grok-2-image-1212": { perImage: 0.07 },
   "google/gemini-2.5-flash-image": { perImage: 0.00003 },
   "black-forest-labs/flux.2-max": { perImage: 0.04 },
   "bytedance-seed/seedream-4.5": { perImage: 0.04 },
