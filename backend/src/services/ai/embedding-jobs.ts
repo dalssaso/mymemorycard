@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { games, gameEmbeddings, userGames, gameGenres, genres } from "@/db/schema"
-import { eq, sql, isNull, and } from "drizzle-orm"
+import { eq, sql, isNull, and, inArray } from "drizzle-orm"
 import { generateGameEmbeddingsBatch, type GameEmbeddingInput } from "./embeddings"
 
 interface AiSettings {
@@ -60,7 +60,7 @@ export async function generateMissingGameEmbeddings(
     })
     .from(gameGenres)
     .innerJoin(genres, eq(gameGenres.genreId, genres.id))
-    .where(sql`${gameGenres.gameId} = ANY(${gameIds})`)
+    .where(inArray(gameGenres.gameId, gameIds))
 
   const genresByGame = new Map<string, string[]>()
   for (const row of genreData) {
@@ -126,7 +126,7 @@ export async function generateUserLibraryEmbeddings(
     })
     .from(gameGenres)
     .innerJoin(genres, eq(gameGenres.genreId, genres.id))
-    .where(sql`${gameGenres.gameId} = ANY(${gameIds})`)
+    .where(inArray(gameGenres.gameId, gameIds))
 
   const genresByGame = new Map<string, string[]>()
   for (const row of genreData) {
