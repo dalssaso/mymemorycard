@@ -127,6 +127,34 @@
       "when": 1767753392877,
       "tag": "0017_watery_karnak",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1767911424120,
+      "tag": "0018_early_micromax",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1767911903719,
+      "tag": "0019_bored_hammerhead",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1767912018231,
+      "tag": "0020_optimal_talkback",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1767912703289,
+      "tag": "0021_oval_mandrill",
+      "breakpoints": true
     }
   ]
 }
