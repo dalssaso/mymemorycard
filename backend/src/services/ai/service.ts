@@ -398,6 +398,16 @@ export async function suggestNextGame(
     throw new Error("No active AI provider configured");
   }
 
+  // Get available models
+  const availableModels = await getAvailableModels(settings);
+
+  // Select optimal model for this task
+  const modelSelection = await selectModelForTask(
+    "suggest_next_game",
+    settings,
+    availableModels
+  );
+
   const library = await getLibrarySummary(userId);
   const backlog = library.filter((g) => g.status === "backlog" || g.status === "playing");
 
@@ -446,25 +456,24 @@ export async function suggestNextGame(
   try {
     const client = createVercelAIClient(settings);
 
-    // Only set temperature for non-reasoning models
-    const isReasoningModel =
-      settings.model.startsWith("gpt-5") ||
-      settings.model.includes("o1") ||
-      settings.model.includes("o3");
-
-    const result = await generateText({
-      model: client(settings.model),
+    const baseParams = {
+      model: client(modelSelection.model),
       messages: [
-        { role: "system", content: SYSTEM_PROMPTS.curator },
+        { role: "system" as const, content: SYSTEM_PROMPTS.curator },
         {
-          role: "user",
+          role: "user" as const,
           content: buildNextGamePromptWithRAG(selectedGames, backlog.length, userInput),
         },
       ],
-      maxOutputTokens: settings.maxTokens,
-      temperature: isReasoningModel ? undefined : settings.temperature,
+      maxOutputTokens: modelSelection.maxTokens,
       experimental_telemetry: { isEnabled: false },
-    });
+    };
+
+    // Only set temperature for non-reasoning models
+    const result =
+      modelSelection.temperature !== null
+        ? await generateText({ ...baseParams, temperature: modelSelection.temperature })
+        : await generateText(baseParams);
 
     const content = result.text;
 
@@ -488,13 +497,13 @@ export async function suggestNextGame(
       completionTokens: result.usage?.outputTokens ?? 0,
       totalTokens: result.usage?.totalTokens ?? 0,
     };
-    const cost = calculateCost(settings.model, usage);
+    const cost = calculateCost(modelSelection.model, usage);
 
     await logActivity(
       userId,
       "suggest_next_game",
       settings.provider,
-      settings.model,
+      modelSelection.model,
       usage,
       Date.now() - startTime,
       true,
@@ -509,7 +518,7 @@ export async function suggestNextGame(
       userId,
       "suggest_next_game",
       settings.provider,
-      settings.model,
+      modelSelection.model,
       null,
       Date.now() - startTime,
       false,
