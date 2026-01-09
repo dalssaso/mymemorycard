@@ -16,6 +16,8 @@ import { searchSimilarGames } from "./vector-search";
 import { smartSampleGames } from "./game-selection";
 import { shouldRegeneratePreferences, generatePreferenceEmbeddings } from "./preference-learning";
 import { checkUserHasEmbeddings, generateUserLibraryEmbeddings } from "./embedding-jobs";
+import { selectModelForTask } from "./model-router";
+import { discoverOpenAIModels } from "./models";
 
 export interface AiSettings {
   provider: string;
@@ -113,6 +115,17 @@ function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpe
     apiKey,
     baseURL: settings.baseUrl || undefined,
   });
+}
+
+async function getAvailableModels(settings: AiSettings): Promise<string[]> {
+  try {
+    const client = createVercelAIClient(settings);
+    const models = await discoverOpenAIModels(client);
+    return [...models.textModels.map((m) => m.id), ...models.imageModels.map((m) => m.id)];
+  } catch (error) {
+    console.error("Failed to discover available models:", error);
+    return [];
+  }
 }
 
 async function getLibrarySummary(userId: string): Promise<GameSummary[]> {
@@ -226,6 +239,16 @@ export async function suggestCollections(
     throw new Error("No active AI provider configured");
   }
 
+  // Get available models
+  const availableModels = await getAvailableModels(settings);
+
+  // Select optimal model for this task
+  const modelSelection = await selectModelForTask(
+    "suggest_collections",
+    settings,
+    availableModels
+  );
+
   const library = await getLibrarySummary(userId);
 
   if (library.length === 0) {
@@ -279,25 +302,24 @@ export async function suggestCollections(
   try {
     const vercelClient = createVercelAIClient(settings);
 
-    // Only set temperature for non-reasoning models
-    const isReasoningModel =
-      settings.model.startsWith("gpt-5") ||
-      settings.model.includes("o1") ||
-      settings.model.includes("o3");
-
-    const result = await generateText({
-      model: vercelClient(settings.model),
+    const baseParams = {
+      model: vercelClient(modelSelection.model),
       messages: [
-        { role: "system", content: SYSTEM_PROMPTS.organizer },
+        { role: "system" as const, content: SYSTEM_PROMPTS.organizer },
         {
-          role: "user",
+          role: "user" as const,
           content: buildCollectionSuggestionsPromptWithRAG(selectedGames, library.length, theme),
         },
       ],
-      maxOutputTokens: settings.maxTokens,
-      temperature: isReasoningModel ? undefined : settings.temperature,
+      maxOutputTokens: modelSelection.maxTokens,
       experimental_telemetry: { isEnabled: false },
-    });
+    };
+
+    // Only set temperature for non-reasoning models
+    const result =
+      modelSelection.temperature !== null
+        ? await generateText({ ...baseParams, temperature: modelSelection.temperature })
+        : await generateText(baseParams);
 
     const content = result.text;
 
@@ -329,13 +351,13 @@ export async function suggestCollections(
       completionTokens: result.usage?.outputTokens ?? 0,
       totalTokens: result.usage?.totalTokens ?? 0,
     };
-    const cost = calculateCost(settings.model, usage);
+    const cost = calculateCost(modelSelection.model, usage);
 
     await logActivity(
       userId,
       "suggest_collections",
       settings.provider,
-      settings.model,
+      modelSelection.model,
       usage,
       Date.now() - startTime,
       true,
@@ -350,7 +372,7 @@ export async function suggestCollections(
       userId,
       "suggest_collections",
       settings.provider,
-      settings.model,
+      modelSelection.model,
       null,
       Date.now() - startTime,
       false,
