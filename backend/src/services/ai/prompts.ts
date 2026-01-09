@@ -159,3 +159,82 @@ Design Requirements:
 
 Style: Modern digital art poster with clean composition and thematic visual elements.`;
 }
+
+export function buildCollectionSuggestionsPromptWithRAG(
+  semanticGames: GameSummary[],
+  allGamesCount: number,
+  theme?: string
+): string {
+  const libraryText = semanticGames
+    .map(
+      (g) =>
+        `${g.id} - ${g.name} (${g.genres.join(", ")}) - ${g.status}${g.rating ? ` [${g.rating}/10]` : ""}`
+    )
+    .join("\n");
+
+  const themeContext = theme
+    ? `The user specifically requested collections related to: "${theme}"\n\n`
+    : "";
+
+  return `${themeContext}Based on this semantically-filtered subset of the user's ${allGamesCount}-game library, suggest 3-5 themed collections.
+
+**Filtered Games (${semanticGames.length} most relevant out of ${allGamesCount} total):**
+${libraryText}
+
+**Instructions:**
+- Each collection should have 4-8 games minimum
+- Collections should be thematic (genre, setting, gameplay style, mood, era, franchise)
+- Avoid generic categories like "Action Games" or "RPGs"
+- Be specific and creative with themes
+- Only suggest collections where the user has enough matching games
+${theme ? `- Focus on the requested theme: "${theme}"` : "- Identify diverse themes that showcase different aspects of their library"}
+
+Return JSON with this exact structure:
+{
+  "collections": [
+    {
+      "name": "Collection Name",
+      "description": "Brief description explaining the theme",
+      "gameNames": ["Exact Game Title 1", "Exact Game Title 2"],
+      "gameIds": ["id1", "id2", ...],
+      "reasoning": "Why these games work together as a collection"
+    }
+  ]
+}`;
+}
+
+export function buildNextGamePromptWithRAG(
+  semanticGames: GameSummary[],
+  allGamesCount: number,
+  userInput?: string
+): string {
+  const libraryText = semanticGames
+    .map(
+      (g) =>
+        `${g.id} - ${g.name} (${g.genres.join(", ")}) - ${g.status}${g.rating ? ` [${g.rating}/10]` : ""}`
+    )
+    .join("\n");
+
+  const inputContext = userInput
+    ? `The user said: "${userInput}"\n\n`
+    : "The user wants a general recommendation.\n\n";
+
+  return `${inputContext}Based on this semantically-filtered subset of the user's ${allGamesCount}-game backlog, suggest their next game to play.
+
+**Filtered Games (${semanticGames.length} most relevant out of ${allGamesCount} total):**
+${libraryText}
+
+**Instructions:**
+- Suggest ONE game from their backlog
+- Consider their play patterns (what they're currently playing, what they rated highly)
+- Match the user's request if they provided specific criteria
+- Explain why this game is a good choice right now
+
+Return JSON with this exact structure:
+{
+  "gameName": "Exact Game Title",
+  "gameId": "id",
+  "reasoning": "Explanation of why this game is a good choice right now",
+  "estimatedHours": 15
+}`;
+}
