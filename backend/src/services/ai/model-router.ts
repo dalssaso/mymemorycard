@@ -1,3 +1,5 @@
+import type { AiSettings } from "./service"
+
 export type TaskType = "suggest_collections" | "suggest_next_game" | "generate_cover_image"
 
 export interface ModelRoute {
@@ -12,20 +14,6 @@ export interface ModelSelection {
   maxTokens: number
   temperature: number | null
   isReasoningModel: boolean
-}
-
-export interface AiSettings {
-  provider: string
-  baseUrl: string | null
-  apiKeyEncrypted: string | null
-  model: string
-  temperature: number
-  maxTokens: number
-  enabled: boolean
-  collectionSuggestionsModel?: string | null
-  nextGameSuggestionsModel?: string | null
-  coverGenerationModel?: string | null
-  enableSmartRouting?: boolean | null
 }
 
 const MODEL_ROUTES: Record<TaskType, ModelRoute> = {
@@ -58,10 +46,12 @@ export async function selectModelForTask(
   userSettings: AiSettings,
   availableModels: string[]
 ): Promise<ModelSelection> {
+  // Early validation: if availableModels is empty, fall back to user's default model
+  // This ensures the function always returns a valid model selection
   const route = MODEL_ROUTES[taskType]
 
   // Check user override based on task type
-  let userOverride: string | null | undefined = null
+  let userOverride: string | null | undefined
   if (taskType === "suggest_collections") {
     userOverride = userSettings.collectionSuggestionsModel
   } else if (taskType === "suggest_next_game") {
@@ -73,8 +63,10 @@ export async function selectModelForTask(
   if (userOverride) {
     return {
       model: userOverride,
-      maxTokens: route.maxTokensRecommended || userSettings.maxTokens,
-      temperature: route.temperatureRecommended ?? userSettings.temperature,
+      maxTokens: route.maxTokensRecommended ?? userSettings.maxTokens,
+      temperature: isReasoningModel(userOverride)
+        ? null
+        : (route.temperatureRecommended ?? userSettings.temperature),
       isReasoningModel: isReasoningModel(userOverride),
     }
   }
@@ -85,7 +77,7 @@ export async function selectModelForTask(
     if (availableModels.includes(route.primary)) {
       return {
         model: route.primary,
-        maxTokens: route.maxTokensRecommended || userSettings.maxTokens,
+        maxTokens: route.maxTokensRecommended ?? userSettings.maxTokens,
         temperature: route.temperatureRecommended ?? userSettings.temperature,
         isReasoningModel: isReasoningModel(route.primary),
       }
@@ -96,7 +88,7 @@ export async function selectModelForTask(
       if (availableModels.includes(fallback)) {
         return {
           model: fallback,
-          maxTokens: route.maxTokensRecommended || userSettings.maxTokens,
+          maxTokens: route.maxTokensRecommended ?? userSettings.maxTokens,
           temperature: route.temperatureRecommended ?? userSettings.temperature,
           isReasoningModel: isReasoningModel(fallback),
         }

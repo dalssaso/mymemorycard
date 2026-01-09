@@ -17,7 +17,7 @@ import { smartSampleGames } from "./game-selection";
 import { shouldRegeneratePreferences, generatePreferenceEmbeddings } from "./preference-learning";
 import { checkUserHasEmbeddings, generateUserLibraryEmbeddings } from "./embedding-jobs";
 
-interface AiSettings {
+export interface AiSettings {
   provider: string;
   baseUrl: string | null;
   apiKeyEncrypted: string | null;
@@ -27,6 +27,10 @@ interface AiSettings {
   temperature: number;
   maxTokens: number;
   enabled: boolean;
+  collectionSuggestionsModel?: string | null;
+  nextGameSuggestionsModel?: string | null;
+  coverGenerationModel?: string | null;
+  enableSmartRouting?: boolean | null;
 }
 
 interface TokenUsage {
@@ -69,7 +73,11 @@ export async function getUserAiSettings(userId: string): Promise<AiSettings | nu
       image_model as "imageModel",
       temperature,
       max_tokens as "maxTokens",
-      is_active as "enabled"
+      is_active as "enabled",
+      collection_suggestions_model as "collectionSuggestionsModel",
+      next_game_suggestions_model as "nextGameSuggestionsModel",
+      cover_generation_model as "coverGenerationModel",
+      enable_smart_routing as "enableSmartRouting"
     FROM user_ai_settings
     WHERE user_id = $1 AND is_active = true`,
     [userId]
