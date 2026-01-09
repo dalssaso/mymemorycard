@@ -5,13 +5,17 @@ import { decrypt } from "@/lib/encryption";
 import { getCachedLibrary, setCachedLibrary } from "./cache";
 import {
   SYSTEM_PROMPTS,
-  buildCollectionSuggestionsPrompt,
-  buildNextGameSuggestionPrompt,
   buildCoverImagePrompt,
+  buildCollectionSuggestionsPromptWithRAG,
+  buildNextGamePromptWithRAG,
   type GameSummary,
   type CollectionSuggestion,
   type NextGameSuggestion,
 } from "./prompts";
+import { searchSimilarGames } from "./vector-search";
+import { smartSampleGames } from "./game-selection";
+import { shouldRegeneratePreferences, generatePreferenceEmbeddings } from "./preference-learning";
+import { checkUserHasEmbeddings, generateUserLibraryEmbeddings } from "./embedding-jobs";
 
 interface AiSettings {
   provider: string;
@@ -214,14 +218,59 @@ export async function suggestCollections(
     throw new Error("No active AI provider configured");
   }
 
-  const vercelClient = createVercelAIClient(settings);
   const library = await getLibrarySummary(userId);
 
   if (library.length === 0) {
     throw new Error("No games in library to analyze");
   }
 
+  // Check if embeddings exist, generate if needed
+  const hasEmbeddings = await checkUserHasEmbeddings(userId);
+  if (!hasEmbeddings) {
+    console.log(`Generating embeddings for user ${userId} (first-time setup)`);
+    await generateUserLibraryEmbeddings(settings, userId, 100);
+  }
+
+  // Check if preferences need regeneration
+  const shouldRegenerate = await shouldRegeneratePreferences(userId);
+  if (shouldRegenerate) {
+    console.log(`Regenerating preferences for user ${userId}`);
+    await generatePreferenceEmbeddings(settings, userId);
+  }
+
+  // Semantic filtering
+  let selectedGames: GameSummary[];
+
+  if (theme) {
+    // Search for games matching the theme
+    const similarGames = await searchSimilarGames(
+      settings,
+      `Games related to: ${theme}`,
+      userId,
+      50,
+      0.6
+    );
+
+    const gameIds = new Set(similarGames.map((g) => g.gameId));
+    selectedGames = library.filter((g) => gameIds.has(g.id)).slice(0, 25);
+
+    // Fallback if no semantic matches
+    if (selectedGames.length < 10) {
+      console.log(`Semantic search found only ${selectedGames.length} games, using smart sampling`);
+      selectedGames = smartSampleGames(library, 25);
+    }
+  } else {
+    // Smart sampling for diverse selection
+    selectedGames = smartSampleGames(library, 25);
+  }
+
+  console.log(
+    `Selected ${selectedGames.length} games out of ${library.length} (${((selectedGames.length / library.length) * 100).toFixed(1)}%)`
+  );
+
   try {
+    const vercelClient = createVercelAIClient(settings);
+
     // Only set temperature for non-reasoning models
     const isReasoningModel =
       settings.model.startsWith("gpt-5") ||
@@ -232,7 +281,10 @@ export async function suggestCollections(
       model: vercelClient(settings.model),
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.organizer },
-        { role: "user", content: buildCollectionSuggestionsPrompt(library, theme) },
+        {
+          role: "user",
+          content: buildCollectionSuggestionsPromptWithRAG(selectedGames, library.length, theme),
+        },
       ],
       maxOutputTokens: settings.maxTokens,
       temperature: isReasoningModel ? undefined : settings.temperature,
@@ -313,14 +365,54 @@ export async function suggestNextGame(
     throw new Error("No active AI provider configured");
   }
 
-  const client = createVercelAIClient(settings);
   const library = await getLibrarySummary(userId);
+  const backlog = library.filter((g) => g.status === "backlog" || g.status === "playing");
 
-  if (library.length === 0) {
-    throw new Error("No games in library to analyze");
+  if (backlog.length === 0) {
+    throw new Error("No games in backlog");
   }
 
+  // Check if embeddings exist, generate if needed
+  const hasEmbeddings = await checkUserHasEmbeddings(userId);
+  if (!hasEmbeddings) {
+    console.log(`Generating embeddings for user ${userId} (first-time setup)`);
+    await generateUserLibraryEmbeddings(settings, userId, 100);
+  }
+
+  // Check if preferences need regeneration
+  const shouldRegenerate = await shouldRegeneratePreferences(userId);
+  if (shouldRegenerate) {
+    console.log(`Regenerating preferences for user ${userId}`);
+    await generatePreferenceEmbeddings(settings, userId);
+  }
+
+  // Semantic filtering
+  let selectedGames: GameSummary[];
+
+  if (userInput) {
+    // Search for games matching user input
+    const similarGames = await searchSimilarGames(settings, userInput, userId, 30, 0.6);
+
+    const gameIds = new Set(similarGames.map((g) => g.gameId));
+    selectedGames = backlog.filter((g) => gameIds.has(g.id)).slice(0, 20);
+
+    // Fallback if no semantic matches
+    if (selectedGames.length < 5) {
+      console.log(`Semantic search found only ${selectedGames.length} games, using smart sampling`);
+      selectedGames = smartSampleGames(backlog, 20);
+    }
+  } else {
+    // Smart sampling
+    selectedGames = smartSampleGames(backlog, 20);
+  }
+
+  console.log(
+    `Selected ${selectedGames.length} games out of ${backlog.length} backlog games (${((selectedGames.length / backlog.length) * 100).toFixed(1)}%)`
+  );
+
   try {
+    const client = createVercelAIClient(settings);
+
     // Only set temperature for non-reasoning models
     const isReasoningModel =
       settings.model.startsWith("gpt-5") ||
@@ -331,7 +423,10 @@ export async function suggestNextGame(
       model: client(settings.model),
       messages: [
         { role: "system", content: SYSTEM_PROMPTS.curator },
-        { role: "user", content: buildNextGameSuggestionPrompt(library, userInput) },
+        {
+          role: "user",
+          content: buildNextGamePromptWithRAG(selectedGames, backlog.length, userInput),
+        },
       ],
       maxOutputTokens: settings.maxTokens,
       temperature: isReasoningModel ? undefined : settings.temperature,
