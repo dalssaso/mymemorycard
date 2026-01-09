@@ -275,6 +275,81 @@ router.post(
   })
 );
 
+router.put(
+  "/api/ai/settings/model-routing",
+  requireAuth(async (req, user) => {
+    try {
+      const body = (await req.json()) as {
+        enableSmartRouting?: boolean;
+        collectionSuggestionsModel?: string;
+        nextGameSuggestionsModel?: string;
+        coverGenerationModel?: string;
+      };
+
+      const {
+        enableSmartRouting,
+        collectionSuggestionsModel,
+        nextGameSuggestionsModel,
+        coverGenerationModel,
+      } = body;
+
+      // Build SET clause dynamically based on provided fields
+      const updates: string[] = [];
+      const values: unknown[] = [user.id];
+      let paramIndex = 2;
+
+      if (enableSmartRouting !== undefined) {
+        updates.push(`enable_smart_routing = $${paramIndex}`);
+        values.push(enableSmartRouting);
+        paramIndex++;
+      }
+
+      if (collectionSuggestionsModel !== undefined) {
+        updates.push(`collection_suggestions_model = $${paramIndex}`);
+        values.push(collectionSuggestionsModel);
+        paramIndex++;
+      }
+
+      if (nextGameSuggestionsModel !== undefined) {
+        updates.push(`next_game_suggestions_model = $${paramIndex}`);
+        values.push(nextGameSuggestionsModel);
+        paramIndex++;
+      }
+
+      if (coverGenerationModel !== undefined) {
+        updates.push(`cover_generation_model = $${paramIndex}`);
+        values.push(coverGenerationModel);
+        paramIndex++;
+      }
+
+      if (updates.length === 0) {
+        return new Response(JSON.stringify({ error: "No fields to update" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      await query(
+        `UPDATE user_ai_settings SET ${updates.join(", ")} WHERE user_id = $1`,
+        values
+      );
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    } catch (error) {
+      console.error("Update model routing settings error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+  })
+);
+
 router.post(
   "/api/ai/suggest-collections",
   requireAuth(async (req, user) => {
