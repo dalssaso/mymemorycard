@@ -9,7 +9,13 @@ import {
   generateCollectionCover,
   getActivityLogs,
   estimateCost,
+  getUserAiSettings,
 } from "@/services/ai/service";
+import {
+  generateMissingGameEmbeddings,
+  generateUserLibraryEmbeddings,
+  checkUserHasEmbeddings,
+} from "@/services/ai/embedding-jobs";
 import { getModelsForProvider } from "@/services/ai/models";
 import { getCachedModels, setCachedModels } from "@/services/ai/cache";
 import { createOpenAI } from "@ai-sdk/openai";
@@ -471,5 +477,49 @@ router.post(
         headers: { "Content-Type": "application/json", ...corsHeaders() },
       });
     }
+  })
+);
+
+router.post(
+  "/api/ai/embeddings/generate",
+  requireAuth(async (req, user) => {
+    const settings = await getUserAiSettings(user.id);
+
+    if (!settings) {
+      return new Response(JSON.stringify({ error: "AI settings not configured" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+
+    const body = (await req.json()) as { batchSize?: number; userLibraryOnly?: boolean };
+    const batchSize = body.batchSize ?? 100;
+    const userLibraryOnly = body.userLibraryOnly ?? false;
+
+    const result = userLibraryOnly
+      ? await generateUserLibraryEmbeddings(settings, user.id, batchSize)
+      : await generateMissingGameEmbeddings(settings, batchSize);
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders() },
+    });
+  })
+);
+
+router.get(
+  "/api/ai/embeddings/status",
+  requireAuth(async (req, user) => {
+    const hasEmbeddings = await checkUserHasEmbeddings(user.id);
+
+    return new Response(
+      JSON.stringify({
+        hasEmbeddings,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      }
+    );
   })
 );

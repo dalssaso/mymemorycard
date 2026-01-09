@@ -54,7 +54,7 @@ function calculateCost(model: string, usage: TokenUsage): number {
   return (usage.promptTokens * costs.input + usage.completionTokens * costs.output) / 1000;
 }
 
-async function getUserAiSettings(userId: string): Promise<AiSettings | null> {
+export async function getUserAiSettings(userId: string): Promise<AiSettings | null> {
   const settings = await queryOne<AiSettings>(
     `SELECT
       provider,
