@@ -686,6 +686,11 @@ export const userAiSettings = pgTable(
     isActive: boolean("is_active").default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    // Model routing preferences
+    collectionSuggestionsModel: varchar("collection_suggestions_model", { length: 100 }),
+    nextGameSuggestionsModel: varchar("next_game_suggestions_model", { length: 100 }),
+    coverGenerationModel: varchar("cover_generation_model", { length: 100 }),
+    enableSmartRouting: boolean("enable_smart_routing").default(true),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.userId, table.provider] }),
