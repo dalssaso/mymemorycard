@@ -43,7 +43,7 @@ function buildGameEmbeddingText(game: GameEmbeddingInput): string {
   return parts.join("\n")
 }
 
-function hashText(text: string): string {
+export function hashText(text: string): string {
   return Bun.hash(text).toString(16)
 }
 
