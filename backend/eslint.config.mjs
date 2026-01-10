@@ -92,15 +92,6 @@ export default defineConfig(
     },
   },
   {
-    // Schema types like Drizzle InferSelectModel<typeof users> require value imports
-    // because typeof operator needs runtime value at compile time. The consistent-type-imports
-    // rule cannot detect this legitimate pattern, so we disable it for **/types.ts files.
-    files: ['**/types.ts'],
-    rules: {
-      '@typescript-eslint/consistent-type-imports': 'off',
-    },
-  },
-  {
     ignores: ['dist/**', 'drizzle/**', 'coverage/**', 'node_modules/**'],
   }
 )

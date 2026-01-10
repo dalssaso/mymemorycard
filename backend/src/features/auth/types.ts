@@ -1,5 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { users } from "@/db/schema";
+import type { users } from "@/db/schema";
 
 /**
  * User entity type derived from database schema.
