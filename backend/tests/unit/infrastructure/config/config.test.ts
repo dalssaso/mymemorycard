@@ -128,6 +128,39 @@ describe("Config", () => {
     });
   });
 
+  describe("JWT secret validation", () => {
+    beforeEach(() => {
+      process.env.DATABASE_URL = "postgresql://localhost/db";
+      process.env.REDIS_URL = "redis://localhost:6379";
+      process.env.RAWG_API_KEY = "key";
+    });
+
+    it("should throw when JWT_SECRET is less than 32 characters in production", () => {
+      process.env.NODE_ENV = "production";
+      process.env.JWT_SECRET = "short-secret";
+
+      expect(() => new Config()).toThrow("JWT_SECRET must be at least 32 characters in production");
+    });
+
+    it("should allow JWT_SECRET less than 32 characters in development", () => {
+      process.env.NODE_ENV = "development";
+      process.env.JWT_SECRET = "short-secret";
+
+      expect(() => new Config()).not.toThrow();
+      const config = new Config();
+      expect(config.jwt.secret).toBe("short-secret");
+    });
+
+    it("should allow JWT_SECRET with 32 or more characters in production", () => {
+      process.env.NODE_ENV = "production";
+      process.env.JWT_SECRET = "this-is-a-very-long-secret-with-32-characters";
+
+      expect(() => new Config()).not.toThrow();
+      const config = new Config();
+      expect(config.jwt.secret).toBe("this-is-a-very-long-secret-with-32-characters");
+    });
+  });
+
   describe("Derived values", () => {
     beforeEach(() => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
@@ -138,6 +171,7 @@ describe("Config", () => {
 
     it("should set isProduction to true when NODE_ENV is production", () => {
       process.env.NODE_ENV = "production";
+      process.env.JWT_SECRET = "this-is-a-very-long-secret-with-32-characters";
       const config = new Config();
       expect(config.isProduction).toBe(true);
     });

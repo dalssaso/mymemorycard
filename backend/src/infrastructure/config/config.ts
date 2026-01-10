@@ -14,10 +14,23 @@ export class Config implements IConfig {
   readonly skipRedisConnect: boolean;
 
   constructor() {
+    // Determine environment first
+    this.isProduction = process.env.NODE_ENV === "production";
+    this.skipRedisConnect = process.env.SKIP_REDIS_CONNECT === "1";
+
     // Validate required vars - throws if missing
     this.database = { url: this.requireEnv("DATABASE_URL") };
     this.redis = { url: this.requireEnv("REDIS_URL") };
-    this.jwt = { secret: this.requireEnv("JWT_SECRET") };
+    const jwtSecret = this.requireEnv("JWT_SECRET");
+
+    // Validate JWT secret length in production
+    if (this.isProduction && jwtSecret.length < 32) {
+      throw new Error(
+        `JWT_SECRET must be at least 32 characters in production (current length: ${jwtSecret.length})`
+      );
+    }
+
+    this.jwt = { secret: jwtSecret };
     this.rawg = { apiKey: this.requireEnv("RAWG_API_KEY") };
 
     // Optional with defaults
@@ -35,10 +48,6 @@ export class Config implements IConfig {
         ...(origin ? [origin] : []),
       ],
     };
-
-    // Derived
-    this.isProduction = process.env.NODE_ENV === "production";
-    this.skipRedisConnect = process.env.SKIP_REDIS_CONNECT === "1";
   }
 
   private requireEnv(key: string): string {
