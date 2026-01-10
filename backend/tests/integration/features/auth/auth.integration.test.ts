@@ -208,6 +208,44 @@ describe("Auth Integration Tests", () => {
       const data = (await response.json()) as { code: string };
       expect(data.code).toBe("UNAUTHORIZED");
     });
+
+    it("should return 401 for correct username with wrong password", async () => {
+      const username = `wrongpass_${Date.now()}`;
+      const correctPassword = "SecurePass123!";
+      const wrongPassword = "WrongPassword456!";
+
+      // Register user first
+      const registerResponse = await app.request("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          email: `${username}@example.com`,
+          password: correctPassword,
+        }),
+      });
+
+      const registerData = (await registerResponse.json()) as {
+        user: { id: string };
+      };
+      createdUserIds.push(registerData.user.id);
+
+      // Attempt login with wrong password
+      const response = await app.request("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          password: wrongPassword,
+        }),
+      });
+
+      // Should return 401 Unauthorized (same as nonexistent user)
+      expect(response.status).toBe(401);
+
+      const data = (await response.json()) as { code: string };
+      expect(data.code).toBe("UNAUTHORIZED");
+    });
   });
 
   describe("GET /metrics", () => {
