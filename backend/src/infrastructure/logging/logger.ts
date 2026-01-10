@@ -31,34 +31,35 @@ export class Logger {
   }
 
   debug(message: string, ...args: unknown[]): void {
-    if (args.length === 0) {
-      this.pinoLogger.debug(message);
-    } else {
-      this.pinoLogger.debug({ data: args }, message);
-    }
+    this.logWithArgs("debug", message, args);
   }
 
   info(message: string, ...args: unknown[]): void {
-    if (args.length === 0) {
-      this.pinoLogger.info(message);
-    } else {
-      this.pinoLogger.info({ data: args }, message);
-    }
+    this.logWithArgs("info", message, args);
   }
 
   warn(message: string, ...args: unknown[]): void {
-    if (args.length === 0) {
-      this.pinoLogger.warn(message);
-    } else {
-      this.pinoLogger.warn({ data: args }, message);
-    }
+    this.logWithArgs("warn", message, args);
   }
 
   error(message: string, ...args: unknown[]): void {
+    this.logWithArgs("error", message, args);
+  }
+
+  /**
+   * Helper to handle variadic args for all log levels.
+   * If no args provided, logs message only.
+   * If args provided, logs message with data array.
+   */
+  private logWithArgs(
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    args: unknown[]
+  ): void {
     if (args.length === 0) {
-      this.pinoLogger.error(message);
+      this.pinoLogger[level](message);
     } else {
-      this.pinoLogger.error({ data: args }, message);
+      this.pinoLogger[level]({ data: args }, message);
     }
   }
 }
