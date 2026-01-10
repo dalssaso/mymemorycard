@@ -3,14 +3,31 @@ import { describe, it, expect, beforeEach } from "bun:test";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 import { TokenService } from "@/features/auth/services/token.service";
 
+/**
+ * Helper to create minimal test config with sensible defaults.
+ * Allows overrides for specific test scenarios.
+ */
+function makeTestConfig(overrides?: Partial<IConfig>): IConfig {
+  return {
+    port: 3000,
+    database: { url: "postgresql://test" },
+    redis: { url: "redis://localhost:6380" },
+    jwt: { secret: "test-secret", expiresIn: "7d" },
+    bcrypt: { saltRounds: 10 },
+    rawg: { apiKey: "test-key" },
+    encryption: { secret: "test-encryption-secret-very-long", salt: "test-salt" },
+    cors: { allowedOrigins: ["http://localhost:5173"] },
+    isProduction: false,
+    skipRedisConnect: true,
+    ...overrides,
+  };
+}
+
 describe("TokenService", () => {
   let tokenService: TokenService;
 
   beforeEach(() => {
-    const mockConfig = {
-      jwt: { secret: "test-secret", expiresIn: "7d" },
-    } as IConfig;
-    tokenService = new TokenService(mockConfig);
+    tokenService = new TokenService(makeTestConfig());
   });
 
   it("should generate JWT token", () => {
