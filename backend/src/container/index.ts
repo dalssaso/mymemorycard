@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { db } from "@/infrastructure/database/connection";
+import { DatabaseConnection } from "@/infrastructure/database/connection";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 
 // Infrastructure
@@ -31,8 +31,11 @@ import { AuthController } from "@/features/auth/controllers/auth.controller";
  */
 export function registerDependencies(): void {
   // Infrastructure - Singletons
+  container.registerSingleton(DatabaseConnection);
+
+  // Register DrizzleDB from DatabaseConnection instance
   container.register<DrizzleDB>("Database", {
-    useValue: db,
+    useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
 
   // Logger uses factory with manual singleton caching
