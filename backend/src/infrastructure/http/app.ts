@@ -26,7 +26,7 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   const errorHandler = createErrorHandler(logger);
 
   // Global middleware
-  app.use("*", corsMiddleware());
+  app.use("*", corsMiddleware(logger));
   app.use("*", async (c, next) => {
     c.set("requestId", randomUUID());
     await next();
