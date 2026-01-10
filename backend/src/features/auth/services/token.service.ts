@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import { injectable } from "tsyringe";
+import { injectable, inject } from "tsyringe";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 import type { ITokenService, JWTPayload } from "./token.service.interface";
 
 @injectable()
@@ -7,8 +8,8 @@ export class TokenService implements ITokenService {
   private readonly secret: string;
   private readonly expiresIn = "7d";
 
-  constructor() {
-    this.secret = process.env.JWT_SECRET || "dev-jwt-secret-change-in-production";
+  constructor(@inject("IConfig") config: IConfig) {
+    this.secret = config.jwt.secret;
   }
 
   generateToken(payload: JWTPayload): string {

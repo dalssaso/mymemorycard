@@ -1,12 +1,16 @@
 import "reflect-metadata";
 import { describe, it, expect, beforeEach } from "bun:test";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 import { TokenService } from "@/features/auth/services/token.service";
 
 describe("TokenService", () => {
   let tokenService: TokenService;
 
   beforeEach(() => {
-    tokenService = new TokenService();
+    const mockConfig = {
+      jwt: { secret: "test-secret" },
+    } as IConfig;
+    tokenService = new TokenService(mockConfig);
   });
 
   it("should generate JWT token", () => {
