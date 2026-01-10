@@ -8,7 +8,25 @@ export class PasswordHasher implements IPasswordHasher {
   private readonly saltRounds: number;
 
   constructor(@inject("IConfig") config: IConfig) {
-    this.saltRounds = config.bcrypt.saltRounds;
+    const saltRounds = config.bcrypt.saltRounds;
+
+    // Validate saltRounds is a number
+    if (typeof saltRounds !== "number") {
+      throw new Error(
+        `Invalid bcrypt saltRounds in IConfig: expected number, got ${typeof saltRounds}`
+      );
+    }
+
+    // Validate saltRounds is within safe range (10-12 recommended, 4-31 allowed by bcrypt)
+    const MIN_SALT_ROUNDS = 4;
+    const MAX_SALT_ROUNDS = 31;
+    if (saltRounds < MIN_SALT_ROUNDS || saltRounds > MAX_SALT_ROUNDS) {
+      throw new Error(
+        `Invalid bcrypt saltRounds in IConfig: ${saltRounds} is outside allowed range [${MIN_SALT_ROUNDS}-${MAX_SALT_ROUNDS}]`
+      );
+    }
+
+    this.saltRounds = saltRounds;
   }
 
   async hash(password: string): Promise<string> {
