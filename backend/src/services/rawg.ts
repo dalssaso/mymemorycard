@@ -139,11 +139,12 @@ interface RAWGSearchResponse {
   results: RAWGGame[];
 }
 
-import { container } from "@/container";
-import type { IConfig } from "@/infrastructure/config/config.interface";
-
-const config = container.resolve<IConfig>("IConfig");
-const RAWG_API_KEY = config.rawg.apiKey;
+// Legacy RAWG service using environment variables directly
+// This is used by legacy code before DI migration is complete
+const RAWG_API_KEY = process.env.RAWG_API_KEY;
+if (!RAWG_API_KEY) {
+  throw new Error("Missing required environment variable: RAWG_API_KEY");
+}
 const RAWG_BASE_URL = "https://api.rawg.io/api";
 
 // Rate limiter to stay under RAWG's 5 req/sec limit

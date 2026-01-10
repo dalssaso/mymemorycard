@@ -1,14 +1,17 @@
 import pg from "pg";
-import { container } from "@/container";
-import type { IConfig } from "@/infrastructure/config/config.interface";
 
 const { Pool } = pg;
 
-const config = container.resolve<IConfig>("IConfig");
+// Legacy database connection using environment variables directly
+// This is used by legacy routes before DI migration is complete
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("Missing required environment variable: DATABASE_URL");
+}
 
 // Database connection pool
 export const pool = new Pool({
-  connectionString: config.database.url,
+  connectionString,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,

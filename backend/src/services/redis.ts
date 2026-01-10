@@ -1,17 +1,22 @@
 import { createClient } from "redis";
-import { container } from "@/container";
-import type { IConfig } from "@/infrastructure/config/config.interface";
 
-const config = container.resolve<IConfig>("IConfig");
+// Legacy Redis connection using environment variables directly
+// This is used by legacy code before DI migration is complete
+const redisUrl = process.env.REDIS_URL;
+if (!redisUrl) {
+  throw new Error("Missing required environment variable: REDIS_URL");
+}
+
+const skipRedisConnect = process.env.SKIP_REDIS_CONNECT === "1";
 
 const redisClient = createClient({
-  url: config.redis.url,
+  url: redisUrl,
 });
 
 redisClient.on("error", (err) => console.error("Redis Client Error:", err));
 redisClient.on("connect", () => console.log("Connected to Redis"));
 
-if (!config.skipRedisConnect) {
+if (!skipRedisConnect) {
   redisClient.connect().catch((err) => {
     console.error("Failed to connect to Redis:", err);
   });

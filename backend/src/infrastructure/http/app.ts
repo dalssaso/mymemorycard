@@ -4,7 +4,7 @@ import { container } from "@/container";
 import type { AuthController } from "@/features/auth/controllers/auth.controller";
 import { errorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
-import { metricsMiddleware } from "./middleware/metrics.middleware";
+import { createMetricsMiddleware } from "./middleware/metrics.middleware";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 import { router as legacyRouter } from "@/lib/router";
 import { randomUUID } from "crypto";
@@ -18,6 +18,7 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
 
   // Resolve dependencies once at app creation time
   const metricsService = container.resolve(MetricsService);
+  const metricsMiddleware = createMetricsMiddleware(metricsService);
 
   // Global middleware
   app.use("*", corsMiddleware());

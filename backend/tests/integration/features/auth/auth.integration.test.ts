@@ -10,6 +10,7 @@ describe("Auth Integration Tests", () => {
   let dbConnection: DatabaseConnection;
 
   beforeAll(() => {
+    // Bun automatically loads .env files
     registerDependencies();
     app = createHonoApp();
     dbConnection = container.resolve(DatabaseConnection);
