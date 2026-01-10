@@ -13,9 +13,7 @@ function parsePositiveInt(value: string | undefined, key: string): number | unde
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new Error(
-      `${key} must be a positive integer (got "${value}", parsed as ${parsed})`
-    );
+    throw new Error(`${key} must be a positive integer (got "${value}", parsed as ${parsed})`);
   }
 
   return parsed;
@@ -52,7 +50,10 @@ export class Config implements IConfig {
       pool: {
         max: parsePositiveInt(process.env.DB_POOL_MAX, "DB_POOL_MAX"),
         idleTimeout: parsePositiveInt(process.env.DB_POOL_IDLE_TIMEOUT, "DB_POOL_IDLE_TIMEOUT"),
-        connectTimeout: parsePositiveInt(process.env.DB_POOL_CONNECT_TIMEOUT, "DB_POOL_CONNECT_TIMEOUT"),
+        connectTimeout: parsePositiveInt(
+          process.env.DB_POOL_CONNECT_TIMEOUT,
+          "DB_POOL_CONNECT_TIMEOUT"
+        ),
       },
     };
     this.redis = { url: this.requireEnv("REDIS_URL") };
