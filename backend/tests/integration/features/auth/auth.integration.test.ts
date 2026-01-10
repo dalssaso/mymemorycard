@@ -24,8 +24,12 @@ describe("Auth Integration Tests", () => {
       if (createdUserIds.length > 0) {
         await dbConnection.db.delete(users).where(inArray(users.id, createdUserIds)).execute();
       }
-    } catch {
-      // Cleanup errors are non-critical
+    } catch (error) {
+      // Log cleanup errors but don't fail tests - cleanup is non-critical
+      console.error(
+        `Error cleaning up test users (${createdUserIds.length} to delete):`,
+        error instanceof Error ? error.message : error
+      );
     }
     await dbConnection.close();
     resetContainer();
