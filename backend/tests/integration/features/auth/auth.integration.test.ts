@@ -4,10 +4,12 @@ import { registerDependencies, resetContainer, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { users } from "@/db/schema";
+import { inArray } from "drizzle-orm";
 
 describe("Auth Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
   let dbConnection: DatabaseConnection;
+  const createdUserIds: string[] = [];
 
   beforeAll(() => {
     // Bun automatically loads .env files
@@ -17,9 +19,11 @@ describe("Auth Integration Tests", () => {
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // Clean up only test-created users
     try {
-      await dbConnection.db.delete(users).execute();
+      if (createdUserIds.length > 0) {
+        await dbConnection.db.delete(users).where(inArray(users.id, createdUserIds)).execute();
+      }
     } catch {
       // Cleanup errors are non-critical
     }
@@ -43,9 +47,10 @@ describe("Auth Integration Tests", () => {
       expect(response.status).toBe(201);
 
       const data = (await response.json()) as {
-        user: { username: string };
+        user: { id: string; username: string };
         token: string;
       };
+      createdUserIds.push(data.user.id);
       expect(data.user.username).toBe(username);
       expect(data.token).toBeDefined();
     });
@@ -97,7 +102,10 @@ describe("Auth Integration Tests", () => {
         });
 
         expect(response.status).toBe(201);
-        const data = (await response.json()) as { user: { username: string } };
+        const data = (await response.json()) as {
+          user: { id: string; username: string };
+        };
+        createdUserIds.push(data.user.id);
         expect(data.user.username).toBe(uniqueUsername);
       });
     });
@@ -118,6 +126,10 @@ describe("Auth Integration Tests", () => {
 
       // Verify first registration succeeded
       expect(firstResponse.status).toBe(201);
+      const firstData = (await firstResponse.json()) as {
+        user: { id: string };
+      };
+      createdUserIds.push(firstData.user.id);
 
       // Second registration with same username
       const response = await app.request("/api/auth/register", {
@@ -143,7 +155,7 @@ describe("Auth Integration Tests", () => {
       const password = "SecurePass123!";
 
       // Register user first
-      await app.request("/api/auth/register", {
+      const registerResponse = await app.request("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -152,6 +164,10 @@ describe("Auth Integration Tests", () => {
           password,
         }),
       });
+      const registerData = (await registerResponse.json()) as {
+        user: { id: string };
+      };
+      createdUserIds.push(registerData.user.id);
 
       // Login
       const response = await app.request("/api/auth/login", {
