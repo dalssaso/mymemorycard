@@ -19,7 +19,7 @@ export function createMetricsMiddleware(
       const status = c.res.status.toString();
       const method = c.req.method;
       // Use only parameterized route pattern, never fall back to concrete path to avoid high cardinality
-      const route = c.req.path ?? "unknown_route";
+      const route = c.req.routePath ?? "unknown_route";
 
       metrics.httpRequestsTotal.inc({ method, route, status });
       metrics.httpRequestDuration.observe({ method, route, status }, duration);
