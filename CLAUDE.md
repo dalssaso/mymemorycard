@@ -28,6 +28,7 @@ query-docs: libraryId="/tanstack/query", query="optimistic updates mutation"
 ```
 
 Query these libraries:
+
 - `/tanstack/query` - Server state, mutations, optimistic updates
 - `/tanstack/router` - File-based routing, loaders
 - `/shadcn-ui/ui` - UI components, installation
@@ -236,6 +237,7 @@ Release-please automates releases from conventional commits.
 ## Frontend Patterns
 
 See [frontend/CLAUDE.md](frontend/CLAUDE.md) for detailed patterns on:
+
 - shadcn/ui component usage and creation
 - Custom hooks for queries and mutations
 - Route loaders with `ensureQueryData`
