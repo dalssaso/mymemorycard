@@ -100,4 +100,4 @@ AGENTS.override.md
 # Git worktrees
 .worktrees/
 .sisyphus/
-docs/plans
+docs/plans/
