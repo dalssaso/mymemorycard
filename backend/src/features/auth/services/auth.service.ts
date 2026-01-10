@@ -30,24 +30,46 @@ export class AuthService implements IAuthService {
     }
 
     const hash = await this.passwordHasher.hash(password);
-    const user = await this.userRepo.create(username, email, hash);
 
-    const token = this.tokenService.generateToken({
-      userId: user.id,
-      username: user.username,
-    });
+    try {
+      const user = await this.userRepo.create(username, email, hash);
 
-    this.logger.info("User registered successfully", user.id);
-    this.metrics.authAttemptsTotal.inc({ type: "register", success: "true" });
-
-    return {
-      user: {
-        id: user.id,
+      const token = this.tokenService.generateToken({
+        userId: user.id,
         username: user.username,
-        email: user.email,
-      },
-      token,
-    };
+      });
+
+      this.logger.info("User registered successfully", user.id);
+      this.metrics.authAttemptsTotal.inc({ type: "register", success: "true" });
+
+      return {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+        },
+        token,
+      };
+    } catch (error) {
+      // Handle TOCTOU race condition: userRepo.create() may throw ConflictError
+      // even though exists() passed (another request could have created the user)
+      if (error instanceof ConflictError) {
+        this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
+        throw error;
+      }
+
+      // Handle other creation errors (database issues, etc.)
+      if (error instanceof Error) {
+        this.logger.error("Failed to create user", username, error.message);
+        this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
+        throw error;
+      }
+
+      // Unknown error
+      this.logger.error("Unknown error during registration", username);
+      this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
+      throw error;
+    }
   }
 
   async login(username: string, password: string): Promise<AuthResult> {
