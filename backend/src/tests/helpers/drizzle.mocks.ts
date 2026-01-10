@@ -5,11 +5,10 @@ export function createMockDrizzleDB(): DrizzleDB {
   const chainableMock = {
     from: mock().mockReturnThis(),
     where: mock().mockReturnThis(),
-    limit: mock().mockReturnThis(),
+    limit: mock().mockResolvedValue([]),
     prepare: mock().mockReturnValue({
       execute: mock().mockResolvedValue([]),
     }),
-    then: mock().mockResolvedValue([]),
   };
 
   return {
@@ -29,9 +28,7 @@ export function mockSelectResult<T>(mockDb: DrizzleDB, result: T[]): void {
     from: mock().mockReturnValue({
       where: mock().mockReturnValue({
         limit: mock().mockResolvedValue(result),
-        then: mock().mockResolvedValue(result),
       }),
-      then: mock().mockResolvedValue(result),
     }),
   });
 }
