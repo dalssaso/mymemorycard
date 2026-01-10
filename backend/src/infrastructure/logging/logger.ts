@@ -26,8 +26,15 @@ export class Logger {
     this.pinoLogger = context ? pinoInstance.child({ context }) : pinoInstance;
   }
 
+  /**
+   * Creates a child logger with chained context hierarchy.
+   * Combines parent context with new context using ':' separator to show nesting.
+   * Example: parent context "Auth" + child "Register" → "Auth:Register"
+   * Parent log level and transports are inherited automatically via pinoInstance.
+   */
   child(context: string): Logger {
-    return new Logger(context);
+    const chainedContext = this.context ? `${this.context}:${context}` : context;
+    return new Logger(chainedContext);
   }
 
   debug(message: string, ...args: unknown[]): void {
