@@ -1,5 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
-import type { users } from "@/db/schema";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import { users } from "@/db/schema";
 
 /**
  * User entity type derived from database schema.
