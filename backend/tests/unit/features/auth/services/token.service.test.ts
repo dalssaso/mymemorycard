@@ -35,8 +35,7 @@ describe("TokenService", () => {
     expect(verified).toBeNull();
   });
 
-  it("should return null for expired token", () => {
-    // Test with malformed JWT
+  it("should return null for malformed token", () => {
     const verified = tokenService.verifyToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid");
 
     expect(verified).toBeNull();
