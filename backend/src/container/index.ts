@@ -3,6 +3,10 @@ import { container } from "tsyringe";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 
+// Config
+import { Config } from "@/infrastructure/config/config";
+import type { IConfig } from "@/infrastructure/config/config.interface";
+
 // Infrastructure
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
@@ -30,6 +34,9 @@ import { AuthController } from "@/features/auth/controllers/auth.controller";
  * Called once at application startup.
  */
 export function registerDependencies(): void {
+  // Config first - validates env vars immediately at startup
+  container.registerSingleton<IConfig>("IConfig", Config);
+
   // Infrastructure - Singletons
   container.registerSingleton(DatabaseConnection);
 
