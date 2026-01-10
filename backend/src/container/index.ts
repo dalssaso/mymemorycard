@@ -32,7 +32,9 @@ export function registerDependencies(): void {
     useValue: db,
   })
 
-  container.registerSingleton(Logger)
+  container.register(Logger, {
+    useFactory: () => new Logger(),
+  })
   container.registerSingleton(MetricsService)
 
   // Auth Domain - Repositories
