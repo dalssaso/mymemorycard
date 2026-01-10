@@ -1,4 +1,4 @@
-import { generateText, generateImage } from "ai";
+import { generateText, generateImage, gateway } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { queryOne, queryMany, query } from "@/services/db";
 import { decrypt } from "@/lib/encryption";
@@ -17,12 +17,6 @@ import { smartSampleGames } from "./game-selection";
 import { shouldRegeneratePreferences, generatePreferenceEmbeddings } from "./preference-learning";
 import { checkUserHasEmbeddings, generateUserLibraryEmbeddings } from "./embedding-jobs";
 import { selectModelForTask } from "./model-router";
-import { discoverOpenAIModels } from "./models";
-import {
-  createAIProviderRegistry,
-  buildMultiProviderSettings,
-  type MultiProviderSettings,
-} from "./provider-registry";
 
 export interface AiSettings {
   provider: string;
@@ -111,25 +105,6 @@ export async function getUserAiSettings(userId: string): Promise<AiSettings | nu
   return settings;
 }
 
-async function getAllUserProviderSettings(
-  userId: string
-): Promise<{ openai: AiSettings | null; xai: AiSettings | null }> {
-  const [openaiSettings, xaiSettings] = await Promise.all([
-    queryOne<AiSettings>(
-      `SELECT * FROM user_ai_settings WHERE user_id = $1 AND provider = 'openai'::ai_provider AND is_active = true`,
-      [userId]
-    ),
-    queryOne<AiSettings>(
-      `SELECT * FROM user_ai_settings WHERE user_id = $1 AND provider = 'xai'::ai_provider AND is_active = true`,
-      [userId]
-    ),
-  ]);
-
-  return {
-    openai: openaiSettings,
-    xai: xaiSettings,
-  };
-}
 
 function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   const apiKey = settings.imageApiKeyEncrypted
@@ -148,36 +123,23 @@ function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI
   });
 }
 
-async function getAvailableModelsFromRegistry(
-  settings: MultiProviderSettings
-): Promise<string[]> {
-  const allModels: string[] = [];
-
-  try {
-    // Get OpenAI models if configured
-    if (settings.openai?.apiKey) {
-      const openaiClient = createOpenAI({
-        apiKey: settings.openai.apiKey,
-        baseURL: settings.openai.baseUrl || undefined,
-      });
-      const openaiModels = await discoverOpenAIModels(openaiClient);
-      allModels.push(
-        ...openaiModels.textModels.map((m) => m.id),
-        ...openaiModels.imageModels.map((m) => m.id)
-      );
-    }
-
-    // Get xAI models if configured
-    if (settings.xai?.apiKey) {
-      // xAI models are known (not discoverable via API)
-      allModels.push("grok-beta", "grok-vision-beta", "grok-2-image-1212", "grok-code-fast-1");
-    }
-
-    return allModels;
-  } catch (error) {
-    console.error("Failed to discover available models:", error);
-    return [];
-  }
+function getAvailableGatewayModels(): string[] {
+  return [
+    // OpenAI models
+    "gpt-4o",
+    "gpt-4o-mini",
+    "gpt-4-turbo",
+    "gpt-5-nano",
+    "gpt-5-mini",
+    "gpt-5",
+    "dall-e-3",
+    "gpt-image-1.5",
+    // xAI models
+    "grok-beta",
+    "grok-vision-beta",
+    "grok-2-image-1212",
+    "grok-code-fast-1",
+  ];
 }
 
 async function getLibrarySummary(userId: string): Promise<GameSummary[]> {
@@ -285,32 +247,22 @@ export async function suggestCollections(
   theme?: string
 ): Promise<{ collections: CollectionSuggestion[]; cost: number }> {
   const startTime = Date.now();
-  const providerSettings = await getAllUserProviderSettings(userId);
-  const openaiSettings = providerSettings.openai;
+  const settings = await getUserAiSettings(userId);
 
-  if (!openaiSettings || !openaiSettings.enabled) {
+  if (!settings || !settings.enabled) {
     throw new Error("AI features not configured");
   }
 
-  const multiProviderSettings = buildMultiProviderSettings(
-    providerSettings.openai,
-    providerSettings.xai
-  );
-
-  // Early validation of provider credentials
-  if (!multiProviderSettings.openai?.apiKey && !multiProviderSettings.xai?.apiKey) {
-    throw new Error("No valid AI provider credentials configured");
+  if (!settings.gatewayApiKeyEncrypted) {
+    throw new Error("Vercel AI Gateway not configured");
   }
 
-  // Get available models
-  const availableModels = await getAvailableModelsFromRegistry(multiProviderSettings);
-
-  const registry = createAIProviderRegistry(multiProviderSettings);
+  const availableModels = getAvailableGatewayModels();
 
   // Select optimal model for this task
   const modelSelection = await selectModelForTask(
     "suggest_collections",
-    openaiSettings,
+    settings,
     availableModels
   );
 
@@ -324,14 +276,14 @@ export async function suggestCollections(
   const hasEmbeddings = await checkUserHasEmbeddings(userId);
   if (!hasEmbeddings) {
     console.log(`Generating embeddings for user ${userId} (first-time setup)`);
-    await generateUserLibraryEmbeddings(openaiSettings, userId, 100);
+    await generateUserLibraryEmbeddings(settings, userId, 100);
   }
 
   // Check if preferences need regeneration
   const shouldRegenerate = await shouldRegeneratePreferences(userId);
   if (shouldRegenerate) {
     console.log(`Regenerating preferences for user ${userId}`);
-    await generatePreferenceEmbeddings(openaiSettings, userId);
+    await generatePreferenceEmbeddings(settings, userId);
   }
 
   // Semantic filtering
@@ -340,7 +292,7 @@ export async function suggestCollections(
   if (theme) {
     // Search for games matching the theme
     const similarGames = await searchSimilarGames(
-      openaiSettings,
+      settings,
       `Games related to: ${theme}`,
       userId,
       50,
@@ -366,7 +318,7 @@ export async function suggestCollections(
 
   try {
     const baseParams = {
-      model: registry.languageModel(addProviderPrefix(modelSelection.model)),
+      model: gateway(addProviderPrefix(modelSelection.model)),
       messages: [
         { role: "system" as const, content: SYSTEM_PROMPTS.organizer },
         {
@@ -452,32 +404,22 @@ export async function suggestNextGame(
   userInput?: string
 ): Promise<{ suggestion: NextGameSuggestion; cost: number }> {
   const startTime = Date.now();
-  const providerSettings = await getAllUserProviderSettings(userId);
-  const openaiSettings = providerSettings.openai;
+  const settings = await getUserAiSettings(userId);
 
-  if (!openaiSettings || !openaiSettings.enabled) {
+  if (!settings || !settings.enabled) {
     throw new Error("AI features not configured");
   }
 
-  const multiProviderSettings = buildMultiProviderSettings(
-    providerSettings.openai,
-    providerSettings.xai
-  );
-
-  // Early validation of provider credentials
-  if (!multiProviderSettings.openai?.apiKey && !multiProviderSettings.xai?.apiKey) {
-    throw new Error("No valid AI provider credentials configured");
+  if (!settings.gatewayApiKeyEncrypted) {
+    throw new Error("Vercel AI Gateway not configured");
   }
 
-  // Get available models
-  const availableModels = await getAvailableModelsFromRegistry(multiProviderSettings);
-
-  const registry = createAIProviderRegistry(multiProviderSettings);
+  const availableModels = getAvailableGatewayModels();
 
   // Select optimal model for this task
   const modelSelection = await selectModelForTask(
     "suggest_next_game",
-    openaiSettings,
+    settings,
     availableModels
   );
 
@@ -492,14 +434,14 @@ export async function suggestNextGame(
   const hasEmbeddings = await checkUserHasEmbeddings(userId);
   if (!hasEmbeddings) {
     console.log(`Generating embeddings for user ${userId} (first-time setup)`);
-    await generateUserLibraryEmbeddings(openaiSettings, userId, 100);
+    await generateUserLibraryEmbeddings(settings, userId, 100);
   }
 
   // Check if preferences need regeneration
   const shouldRegenerate = await shouldRegeneratePreferences(userId);
   if (shouldRegenerate) {
     console.log(`Regenerating preferences for user ${userId}`);
-    await generatePreferenceEmbeddings(openaiSettings, userId);
+    await generatePreferenceEmbeddings(settings, userId);
   }
 
   // Semantic filtering
@@ -507,7 +449,7 @@ export async function suggestNextGame(
 
   if (userInput) {
     // Search for games matching user input
-    const similarGames = await searchSimilarGames(openaiSettings, userInput, userId, 30, 0.6);
+    const similarGames = await searchSimilarGames(settings, userInput, userId, 30, 0.6);
 
     const gameIds = new Set(similarGames.map((g) => g.gameId));
     selectedGames = backlog.filter((g) => gameIds.has(g.id)).slice(0, 20);
@@ -528,7 +470,7 @@ export async function suggestNextGame(
 
   try {
     const baseParams = {
-      model: registry.languageModel(addProviderPrefix(modelSelection.model)),
+      model: gateway(addProviderPrefix(modelSelection.model)),
       messages: [
         { role: "system" as const, content: SYSTEM_PROMPTS.curator },
         {
@@ -608,43 +550,28 @@ export async function generateCollectionCover(
   collectionId: string
 ): Promise<{ imageUrl: string; cost: number }> {
   const startTime = Date.now();
-  const providerSettings = await getAllUserProviderSettings(userId);
-  const openaiSettings = providerSettings.openai;
+  const settings = await getUserAiSettings(userId);
 
-  if (!openaiSettings || !openaiSettings.enabled) {
+  if (!settings || !settings.enabled) {
     throw new Error("AI features not configured");
   }
 
-  const multiProviderSettings = buildMultiProviderSettings(
-    providerSettings.openai,
-    providerSettings.xai
-  );
-
-  // Early validation of provider credentials
-  if (!multiProviderSettings.openai?.apiKey && !multiProviderSettings.xai?.apiKey) {
-    throw new Error("No valid AI provider credentials configured");
+  if (!settings.gatewayApiKeyEncrypted) {
+    throw new Error("Vercel AI Gateway not configured");
   }
 
-  // Get available models
-  const availableModels = await getAvailableModelsFromRegistry(multiProviderSettings);
+  const availableModels = getAvailableGatewayModels();
 
   // Select optimal model for this task
   const modelSelection = await selectModelForTask(
     "generate_cover_image",
-    openaiSettings,
+    settings,
     availableModels
   );
 
   const size = "1024x1536"; // Portrait orientation for collection covers
 
-  // Determine which provider to use for image generation
-  const isXaiModel = modelSelection.model.startsWith("grok-");
-  if (isXaiModel && !providerSettings.xai) {
-    throw new Error("xAI provider not configured but xAI model selected");
-  }
-  const imageClient = isXaiModel
-    ? createImageClient(providerSettings.xai!)
-    : createImageClient(openaiSettings);
+  const imageClient = createImageClient(settings);
 
   // gpt-image models don't support quality/style parameters - only DALL-E models do
   const isDalleModel = modelSelection.model.includes("dall-e");
