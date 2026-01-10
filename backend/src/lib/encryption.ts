@@ -5,14 +5,32 @@ import type { IConfig } from "@/infrastructure/config/config.interface";
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 
-// Derive 32-byte key from JWT secret using scrypt (lazy initialization)
-let KEY: Buffer;
+// Derive 32-byte key from encryption secret using scrypt
+let KEY: Buffer | undefined;
+
+/**
+ * Initialize encryption key at startup
+ */
+export function initializeEncryptionKey(): void {
+  const config = container.resolve<IConfig>("IConfig");
+  KEY = crypto.scryptSync(config.encryption.secret, config.encryption.salt, 32);
+}
+
+/**
+ * Get the encryption key (must call initializeEncryptionKey first)
+ */
 function getKey(): Buffer {
   if (!KEY) {
-    const config = container.resolve<IConfig>("IConfig");
-    KEY = crypto.scryptSync(config.jwt.secret, "salt", 32);
+    throw new Error("Encryption key not initialized. Call initializeEncryptionKey first.");
   }
   return KEY;
+}
+
+/**
+ * Reset encryption key (for testing)
+ */
+export function resetEncryptionKey(): void {
+  KEY = undefined;
 }
 
 /**

@@ -26,6 +26,10 @@ const mockConfig: IConfig = {
   rawg: {
     apiKey: "test-rawg-key",
   },
+  encryption: {
+    secret: "test-encryption-secret-very-long",
+    salt: "test-salt",
+  },
   port: 3000,
   cors: {
     origin: undefined,

@@ -7,6 +7,7 @@ export class Config implements IConfig {
   readonly redis: { url: string };
   readonly jwt: { secret: string };
   readonly rawg: { apiKey: string };
+  readonly encryption: { secret: string; salt: string };
   readonly port: number;
   readonly cors: { origin?: string; allowedOrigins: string[] };
   readonly bcrypt: { saltRounds: number };
@@ -32,6 +33,10 @@ export class Config implements IConfig {
 
     this.jwt = { secret: jwtSecret };
     this.rawg = { apiKey: this.requireEnv("RAWG_API_KEY") };
+    this.encryption = {
+      secret: this.requireEnv("ENCRYPTION_SECRET"),
+      salt: this.requireEnv("ENCRYPTION_SALT"),
+    };
 
     // Optional with defaults
     this.port = Number(process.env.PORT) || 3000;

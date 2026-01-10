@@ -3,6 +3,7 @@ import { registerDependencies, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { runMigrations, closeMigrationConnection } from "@/db";
 import { seedPlatforms } from "@/db/seed";
+import { initializeEncryptionKey } from "@/lib/encryption";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 
 // Import legacy routes (registers them with the old router)
@@ -33,6 +34,9 @@ async function startServer(): Promise<void> {
 
   // Register DI dependencies
   registerDependencies();
+
+  // Initialize encryption key (must be after registerDependencies)
+  initializeEncryptionKey();
 
   // Create Hono app (includes legacy routes proxy)
   const app = createHonoApp();

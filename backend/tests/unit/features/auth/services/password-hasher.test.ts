@@ -21,6 +21,10 @@ describe("PasswordHasher", () => {
     rawg: {
       apiKey: "test-key",
     },
+    encryption: {
+      secret: "test-encryption-secret-very-long",
+      salt: "test-salt",
+    },
     cors: {
       allowedOrigins: ["http://localhost:5173"],
     },
