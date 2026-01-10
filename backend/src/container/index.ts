@@ -44,7 +44,7 @@ export function registerDependencies(): void {
       }
       return loggerInstance;
     },
-  } as any);
+  });
   container.registerSingleton(MetricsService);
 
   // Auth Domain - Repositories
@@ -73,9 +73,10 @@ export function registerDependencies(): void {
 
 /**
  * Reset container (useful for testing)
- * Clears both registrations and instances
+ * Clears both registrations and instances, including the cached Logger singleton
  */
 export function resetContainer(): void {
+  loggerInstance = null;
   container.reset();
 }
 

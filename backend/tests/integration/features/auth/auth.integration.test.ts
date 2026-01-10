@@ -52,6 +52,39 @@ describe("Auth Integration Tests", () => {
       expect(response.status).toBe(400);
     });
 
+    it("should return 400 for username with invalid characters", async () => {
+      const response = await app.request("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: "user name", // Space
+          email: "test@example.com",
+          password: "SecurePass123!",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should accept username with valid characters", async () => {
+      const validUsernames = ["user123", "user_name", "user-name", "User_Test-123"];
+
+      for (const username of validUsernames) {
+        const uniqueUsername = `${username}_${Date.now()}`;
+        const response = await app.request("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: uniqueUsername,
+            email: `${uniqueUsername}@example.com`,
+            password: "SecurePass123!",
+          }),
+        });
+
+        expect(response.status).toBe(201);
+      }
+    });
+
     it("should return 409 for duplicate username", async () => {
       const username = `duplicate_${Date.now()}`;
 
