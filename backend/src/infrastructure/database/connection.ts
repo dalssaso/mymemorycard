@@ -4,15 +4,13 @@ import * as schema from "@/db/schema";
 import { injectable, inject } from "tsyringe";
 import { sql } from "drizzle-orm";
 import { Logger } from "@/infrastructure/logging/logger";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
 export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
 
-// Default to local Docker postgres for development/testing
-const DEFAULT_DATABASE_URL = "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard";
-
 /**
  * DatabaseConnection manages the PostgreSQL connection and Drizzle ORM instance.
- * Accepts configuration via constructor parameters for testing and flexibility.
+ * Receives configuration via DI injection.
  */
 @injectable()
 export class DatabaseConnection {
@@ -20,17 +18,10 @@ export class DatabaseConnection {
   private readonly queryClient: Sql;
   private readonly logger: Logger;
 
-  constructor(connectionString?: string, postgresClient?: Sql, @inject(Logger) logger?: Logger) {
-    // Priority: provided postgres client > connection string > environment > default
-    if (postgresClient) {
-      this.queryClient = postgresClient;
-    } else {
-      const url = connectionString || process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
-      this.queryClient = postgres(url);
-    }
-
+  constructor(@inject("IConfig") config: IConfig, @inject(Logger) logger: Logger) {
+    this.queryClient = postgres(config.database.url);
     this.db = drizzle(this.queryClient, { schema });
-    this.logger = logger ?? new Logger("DatabaseConnection");
+    this.logger = logger;
   }
 
   async healthCheck(): Promise<boolean> {
