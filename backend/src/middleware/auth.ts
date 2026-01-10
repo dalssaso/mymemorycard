@@ -48,7 +48,14 @@ export async function authenticate(req: Request): Promise<User | null> {
   }
 
   // Fetch user from database
-  const user = await queryOne<User>("SELECT * FROM users WHERE id = $1", [payload.userId]);
+  const user = await queryOne<User>(
+    `SELECT id, username, email,
+            password_hash as "passwordHash",
+            created_at as "createdAt",
+            updated_at as "updatedAt"
+     FROM users WHERE id = $1`,
+    [payload.userId]
+  );
 
   return user;
 }

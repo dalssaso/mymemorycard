@@ -1,7 +1,12 @@
 import type { InferSelectModel } from "drizzle-orm";
 import type { users } from "@/db/schema";
 
-type User = InferSelectModel<typeof users>;
+/**
+ * User entity type derived from database schema.
+ * Uses camelCase properties (passwordHash, createdAt, updatedAt)
+ * which map to snake_case database columns.
+ */
+export type User = InferSelectModel<typeof users>;
 
 export interface IUserRepository {
   findByUsername(username: string): Promise<User | null>;

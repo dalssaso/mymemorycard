@@ -1,13 +1,12 @@
 // Type definitions for the backend
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  password_hash: string;
-  created_at: Date;
-  updated_at: Date;
-}
+/**
+ * User entity type - imported and re-exported from auth feature.
+ * Uses camelCase properties (passwordHash, createdAt, updatedAt)
+ * which map to snake_case database columns.
+ */
+import type { User } from "@/features/auth/repositories/user.repository.interface";
+export type { User };
 
 export interface Game {
   id: string;

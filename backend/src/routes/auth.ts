@@ -104,7 +104,14 @@ router.post("/api/auth/login", async (req) => {
     }
 
     // Find user
-    const user = await queryOne<User>("SELECT * FROM users WHERE username = $1", [username]);
+    const user = await queryOne<User>(
+      `SELECT id, username, email,
+              password_hash as "passwordHash",
+              created_at as "createdAt",
+              updated_at as "updatedAt"
+       FROM users WHERE username = $1`,
+      [username]
+    );
 
     if (!user) {
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
@@ -114,7 +121,7 @@ router.post("/api/auth/login", async (req) => {
     }
 
     // Verify password
-    const validPassword = await bcrypt.compare(password, user.password_hash);
+    const validPassword = await bcrypt.compare(password, user.passwordHash);
     if (!validPassword) {
       return new Response(JSON.stringify({ error: "Invalid credentials" }), {
         status: 401,
