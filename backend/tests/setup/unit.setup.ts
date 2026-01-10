@@ -8,6 +8,39 @@
  */
 
 import { mock } from "bun:test";
+import "reflect-metadata";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
+
+// Register IConfig for tests
+const mockConfig: IConfig = {
+  database: {
+    url: "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard",
+  },
+  redis: {
+    url: "redis://localhost:6380",
+  },
+  jwt: {
+    secret: "test-jwt-secret",
+  },
+  rawg: {
+    apiKey: "test-rawg-key",
+  },
+  port: 3000,
+  cors: {
+    origin: undefined,
+    allowedOrigins: ["http://localhost:5173", "http://localhost:3000"],
+  },
+  bcrypt: {
+    saltRounds: 10,
+  },
+  isProduction: false,
+  skipRedisConnect: true,
+};
+
+container.register<IConfig>("IConfig", {
+  useValue: mockConfig,
+});
 
 // Mock the database module
 mock.module("@/services/db", () => {

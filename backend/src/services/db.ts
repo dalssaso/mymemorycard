@@ -1,7 +1,10 @@
 import pg from "pg";
-import { config } from "@/config";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
 const { Pool } = pg;
+
+const config = container.resolve<IConfig>("IConfig");
 
 // Database connection pool
 export const pool = new Pool({

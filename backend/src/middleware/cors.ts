@@ -1,6 +1,8 @@
-import { config } from "@/config";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
 export function corsHeaders(origin?: string): Record<string, string> {
+  const config = container.resolve<IConfig>("IConfig");
   const allowedOrigins = config.cors.allowedOrigins;
 
   const requestOrigin = origin || "";

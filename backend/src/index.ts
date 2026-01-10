@@ -1,9 +1,9 @@
 import "reflect-metadata";
-import { registerDependencies } from "@/container";
+import { registerDependencies, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { runMigrations, closeMigrationConnection } from "@/db";
 import { seedPlatforms } from "@/db/seed";
-import { config } from "@/config";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
 // Import legacy routes (registers them with the old router)
 import "@/routes/auth";
@@ -38,6 +38,7 @@ async function startServer(): Promise<void> {
   const app = createHonoApp();
 
   // Start server
+  const config = container.resolve<IConfig>("IConfig");
   const server = Bun.serve({
     port: config.port,
     fetch: app.fetch,

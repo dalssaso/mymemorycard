@@ -139,14 +139,16 @@ interface RAWGSearchResponse {
   results: RAWGGame[];
 }
 
-import { config } from "@/config";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
+const config = container.resolve<IConfig>("IConfig");
 const RAWG_API_KEY = config.rawg.apiKey;
 const RAWG_BASE_URL = "https://api.rawg.io/api";
 
 // Rate limiter to stay under RAWG's 5 req/sec limit
 class RateLimiter {
-  private queue: Array<() => void> = [];
+  private queue: Array<() => Promise<void>> = [];
   private processing = false;
   private lastRequestTime = 0;
   private minInterval = 210; // 210ms = ~4.7 req/sec (safe margin)

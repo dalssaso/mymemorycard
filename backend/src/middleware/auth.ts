@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import type { JWTPayload, User } from "@/types";
 import { queryOne } from "@/services/db";
-import { config } from "@/config";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
 /**
  * Generates a JWT token for the given payload.
@@ -10,6 +11,7 @@ import { config } from "@/config";
  * @returns Signed JWT token string valid for 7 days
  */
 export function generateToken(payload: JWTPayload): string {
+  const config = container.resolve<IConfig>("IConfig");
   return jwt.sign(payload, config.jwt.secret, { expiresIn: "7d" });
 }
 
@@ -21,6 +23,7 @@ export function generateToken(payload: JWTPayload): string {
  */
 export function verifyToken(token: string): JWTPayload | null {
   try {
+    const config = container.resolve<IConfig>("IConfig");
     return jwt.verify(token, config.jwt.secret) as JWTPayload;
   } catch {
     return null;

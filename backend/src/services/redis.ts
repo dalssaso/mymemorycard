@@ -1,5 +1,8 @@
 import { createClient } from "redis";
-import { config } from "@/config";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
+
+const config = container.resolve<IConfig>("IConfig");
 
 const redisClient = createClient({
   url: config.redis.url,

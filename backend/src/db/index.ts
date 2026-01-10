@@ -2,8 +2,10 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import * as schema from "./schema";
-import { config } from "@/config";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
+const config = container.resolve<IConfig>("IConfig");
 const connectionString = config.database.url;
 
 const migrationClient = postgres(connectionString, { max: 1 });
