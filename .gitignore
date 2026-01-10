@@ -99,3 +99,4 @@ AGENTS.override.md
 
 # Git worktrees
 .worktrees/
+.sisyphus/
