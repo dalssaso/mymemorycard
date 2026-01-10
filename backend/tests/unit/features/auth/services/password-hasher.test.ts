@@ -1,9 +1,34 @@
 import "reflect-metadata";
 import { describe, it, expect } from "bun:test";
 import { PasswordHasher } from "@/features/auth/services/password-hasher";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 
 describe("PasswordHasher", () => {
-  const hasher = new PasswordHasher();
+  const mockConfig: IConfig = {
+    port: 3000,
+    database: {
+      url: "postgresql://test",
+    },
+    redis: {
+      url: "redis://localhost:6380",
+    },
+    jwt: {
+      secret: "test-secret",
+    },
+    bcrypt: {
+      saltRounds: 10,
+    },
+    rawg: {
+      apiKey: "test-key",
+    },
+    cors: {
+      allowedOrigins: ["http://localhost:5173"],
+    },
+    isProduction: false,
+    skipRedisConnect: true,
+  };
+
+  const hasher = new PasswordHasher(mockConfig);
 
   it("should hash password with valid bcrypt format", async () => {
     const password = "SecurePassword123!";
