@@ -58,27 +58,15 @@ export function registerDependencies(): void {
   container.registerSingleton(MetricsService);
 
   // Auth Domain - Repositories
-  container.register<IUserRepository>("IUserRepository", {
-    useClass: PostgresUserRepository,
-  });
+  container.registerSingleton<IUserRepository>("IUserRepository", PostgresUserRepository);
 
   // Auth Domain - Services
-  container.register<IPasswordHasher>("IPasswordHasher", {
-    useClass: PasswordHasher,
-  });
-
-  container.register<ITokenService>("ITokenService", {
-    useClass: TokenService,
-  });
-
-  container.register<IAuthService>("IAuthService", {
-    useClass: AuthService,
-  });
+  container.registerSingleton<IPasswordHasher>("IPasswordHasher", PasswordHasher);
+  container.registerSingleton<ITokenService>("ITokenService", TokenService);
+  container.registerSingleton<IAuthService>("IAuthService", AuthService);
 
   // Auth Domain - Controllers
-  container.register<AuthController>("AuthController", {
-    useClass: AuthController,
-  });
+  container.registerSingleton<AuthController>("AuthController", AuthController);
 }
 
 /**
