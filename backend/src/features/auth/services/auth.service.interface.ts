@@ -1,11 +1,7 @@
 import type { User } from "../types";
 
 export interface AuthResult {
-  user: {
-    id: string;
-    username: string;
-    email: string;
-  };
+  user: Pick<User, "id" | "username" | "email">;
   token: string;
 }
 
