@@ -28,7 +28,6 @@ query-docs: libraryId="/tanstack/query", query="optimistic updates mutation"
 ```
 
 Query these libraries:
-
 - `/tanstack/query` - Server state, mutations, optimistic updates
 - `/tanstack/router` - File-based routing, loaders
 - `/shadcn-ui/ui` - UI components, installation
