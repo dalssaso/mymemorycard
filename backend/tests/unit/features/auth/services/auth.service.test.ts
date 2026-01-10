@@ -13,16 +13,16 @@ import { ConflictError, UnauthorizedError } from "@/shared/errors/base";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
-import { Logger } from "@/infrastructure/logging/logger";
-import { MetricsService } from "@/infrastructure/metrics/metrics";
+import type { Logger } from "@/infrastructure/logging/logger";
+import type { MetricsService } from "@/infrastructure/metrics/metrics";
 
 describe("AuthService", () => {
   let authService: AuthService;
   let mockUserRepo: IUserRepository;
   let mockPasswordHasher: IPasswordHasher;
   let mockTokenService: ITokenService;
-  let mockLogger: InstanceType<typeof Logger>;
-  let mockMetrics: InstanceType<typeof MetricsService>;
+  let mockLogger: Logger;
+  let mockMetrics: MetricsService;
 
   beforeEach(() => {
     mockUserRepo = createMockUserRepository();

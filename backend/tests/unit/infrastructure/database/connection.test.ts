@@ -13,7 +13,8 @@ describe("DatabaseConnection", () => {
     const mockDb = createMockDrizzleDB();
     mockDb.execute = mock().mockResolvedValue([]);
 
-    const dbConnection = new DatabaseConnection(undefined, undefined as unknown as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dbConnection = new DatabaseConnection(undefined, undefined as any);
     (dbConnection as unknown as { db: typeof mockDb }).db = mockDb;
 
     const result = await dbConnection.healthCheck();
@@ -25,7 +26,8 @@ describe("DatabaseConnection", () => {
     const mockDb = createMockDrizzleDB();
     mockDb.execute = mock().mockRejectedValue(new Error("Connection failed"));
 
-    const dbConnection = new DatabaseConnection(undefined, undefined as unknown as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dbConnection = new DatabaseConnection(undefined, undefined as any);
     (dbConnection as unknown as { db: typeof mockDb }).db = mockDb;
 
     const result = await dbConnection.healthCheck();

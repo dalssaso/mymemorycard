@@ -4,8 +4,8 @@ import type { IPasswordHasher } from "@/features/auth/services/password-hasher.i
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
 import type { InferSelectModel } from "drizzle-orm";
 import { type users } from "@/db/schema";
-import { Logger } from "@/infrastructure/logging/logger";
-import { MetricsService } from "@/infrastructure/metrics/metrics";
+import type { Logger } from "@/infrastructure/logging/logger";
+import type { MetricsService } from "@/infrastructure/metrics/metrics";
 
 type User = InferSelectModel<typeof users>;
 
