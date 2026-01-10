@@ -15,7 +15,8 @@ export async function metricsMiddleware(c: Context, next: Next): Promise<void> {
     const duration = (Date.now() - start) / 1000;
     const status = c.res.status.toString();
     const method = c.req.method;
-    const route = c.req.routePath || c.req.path;
+    // Use only parameterized route pattern, never fall back to concrete path to avoid high cardinality
+    const route = c.req.routePath ?? "unknown_route";
 
     metrics.httpRequestsTotal.inc({ method, route, status });
     metrics.httpRequestDuration.observe({ method, route, status }, duration);
