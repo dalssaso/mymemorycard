@@ -2,17 +2,22 @@ import type { Context, Next } from "hono";
 import { container } from "tsyringe";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 
+// Cache metrics service at module load to avoid resolving on every request
+const metrics = container.resolve(MetricsService);
+
 export async function metricsMiddleware(c: Context, next: Next): Promise<void> {
   const start = Date.now();
-  const metrics = container.resolve(MetricsService);
 
-  await next();
+  try {
+    await next();
+  } finally {
+    // Record metrics in finally block to ensure they're recorded even if next() throws
+    const duration = (Date.now() - start) / 1000;
+    const status = c.res.status.toString();
+    const method = c.req.method;
+    const route = c.req.routePath || c.req.path;
 
-  const duration = (Date.now() - start) / 1000;
-  const status = c.res.status.toString();
-  const method = c.req.method;
-  const route = c.req.routePath || c.req.path;
-
-  metrics.httpRequestsTotal.inc({ method, route, status });
-  metrics.httpRequestDuration.observe({ method, route, status }, duration);
+    metrics.httpRequestsTotal.inc({ method, route, status });
+    metrics.httpRequestDuration.observe({ method, route, status }, duration);
+  }
 }
