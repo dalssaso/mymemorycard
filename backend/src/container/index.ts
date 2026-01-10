@@ -52,9 +52,14 @@ export function registerDependencies(): void {
     useClass: PostgresUserRepository,
   });
 
-  // Auth Domain - Services
+  // Auth Domain - Services - PasswordHasher with environment-based salt rounds
   container.register<IPasswordHasher>("IPasswordHasher", {
-    useClass: PasswordHasher,
+    useFactory: () =>
+      new PasswordHasher({
+        saltRounds: process.env.BCRYPT_SALT_ROUNDS
+          ? parseInt(process.env.BCRYPT_SALT_ROUNDS, 10)
+          : undefined,
+      }),
   });
 
   container.register<ITokenService>("ITokenService", {
