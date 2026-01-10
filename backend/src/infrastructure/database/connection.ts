@@ -8,8 +8,7 @@ import { Logger } from "@/infrastructure/logging/logger";
 export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
 
 // Default to local Docker postgres for development/testing
-const DEFAULT_DATABASE_URL =
-  "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard";
+const DEFAULT_DATABASE_URL = "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard";
 
 /**
  * DatabaseConnection manages the PostgreSQL connection and Drizzle ORM instance.

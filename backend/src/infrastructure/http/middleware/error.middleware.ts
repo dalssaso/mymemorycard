@@ -9,11 +9,10 @@ export function errorHandler(err: Error, c: Context): Response {
 
   if (err instanceof DomainError) {
     // Validate status code is a valid HTTP status (3-digit number)
-    const statusCode = typeof err.statusCode === "number" &&
-      err.statusCode >= 400 &&
-      err.statusCode < 600
-      ? (err.statusCode as unknown as 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500)
-      : 500;
+    const statusCode =
+      typeof err.statusCode === "number" && err.statusCode >= 400 && err.statusCode < 600
+        ? (err.statusCode as unknown as 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500)
+        : 500;
 
     return c.json(
       {

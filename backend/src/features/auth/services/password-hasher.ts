@@ -28,9 +28,7 @@ export class PasswordHasher implements IPasswordHasher {
 
     // Validate salt rounds are in reasonable range
     if (this.saltRounds < 4 || this.saltRounds > 31) {
-      throw new Error(
-        `Invalid BCRYPT_SALT_ROUNDS: ${this.saltRounds}. Must be between 4 and 31.`
-      );
+      throw new Error(`Invalid BCRYPT_SALT_ROUNDS: ${this.saltRounds}. Must be between 4 and 31.`);
     }
   }
 

@@ -1,7 +1,11 @@
 import "reflect-metadata";
 import { describe, it, expect, beforeEach } from "bun:test";
 import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
-import { createMockDrizzleDB, mockSelectResult, mockInsertResult } from "@/tests/helpers/drizzle.mocks";
+import {
+  createMockDrizzleDB,
+  mockSelectResult,
+  mockInsertResult,
+} from "@/tests/helpers/drizzle.mocks";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 
 describe("PostgresUserRepository", () => {
