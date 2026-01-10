@@ -32,3 +32,12 @@ export function mockSelectResult<T>(mockDb: DrizzleDB, result: T[]): void {
     }),
   });
 }
+
+export function mockInsertResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const insertMock = mockDb.insert as ReturnType<typeof mock>;
+  insertMock.mockReturnValue({
+    values: mock().mockReturnValue({
+      returning: mock().mockResolvedValue(result),
+    }),
+  });
+}

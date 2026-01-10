@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
-import { createMockDrizzleDB, mockSelectResult } from "@/tests/helpers/drizzle.mocks";
+import { createMockDrizzleDB, mockSelectResult, mockInsertResult } from "@/tests/helpers/drizzle.mocks";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 
 describe("PostgresUserRepository", () => {
@@ -88,17 +88,11 @@ describe("PostgresUserRepository", () => {
         updatedAt: null,
       };
 
-      const insertMock = mock().mockReturnValue({
-        values: mock().mockReturnValue({
-          returning: mock().mockResolvedValue([mockUser]),
-        }),
-      });
-      (mockDb.insert as ReturnType<typeof mock>) = insertMock;
+      mockInsertResult(mockDb, [mockUser]);
 
       const result = await repository.create("newuser", "new@example.com", "hashed_password");
 
       expect(result).toEqual(mockUser);
-      expect(insertMock).toHaveBeenCalled();
     });
   });
 });
