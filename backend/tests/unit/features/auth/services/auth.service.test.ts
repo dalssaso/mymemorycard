@@ -7,7 +7,7 @@ import {
   createMockTokenService,
   createTestUser,
 } from "@/tests/helpers/repository.mocks";
-import { ConflictError, UnauthorizedError, ValidationError } from "@/shared/errors/base";
+import { ConflictError, UnauthorizedError } from "@/shared/errors/base";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
@@ -45,24 +45,6 @@ describe("AuthService", () => {
       expect(result.user.username).toBe("newuser");
       expect(result.user.email).toBe("new@example.com");
       expect(result.token).toBe("token_test-user-id");
-    });
-
-    it("should throw ValidationError for empty username", async () => {
-      await expect(authService.register("", "email@example.com", "password")).rejects.toThrow(
-        ValidationError
-      );
-    });
-
-    it("should throw ValidationError for empty email", async () => {
-      await expect(authService.register("username", "", "password")).rejects.toThrow(
-        ValidationError
-      );
-    });
-
-    it("should throw ValidationError for empty password", async () => {
-      await expect(authService.register("username", "email@example.com", "")).rejects.toThrow(
-        ValidationError
-      );
     });
 
     it("should throw ConflictError if user already exists", async () => {

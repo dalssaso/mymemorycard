@@ -3,7 +3,7 @@ import type { IAuthService, AuthResult } from "./auth.service.interface";
 import type { IUserRepository, User } from "../repositories/user.repository.interface";
 import type { IPasswordHasher } from "./password-hasher.interface";
 import type { ITokenService } from "./token.service.interface";
-import { ValidationError, ConflictError, UnauthorizedError } from "@/shared/errors/base";
+import { ConflictError, UnauthorizedError } from "@/shared/errors/base";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 
@@ -22,10 +22,7 @@ export class AuthService implements IAuthService {
   async register(username: string, email: string, password: string): Promise<AuthResult> {
     this.logger.info("Attempting user registration", username);
 
-    if (!username || !email || !password) {
-      throw new ValidationError("Username, email, and password are required");
-    }
-
+    // Input validation is performed by RegisterRequestSchema in the controller
     const exists = await this.userRepo.exists(username);
     if (exists) {
       this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
