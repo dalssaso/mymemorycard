@@ -16,6 +16,9 @@ type Variables = {
 export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   const app = new OpenAPIHono<{ Variables: Variables }>();
 
+  // Resolve dependencies once at app creation time
+  const metricsService = container.resolve(MetricsService);
+
   // Global middleware
   app.use("*", corsMiddleware());
   app.use("*", async (c, next) => {
@@ -29,10 +32,9 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
 
   // Metrics endpoint
   app.get("/metrics", async (c) => {
-    const metrics = container.resolve(MetricsService);
-    const metricsData = await metrics.getMetrics();
+    const metricsData = await metricsService.getMetrics();
     return c.text(metricsData, 200, {
-      "Content-Type": metrics.registry.contentType,
+      "Content-Type": metricsService.registry.contentType,
     });
   });
 
