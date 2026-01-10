@@ -1,7 +1,6 @@
 import { cors } from "hono/cors";
 import type { MiddlewareHandler } from "hono";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import { Logger } from "@/infrastructure/logging/logger";
+import type { Logger } from "@/infrastructure/logging/logger";
 
 const VITE_DEFAULT_ORIGIN = "http://localhost:5173";
 
