@@ -177,7 +177,9 @@ class RateLimiter {
       const timeSinceLastRequest = now - this.lastRequestTime;
 
       if (timeSinceLastRequest < this.minInterval) {
-        await new Promise((resolve) => setTimeout(resolve, this.minInterval - timeSinceLastRequest));
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.minInterval - timeSinceLastRequest)
+        );
       }
 
       const task = this.queue.shift();

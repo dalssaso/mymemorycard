@@ -127,9 +127,7 @@ describe("PostgresUserRepository", () => {
     });
 
     it("should throw ConflictError for duplicate email", async () => {
-      const error = new Error(
-        'duplicate key value violates unique constraint "users_email_key"'
-      );
+      const error = new Error('duplicate key value violates unique constraint "users_email_key"');
       mockInsertError(mockDb, error);
 
       await expect(
@@ -138,9 +136,7 @@ describe("PostgresUserRepository", () => {
     });
 
     it("should throw ConflictError with specific email message", async () => {
-      const error = new Error(
-        'duplicate key value violates unique constraint "users_email_key"'
-      );
+      const error = new Error('duplicate key value violates unique constraint "users_email_key"');
       mockInsertError(mockDb, error);
 
       try {

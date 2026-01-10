@@ -76,9 +76,7 @@ async function startServer(): Promise<void> {
       // Create timeout promise that rejects after SHUTDOWN_TIMEOUT
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
-          reject(
-            new Error(`Shutdown timeout exceeded (${SHUTDOWN_TIMEOUT}ms)`)
-          );
+          reject(new Error(`Shutdown timeout exceeded (${SHUTDOWN_TIMEOUT}ms)`));
         }, SHUTDOWN_TIMEOUT);
       });
 
@@ -94,10 +92,7 @@ async function startServer(): Promise<void> {
       // Clear timeout on error
       if (timeoutId) clearTimeout(timeoutId);
 
-      console.error(
-        "Error during shutdown:",
-        error instanceof Error ? error.message : error
-      );
+      console.error("Error during shutdown:", error instanceof Error ? error.message : error);
       process.exit(1);
     }
   };
