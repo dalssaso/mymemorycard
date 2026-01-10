@@ -194,8 +194,6 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
-// Removed getRawgPlatforms - platforms are now pre-seeded in database
-
 export async function searchGames(query: string, useCache = true): Promise<RAWGGame[]> {
   if (!RAWG_API_KEY) {
     console.warn("RAWG API key not configured");
@@ -560,8 +558,6 @@ import { incrementRAWGRequestCount } from "./api-monitor";
 
 const CACHE_TTL_SEARCH = 60 * 60 * 24 * 7; // 7 days for search results
 const CACHE_TTL_DETAILS = 60 * 60 * 24 * 30; // 30 days for game details
-
-// Removed getPlatformsFromDb - no longer needed
 
 async function getCachedSearch(query: string): Promise<RAWGGame[] | null> {
   try {
