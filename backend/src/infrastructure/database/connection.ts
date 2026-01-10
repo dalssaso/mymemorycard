@@ -6,7 +6,11 @@ import { sql } from "drizzle-orm";
 
 export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
 
-const queryClient = postgres(process.env.DATABASE_URL || "");
+// Default to local Docker postgres for development/testing
+const DEFAULT_DATABASE_URL =
+  "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard";
+
+const queryClient = postgres(process.env.DATABASE_URL || DEFAULT_DATABASE_URL);
 
 export const db = drizzle(queryClient, { schema });
 

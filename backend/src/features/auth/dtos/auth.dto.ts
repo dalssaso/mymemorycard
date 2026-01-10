@@ -1,7 +1,14 @@
 import { z } from "zod";
 
 export const RegisterRequestSchema = z.object({
-  username: z.string().min(3).max(50),
+  username: z
+    .string()
+    .min(3)
+    .max(50)
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Username must contain only letters, numbers, underscores, and hyphens"
+    ),
   email: z.string().email(),
   password: z.string().min(8),
 });

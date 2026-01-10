@@ -7,6 +7,9 @@ import type { DrizzleDB } from "@/infrastructure/database/connection";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 
+// Singleton Logger instance
+let loggerInstance: Logger | null = null;
+
 // Auth - Repositories
 import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
@@ -32,9 +35,16 @@ export function registerDependencies(): void {
     useValue: db,
   });
 
-  container.register(Logger, {
-    useFactory: () => new Logger(),
-  });
+  // Logger uses factory with manual singleton caching
+  // (TSyringe can't inject optional constructor parameters with registerSingleton)
+  container.register<Logger>(Logger, {
+    useFactory: (): Logger => {
+      if (!loggerInstance) {
+        loggerInstance = new Logger();
+      }
+      return loggerInstance;
+    },
+  } as any);
   container.registerSingleton(MetricsService);
 
   // Auth Domain - Repositories
@@ -63,9 +73,10 @@ export function registerDependencies(): void {
 
 /**
  * Reset container (useful for testing)
+ * Clears both registrations and instances
  */
 export function resetContainer(): void {
-  container.clearInstances();
+  container.reset();
 }
 
 export { container };

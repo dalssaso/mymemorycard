@@ -188,26 +188,39 @@ async function handler(req: Request, params: Record<string, string>, user?: JWTP
 
 ## Testing
 
-Backend tests disabled (stability issues).
-
-Verify changes with:
+Run the test suite to verify changes:
 
 ```bash
+bun test                     # Run unit and integration tests
 bun run lint && bun run typecheck
 ```
 
-Test manually against running server.
+Review test output and verify critical paths manually against running server.
 
 ## Environment Variables
 
-| Variable     | Default                                        | Description                |
-| ------------ | ---------------------------------------------- | -------------------------- |
-| DATABASE_URL | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection      |
-| REDIS_URL    | `redis://localhost:6380`                       | Redis connection           |
-| JWT_SECRET   | `dev-jwt-secret-change-in-production`          | JWT signing key            |
-| RAWG_API_KEY | -                                              | RAWG API for game metadata |
-| PORT         | `3000`                                         | Server port                |
-| ORIGIN       | -                                              | Additional CORS origin     |
+Copy `.env.example` to `.env` and customize for your environment.
+
+| Variable            | Default                                        | Description                       |
+| ------------------- | ---------------------------------------------- | --------------------------------- |
+| DATABASE_URL        | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection             |
+| REDIS_URL           | `redis://localhost:6380`                       | Redis connection                  |
+| JWT_SECRET          | `dev-jwt-secret-change-in-production`          | JWT signing key                   |
+| RAWG_API_KEY        | -                                              | RAWG API for game metadata        |
+| PORT                | `3000`                                         | Server port                       |
+| ORIGIN              | -                                              | Additional CORS origin            |
+| TEST_DATABASE_URL   | Same as DATABASE_URL                           | PostgreSQL for integration tests  |
+| API_BASE_URL        | `http://localhost:3000`                        | API URL for integration tests     |
+
+**Testing**: Integration tests use `DATABASE_URL` from environment or fall back to the default Docker postgres connection. To override for CI or different environments, set `DATABASE_URL` before running tests:
+
+```bash
+# Use default (local Docker postgres)
+bun run test:integration
+
+# Override for CI or custom database
+DATABASE_URL=postgresql://user:pass@host:port/db bun run test:integration
+```
 
 ## API Response Patterns
 
