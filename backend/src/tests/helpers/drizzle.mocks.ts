@@ -41,3 +41,23 @@ export function mockInsertResult<T>(mockDb: DrizzleDB, result: T[]): void {
     }),
   });
 }
+
+export function mockInsertError(mockDb: DrizzleDB, error: Error): void {
+  const insertMock = mockDb.insert as ReturnType<typeof mock>;
+  insertMock.mockReturnValue({
+    values: mock().mockReturnValue({
+      returning: mock().mockRejectedValue(error),
+    }),
+  });
+}
+
+export function mockSelectError(mockDb: DrizzleDB, error: Error): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      where: mock().mockReturnValue({
+        limit: mock().mockRejectedValue(error),
+      }),
+    }),
+  });
+}
