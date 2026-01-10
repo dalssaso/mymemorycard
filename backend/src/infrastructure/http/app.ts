@@ -3,10 +3,11 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { container } from "@/container";
 import type { AuthController } from "@/features/auth/controllers/auth.controller";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
-import { errorHandler } from "./middleware/error.middleware";
+import { createErrorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
 import { createMetricsMiddleware } from "./middleware/metrics.middleware";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
+import { Logger } from "@/infrastructure/logging/logger";
 import { router as legacyRouter } from "@/lib/router";
 import { randomUUID } from "crypto";
 
@@ -18,8 +19,10 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   const app = new OpenAPIHono<{ Variables: Variables }>();
 
   // Resolve dependencies once at app creation time
+  const logger = container.resolve(Logger);
   const metricsService = container.resolve(MetricsService);
   const metricsMiddleware = createMetricsMiddleware(metricsService);
+  const errorHandler = createErrorHandler(logger);
 
   // Global middleware
   app.use("*", corsMiddleware());
