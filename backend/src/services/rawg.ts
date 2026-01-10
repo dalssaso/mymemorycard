@@ -141,10 +141,8 @@ interface RAWGSearchResponse {
 
 // Legacy RAWG service using environment variables directly
 // This is used by legacy code before DI migration is complete
+// Runtime guards in methods allow graceful degradation if API key missing
 const RAWG_API_KEY = process.env.RAWG_API_KEY;
-if (!RAWG_API_KEY) {
-  throw new Error("Missing required environment variable: RAWG_API_KEY");
-}
 const RAWG_BASE_URL = "https://api.rawg.io/api";
 
 // Rate limiter to stay under RAWG's 5 req/sec limit
