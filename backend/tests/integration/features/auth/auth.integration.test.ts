@@ -1,17 +1,28 @@
 import "reflect-metadata";
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { registerDependencies, resetContainer } from "@/container";
+import { registerDependencies, resetContainer, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
+import { DatabaseConnection } from "@/infrastructure/database/connection";
+import { users } from "@/db/schema";
 
 describe("Auth Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
+  let dbConnection: DatabaseConnection;
 
   beforeAll(() => {
     registerDependencies();
     app = createHonoApp();
+    dbConnection = container.resolve(DatabaseConnection);
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    // Clean up test data
+    try {
+      await dbConnection.db.delete(users).execute();
+    } catch {
+      // Cleanup errors are non-critical
+    }
+    await dbConnection.close();
     resetContainer();
   });
 
@@ -66,11 +77,14 @@ describe("Auth Integration Tests", () => {
       expect(response.status).toBe(400);
     });
 
-    it("should accept username with valid characters", async () => {
-      const validUsernames = ["user123", "user_name", "user-name", "User_Test-123"];
-
-      for (const username of validUsernames) {
-        const uniqueUsername = `${username}_${Date.now()}`;
+    [
+      { username: "user123", desc: "with numbers" },
+      { username: "user_name", desc: "with underscore" },
+      { username: "user-name", desc: "with hyphen" },
+      { username: "User_Test-123", desc: "with mixed case" },
+    ].forEach(({ username: baseUsername, desc }) => {
+      it(`should accept username "${baseUsername}" ${desc}`, async () => {
+        const uniqueUsername = `${baseUsername}_${Date.now()}`;
         const response = await app.request("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -82,14 +96,16 @@ describe("Auth Integration Tests", () => {
         });
 
         expect(response.status).toBe(201);
-      }
+        const data = (await response.json()) as { user: { username: string } };
+        expect(data.user.username).toBe(uniqueUsername);
+      });
     });
 
     it("should return 409 for duplicate username", async () => {
       const username = `duplicate_${Date.now()}`;
 
       // First registration
-      await app.request("/api/auth/register", {
+      const firstResponse = await app.request("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,6 +114,9 @@ describe("Auth Integration Tests", () => {
           password: "SecurePass123!",
         }),
       });
+
+      // Verify first registration succeeded
+      expect(firstResponse.status).toBe(201);
 
       // Second registration with same username
       const response = await app.request("/api/auth/register", {
