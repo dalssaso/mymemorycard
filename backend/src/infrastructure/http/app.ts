@@ -35,9 +35,20 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
     })
   })
 
-  // Auth routes
+  // Auth routes (DI-based)
   const authController = container.resolve<AuthController>('AuthController')
   app.route('/api/auth', authController.router)
+
+  // Legacy routes proxy (for gradual migration)
+  // Forward unhandled /api/* routes to the old custom router
+  app.all('/api/*', async (c) => {
+    const legacyRouter = await import('@/lib/router')
+    const match = legacyRouter.router.match(c.req.path, c.req.method)
+    if (match) {
+      return match.route.handler(c.req.raw, match.params)
+    }
+    return c.json({ error: 'Not Found' }, 404)
+  })
 
   // Error handler
   app.onError(errorHandler)
