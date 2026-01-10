@@ -116,7 +116,11 @@ mock.module("@/services/redis", () => {
     },
     expire: async (_key: string, _seconds: number) => 1,
     keys: async (pattern: string) => {
-      const regex = new RegExp(pattern.replace("*", ".*"));
+      // Escape special regex characters and convert Redis glob pattern to regex
+      const escapedPattern = pattern
+        .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
+        .replace(/\*/g, ".*"); // Convert * (glob wildcard) to .* (regex)
+      const regex = new RegExp(`^${escapedPattern}$`);
       return Array.from(store.keys()).filter((k) => regex.test(k));
     },
     incr: async (key: string) => {
