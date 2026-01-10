@@ -170,27 +170,25 @@ class RateLimiter {
   }
 
   private async processQueue(): Promise<void> {
-    if (this.queue.length === 0) {
-      this.processing = false;
-      return;
-    }
-
     this.processing = true;
-    const now = Date.now();
-    const timeSinceLastRequest = now - this.lastRequestTime;
 
-    if (timeSinceLastRequest < this.minInterval) {
-      await new Promise((resolve) => setTimeout(resolve, this.minInterval - timeSinceLastRequest));
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastRequestTime;
+
+      if (timeSinceLastRequest < this.minInterval) {
+        await new Promise((resolve) => setTimeout(resolve, this.minInterval - timeSinceLastRequest));
+      }
+
+      const task = this.queue.shift();
+      this.lastRequestTime = Date.now();
+
+      if (task) {
+        await task();
+      }
     }
 
-    const task = this.queue.shift();
-    this.lastRequestTime = Date.now();
-
-    if (task) {
-      await task();
-    }
-
-    this.processQueue();
+    this.processing = false;
   }
 }
 
