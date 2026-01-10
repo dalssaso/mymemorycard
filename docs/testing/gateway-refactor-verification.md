@@ -18,6 +18,7 @@ Refactoring complete. Ready for integration testing with real Vercel gateway tok
 ## Verification Steps Completed
 
 ### 1. TypeScript & Linting
+
 ```bash
 $ bun run typecheck
 # PASS - No errors
@@ -27,6 +28,7 @@ $ bun run lint
 ```
 
 ### 2. Database Schema
+
 ```sql
 \d user_ai_settings
 # ✓ gateway_api_key_encrypted column exists
@@ -35,6 +37,7 @@ $ bun run lint
 ```
 
 ### 3. Code Cleanup
+
 ```bash
 $ grep -r "provider-registry" backend/src/
 # No matches (empty output)
@@ -44,26 +47,31 @@ $ grep -i "xai" backend/package.json
 ```
 
 ### 4. Migration Applied
+
 - Migration 0024_gateway_refactor.sql successfully applied
 - Database schema matches expected state
 
 ## Summary of Changes
 
 ### Files Modified
+
 1. `backend/src/db/schema.ts` - Removed xAI columns, added gateway column
 2. `backend/src/services/ai/service.ts` - Replaced provider registry with gateway()
 3. `backend/src/routes/ai.ts` - Removed xAI endpoints, added gateway endpoint
 4. `backend/package.json` - Removed @ai-sdk/xai dependency
 
 ### Files Deleted
+
 1. `backend/src/services/ai/provider-registry.ts` - Removed obsolete module
 
 ### Database Migrations
+
 1. `backend/drizzle/0024_gateway_refactor.sql` - Schema changes
 
 ## Next Steps
 
 To use the Vercel AI Gateway:
+
 1. Create Vercel account (if not already done)
 2. Generate gateway API token from Vercel dashboard
 3. Configure via PUT /api/ai/settings with gatewayApiKey parameter

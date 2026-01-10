@@ -51,6 +51,34 @@ make dev-backend              # Start backend (separate terminal)
 make dev-frontend             # Start frontend (separate terminal)
 ```
 
+## Git Worktrees
+
+When working with git worktrees (`.worktrees/` directory):
+
+**Critical Rules:**
+
+- **Always commit changes in the worktree**, not in the main repository/branch
+- Verify your location before committing: `git rev-parse --show-toplevel`
+
+**Setup Requirements:**
+
+After creating or switching to a worktree, bootstrap the environment:
+
+```bash
+# Install dependencies
+bun install          # Backend dependencies
+npm install          # Frontend dependencies
+
+# Setup git hooks (required)
+npx husky install    # Enable pre-commit hooks
+```
+
+**Pre-commit Hooks:**
+
+- **Never skip or bypass pre-commit failures** (no `--no-verify` flag)
+- Always fix linting, formatting, and type errors shown by pre-commit hooks
+- Pre-commit hooks enforce code quality and prevent broken commits
+
 ## Commands Reference
 
 | Command                 | Description               |

@@ -105,7 +105,6 @@ export async function getUserAiSettings(userId: string): Promise<AiSettings | nu
   return settings;
 }
 
-
 function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   const apiKey = settings.imageApiKeyEncrypted
     ? decrypt(settings.imageApiKeyEncrypted)
@@ -260,11 +259,7 @@ export async function suggestCollections(
   const availableModels = getAvailableGatewayModels();
 
   // Select optimal model for this task
-  const modelSelection = await selectModelForTask(
-    "suggest_collections",
-    settings,
-    availableModels
-  );
+  const modelSelection = await selectModelForTask("suggest_collections", settings, availableModels);
 
   const library = await getLibrarySummary(userId);
 
@@ -417,11 +412,7 @@ export async function suggestNextGame(
   const availableModels = getAvailableGatewayModels();
 
   // Select optimal model for this task
-  const modelSelection = await selectModelForTask(
-    "suggest_next_game",
-    settings,
-    availableModels
-  );
+  const modelSelection = await selectModelForTask("suggest_next_game", settings, availableModels);
 
   const library = await getLibrarySummary(userId);
   const backlog = library.filter((g) => g.status === "backlog" || g.status === "playing");
