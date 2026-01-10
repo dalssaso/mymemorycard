@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
 import { metricsMiddleware } from "./middleware/metrics.middleware";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
+import { router as legacyRouter } from "@/lib/router";
 import { randomUUID } from "crypto";
 
 type Variables = {
@@ -40,10 +41,9 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   app.route("/api/auth", authController.router);
 
   // Legacy routes proxy (for gradual migration)
-  // Forward unhandled /api/* routes to the old custom router
-  app.all("/api/*", async (c) => {
-    const legacyRouter = await import("@/lib/router");
-    const match = legacyRouter.router.match(c.req.path, c.req.method);
+  // Forward unhandled /api/* routes to the old custom router (cached at module load)
+  app.all("/api/*", (c) => {
+    const match = legacyRouter.match(c.req.path, c.req.method);
     if (match) {
       return match.route.handler(c.req.raw, match.params);
     }
