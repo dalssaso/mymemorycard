@@ -52,25 +52,52 @@ async function startServer(): Promise<void> {
 
   console.log(`Server running on http://localhost:${server.port}`);
 
-  // Graceful shutdown handlers
+  // Graceful shutdown handlers with timeout
   const shutdown = async (signal: string): Promise<void> => {
     console.log(`\n${signal} received, shutting down gracefully...`);
 
+    const SHUTDOWN_TIMEOUT = 10000; // 10 seconds
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
-      // Stop accepting new connections
-      server.stop();
+      // Create shutdown operations promise
+      const shutdownPromise = (async () => {
+        // Stop accepting new connections
+        server.stop();
 
-      // Close database connection
-      const dbConnection = container.resolve(DatabaseConnection);
-      await dbConnection.close();
+        // Close database connection
+        const dbConnection = container.resolve(DatabaseConnection);
+        await dbConnection.close();
 
-      // Close Redis connection
-      await redisClient.quit();
+        // Close Redis connection
+        await redisClient.quit();
+      })();
+
+      // Create timeout promise that rejects after SHUTDOWN_TIMEOUT
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(
+            new Error(`Shutdown timeout exceeded (${SHUTDOWN_TIMEOUT}ms)`)
+          );
+        }, SHUTDOWN_TIMEOUT);
+      });
+
+      // Race shutdown operations against timeout
+      await Promise.race([shutdownPromise, timeoutPromise]);
+
+      // Clear timeout on success
+      if (timeoutId) clearTimeout(timeoutId);
 
       console.log("Shutdown complete");
       process.exit(0);
     } catch (error) {
-      console.error("Error during shutdown:", error);
+      // Clear timeout on error
+      if (timeoutId) clearTimeout(timeoutId);
+
+      console.error(
+        "Error during shutdown:",
+        error instanceof Error ? error.message : error
+      );
       process.exit(1);
     }
   };
