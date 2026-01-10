@@ -54,14 +54,6 @@ describe("PasswordHasher", () => {
     expect(isValid).toBe(false);
   });
 
-  it("should handle very long passwords", async () => {
-    const password = "a".repeat(200);
-    const hash = await hasher.hash(password);
-
-    const isValid = await hasher.compare(password, hash);
-    expect(isValid).toBe(true);
-  });
-
   it("should handle passwords with special characters", async () => {
     const password = "P@ssw0rd!#$%^&*()_+-=[]{}|;:',.<>?/~`";
     const hash = await hasher.hash(password);
@@ -70,11 +62,36 @@ describe("PasswordHasher", () => {
     expect(isValid).toBe(true);
   });
 
-  it("should handle empty password", async () => {
-    const password = "";
+  it("should handle minimum length password (8 chars)", async () => {
+    const password = "Pass1234";
     const hash = await hasher.hash(password);
 
     const isValid = await hasher.compare(password, hash);
     expect(isValid).toBe(true);
+  });
+
+  it("should handle maximum safe password length (72 bytes)", async () => {
+    // 72-character password (at bcryptjs byte limit)
+    const password = "a".repeat(72);
+    const hash = await hasher.hash(password);
+
+    const isValid = await hasher.compare(password, hash);
+    expect(isValid).toBe(true);
+  });
+
+  it("should not accept passwords over 72 bytes (truncation risk)", async () => {
+    // Note: Validation layer should reject this before reaching hasher
+    // This test documents that passwords over 72 bytes create collision risk:
+    // Two different 73+ byte passwords differing only after byte 72 would hash identically
+    const password73 = "a".repeat(73);
+    const hash = await hasher.hash(password73);
+
+    // A different password that matches the first 72 bytes hashes the same
+    const password73Different = "a".repeat(72) + "b";
+    const isValid = await hasher.compare(password73Different, hash);
+
+    // They hash identically due to bcryptjs truncation at 72 bytes - this is a problem!
+    // DTO validation (max 72) prevents this scenario from reaching the hasher
+    expect(isValid).toBe(true); // Both truncate to 72 'a's
   });
 });

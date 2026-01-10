@@ -10,12 +10,18 @@ export const RegisterRequestSchema = z.object({
       "Username must contain only letters, numbers, underscores, and hyphens"
     ),
   email: z.email(),
-  password: z.string().min(8),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(72, "Password must be at most 72 characters (bcryptjs limit)"),
 });
 
 export const LoginRequestSchema = z.object({
-  username: z.string(),
-  password: z.string(),
+  username: z.string().min(1, "Username is required"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(72, "Password must be at most 72 characters"),
 });
 
 export const AuthResponseSchema = z.object({
