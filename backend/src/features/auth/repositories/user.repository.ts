@@ -38,30 +38,58 @@ export class PostgresUserRepository implements IUserRepository {
 
       return result[0];
     } catch (error) {
-      // Handle unique constraint violations
-      if (
-        error instanceof Error &&
-        error.message.includes("unique constraint") &&
-        error.message.includes("username")
-      ) {
-        throw new ConflictError(`User with username "${username}" already exists`);
-      }
-
-      if (
-        error instanceof Error &&
-        error.message.includes("unique constraint") &&
-        error.message.includes("email")
-      ) {
-        throw new ConflictError(`User with email "${email}" already exists`);
-      }
-
       // Re-throw ConflictError as-is
       if (error instanceof ConflictError) {
         throw error;
       }
 
-      // Re-throw other errors with context
+      // Check for PostgreSQL unique constraint violations using SQLSTATE code (preferred)
+      // Falls back to message matching for errors without SQLSTATE code (e.g., in tests)
       if (error instanceof Error) {
+        // SQLSTATE 23505 = unique_violation
+        // error.code or error.cause?.code contains the SQLSTATE
+        const errorCode = (error as unknown as Record<string, unknown>).code ||
+          (error.cause instanceof Error ? (error.cause as unknown as Record<string, unknown>).code : undefined);
+
+        if (errorCode === "23505") {
+          // Distinguish username vs email constraint violations using constraint name
+          const constraintName = (error as unknown as Record<string, unknown>).constraint ||
+            (error.cause instanceof Error ? (error.cause as unknown as Record<string, unknown>).constraint : undefined);
+
+          if (
+            typeof constraintName === "string" &&
+            constraintName.includes("username")
+          ) {
+            throw new ConflictError(`User with username "${username}" already exists`);
+          }
+
+          if (
+            typeof constraintName === "string" &&
+            constraintName.includes("email")
+          ) {
+            throw new ConflictError(`User with email "${email}" already exists`);
+          }
+
+          // Fallback if constraint name doesn't indicate which field
+          throw new ConflictError("User with provided username or email already exists");
+        }
+
+        // Fallback to message matching for errors without SQLSTATE code (e.g., mocked errors in tests)
+        if (
+          error.message.includes("unique constraint") &&
+          error.message.includes("username")
+        ) {
+          throw new ConflictError(`User with username "${username}" already exists`);
+        }
+
+        if (
+          error.message.includes("unique constraint") &&
+          error.message.includes("email")
+        ) {
+          throw new ConflictError(`User with email "${email}" already exists`);
+        }
+
+        // Re-throw other errors with context
         throw new Error(`Failed to create user: ${error.message}`);
       }
 
