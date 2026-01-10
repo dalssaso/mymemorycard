@@ -20,10 +20,18 @@ describe("DomainError", () => {
     expect(error.details).toEqual({ field: "username" });
   });
 
-  it("should create NotFoundError with resource", () => {
+  it("should create NotFoundError with resource and id", () => {
     const error = new NotFoundError("User", "123");
 
     expect(error.message).toBe("User with id 123 not found");
+    expect(error.code).toBe("NOT_FOUND");
+    expect(error.statusCode).toBe(404);
+  });
+
+  it("should create NotFoundError without id", () => {
+    const error = new NotFoundError("User");
+
+    expect(error.message).toBe("User not found");
     expect(error.code).toBe("NOT_FOUND");
     expect(error.statusCode).toBe(404);
   });
