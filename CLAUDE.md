@@ -109,6 +109,20 @@ npm run format:check
 
 Fix any lint/type errors before committing.
 
+## Configuration Files - DO NOT MODIFY
+
+**EXPLICITLY PROHIBITED** without asking the user first:
+
+- `.prettierrc` / `prettier.config.js` - Formatting rules
+- `.eslintrc` / `eslint.config.ts` - Linting rules
+- `.commitlint.config.ts` - Commit message rules
+- `tsconfig.json` - TypeScript configuration
+- Any other style, guide, or linting configuration files
+
+**Rule:** When tools report errors or violations, **FIX THE CODE**, never modify the configuration files to suppress them.
+
+If a tool is reporting issues that seem incorrect or overly strict, **ask the user first** before considering any config changes. The configuration represents the project's standards and must be respected.
+
 ## Code Style
 
 ### Prettier (enforced)
@@ -118,6 +132,21 @@ Fix any lint/type errors before committing.
 - 100 character line width
 - Trailing commas (ES5)
 - Arrow function parens: always `(x) => x`
+
+**Format all changes before committing:**
+
+```bash
+# Backend
+cd backend && bun run format
+
+# Frontend
+cd frontend && npm run format
+
+# Or from root for both
+npm run format
+```
+
+Never commit unformatted code. The project's `.prettierrc` files define the exact formatting rules—respect them while developing and before creating commits.
 
 ### TypeScript (ESLint enforced)
 
