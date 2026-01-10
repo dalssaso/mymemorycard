@@ -3,6 +3,20 @@ import { injectable, inject } from "tsyringe";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 import type { ITokenService, JWTPayload } from "./token.service.interface";
 
+/**
+ * Type guard to validate JWT payload has required fields
+ */
+function isValidJWTPayload(decoded: unknown): decoded is JWTPayload {
+  return (
+    typeof decoded === "object" &&
+    decoded !== null &&
+    "userId" in decoded &&
+    typeof decoded.userId === "string" &&
+    "username" in decoded &&
+    typeof decoded.username === "string"
+  );
+}
+
 @injectable()
 export class TokenService implements ITokenService {
   private readonly secret: string;
@@ -15,12 +29,20 @@ export class TokenService implements ITokenService {
   generateToken(payload: JWTPayload): string {
     return jwt.sign(payload, this.secret, {
       expiresIn: this.expiresIn,
+      algorithm: "HS256",
     });
   }
 
   verifyToken(token: string): JWTPayload | null {
     try {
-      const decoded = jwt.verify(token, this.secret) as JWTPayload;
+      const decoded = jwt.verify(token, this.secret, {
+        algorithms: ["HS256"],
+      });
+
+      if (!isValidJWTPayload(decoded)) {
+        return null;
+      }
+
       return {
         userId: decoded.userId,
         username: decoded.username,
