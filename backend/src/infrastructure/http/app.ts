@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { container } from "@/container";
 import type { AuthController } from "@/features/auth/controllers/auth.controller";
+import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { errorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
 import { createMetricsMiddleware } from "./middleware/metrics.middleware";
@@ -29,7 +30,18 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   app.use("*", metricsMiddleware);
 
   // Health check
-  app.get("/api/health", (c) => c.json({ status: "ok" }));
+  app.get("/api/health", async (c) => {
+    const dbConnection = container.resolve(DatabaseConnection);
+    const dbHealthy = await dbConnection.healthCheck();
+
+    return c.json(
+      {
+        status: dbHealthy ? "ok" : "degraded",
+        db: { healthy: dbHealthy },
+      },
+      dbHealthy ? 200 : 503
+    );
+  });
 
   // Metrics endpoint
   app.get("/metrics", async (c) => {
