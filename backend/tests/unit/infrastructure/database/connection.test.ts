@@ -96,7 +96,18 @@ describe("DatabaseConnection", () => {
       expect(typeof value).toBe("boolean");
     });
 
-    it("should handle connection errors gracefully", async () => {
+    it("should return true when database is healthy", async () => {
+      const logger = new Logger("test");
+      const dbConnection = new DatabaseConnection(mockConfig, logger);
+
+      const result = await dbConnection.healthCheck();
+
+      expect(typeof result).toBe("boolean");
+      // Returns true if connection to local test database is available
+      expect(result).toBe(true);
+    });
+
+    it("should return false when database is unhealthy", async () => {
       const badConfig: IConfig = {
         ...mockConfig,
         database: {
@@ -109,6 +120,7 @@ describe("DatabaseConnection", () => {
       const result = await dbConnection.healthCheck();
 
       expect(typeof result).toBe("boolean");
+      // Returns false if connection fails (invalid host)
       expect(result).toBe(false);
     });
   });
