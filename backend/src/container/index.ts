@@ -11,8 +11,8 @@ import type { IConfig } from "@/infrastructure/config/config.interface";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 
-// Singleton Logger instance
-let loggerInstance: Logger | null = null;
+// Module-level cache for Logger singleton
+let loggerInstance: Logger | undefined;
 
 // Auth - Repositories
 import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
@@ -45,9 +45,8 @@ export function registerDependencies(): void {
     useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
 
-  // Logger uses factory with manual singleton caching
-  // (TSyringe can't inject optional constructor parameters with registerSingleton)
-  container.register<Logger>(Logger, {
+  // Logger singleton via factory to handle optional context parameter
+  container.register(Logger, {
     useFactory: (): Logger => {
       if (!loggerInstance) {
         loggerInstance = new Logger();
@@ -71,10 +70,10 @@ export function registerDependencies(): void {
 
 /**
  * Reset container (useful for testing)
- * Clears both registrations and instances, including the cached Logger singleton
+ * Clears both registrations and instances, including the Logger singleton
  */
 export function resetContainer(): void {
-  loggerInstance = null;
+  loggerInstance = undefined;
   container.reset();
 }
 
