@@ -350,6 +350,121 @@ router.put(
   })
 );
 
+router.get(
+  "/api/ai/settings/xai",
+  requireAuth(async (req, user) => {
+    try {
+      const settings = await queryOne<{
+        xai_api_key_encrypted: string | null;
+        xai_base_url: string | null;
+      }>(
+        `SELECT xai_api_key_encrypted, xai_base_url
+         FROM user_ai_settings
+         WHERE user_id = $1 AND provider = 'openai'::ai_provider`,
+        [user.id]
+      );
+
+      return new Response(
+        JSON.stringify({
+          hasApiKey: !!settings?.xai_api_key_encrypted,
+          baseUrl: settings?.xai_base_url || null,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        }
+      );
+    } catch (error) {
+      console.error("Get xAI settings error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+  })
+);
+
+router.put(
+  "/api/ai/settings/xai",
+  requireAuth(async (req, user) => {
+    try {
+      const body = (await req.json()) as { apiKey?: string; baseUrl?: string };
+      const { apiKey, baseUrl } = body;
+
+      if (!apiKey || typeof apiKey !== "string") {
+        return new Response(JSON.stringify({ error: "API key is required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
+      }
+
+      if (baseUrl && typeof baseUrl === "string" && baseUrl.trim() !== "") {
+        try {
+          new URL(baseUrl);
+        } catch {
+          return new Response(JSON.stringify({ error: "Invalid base URL format" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders() },
+          });
+        }
+      }
+
+      const apiKeyEncrypted = encrypt(apiKey);
+
+      await query(
+        `INSERT INTO user_ai_settings (user_id, provider, xai_api_key_encrypted, xai_base_url, updated_at)
+         VALUES ($1, 'openai'::ai_provider, $2, $3, NOW())
+         ON CONFLICT (user_id, provider)
+         DO UPDATE SET
+           xai_api_key_encrypted = EXCLUDED.xai_api_key_encrypted,
+           xai_base_url = EXCLUDED.xai_base_url,
+           updated_at = NOW()`,
+        [user.id, apiKeyEncrypted, baseUrl || null]
+      );
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    } catch (error) {
+      console.error("Update xAI settings error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+  })
+);
+
+router.delete(
+  "/api/ai/settings/xai",
+  requireAuth(async (req, user) => {
+    try {
+      await query(
+        `INSERT INTO user_ai_settings (user_id, provider, xai_api_key_encrypted, xai_base_url, updated_at)
+         VALUES ($1, 'openai'::ai_provider, NULL, NULL, NOW())
+         ON CONFLICT (user_id, provider)
+         DO UPDATE SET
+           xai_api_key_encrypted = NULL,
+           xai_base_url = NULL,
+           updated_at = NOW()`,
+        [user.id]
+      );
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    } catch (error) {
+      console.error("Delete xAI settings error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+  })
+);
+
 router.post(
   "/api/ai/suggest-collections",
   requireAuth(async (req, user) => {
