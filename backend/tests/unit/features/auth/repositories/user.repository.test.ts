@@ -1,104 +1,104 @@
-import 'reflect-metadata'
-import { describe, it, expect, beforeEach, mock } from 'bun:test'
-import { PostgresUserRepository } from '@/features/auth/repositories/user.repository'
-import { createMockDrizzleDB, mockSelectResult } from '@/tests/helpers/drizzle.mocks'
-import type { DrizzleDB } from '@/infrastructure/database/connection'
+import "reflect-metadata";
+import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
+import { createMockDrizzleDB, mockSelectResult } from "@/tests/helpers/drizzle.mocks";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
 
-describe('PostgresUserRepository', () => {
-  let repository: PostgresUserRepository
-  let mockDb: DrizzleDB
+describe("PostgresUserRepository", () => {
+  let repository: PostgresUserRepository;
+  let mockDb: DrizzleDB;
 
   beforeEach(() => {
-    mockDb = createMockDrizzleDB()
-    repository = new PostgresUserRepository(mockDb)
-  })
+    mockDb = createMockDrizzleDB();
+    repository = new PostgresUserRepository(mockDb);
+  });
 
-  describe('findByUsername', () => {
-    it('should return user if found', async () => {
+  describe("findByUsername", () => {
+    it("should return user if found", async () => {
       const mockUser = {
-        id: 'user-123',
-        username: 'testuser',
-        email: 'test@example.com',
-        passwordHash: 'hashed',
+        id: "user-123",
+        username: "testuser",
+        email: "test@example.com",
+        passwordHash: "hashed",
         createdAt: new Date(),
         updatedAt: null,
-      }
+      };
 
-      mockSelectResult(mockDb, [mockUser])
+      mockSelectResult(mockDb, [mockUser]);
 
-      const result = await repository.findByUsername('testuser')
+      const result = await repository.findByUsername("testuser");
 
-      expect(result).toEqual(mockUser)
-    })
+      expect(result).toEqual(mockUser);
+    });
 
-    it('should return null if not found', async () => {
-      mockSelectResult(mockDb, [])
+    it("should return null if not found", async () => {
+      mockSelectResult(mockDb, []);
 
-      const result = await repository.findByUsername('nonexistent')
+      const result = await repository.findByUsername("nonexistent");
 
-      expect(result).toBeNull()
-    })
-  })
+      expect(result).toBeNull();
+    });
+  });
 
-  describe('findById', () => {
-    it('should return user if found', async () => {
+  describe("findById", () => {
+    it("should return user if found", async () => {
       const mockUser = {
-        id: 'user-123',
-        username: 'testuser',
-        email: 'test@example.com',
-        passwordHash: 'hashed',
+        id: "user-123",
+        username: "testuser",
+        email: "test@example.com",
+        passwordHash: "hashed",
         createdAt: new Date(),
         updatedAt: null,
-      }
+      };
 
-      mockSelectResult(mockDb, [mockUser])
+      mockSelectResult(mockDb, [mockUser]);
 
-      const result = await repository.findById('user-123')
+      const result = await repository.findById("user-123");
 
-      expect(result).toEqual(mockUser)
-    })
-  })
+      expect(result).toEqual(mockUser);
+    });
+  });
 
-  describe('exists', () => {
-    it('should return true if user exists', async () => {
-      mockSelectResult(mockDb, [{ id: 'user-123' }])
+  describe("exists", () => {
+    it("should return true if user exists", async () => {
+      mockSelectResult(mockDb, [{ id: "user-123" }]);
 
-      const result = await repository.exists('testuser')
+      const result = await repository.exists("testuser");
 
-      expect(result).toBe(true)
-    })
+      expect(result).toBe(true);
+    });
 
-    it('should return false if user does not exist', async () => {
-      mockSelectResult(mockDb, [])
+    it("should return false if user does not exist", async () => {
+      mockSelectResult(mockDb, []);
 
-      const result = await repository.exists('nonexistent')
+      const result = await repository.exists("nonexistent");
 
-      expect(result).toBe(false)
-    })
-  })
+      expect(result).toBe(false);
+    });
+  });
 
-  describe('create', () => {
-    it('should create and return user', async () => {
+  describe("create", () => {
+    it("should create and return user", async () => {
       const mockUser = {
-        id: 'new-user-id',
-        username: 'newuser',
-        email: 'new@example.com',
-        passwordHash: 'hashed_password',
+        id: "new-user-id",
+        username: "newuser",
+        email: "new@example.com",
+        passwordHash: "hashed_password",
         createdAt: new Date(),
         updatedAt: null,
-      }
+      };
 
       const insertMock = mock().mockReturnValue({
         values: mock().mockReturnValue({
           returning: mock().mockResolvedValue([mockUser]),
         }),
-      })
-      ;(mockDb.insert as ReturnType<typeof mock>) = insertMock
+      });
+      (mockDb.insert as ReturnType<typeof mock>) = insertMock;
 
-      const result = await repository.create('newuser', 'new@example.com', 'hashed_password')
+      const result = await repository.create("newuser", "new@example.com", "hashed_password");
 
-      expect(result).toEqual(mockUser)
-      expect(insertMock).toHaveBeenCalled()
-    })
-  })
-})
+      expect(result).toEqual(mockUser);
+      expect(insertMock).toHaveBeenCalled();
+    });
+  });
+});

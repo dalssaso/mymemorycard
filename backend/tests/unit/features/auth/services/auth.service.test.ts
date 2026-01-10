@@ -1,33 +1,33 @@
-import 'reflect-metadata'
-import { describe, it, expect, beforeEach } from 'bun:test'
-import { AuthService } from '@/features/auth/services/auth.service'
+import "reflect-metadata";
+import { describe, it, expect, beforeEach } from "bun:test";
+import { AuthService } from "@/features/auth/services/auth.service";
 import {
   createMockUserRepository,
   createMockPasswordHasher,
   createMockTokenService,
   createTestUser,
-} from '@/tests/helpers/repository.mocks'
-import { ConflictError, UnauthorizedError, ValidationError } from '@/shared/errors/base'
-import type { IUserRepository } from '@/features/auth/repositories/user.repository.interface'
-import type { IPasswordHasher } from '@/features/auth/services/password-hasher.interface'
-import type { ITokenService } from '@/features/auth/services/token.service.interface'
-import { Logger } from '@/infrastructure/logging/logger'
-import { MetricsService } from '@/infrastructure/metrics/metrics'
+} from "@/tests/helpers/repository.mocks";
+import { ConflictError, UnauthorizedError, ValidationError } from "@/shared/errors/base";
+import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
+import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
+import type { ITokenService } from "@/features/auth/services/token.service.interface";
+import { Logger } from "@/infrastructure/logging/logger";
+import { MetricsService } from "@/infrastructure/metrics/metrics";
 
-describe('AuthService', () => {
-  let authService: AuthService
-  let mockUserRepo: IUserRepository
-  let mockPasswordHasher: IPasswordHasher
-  let mockTokenService: ITokenService
-  let mockLogger: Logger
-  let mockMetrics: MetricsService
+describe("AuthService", () => {
+  let authService: AuthService;
+  let mockUserRepo: IUserRepository;
+  let mockPasswordHasher: IPasswordHasher;
+  let mockTokenService: ITokenService;
+  let mockLogger: Logger;
+  let mockMetrics: MetricsService;
 
   beforeEach(() => {
-    mockUserRepo = createMockUserRepository()
-    mockPasswordHasher = createMockPasswordHasher()
-    mockTokenService = createMockTokenService()
-    mockLogger = new Logger('AuthService')
-    mockMetrics = new MetricsService()
+    mockUserRepo = createMockUserRepository();
+    mockPasswordHasher = createMockPasswordHasher();
+    mockTokenService = createMockTokenService();
+    mockLogger = new Logger("AuthService");
+    mockMetrics = new MetricsService();
 
     authService = new AuthService(
       mockUserRepo,
@@ -35,124 +35,122 @@ describe('AuthService', () => {
       mockTokenService,
       mockLogger,
       mockMetrics
-    )
-  })
+    );
+  });
 
-  describe('register', () => {
-    it('should register new user successfully', async () => {
-      const result = await authService.register('newuser', 'new@example.com', 'SecurePass123!')
+  describe("register", () => {
+    it("should register new user successfully", async () => {
+      const result = await authService.register("newuser", "new@example.com", "SecurePass123!");
 
-      expect(result.user.username).toBe('newuser')
-      expect(result.user.email).toBe('new@example.com')
-      expect(result.token).toBe('token_test-user-id')
-    })
+      expect(result.user.username).toBe("newuser");
+      expect(result.user.email).toBe("new@example.com");
+      expect(result.token).toBe("token_test-user-id");
+    });
 
-    it('should throw ValidationError for empty username', async () => {
-      await expect(
-        authService.register('', 'email@example.com', 'password')
-      ).rejects.toThrow(ValidationError)
-    })
-
-    it('should throw ValidationError for empty email', async () => {
-      await expect(authService.register('username', '', 'password')).rejects.toThrow(
+    it("should throw ValidationError for empty username", async () => {
+      await expect(authService.register("", "email@example.com", "password")).rejects.toThrow(
         ValidationError
-      )
-    })
+      );
+    });
 
-    it('should throw ValidationError for empty password', async () => {
+    it("should throw ValidationError for empty email", async () => {
+      await expect(authService.register("username", "", "password")).rejects.toThrow(
+        ValidationError
+      );
+    });
+
+    it("should throw ValidationError for empty password", async () => {
+      await expect(authService.register("username", "email@example.com", "")).rejects.toThrow(
+        ValidationError
+      );
+    });
+
+    it("should throw ConflictError if user already exists", async () => {
+      mockUserRepo.exists = async () => true;
+
       await expect(
-        authService.register('username', 'email@example.com', '')
-      ).rejects.toThrow(ValidationError)
-    })
+        authService.register("existing", "existing@example.com", "password")
+      ).rejects.toThrow(ConflictError);
+    });
+  });
 
-    it('should throw ConflictError if user already exists', async () => {
-      mockUserRepo.exists = async () => true
+  describe("login", () => {
+    it("should login user successfully", async () => {
+      const testUser = createTestUser();
+      mockUserRepo.findByUsername = async () => testUser;
+      mockPasswordHasher.compare = async () => true;
 
-      await expect(
-        authService.register('existing', 'existing@example.com', 'password')
-      ).rejects.toThrow(ConflictError)
-    })
-  })
+      const result = await authService.login("testuser", "password123");
 
-  describe('login', () => {
-    it('should login user successfully', async () => {
-      const testUser = createTestUser()
-      mockUserRepo.findByUsername = async () => testUser
-      mockPasswordHasher.compare = async () => true
+      expect(result.user.username).toBe("testuser");
+      expect(result.token).toBe("token_test-user-id");
+    });
 
-      const result = await authService.login('testuser', 'password123')
+    it("should throw UnauthorizedError for non-existent user", async () => {
+      mockUserRepo.findByUsername = async () => null;
 
-      expect(result.user.username).toBe('testuser')
-      expect(result.token).toBe('token_test-user-id')
-    })
+      await expect(authService.login("nonexistent", "password")).rejects.toThrow(UnauthorizedError);
+    });
 
-    it('should throw UnauthorizedError for non-existent user', async () => {
-      mockUserRepo.findByUsername = async () => null
+    it("should throw UnauthorizedError for wrong password", async () => {
+      const testUser = createTestUser();
+      mockUserRepo.findByUsername = async () => testUser;
+      mockPasswordHasher.compare = async () => false;
 
-      await expect(authService.login('nonexistent', 'password')).rejects.toThrow(
+      await expect(authService.login("testuser", "wrongpassword")).rejects.toThrow(
         UnauthorizedError
-      )
-    })
+      );
+    });
 
-    it('should throw UnauthorizedError for wrong password', async () => {
-      const testUser = createTestUser()
-      mockUserRepo.findByUsername = async () => testUser
-      mockPasswordHasher.compare = async () => false
-
-      await expect(authService.login('testuser', 'wrongpassword')).rejects.toThrow(
-        UnauthorizedError
-      )
-    })
-
-    it('should not leak user existence in error messages', async () => {
+    it("should not leak user existence in error messages", async () => {
       // Test non-existent user
-      mockUserRepo.findByUsername = async () => null
-      let error1: Error | null = null
+      mockUserRepo.findByUsername = async () => null;
+      let error1: Error | null = null;
       try {
-        await authService.login('nonexistent', 'password')
+        await authService.login("nonexistent", "password");
       } catch (e) {
-        error1 = e as Error
+        error1 = e as Error;
       }
 
       // Test wrong password
-      mockUserRepo.findByUsername = async () => createTestUser()
-      mockPasswordHasher.compare = async () => false
-      let error2: Error | null = null
+      mockUserRepo.findByUsername = async () => createTestUser();
+      mockPasswordHasher.compare = async () => false;
+      let error2: Error | null = null;
       try {
-        await authService.login('testuser', 'wrongpassword')
+        await authService.login("testuser", "wrongpassword");
       } catch (e) {
-        error2 = e as Error
+        error2 = e as Error;
       }
 
-      expect(error1?.message).toBe(error2?.message)
-      expect(error1?.message).toBe('Invalid credentials')
-    })
-  })
+      expect(error1?.message).toBe(error2?.message);
+      expect(error1?.message).toBe("Invalid credentials");
+    });
+  });
 
-  describe('validateToken', () => {
-    it('should return user for valid token', async () => {
-      const testUser = createTestUser()
-      mockUserRepo.findById = async () => testUser
+  describe("validateToken", () => {
+    it("should return user for valid token", async () => {
+      const testUser = createTestUser();
+      mockUserRepo.findById = async () => testUser;
 
-      const result = await authService.validateToken('token_test-user-id')
+      const result = await authService.validateToken("token_test-user-id");
 
-      expect(result).toEqual(testUser)
-    })
+      expect(result).toEqual(testUser);
+    });
 
-    it('should return null for invalid token', async () => {
-      mockTokenService.verifyToken = () => null
+    it("should return null for invalid token", async () => {
+      mockTokenService.verifyToken = () => null;
 
-      const result = await authService.validateToken('invalid_token')
+      const result = await authService.validateToken("invalid_token");
 
-      expect(result).toBeNull()
-    })
+      expect(result).toBeNull();
+    });
 
-    it('should return null if user not found', async () => {
-      mockUserRepo.findById = async () => null
+    it("should return null if user not found", async () => {
+      mockUserRepo.findById = async () => null;
 
-      const result = await authService.validateToken('token_test-user-id')
+      const result = await authService.validateToken("token_test-user-id");
 
-      expect(result).toBeNull()
-    })
-  })
-})
+      expect(result).toBeNull();
+    });
+  });
+});

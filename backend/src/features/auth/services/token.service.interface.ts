@@ -1,9 +1,9 @@
 export interface JWTPayload {
-  userId: string
-  username: string
+  userId: string;
+  username: string;
 }
 
 export interface ITokenService {
-  generateToken(payload: JWTPayload): string
-  verifyToken(token: string): JWTPayload | null
+  generateToken(payload: JWTPayload): string;
+  verifyToken(token: string): JWTPayload | null;
 }

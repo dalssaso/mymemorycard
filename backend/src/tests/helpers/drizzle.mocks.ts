@@ -1,5 +1,5 @@
-import { mock } from 'bun:test'
-import type { DrizzleDB } from '@/infrastructure/database/connection'
+import { mock } from "bun:test";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
 
 export function createMockDrizzleDB(): DrizzleDB {
   const chainableMock = {
@@ -10,7 +10,7 @@ export function createMockDrizzleDB(): DrizzleDB {
       execute: mock().mockResolvedValue([]),
     }),
     then: mock().mockResolvedValue([]),
-  }
+  };
 
   return {
     select: mock().mockReturnValue(chainableMock),
@@ -20,11 +20,11 @@ export function createMockDrizzleDB(): DrizzleDB {
       }),
     }),
     execute: mock().mockResolvedValue({ rows: [] }),
-  } as unknown as DrizzleDB
+  } as unknown as DrizzleDB;
 }
 
 export function mockSelectResult<T>(mockDb: DrizzleDB, result: T[]): void {
-  const selectMock = mockDb.select as ReturnType<typeof mock>
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
   selectMock.mockReturnValue({
     from: mock().mockReturnValue({
       where: mock().mockReturnValue({
@@ -33,5 +33,5 @@ export function mockSelectResult<T>(mockDb: DrizzleDB, result: T[]): void {
       }),
       then: mock().mockResolvedValue(result),
     }),
-  })
+  });
 }

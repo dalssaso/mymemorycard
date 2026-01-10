@@ -1,29 +1,29 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import * as schema from '@/db/schema'
-import { injectable } from 'tsyringe'
-import { sql } from 'drizzle-orm'
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "@/db/schema";
+import { injectable } from "tsyringe";
+import { sql } from "drizzle-orm";
 
-export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>
+export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
 
-const queryClient = postgres(process.env.DATABASE_URL || '')
+const queryClient = postgres(process.env.DATABASE_URL || "");
 
-export const db = drizzle(queryClient, { schema })
+export const db = drizzle(queryClient, { schema });
 
 @injectable()
 export class DatabaseConnection {
-  public readonly db: DrizzleDB
+  public readonly db: DrizzleDB;
 
   constructor() {
-    this.db = db
+    this.db = db;
   }
 
   async healthCheck(): Promise<boolean> {
     try {
-      await this.db.execute(sql`SELECT 1`)
-      return true
+      await this.db.execute(sql`SELECT 1`);
+      return true;
     } catch {
-      return false
+      return false;
     }
   }
 }

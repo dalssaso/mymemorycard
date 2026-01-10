@@ -1,52 +1,52 @@
-import 'reflect-metadata'
-import { registerDependencies } from '@/container'
-import { createHonoApp } from '@/infrastructure/http/app'
-import { runMigrations, closeMigrationConnection } from '@/db'
-import { seedPlatforms } from '@/db/seed'
-import { config } from '@/config'
+import "reflect-metadata";
+import { registerDependencies } from "@/container";
+import { createHonoApp } from "@/infrastructure/http/app";
+import { runMigrations, closeMigrationConnection } from "@/db";
+import { seedPlatforms } from "@/db/seed";
+import { config } from "@/config";
 
 // Import legacy routes (registers them with the old router)
-import '@/routes/auth'
-import '@/routes/import'
-import '@/routes/platforms'
-import '@/routes/games'
-import '@/routes/collections'
-import '@/routes/api-stats'
-import '@/routes/admin'
-import '@/routes/preferences'
-import '@/routes/achievements'
-import '@/routes/sessions'
-import '@/routes/completion-logs'
-import '@/routes/additions'
-import '@/routes/ownership'
-import '@/routes/stats'
-import '@/routes/editions'
-import '@/routes/franchises'
-import '@/routes/user-platforms'
-import '@/routes/ai'
+import "@/routes/auth";
+import "@/routes/import";
+import "@/routes/platforms";
+import "@/routes/games";
+import "@/routes/collections";
+import "@/routes/api-stats";
+import "@/routes/admin";
+import "@/routes/preferences";
+import "@/routes/achievements";
+import "@/routes/sessions";
+import "@/routes/completion-logs";
+import "@/routes/additions";
+import "@/routes/ownership";
+import "@/routes/stats";
+import "@/routes/editions";
+import "@/routes/franchises";
+import "@/routes/user-platforms";
+import "@/routes/ai";
 
 async function startServer(): Promise<void> {
   // Run migrations and seed data
-  await runMigrations()
-  await seedPlatforms()
-  await closeMigrationConnection()
+  await runMigrations();
+  await seedPlatforms();
+  await closeMigrationConnection();
 
   // Register DI dependencies
-  registerDependencies()
+  registerDependencies();
 
   // Create Hono app (includes legacy routes proxy)
-  const app = createHonoApp()
+  const app = createHonoApp();
 
   // Start server
   const server = Bun.serve({
     port: config.port,
     fetch: app.fetch,
-  })
+  });
 
-  console.log(`Server running on http://localhost:${server.port}`)
+  console.log(`Server running on http://localhost:${server.port}`);
 }
 
 startServer().catch((error) => {
-  console.error('Failed to start server:', error)
-  process.exit(1)
-})
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
