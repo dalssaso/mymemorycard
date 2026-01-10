@@ -66,7 +66,7 @@ export function registerDependencies(): void {
   });
 
   // Auth Domain - Controllers
-  container.register("AuthController", {
+  container.register<AuthController>("AuthController", {
     useClass: AuthController,
   });
 }
