@@ -1,4 +1,4 @@
-import { generateText, generateImage } from "ai";
+import { generateText, generateImage, gateway } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { queryOne, queryMany, query } from "@/services/db";
 import { decrypt } from "@/lib/encryption";
@@ -16,8 +16,9 @@ import { searchSimilarGames } from "./vector-search";
 import { smartSampleGames } from "./game-selection";
 import { shouldRegeneratePreferences, generatePreferenceEmbeddings } from "./preference-learning";
 import { checkUserHasEmbeddings, generateUserLibraryEmbeddings } from "./embedding-jobs";
+import { selectModelForTask } from "./model-router";
 
-interface AiSettings {
+export interface AiSettings {
   provider: string;
   baseUrl: string | null;
   apiKeyEncrypted: string | null;
@@ -27,6 +28,11 @@ interface AiSettings {
   temperature: number;
   maxTokens: number;
   enabled: boolean;
+  collectionSuggestionsModel?: string | null;
+  nextGameSuggestionsModel?: string | null;
+  coverGenerationModel?: string | null;
+  enableSmartRouting?: boolean | null;
+  gatewayApiKeyEncrypted?: string | null;
 }
 
 interface TokenUsage {
@@ -36,6 +42,9 @@ interface TokenUsage {
 }
 
 const MODEL_COSTS = {
+  "gpt-5": { input: 1.25, output: 10 },
+  "gpt-5-mini": { input: 0.25, output: 2 },
+  "gpt-5-nano": { input: 0.05, output: 0.4 },
   "gpt-4.1-mini": { input: 0.003, output: 0.012 },
   "gpt-4o-mini": { input: 0.15, output: 0.6 },
   "gpt-4o": { input: 5, output: 15 },
@@ -44,6 +53,7 @@ const MODEL_COSTS = {
   "dall-e-2": { perImage: 0.02 },
   "gpt-image-1.5": { perImage: 0.04 },
   "openai/gpt-image-1.5": { perImage: 0.04 },
+  "grok-2-image-1212": { perImage: 0.07 },
   "google/gemini-2.5-flash-image": { perImage: 0.00003 },
   "black-forest-labs/flux.2-max": { perImage: 0.04 },
   "bytedance-seed/seedream-4.5": { perImage: 0.04 },
@@ -58,6 +68,19 @@ function calculateCost(model: string, usage: TokenUsage): number {
   return (usage.promptTokens * costs.input + usage.completionTokens * costs.output) / 1000;
 }
 
+function addProviderPrefix(model: string): `${string}:${string}` {
+  // xAI models
+  if (model.startsWith("grok-")) {
+    return `xai:${model}`;
+  }
+  // OpenAI models (default)
+  return `openai:${model}`;
+}
+
+function getProviderFromModel(model: string): "openai" | "xai" {
+  return model.startsWith("grok-") ? "xai" : "openai";
+}
+
 export async function getUserAiSettings(userId: string): Promise<AiSettings | null> {
   const settings = await queryOne<AiSettings>(
     `SELECT
@@ -69,13 +92,19 @@ export async function getUserAiSettings(userId: string): Promise<AiSettings | nu
       image_model as "imageModel",
       temperature,
       max_tokens as "maxTokens",
-      is_active as "enabled"
+      is_active as "enabled",
+      collection_suggestions_model as "collectionSuggestionsModel",
+      next_game_suggestions_model as "nextGameSuggestionsModel",
+      cover_generation_model as "coverGenerationModel",
+      enable_smart_routing as "enableSmartRouting",
+      gateway_api_key_encrypted as "gatewayApiKeyEncrypted"
     FROM user_ai_settings
     WHERE user_id = $1 AND is_active = true`,
     [userId]
   );
   return settings;
 }
+
 
 function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
   const apiKey = settings.imageApiKeyEncrypted
@@ -94,17 +123,23 @@ function createImageClient(settings: AiSettings): ReturnType<typeof createOpenAI
   });
 }
 
-function createVercelAIClient(settings: AiSettings): ReturnType<typeof createOpenAI> {
-  if (!settings.apiKeyEncrypted) {
-    throw new Error("API key not configured");
-  }
-
-  const apiKey = decrypt(settings.apiKeyEncrypted);
-
-  return createOpenAI({
-    apiKey,
-    baseURL: settings.baseUrl || undefined,
-  });
+function getAvailableGatewayModels(): string[] {
+  return [
+    // OpenAI models
+    "gpt-4o",
+    "gpt-4o-mini",
+    "gpt-4-turbo",
+    "gpt-5-nano",
+    "gpt-5-mini",
+    "gpt-5",
+    "dall-e-3",
+    "gpt-image-1.5",
+    // xAI models
+    "grok-beta",
+    "grok-vision-beta",
+    "grok-2-image-1212",
+    "grok-code-fast-1",
+  ];
 }
 
 async function getLibrarySummary(userId: string): Promise<GameSummary[]> {
@@ -214,9 +249,22 @@ export async function suggestCollections(
   const startTime = Date.now();
   const settings = await getUserAiSettings(userId);
 
-  if (!settings) {
-    throw new Error("No active AI provider configured");
+  if (!settings || !settings.enabled) {
+    throw new Error("AI features not configured");
   }
+
+  if (!settings.gatewayApiKeyEncrypted) {
+    throw new Error("Vercel AI Gateway not configured");
+  }
+
+  const availableModels = getAvailableGatewayModels();
+
+  // Select optimal model for this task
+  const modelSelection = await selectModelForTask(
+    "suggest_collections",
+    settings,
+    availableModels
+  );
 
   const library = await getLibrarySummary(userId);
 
@@ -269,27 +317,24 @@ export async function suggestCollections(
   );
 
   try {
-    const vercelClient = createVercelAIClient(settings);
-
-    // Only set temperature for non-reasoning models
-    const isReasoningModel =
-      settings.model.startsWith("gpt-5") ||
-      settings.model.includes("o1") ||
-      settings.model.includes("o3");
-
-    const result = await generateText({
-      model: vercelClient(settings.model),
+    const baseParams = {
+      model: gateway(addProviderPrefix(modelSelection.model)),
       messages: [
-        { role: "system", content: SYSTEM_PROMPTS.organizer },
+        { role: "system" as const, content: SYSTEM_PROMPTS.organizer },
         {
-          role: "user",
+          role: "user" as const,
           content: buildCollectionSuggestionsPromptWithRAG(selectedGames, library.length, theme),
         },
       ],
-      maxOutputTokens: settings.maxTokens,
-      temperature: isReasoningModel ? undefined : settings.temperature,
+      maxOutputTokens: modelSelection.maxTokens,
       experimental_telemetry: { isEnabled: false },
-    });
+    };
+
+    // Only set temperature for non-reasoning models
+    const result =
+      modelSelection.temperature !== null
+        ? await generateText({ ...baseParams, temperature: modelSelection.temperature })
+        : await generateText(baseParams);
 
     const content = result.text;
 
@@ -321,13 +366,13 @@ export async function suggestCollections(
       completionTokens: result.usage?.outputTokens ?? 0,
       totalTokens: result.usage?.totalTokens ?? 0,
     };
-    const cost = calculateCost(settings.model, usage);
+    const cost = calculateCost(modelSelection.model, usage);
 
     await logActivity(
       userId,
       "suggest_collections",
-      settings.provider,
-      settings.model,
+      getProviderFromModel(modelSelection.model),
+      modelSelection.model,
       usage,
       Date.now() - startTime,
       true,
@@ -341,8 +386,8 @@ export async function suggestCollections(
     await logActivity(
       userId,
       "suggest_collections",
-      settings.provider,
-      settings.model,
+      getProviderFromModel(modelSelection.model),
+      modelSelection.model,
       null,
       Date.now() - startTime,
       false,
@@ -361,9 +406,22 @@ export async function suggestNextGame(
   const startTime = Date.now();
   const settings = await getUserAiSettings(userId);
 
-  if (!settings) {
-    throw new Error("No active AI provider configured");
+  if (!settings || !settings.enabled) {
+    throw new Error("AI features not configured");
   }
+
+  if (!settings.gatewayApiKeyEncrypted) {
+    throw new Error("Vercel AI Gateway not configured");
+  }
+
+  const availableModels = getAvailableGatewayModels();
+
+  // Select optimal model for this task
+  const modelSelection = await selectModelForTask(
+    "suggest_next_game",
+    settings,
+    availableModels
+  );
 
   const library = await getLibrarySummary(userId);
   const backlog = library.filter((g) => g.status === "backlog" || g.status === "playing");
@@ -411,27 +469,24 @@ export async function suggestNextGame(
   );
 
   try {
-    const client = createVercelAIClient(settings);
-
-    // Only set temperature for non-reasoning models
-    const isReasoningModel =
-      settings.model.startsWith("gpt-5") ||
-      settings.model.includes("o1") ||
-      settings.model.includes("o3");
-
-    const result = await generateText({
-      model: client(settings.model),
+    const baseParams = {
+      model: gateway(addProviderPrefix(modelSelection.model)),
       messages: [
-        { role: "system", content: SYSTEM_PROMPTS.curator },
+        { role: "system" as const, content: SYSTEM_PROMPTS.curator },
         {
-          role: "user",
+          role: "user" as const,
           content: buildNextGamePromptWithRAG(selectedGames, backlog.length, userInput),
         },
       ],
-      maxOutputTokens: settings.maxTokens,
-      temperature: isReasoningModel ? undefined : settings.temperature,
+      maxOutputTokens: modelSelection.maxTokens,
       experimental_telemetry: { isEnabled: false },
-    });
+    };
+
+    // Only set temperature for non-reasoning models
+    const result =
+      modelSelection.temperature !== null
+        ? await generateText({ ...baseParams, temperature: modelSelection.temperature })
+        : await generateText(baseParams);
 
     const content = result.text;
 
@@ -455,13 +510,13 @@ export async function suggestNextGame(
       completionTokens: result.usage?.outputTokens ?? 0,
       totalTokens: result.usage?.totalTokens ?? 0,
     };
-    const cost = calculateCost(settings.model, usage);
+    const cost = calculateCost(modelSelection.model, usage);
 
     await logActivity(
       userId,
       "suggest_next_game",
-      settings.provider,
-      settings.model,
+      getProviderFromModel(modelSelection.model),
+      modelSelection.model,
       usage,
       Date.now() - startTime,
       true,
@@ -475,8 +530,8 @@ export async function suggestNextGame(
     await logActivity(
       userId,
       "suggest_next_game",
-      settings.provider,
-      settings.model,
+      getProviderFromModel(modelSelection.model),
+      modelSelection.model,
       null,
       Date.now() - startTime,
       false,
@@ -497,21 +552,34 @@ export async function generateCollectionCover(
   const startTime = Date.now();
   const settings = await getUserAiSettings(userId);
 
-  if (!settings) {
-    throw new Error("No active AI provider configured");
+  if (!settings || !settings.enabled) {
+    throw new Error("AI features not configured");
   }
 
-  const client = createImageClient(settings);
-  const model = settings.imageModel || "dall-e-3";
+  if (!settings.gatewayApiKeyEncrypted) {
+    throw new Error("Vercel AI Gateway not configured");
+  }
+
+  const availableModels = getAvailableGatewayModels();
+
+  // Select optimal model for this task
+  const modelSelection = await selectModelForTask(
+    "generate_cover_image",
+    settings,
+    availableModels
+  );
+
   const size = "1024x1536"; // Portrait orientation for collection covers
 
+  const imageClient = createImageClient(settings);
+
   // gpt-image models don't support quality/style parameters - only DALL-E models do
-  const isDalleModel = model.includes("dall-e");
+  const isDalleModel = modelSelection.model.includes("dall-e");
 
   try {
     const result = isDalleModel
       ? await generateImage({
-          model: client.image(model),
+          model: imageClient.image(modelSelection.model),
           prompt: buildCoverImagePrompt(collectionName, collectionDescription),
           size,
           providerOptions: {
@@ -522,7 +590,7 @@ export async function generateCollectionCover(
           },
         })
       : await generateImage({
-          model: client.image(model),
+          model: imageClient.image(modelSelection.model),
           prompt: buildCoverImagePrompt(collectionName, collectionDescription),
           size,
         });
@@ -535,13 +603,13 @@ export async function generateCollectionCover(
     const imageUrl = `data:${result.image.mediaType};base64,${result.image.base64}`;
 
     const usage: TokenUsage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
-    const cost = calculateCost(model, usage);
+    const cost = calculateCost(modelSelection.model, usage);
 
     await logActivity(
       userId,
       "generate_cover_image",
-      "openai",
-      model,
+      getProviderFromModel(modelSelection.model),
+      modelSelection.model,
       usage,
       Date.now() - startTime,
       true,
@@ -555,8 +623,8 @@ export async function generateCollectionCover(
     await logActivity(
       userId,
       "generate_cover_image",
-      "openai",
-      model,
+      getProviderFromModel(modelSelection.model),
+      modelSelection.model,
       null,
       Date.now() - startTime,
       false,

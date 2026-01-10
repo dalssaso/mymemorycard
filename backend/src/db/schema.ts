@@ -667,7 +667,7 @@ export const userPreferences = pgTable(
 // AI CURATOR SETTINGS & ACTIVITY
 // ============================================================================
 
-export const aiProviderEnum = pgEnum("ai_provider", ["openai"]);
+export const aiProviderEnum = pgEnum("ai_provider", ["openai", "xai"]);
 
 export const userAiSettings = pgTable(
   "user_ai_settings",
@@ -686,6 +686,12 @@ export const userAiSettings = pgTable(
     isActive: boolean("is_active").default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    // Model routing preferences
+    collectionSuggestionsModel: varchar("collection_suggestions_model", { length: 100 }),
+    nextGameSuggestionsModel: varchar("next_game_suggestions_model", { length: 100 }),
+    coverGenerationModel: varchar("cover_generation_model", { length: 100 }),
+    enableSmartRouting: boolean("enable_smart_routing").default(true),
+    gatewayApiKeyEncrypted: text("gateway_api_key_encrypted"),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.userId, table.provider] }),

@@ -145,6 +145,7 @@ router.put(
         provider: string;
         baseUrl?: string | null;
         apiKey?: string | null;
+        gatewayApiKey?: string;
         model?: string;
         imageApiKey?: string | null;
         imageModel?: string | null;
@@ -157,6 +158,7 @@ router.put(
         provider,
         baseUrl,
         apiKey,
+        gatewayApiKey,
         model,
         imageApiKey,
         imageModel,
@@ -194,34 +196,80 @@ router.put(
         await query("UPDATE user_ai_settings SET is_active = false WHERE user_id = $1", [user.id]);
       }
 
+      // Build dynamic UPDATE clause
+      const updates: string[] = [];
+      const values: unknown[] = [user.id];
+      let paramIndex = 2;
+
+      if (baseUrl !== undefined) {
+        updates.push(`base_url = $${paramIndex}`);
+        values.push(baseUrl);
+        paramIndex++;
+      }
+
+      if (apiKeyEncrypted !== undefined) {
+        updates.push(`api_key_encrypted = $${paramIndex}`);
+        values.push(apiKeyEncrypted);
+        paramIndex++;
+      }
+
+      if (gatewayApiKey !== undefined) {
+        updates.push(`gateway_api_key_encrypted = $${paramIndex}`);
+        values.push(gatewayApiKey ? encrypt(gatewayApiKey) : null);
+        paramIndex++;
+      }
+
+      if (model !== undefined) {
+        updates.push(`model = $${paramIndex}`);
+        values.push(model);
+        paramIndex++;
+      }
+
+      if (imageApiKeyEncrypted !== undefined) {
+        updates.push(`image_api_key_encrypted = $${paramIndex}`);
+        values.push(imageApiKeyEncrypted);
+        paramIndex++;
+      }
+
+      if (imageModel !== undefined) {
+        updates.push(`image_model = $${paramIndex}`);
+        values.push(imageModel);
+        paramIndex++;
+      }
+
+      if (temperature !== undefined) {
+        updates.push(`temperature = $${paramIndex}`);
+        values.push(temperature);
+        paramIndex++;
+      }
+
+      if (maxTokens !== undefined) {
+        updates.push(`max_tokens = $${paramIndex}`);
+        values.push(maxTokens);
+        paramIndex++;
+      }
+
+      if (setActive !== undefined) {
+        updates.push(`is_active = $${paramIndex}`);
+        values.push(setActive);
+        paramIndex++;
+      }
+
+      if (updates.length === 0) {
+        return new Response(JSON.stringify({ error: "No fields to update" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
+      }
+
+      updates.push(`updated_at = NOW()`);
+
       await query(
-        `INSERT INTO user_ai_settings (
-          user_id, provider, base_url, api_key_encrypted, model,
-          image_api_key_encrypted, image_model, temperature, max_tokens, is_active, updated_at
-        )
-        VALUES ($1, 'openai'::ai_provider, $2, $3, COALESCE($4, 'gpt-4.1-mini'), $5, $6, COALESCE($7, 0.7), COALESCE($8, 12000), COALESCE($9, false), NOW())
-        ON CONFLICT (user_id, provider)
-        DO UPDATE SET
-          base_url = CASE WHEN $2 IS NOT NULL THEN $2 ELSE user_ai_settings.base_url END,
-          api_key_encrypted = COALESCE($3, user_ai_settings.api_key_encrypted),
-          model = COALESCE($4, user_ai_settings.model),
-          image_api_key_encrypted = CASE WHEN $5 IS NOT NULL THEN $5 ELSE user_ai_settings.image_api_key_encrypted END,
-          image_model = COALESCE($6, user_ai_settings.image_model),
-          temperature = COALESCE($7, user_ai_settings.temperature),
-          max_tokens = COALESCE($8, user_ai_settings.max_tokens),
-          is_active = COALESCE($9, user_ai_settings.is_active),
-          updated_at = NOW()`,
-        [
-          user.id,
-          baseUrl ?? null,
-          apiKeyEncrypted ?? null,
-          model ?? null,
-          imageApiKeyEncrypted ?? null,
-          imageModel ?? null,
-          temperature ?? null,
-          maxTokens ?? null,
-          setActive ?? null,
-        ]
+        `INSERT INTO user_ai_settings (user_id, provider, model, temperature, max_tokens, is_active, updated_at)
+         VALUES ($1, 'openai'::ai_provider, 'gpt-4.1-mini', 0.7, 12000, false, NOW())
+         ON CONFLICT (user_id, provider)
+         DO UPDATE SET ${updates.join(", ")}`,
+        values
       );
 
       return new Response(JSON.stringify({ success: true }), {
@@ -267,6 +315,113 @@ router.post(
       });
     } catch (error) {
       console.error("Set active provider error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+  })
+);
+
+router.put(
+  "/api/ai/settings/model-routing",
+  requireAuth(async (req, user) => {
+    try {
+      const body = (await req.json()) as {
+        enableSmartRouting?: boolean;
+        collectionSuggestionsModel?: string;
+        nextGameSuggestionsModel?: string;
+        coverGenerationModel?: string;
+      };
+
+      const {
+        enableSmartRouting,
+        collectionSuggestionsModel,
+        nextGameSuggestionsModel,
+        coverGenerationModel,
+      } = body;
+
+      // Build SET clause dynamically based on provided fields
+      const updates: string[] = [];
+      const values: unknown[] = [user.id];
+      let paramIndex = 2;
+
+      if (enableSmartRouting !== undefined) {
+        updates.push(`enable_smart_routing = $${paramIndex}`);
+        values.push(enableSmartRouting);
+        paramIndex++;
+      }
+
+      if (collectionSuggestionsModel !== undefined) {
+        updates.push(`collection_suggestions_model = $${paramIndex}`);
+        values.push(collectionSuggestionsModel);
+        paramIndex++;
+      }
+
+      if (nextGameSuggestionsModel !== undefined) {
+        updates.push(`next_game_suggestions_model = $${paramIndex}`);
+        values.push(nextGameSuggestionsModel);
+        paramIndex++;
+      }
+
+      if (coverGenerationModel !== undefined) {
+        updates.push(`cover_generation_model = $${paramIndex}`);
+        values.push(coverGenerationModel);
+        paramIndex++;
+      }
+
+      if (updates.length === 0) {
+        return new Response(JSON.stringify({ error: "No fields to update" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        });
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      await query(
+        `UPDATE user_ai_settings SET ${updates.join(", ")} WHERE user_id = $1 AND provider = 'openai'::ai_provider`,
+        values
+      );
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    } catch (error) {
+      console.error("Update model routing settings error:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders() },
+      });
+    }
+  })
+);
+
+router.get(
+  "/api/ai/settings/gateway",
+  requireAuth(async (req, user) => {
+    try {
+      const settings = await queryOne<{
+        gateway_api_key_encrypted: string | null;
+      }>(
+        `SELECT gateway_api_key_encrypted
+         FROM user_ai_settings
+         WHERE user_id = $1 AND provider = 'openai'::ai_provider AND is_active = true`,
+        [user.id]
+      );
+
+      return new Response(
+        JSON.stringify({
+          hasGatewayKey: !!settings?.gateway_api_key_encrypted,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders() },
+        }
+      );
+    } catch (error) {
+      console.error("Get gateway settings error:", error);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders() },
