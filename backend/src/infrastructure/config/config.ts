@@ -5,7 +5,7 @@ import type { IConfig } from "./config.interface";
 export class Config implements IConfig {
   readonly database: { url: string };
   readonly redis: { url: string };
-  readonly jwt: { secret: string };
+  readonly jwt: { secret: string; expiresIn: string };
   readonly rawg: { apiKey: string };
   readonly encryption: { secret: string; salt: string };
   readonly port: number;
@@ -31,7 +31,10 @@ export class Config implements IConfig {
       );
     }
 
-    this.jwt = { secret: jwtSecret };
+    this.jwt = {
+      secret: jwtSecret,
+      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    };
     this.rawg = { apiKey: this.requireEnv("RAWG_API_KEY") };
     this.encryption = {
       secret: this.requireEnv("ENCRYPTION_SECRET"),

@@ -22,6 +22,7 @@ const mockConfig: IConfig = {
   },
   jwt: {
     secret: "test-jwt-secret",
+    expiresIn: "7d",
   },
   rawg: {
     apiKey: "test-rawg-key",

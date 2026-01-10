@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import { injectable, inject } from "tsyringe";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 import type { ITokenService, JWTPayload } from "./token.service.interface";
@@ -20,17 +20,17 @@ function isValidJWTPayload(decoded: unknown): decoded is JWTPayload {
 @injectable()
 export class TokenService implements ITokenService {
   private readonly secret: string;
-  private readonly expiresIn = "7d";
+  private readonly expiresIn: string;
 
   constructor(@inject("IConfig") config: IConfig) {
     this.secret = config.jwt.secret;
+    this.expiresIn = config.jwt.expiresIn;
   }
 
   generateToken(payload: JWTPayload): string {
     return jwt.sign(payload, this.secret, {
       expiresIn: this.expiresIn,
-      algorithm: "HS256",
-    });
+    } as SignOptions);
   }
 
   verifyToken(token: string): JWTPayload | null {

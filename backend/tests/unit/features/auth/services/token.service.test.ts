@@ -8,7 +8,7 @@ describe("TokenService", () => {
 
   beforeEach(() => {
     const mockConfig = {
-      jwt: { secret: "test-secret" },
+      jwt: { secret: "test-secret", expiresIn: "7d" },
     } as IConfig;
     tokenService = new TokenService(mockConfig);
   });

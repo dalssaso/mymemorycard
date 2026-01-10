@@ -14,6 +14,7 @@ describe("PasswordHasher", () => {
     },
     jwt: {
       secret: "test-secret",
+      expiresIn: "7d",
     },
     bcrypt: {
       saltRounds: 10,
