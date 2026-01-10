@@ -4,6 +4,8 @@ import type { IPasswordHasher } from "@/features/auth/services/password-hasher.i
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
 import type { InferSelectModel } from "drizzle-orm";
 import { type users } from "@/db/schema";
+import { Logger } from "@/infrastructure/logging/logger";
+import { MetricsService } from "@/infrastructure/metrics/metrics";
 
 type User = InferSelectModel<typeof users>;
 
@@ -60,4 +62,34 @@ export function createTestUser(overrides?: Partial<User>): User {
     updatedAt: new Date("2024-01-01"),
     ...overrides,
   };
+}
+
+export function createMockLogger(): Logger {
+  const mockLogger = {
+    debug: mock(),
+    info: mock(),
+    warn: mock(),
+    error: mock(),
+    child: mock().mockReturnThis(),
+  };
+  return mockLogger as unknown as Logger;
+}
+
+export function createMockMetricsService(): MetricsService {
+  const mockMetrics = {
+    httpRequestsTotal: {
+      inc: mock(),
+    },
+    httpRequestDuration: {
+      observe: mock(),
+    },
+    authAttemptsTotal: {
+      inc: mock(),
+    },
+    registry: {
+      contentType: "text/plain",
+    },
+    getMetrics: mock().mockResolvedValue("# metrics"),
+  };
+  return mockMetrics as unknown as MetricsService;
 }

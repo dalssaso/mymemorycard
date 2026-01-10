@@ -6,6 +6,8 @@ import {
   createMockPasswordHasher,
   createMockTokenService,
   createTestUser,
+  createMockLogger,
+  createMockMetricsService,
 } from "@/tests/helpers/repository.mocks";
 import { ConflictError, UnauthorizedError } from "@/shared/errors/base";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
@@ -19,15 +21,15 @@ describe("AuthService", () => {
   let mockUserRepo: IUserRepository;
   let mockPasswordHasher: IPasswordHasher;
   let mockTokenService: ITokenService;
-  let mockLogger: Logger;
-  let mockMetrics: MetricsService;
+  let mockLogger: InstanceType<typeof Logger>;
+  let mockMetrics: InstanceType<typeof MetricsService>;
 
   beforeEach(() => {
     mockUserRepo = createMockUserRepository();
     mockPasswordHasher = createMockPasswordHasher();
     mockTokenService = createMockTokenService();
-    mockLogger = new Logger("AuthService");
-    mockMetrics = new MetricsService();
+    mockLogger = createMockLogger();
+    mockMetrics = createMockMetricsService();
 
     authService = new AuthService(
       mockUserRepo,
