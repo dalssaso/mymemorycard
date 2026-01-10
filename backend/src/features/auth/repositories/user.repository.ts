@@ -1,12 +1,9 @@
 import { injectable, inject } from "tsyringe";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
-import type { InferSelectModel } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ConflictError } from "@/shared/errors/base";
-import type { IUserRepository } from "./user.repository.interface";
-
-type User = InferSelectModel<typeof users>;
+import type { IUserRepository, User } from "./user.repository.interface";
 
 @injectable()
 export class PostgresUserRepository implements IUserRepository {

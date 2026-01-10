@@ -1,15 +1,11 @@
 import { injectable, inject } from "tsyringe";
 import type { IAuthService, AuthResult } from "./auth.service.interface";
-import type { IUserRepository } from "../repositories/user.repository.interface";
+import type { IUserRepository, User } from "../repositories/user.repository.interface";
 import type { IPasswordHasher } from "./password-hasher.interface";
 import type { ITokenService } from "./token.service.interface";
 import { ValidationError, ConflictError, UnauthorizedError } from "@/shared/errors/base";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
-import type { InferSelectModel } from "drizzle-orm";
-import { users } from "@/db/schema";
-
-type User = InferSelectModel<typeof users>;
 
 @injectable()
 export class AuthService implements IAuthService {

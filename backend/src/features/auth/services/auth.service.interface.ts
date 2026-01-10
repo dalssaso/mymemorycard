@@ -1,7 +1,4 @@
-import type { InferSelectModel } from "drizzle-orm";
-import type { users } from "@/db/schema";
-
-type User = InferSelectModel<typeof users>;
+import type { User } from "../types";
 
 export interface AuthResult {
   user: {
