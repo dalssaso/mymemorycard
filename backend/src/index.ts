@@ -5,6 +5,8 @@ import { runMigrations, closeMigrationConnection } from "@/db";
 import { seedPlatforms } from "@/db/seed";
 import { initializeEncryptionKey } from "@/lib/encryption";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import { DatabaseConnection } from "@/infrastructure/database/connection";
+import redisClient from "@/services/redis";
 
 // Import legacy routes (registers them with the old router)
 import "@/routes/auth";
@@ -49,6 +51,32 @@ async function startServer(): Promise<void> {
   });
 
   console.log(`Server running on http://localhost:${server.port}`);
+
+  // Graceful shutdown handlers
+  const shutdown = async (signal: string): Promise<void> => {
+    console.log(`\n${signal} received, shutting down gracefully...`);
+
+    try {
+      // Stop accepting new connections
+      server.stop();
+
+      // Close database connection
+      const dbConnection = container.resolve(DatabaseConnection);
+      await dbConnection.close();
+
+      // Close Redis connection
+      await redisClient.quit();
+
+      console.log("Shutdown complete");
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      process.exit(1);
+    }
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 startServer().catch((error) => {
