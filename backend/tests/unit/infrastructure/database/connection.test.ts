@@ -40,18 +40,6 @@ describe("DatabaseConnection", () => {
     expect(dbConnection.db).toBeDefined();
   });
 
-  it("should have healthCheck method", () => {
-    const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(mockConfig, logger);
-    expect(typeof dbConnection.healthCheck).toBe("function");
-  });
-
-  it("should have close method", () => {
-    const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(mockConfig, logger);
-    expect(typeof dbConnection.close).toBe("function");
-  });
-
   it("should accept connection string from config", () => {
     const customConfig: IConfig = {
       ...mockConfig,
@@ -63,5 +51,88 @@ describe("DatabaseConnection", () => {
     const dbConnection = new DatabaseConnection(customConfig, logger);
 
     expect(dbConnection.db).toBeDefined();
+  });
+
+  it("should apply database pool configuration from config", () => {
+    const configWithPool: IConfig = {
+      ...mockConfig,
+      database: {
+        url: mockConfig.database.url,
+        pool: {
+          max: 20,
+          idleTimeout: 60,
+          connectTimeout: 15,
+        },
+      },
+    };
+    const logger = new Logger("test");
+    const dbConnection = new DatabaseConnection(configWithPool, logger);
+
+    expect(dbConnection.db).toBeDefined();
+  });
+
+  it("should apply default pool configuration when none provided", () => {
+    const configNoPool: IConfig = {
+      ...mockConfig,
+      database: {
+        url: mockConfig.database.url,
+      },
+    };
+    const logger = new Logger("test");
+    const dbConnection = new DatabaseConnection(configNoPool, logger);
+
+    expect(dbConnection.db).toBeDefined();
+  });
+
+  describe("healthCheck()", () => {
+    it("should return a boolean promise", async () => {
+      const logger = new Logger("test");
+      const dbConnection = new DatabaseConnection(mockConfig, logger);
+
+      const result = dbConnection.healthCheck();
+
+      expect(result instanceof Promise).toBe(true);
+      const value = await result;
+      expect(typeof value).toBe("boolean");
+    });
+
+    it("should handle connection errors gracefully", async () => {
+      const badConfig: IConfig = {
+        ...mockConfig,
+        database: {
+          url: "postgresql://invalid:invalid@nonexistent:5555/nonexistent",
+        },
+      };
+      const logger = new Logger("test");
+      const dbConnection = new DatabaseConnection(badConfig, logger);
+
+      const result = await dbConnection.healthCheck();
+
+      expect(typeof result).toBe("boolean");
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("close()", () => {
+    it("should return a void promise", async () => {
+      const logger = new Logger("test");
+      const dbConnection = new DatabaseConnection(mockConfig, logger);
+
+      const result = dbConnection.close();
+
+      expect(result instanceof Promise).toBe(true);
+      const value = await result;
+      expect(value).toBeUndefined();
+    });
+
+    it("should not throw errors during close", async () => {
+      const logger = new Logger("test");
+      const dbConnection = new DatabaseConnection(mockConfig, logger);
+
+      // Should resolve successfully
+      const result = dbConnection.close();
+      expect(result instanceof Promise).toBe(true);
+      await result;
+    });
   });
 });
