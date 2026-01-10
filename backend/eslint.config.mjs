@@ -37,17 +37,25 @@ export default defineConfig(
         { selector: 'typeLike', format: ['PascalCase'] },
         // Class like: camelCase or PascalCase (for Pool import etc)
         { selector: 'import', format: ['camelCase', 'PascalCase'] },
-        // Properties: allow camelCase, snake_case, or any with hyphens/slashes (API identifiers)
+        // Allow numeric properties (HTTP status codes in OpenAPI specs) - MUST come before general property rule
         {
           selector: 'property',
-          format: ['camelCase', 'snake_case', 'PascalCase'],
-          filter: { regex: '[-/]', match: false },
+          format: null,
+          filter: {
+            regex: '^\\d+$',
+            match: true,
+          },
         },
         // Allow any format for properties containing hyphens or slashes (HTTP headers, model IDs)
         {
           selector: 'property',
           format: null,
           filter: { regex: '[-/]', match: true },
+        },
+        // Properties: allow camelCase, snake_case (default rule for properties not matching above)
+        {
+          selector: 'property',
+          format: ['camelCase', 'snake_case', 'PascalCase'],
         },
       ],
       // Explicit return types
