@@ -169,6 +169,13 @@
       "when": 1768002968979,
       "tag": "0023_redundant_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1736552400000,
+      "tag": "0024_gateway_refactor",
+      "breakpoints": true
     }
   ]
 }

@@ -38,8 +38,7 @@ export interface AiSettings {
   nextGameSuggestionsModel?: string | null;
   coverGenerationModel?: string | null;
   enableSmartRouting?: boolean | null;
-  xaiApiKeyEncrypted?: string | null;
-  xaiBaseUrl?: string | null;
+  gatewayApiKeyEncrypted?: string | null;
 }
 
 interface TokenUsage {
@@ -104,8 +103,7 @@ export async function getUserAiSettings(userId: string): Promise<AiSettings | nu
       next_game_suggestions_model as "nextGameSuggestionsModel",
       cover_generation_model as "coverGenerationModel",
       enable_smart_routing as "enableSmartRouting",
-      xai_api_key_encrypted as "xaiApiKeyEncrypted",
-      xai_base_url as "xaiBaseUrl"
+      gateway_api_key_encrypted as "gatewayApiKeyEncrypted"
     FROM user_ai_settings
     WHERE user_id = $1 AND is_active = true`,
     [userId]
