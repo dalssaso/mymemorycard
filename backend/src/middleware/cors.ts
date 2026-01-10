@@ -6,13 +6,18 @@ export function corsHeaders(origin?: string): Record<string, string> {
   const allowedOrigins = config.cors.allowedOrigins;
 
   const requestOrigin = origin || "";
-  const allowOrigin = allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
+  const allowOrigin =
+    allowedOrigins.length === 0
+      ? "*"
+      : allowedOrigins.includes(requestOrigin)
+        ? requestOrigin
+        : allowedOrigins[0];
 
   return {
-    "Access-Control-Allow-Origin": allowOrigin || "*",
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Credentials": allowOrigin === "*" ? "false" : "true",
   };
 }
 
