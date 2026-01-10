@@ -9,7 +9,7 @@ export const RegisterRequestSchema = z.object({
       /^[a-zA-Z0-9_-]+$/,
       "Username must contain only letters, numbers, underscores, and hyphens"
     ),
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8),
 });
 
