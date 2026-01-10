@@ -19,7 +19,13 @@ export class DatabaseConnection {
   private readonly logger: Logger;
 
   constructor(@inject("IConfig") config: IConfig, @inject(Logger) logger: Logger) {
-    this.queryClient = postgres(config.database.url);
+    const poolConfig = config.database.pool || {};
+
+    this.queryClient = postgres(config.database.url, {
+      max: poolConfig.max ?? 10,
+      idle_timeout: poolConfig.idleTimeout ?? 30,
+      connect_timeout: poolConfig.connectTimeout ?? 10,
+    });
     this.db = drizzle(this.queryClient, { schema });
     this.logger = logger;
   }

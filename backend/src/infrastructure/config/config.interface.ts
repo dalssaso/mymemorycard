@@ -1,6 +1,13 @@
 export interface IConfig {
   // Required - will throw if missing
-  readonly database: { url: string };
+  readonly database: {
+    url: string;
+    pool?: {
+      max?: number;
+      idleTimeout?: number;
+      connectTimeout?: number;
+    };
+  };
   readonly redis: { url: string };
   readonly jwt: { secret: string; expiresIn: string };
   readonly rawg: { apiKey: string };

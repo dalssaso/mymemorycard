@@ -3,7 +3,14 @@ import type { IConfig } from "./config.interface";
 
 @injectable()
 export class Config implements IConfig {
-  readonly database: { url: string };
+  readonly database: {
+    url: string;
+    pool?: {
+      max?: number;
+      idleTimeout?: number;
+      connectTimeout?: number;
+    };
+  };
   readonly redis: { url: string };
   readonly jwt: { secret: string; expiresIn: string };
   readonly rawg: { apiKey: string };
@@ -20,7 +27,18 @@ export class Config implements IConfig {
     this.skipRedisConnect = process.env.SKIP_REDIS_CONNECT === "1";
 
     // Validate required vars - throws if missing
-    this.database = { url: this.requireEnv("DATABASE_URL") };
+    this.database = {
+      url: this.requireEnv("DATABASE_URL"),
+      pool: {
+        max: process.env.DB_POOL_MAX ? Number(process.env.DB_POOL_MAX) : undefined,
+        idleTimeout: process.env.DB_POOL_IDLE_TIMEOUT
+          ? Number(process.env.DB_POOL_IDLE_TIMEOUT)
+          : undefined,
+        connectTimeout: process.env.DB_POOL_CONNECT_TIMEOUT
+          ? Number(process.env.DB_POOL_CONNECT_TIMEOUT)
+          : undefined,
+      },
+    };
     this.redis = { url: this.requireEnv("REDIS_URL") };
     const jwtSecret = this.requireEnv("JWT_SECRET");
 
