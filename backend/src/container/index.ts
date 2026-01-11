@@ -25,6 +25,7 @@ import type { IAuthService } from "@/features/auth/services/auth.service.interfa
 
 // Auth - Controllers
 import { AuthController } from "@/features/auth/controllers/auth.controller";
+import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -55,7 +56,7 @@ export function registerDependencies(): void {
   container.registerSingleton<IAuthService>("IAuthService", AuthService);
 
   // Auth Domain - Controllers
-  container.registerSingleton<AuthController>("AuthController", AuthController);
+  container.registerSingleton<IAuthController>("IAuthController", AuthController);
 }
 
 /**
