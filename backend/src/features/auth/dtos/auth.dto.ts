@@ -1,5 +1,26 @@
 import { z } from "zod";
 
+/**
+ * Reusable password validation schema
+ * Enforces UTF-8 byte length constraints (8-72 bytes) to ensure bcrypt compatibility
+ */
+const passwordSchema = z
+  .string()
+  .refine(
+    (value) => Buffer.byteLength(value, "utf8") >= 8,
+    {
+      message:
+        "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)",
+    }
+  )
+  .refine(
+    (value) => Buffer.byteLength(value, "utf8") <= 72,
+    {
+      message:
+        "Password must be at most 72 bytes to remain compatible with bcrypt",
+    }
+  );
+
 export const RegisterRequestSchema = z.object({
   username: z
     .string()
@@ -10,42 +31,12 @@ export const RegisterRequestSchema = z.object({
         "Username must contain only letters, numbers, underscores, and hyphens",
     }),
   email: z.email(),
-  password: z
-    .string()
-    .refine(
-      (value) => Buffer.byteLength(value, "utf8") >= 8,
-      {
-        message:
-          "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)",
-      }
-    )
-    .refine(
-      (value) => Buffer.byteLength(value, "utf8") <= 72,
-      {
-        message:
-          "Password must be at most 72 bytes to remain compatible with bcrypt",
-      }
-    ),
+  password: passwordSchema,
 });
 
 export const LoginRequestSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
-  password: z
-    .string()
-    .refine(
-      (value) => Buffer.byteLength(value, "utf8") >= 8,
-      {
-        message:
-          "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)",
-      }
-    )
-    .refine(
-      (value) => Buffer.byteLength(value, "utf8") <= 72,
-      {
-        message:
-          "Password must be at most 72 bytes to remain compatible with bcrypt",
-      }
-    ),
+  password: passwordSchema,
 });
 
 export const AuthResponseSchema = z.object({
