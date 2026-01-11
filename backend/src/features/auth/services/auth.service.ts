@@ -55,7 +55,10 @@ export class AuthService implements IAuthService {
       // Handle all other creation errors (database issues, etc.)
       if (error instanceof Error) {
         this.logger.error("Failed to create user", error.message);
-        this.logger.debug("User creation error details", error.message);
+        this.logger.debug("User creation error details", {
+          message: error.message,
+          stack: error.stack,
+        });
       }
 
       this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
@@ -69,8 +72,9 @@ export class AuthService implements IAuthService {
     const user = await this.userRepo.findByUsername(username);
 
     // Prevent timing attacks by always performing password comparison
-    // If user doesn't exist, use a dummy hash so the comparison still takes time
-    const DUMMY_PASSWORD_HASH = "$2a$10$invalidusernamepreventionhashthisisnotarealpassword";
+    // If user doesn't exist, use a valid dummy hash so comparison maintains constant-time behavior
+    // This is a valid bcrypt hash (60 chars) for a non-existent user
+    const DUMMY_PASSWORD_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMye/IgKXkI5wkXQJ6FblDj.nfUV8jLCr8G";
     const hashToCompare = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
 
     const isValid = await this.passwordHasher.compare(password, hashToCompare);
