@@ -81,13 +81,25 @@ export class AiSettingsRepository implements IAiSettingsRepository {
   async getGatewayConfig(userId: string): Promise<GatewayConfig | null> {
     const settings = await this.findByUserId(userId);
 
-    if (!settings?.gatewayApiKeyEncrypted) {
+    if (!settings) {
       return null;
     }
 
-    return {
-      apiKey: decrypt(settings.gatewayApiKeyEncrypted),
-      provider: settings.provider,
-    };
+    if (!settings.gatewayApiKeyEncrypted) {
+      return null;
+    }
+
+    try {
+      const apiKey = decrypt(settings.gatewayApiKeyEncrypted);
+      return {
+        apiKey,
+        provider: settings.provider,
+      };
+    } catch (error) {
+      // Treat decrypt failure as "not configured" - likely rotated secret or corrupt key
+      // Log the error for debugging but don't expose details to caller
+      console.error(`Failed to decrypt API key for user ${userId}:`, error);
+      return null;
+    }
   }
 }
