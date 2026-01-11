@@ -108,12 +108,46 @@ export class AuthService implements IAuthService {
   }
 
   async validateToken(token: string): Promise<User | null> {
-    const payload = this.tokenService.verifyToken(token);
+    this.logger.debug("Validating token");
 
-    if (!payload) {
-      return null;
+    try {
+      const payload = this.tokenService.verifyToken(token);
+
+      if (!payload) {
+        this.logger.debug("Token verification failed - invalid or expired token");
+        this.metrics.authAttemptsTotal.inc({
+          type: "validateToken",
+          success: "false",
+        });
+        return null;
+      }
+
+      const user = await this.userRepo.findById(payload.userId);
+
+      if (!user) {
+        this.logger.debug("User not found for validated token");
+        this.metrics.authAttemptsTotal.inc({
+          type: "validateToken",
+          success: "false",
+        });
+        return null;
+      }
+
+      this.logger.debug("Token validation successful");
+      this.metrics.authAttemptsTotal.inc({
+        type: "validateToken",
+        success: "true",
+      });
+      return user;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error("Failed to validate token", message);
+      this.logger.debug("Token validation error details", message);
+      this.metrics.authAttemptsTotal.inc({
+        type: "validateToken",
+        success: "false",
+      });
+      throw error;
     }
-
-    return this.userRepo.findById(payload.userId);
   }
 }
