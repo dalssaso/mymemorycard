@@ -17,7 +17,7 @@ describe("Config", () => {
     it("should throw when DATABASE_URL is missing", () => {
       delete process.env.DATABASE_URL;
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
 
       expect(() => new Config()).toThrow("Missing required environment variable: DATABASE_URL");
@@ -26,7 +26,7 @@ describe("Config", () => {
     it("should throw when REDIS_URL is missing", () => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       delete process.env.REDIS_URL;
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
 
       expect(() => new Config()).toThrow("Missing required environment variable: REDIS_URL");
@@ -44,10 +44,10 @@ describe("Config", () => {
     it("should throw when RAWG_API_KEY is missing", () => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       delete process.env.RAWG_API_KEY;
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
 
       expect(() => new Config()).toThrow("Missing required environment variable: RAWG_API_KEY");
     });
@@ -55,10 +55,10 @@ describe("Config", () => {
     it("should throw when ENCRYPTION_SECRET is missing", () => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
       delete process.env.ENCRYPTION_SECRET;
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
 
       expect(() => new Config()).toThrow(
         "Missing required environment variable: ENCRYPTION_SECRET"
@@ -68,9 +68,9 @@ describe("Config", () => {
     it("should throw when ENCRYPTION_SALT is missing", () => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
       delete process.env.ENCRYPTION_SALT;
 
       expect(() => new Config()).toThrow("Missing required environment variable: ENCRYPTION_SALT");
@@ -79,19 +79,19 @@ describe("Config", () => {
     it("should create config when all required vars are present", () => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
 
       const config = new Config();
 
       expect(config.database.url).toBe("postgresql://localhost/db");
       expect(config.redis.url).toBe("redis://localhost:6379");
-      expect(config.jwt.secret).toBe("secret");
+      expect(config.jwt.secret).toBe("test-jwt-secret-minimum-32-chars-long-12345678");
       expect(config.rawg.apiKey).toBe("key");
-      expect(config.encryption.secret).toBe("encryption-secret");
-      expect(config.encryption.salt).toBe("encryption-salt");
+      expect(config.encryption.secret).toBe("test-encryption-secret-min-32-chars-long-1234");
+      expect(config.encryption.salt).toBe("test-encryption-salt-minimum-32-chars-long-12");
     });
   });
 
@@ -99,10 +99,10 @@ describe("Config", () => {
     beforeEach(() => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
     });
 
     it("should use default port when PORT is not set", () => {
@@ -134,10 +134,10 @@ describe("Config", () => {
     beforeEach(() => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
     });
 
     it("should include default origins and ORIGIN when set", () => {
@@ -167,24 +167,22 @@ describe("Config", () => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
       process.env.RAWG_API_KEY = "key";
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
     });
 
     it("should throw when JWT_SECRET is less than 32 characters in production", () => {
       process.env.NODE_ENV = "production";
       process.env.JWT_SECRET = "short-secret";
 
-      expect(() => new Config()).toThrow("JWT_SECRET must be at least 32 characters in production");
+      expect(() => new Config()).toThrow("JWT_SECRET must be at least 32 characters");
     });
 
-    it("should allow JWT_SECRET less than 32 characters in development", () => {
+    it("should throw when JWT_SECRET is less than 32 characters in development", () => {
       process.env.NODE_ENV = "development";
       process.env.JWT_SECRET = "short-secret";
 
-      expect(() => new Config()).not.toThrow();
-      const config = new Config();
-      expect(config.jwt.secret).toBe("short-secret");
+      expect(() => new Config()).toThrow("JWT_SECRET must be at least 32 characters");
     });
 
     it("should allow JWT_SECRET with 32 or more characters in production", () => {
@@ -203,10 +201,10 @@ describe("Config", () => {
     beforeEach(() => {
       process.env.DATABASE_URL = "postgresql://localhost/db";
       process.env.REDIS_URL = "redis://localhost:6379";
-      process.env.JWT_SECRET = "secret";
+      process.env.JWT_SECRET = "test-jwt-secret-minimum-32-chars-long-12345678";
       process.env.RAWG_API_KEY = "key";
-      process.env.ENCRYPTION_SECRET = "encryption-secret";
-      process.env.ENCRYPTION_SALT = "encryption-salt";
+      process.env.ENCRYPTION_SECRET = "test-encryption-secret-min-32-chars-long-1234";
+      process.env.ENCRYPTION_SALT = "test-encryption-salt-minimum-32-chars-long-12";
     });
 
     it("should set isProduction to true when NODE_ENV is production", () => {
