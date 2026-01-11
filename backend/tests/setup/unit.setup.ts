@@ -11,10 +11,7 @@ import { mock } from "bun:test";
 import "reflect-metadata";
 import { container } from "@/container";
 import type { IConfig } from "@/infrastructure/config/config.interface";
-import type {
-  ITokenService,
-  JWTPayload,
-} from "@/features/auth/services/token.service.interface";
+import type { ITokenService, JWTPayload } from "@/features/auth/services/token.service.interface";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 
 // Register IConfig for tests

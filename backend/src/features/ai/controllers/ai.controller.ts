@@ -1,10 +1,10 @@
-import { injectable, inject } from "tsyringe"
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
-import { z } from "zod"
-import type { IAiController, Variables } from "./ai.controller.interface"
-import type { IEmbeddingService } from "../services/embedding.service.interface"
-import type { ICuratorService } from "../services/curator.service.interface"
-import type { IImageService } from "../services/image.service.interface"
+import { injectable, inject } from "tsyringe";
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
+import { z } from "zod";
+import type { IAiController, Variables } from "./ai.controller.interface";
+import type { IEmbeddingService } from "../services/embedding.service.interface";
+import type { ICuratorService } from "../services/curator.service.interface";
+import type { IImageService } from "../services/image.service.interface";
 import {
   GenerateEmbeddingRequestSchema,
   SuggestCollectionsRequestSchema,
@@ -12,37 +12,37 @@ import {
   GenerateCoverRequestSchema,
   CollectionSuggestionSchema,
   NextGameSuggestionSchema,
-} from "../dtos/ai.dto"
-import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
+} from "../dtos/ai.dto";
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 
 const ErrorResponseSchema = z.object({
   error: z.string(),
-})
+});
 
 const SuccessResponseSchema = z.object({
   success: z.boolean(),
-})
+});
 
 const ImageResponseSchema = z.object({
   url: z.string(),
   model: z.string(),
-})
+});
 
 @injectable()
 export class AiController implements IAiController {
-  public router: OpenAPIHono<{ Variables: Variables }>
+  public router: OpenAPIHono<{ Variables: Variables }>;
 
   constructor(
     @inject("IEmbeddingService") private embeddingService: IEmbeddingService,
     @inject("ICuratorService") private curatorService: ICuratorService,
-    @inject("IImageService") private imageService: IImageService,
+    @inject("IImageService") private imageService: IImageService
   ) {
-    this.router = new OpenAPIHono<{ Variables: Variables }>()
-    this.registerRoutes()
+    this.router = new OpenAPIHono<{ Variables: Variables }>();
+    this.registerRoutes();
   }
 
   private registerRoutes(): void {
-    const authMiddleware = createAuthMiddleware()
+    const authMiddleware = createAuthMiddleware();
 
     // POST /embeddings/games - Generate game embedding
     const generateGameEmbeddingRoute = createRoute({
@@ -85,15 +85,15 @@ export class AiController implements IAiController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
     this.router.openapi(generateGameEmbeddingRoute, async (c) => {
-      const body = c.req.valid("json")
-      const user = c.get("user")!
-      await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text)
+      const body = c.req.valid("json");
+      const user = c.get("user")!;
+      await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text);
 
-      return c.json({ success: true }, 201)
-    })
+      return c.json({ success: true }, 201);
+    });
 
     // POST /embeddings/collections - Generate collection embedding
     const generateCollectionEmbeddingRoute = createRoute({
@@ -136,15 +136,15 @@ export class AiController implements IAiController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
     this.router.openapi(generateCollectionEmbeddingRoute, async (c) => {
-      const body = c.req.valid("json")
-      const user = c.get("user")!
-      await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text)
+      const body = c.req.valid("json");
+      const user = c.get("user")!;
+      await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text);
 
-      return c.json({ success: true }, 201)
-    })
+      return c.json({ success: true }, 201);
+    });
 
     // POST /suggestions/collections - Suggest collections
     const suggestCollectionsRoute = createRoute({
@@ -187,15 +187,15 @@ export class AiController implements IAiController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
     this.router.openapi(suggestCollectionsRoute, async (c) => {
-      const body = c.req.valid("json")
-      const user = c.get("user")!
-      const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds)
+      const body = c.req.valid("json");
+      const user = c.get("user")!;
+      const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds);
 
-      return c.json(suggestions, 200)
-    })
+      return c.json(suggestions, 200);
+    });
 
     // POST /suggestions/next-game - Suggest next game
     const suggestNextGameRoute = createRoute({
@@ -238,15 +238,15 @@ export class AiController implements IAiController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
     this.router.openapi(suggestNextGameRoute, async (c) => {
-      const body = c.req.valid("json")
-      const user = c.get("user")!
-      const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds)
+      const body = c.req.valid("json");
+      const user = c.get("user")!;
+      const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds);
 
-      return c.json(suggestions, 200)
-    })
+      return c.json(suggestions, 200);
+    });
 
     // POST /images/collection-cover - Generate collection cover
     const generateCoverRoute = createRoute({
@@ -289,18 +289,18 @@ export class AiController implements IAiController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
     this.router.openapi(generateCoverRoute, async (c) => {
-      const body = c.req.valid("json")
-      const user = c.get("user")!
+      const body = c.req.valid("json");
+      const user = c.get("user")!;
       const result = await this.imageService.generateCollectionCover(
         user.id,
         body.collectionName,
-        body.gameNames,
-      )
+        body.gameNames
+      );
 
-      return c.json(result, 201)
-    })
+      return c.json(result, 201);
+    });
   }
 }

@@ -18,10 +18,7 @@ describe("ImageService", () => {
     mockGateway = createMockGatewayService();
     mockSettingsRepo = createMockAiSettingsRepository();
 
-    imageService = new ImageService(
-      mockGateway,
-      mockSettingsRepo
-    );
+    imageService = new ImageService(mockGateway, mockSettingsRepo);
   });
 
   describe("generateCollectionCover", () => {

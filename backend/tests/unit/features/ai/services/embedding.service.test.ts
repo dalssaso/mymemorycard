@@ -22,11 +22,7 @@ describe("EmbeddingService", () => {
     mockSettingsRepo = createMockAiSettingsRepository();
     mockEmbeddingRepo = createMockEmbeddingRepository();
 
-    embeddingService = new EmbeddingService(
-      mockGateway,
-      mockEmbeddingRepo,
-      mockSettingsRepo
-    );
+    embeddingService = new EmbeddingService(mockGateway, mockEmbeddingRepo, mockSettingsRepo);
   });
 
   describe("generateGameEmbedding", () => {
@@ -171,7 +167,10 @@ describe("EmbeddingService", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      mockEmbeddingRepo.findSimilarCollections = mock().mockResolvedValue(["collection-2", "collection-3"]);
+      mockEmbeddingRepo.findSimilarCollections = mock().mockResolvedValue([
+        "collection-2",
+        "collection-3",
+      ]);
 
       const result = await embeddingService.findSimilarCollections("user-1", "collection-1", 2);
 

@@ -18,10 +18,7 @@ describe("CuratorService", () => {
     mockGateway = createMockGatewayService();
     mockSettingsRepo = createMockAiSettingsRepository();
 
-    curatorService = new CuratorService(
-      mockGateway,
-      mockSettingsRepo
-    );
+    curatorService = new CuratorService(mockGateway, mockSettingsRepo);
   });
 
   describe("suggestCollections", () => {

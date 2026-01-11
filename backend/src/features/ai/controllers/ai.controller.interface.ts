@@ -1,11 +1,11 @@
-import type { OpenAPIHono } from "@hono/zod-openapi"
-import type { User } from "@/features/auth/types"
+import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { User } from "@/features/auth/types";
 
 export type Variables = {
-  requestId: string
-  user?: User
-}
+  requestId: string;
+  user?: User;
+};
 
 export interface IAiController {
-  router: OpenAPIHono<{ Variables: Variables }>
+  router: OpenAPIHono<{ Variables: Variables }>;
 }
