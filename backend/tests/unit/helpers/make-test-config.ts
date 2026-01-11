@@ -10,10 +10,16 @@ export function makeTestConfig(overrides?: Partial<IConfig>): IConfig {
     port: 3000,
     database: { url: "postgresql://test" },
     redis: { url: "redis://localhost:6380" },
-    jwt: { secret: "test-secret", expiresIn: "7d" },
+    jwt: {
+      secret: "test-jwt-secret-key-minimum-32-chars",
+      expiresIn: "7d",
+    },
     bcrypt: { saltRounds: 10 },
     rawg: { apiKey: "test-key" },
-    encryption: { secret: "test-encryption-secret-very-long", salt: "test-salt" },
+    encryption: {
+      secret: "test-encryption-secret-very-long",
+      salt: "test-encryption-salt-1234567890",
+    },
     cors: { allowedOrigins: ["http://localhost:5173"] },
     isProduction: false,
     skipRedisConnect: true,
