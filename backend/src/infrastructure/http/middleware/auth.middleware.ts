@@ -17,7 +17,7 @@ export function createAuthMiddleware() {
     const authHeader = c.req.header("Authorization");
 
     if (!authHeader?.startsWith("Bearer ")) {
-      return c.json({ error: "Unauthorized - Missing or invalid Authorization header" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const token = authHeader.slice(7);
@@ -25,13 +25,13 @@ export function createAuthMiddleware() {
     const payload = tokenService.verifyToken(token);
 
     if (!payload) {
-      return c.json({ error: "Unauthorized - Invalid or expired token" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const user = await userRepository.findById(payload.userId);
 
     if (!user) {
-      return c.json({ error: "Unauthorized - User not found" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     c.set("user", user);
