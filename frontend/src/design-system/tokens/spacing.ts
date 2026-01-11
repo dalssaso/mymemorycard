@@ -23,3 +23,4 @@ export const layout = {
 } as const;
 
 export type SpacingToken = keyof typeof spacing;
+export type LayoutToken = keyof typeof layout;
