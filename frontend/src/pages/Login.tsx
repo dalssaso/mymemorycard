@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { useAuth } from "@/contexts/AuthContext";
+import { normalizeAuthError } from "@/lib/auth-errors";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -32,22 +33,8 @@ export function Login(): JSX.Element {
       // Navigate directly to dashboard
       navigate({ to: "/dashboard", replace: true });
     } catch (error: unknown) {
-      let message: string | null = null;
-      if (error && typeof error === "object" && "response" in error) {
-        const responseError = (error as { response?: { data?: { error?: unknown } } }).response
-          ?.data?.error;
-        // Handle both string errors and Zod validation error objects
-        if (typeof responseError === "string") {
-          message = responseError;
-        } else if (
-          responseError &&
-          typeof responseError === "object" &&
-          "message" in responseError
-        ) {
-          message = String((responseError as { message: unknown }).message);
-        }
-      }
-      form.setError("root", { message: message ?? "Failed to login" });
+      const message = normalizeAuthError(error);
+      form.setError("root", { message: message || "Failed to login" });
     }
   });
 
