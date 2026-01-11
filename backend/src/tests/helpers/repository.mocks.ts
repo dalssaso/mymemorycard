@@ -104,12 +104,16 @@ export function createMockMetricsService(): MetricsService {
 // AI Domain Mocks
 // ============================================================================
 
-export function createMockGatewayService(): {
+export type MockGatewayService = {
   generateEmbedding: ReturnType<typeof mock>;
   generateCompletion: ReturnType<typeof mock>;
   streamCompletion: ReturnType<typeof mock>;
   generateImage: ReturnType<typeof mock>;
-} {
+};
+
+export function createMockGatewayService(
+  overrides?: Partial<MockGatewayService>
+): MockGatewayService {
   return {
     generateEmbedding: mock().mockResolvedValue({
       embedding: new Array(1536).fill(0.1),
@@ -130,6 +134,7 @@ export function createMockGatewayService(): {
       url: "https://example.com/image.png",
       model: "grok-2-image",
     } as ImageResult),
+    ...overrides,
   };
 }
 
@@ -199,37 +204,50 @@ export function createMockEmbeddingRepository(
   };
 }
 
-export function createMockEmbeddingService(): {
+export type MockEmbeddingService = {
   generateGameEmbedding: ReturnType<typeof mock>;
   generateCollectionEmbedding: ReturnType<typeof mock>;
   findSimilarGames: ReturnType<typeof mock>;
   findSimilarCollections: ReturnType<typeof mock>;
-} {
+};
+
+export function createMockEmbeddingService(
+  overrides?: Partial<MockEmbeddingService>
+): MockEmbeddingService {
   return {
     generateGameEmbedding: mock().mockResolvedValue(undefined),
     generateCollectionEmbedding: mock().mockResolvedValue(undefined),
     findSimilarGames: mock().mockResolvedValue([]),
     findSimilarCollections: mock().mockResolvedValue([]),
+    ...overrides,
   };
 }
 
-export function createMockCuratorService(): {
+export type MockCuratorService = {
   suggestCollections: ReturnType<typeof mock>;
   suggestNextGame: ReturnType<typeof mock>;
-} {
+};
+
+export function createMockCuratorService(
+  overrides?: Partial<MockCuratorService>
+): MockCuratorService {
   return {
     suggestCollections: mock().mockResolvedValue([]),
     suggestNextGame: mock().mockResolvedValue([]),
+    ...overrides,
   };
 }
 
-export function createMockImageService(): {
+export type MockImageService = {
   generateCollectionCover: ReturnType<typeof mock>;
-} {
+};
+
+export function createMockImageService(overrides?: Partial<MockImageService>): MockImageService {
   return {
     generateCollectionCover: mock().mockResolvedValue({
       url: "https://example.com/image.png",
       model: "test-model",
     }),
+    ...overrides,
   };
 }
