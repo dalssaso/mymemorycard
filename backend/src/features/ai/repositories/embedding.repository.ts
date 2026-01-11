@@ -88,12 +88,10 @@ export class EmbeddingRepository implements IEmbeddingRepository {
   ): Promise<string[]> {
     this.validateEmbedding(embedding);
 
-    const vectorString = `[${embedding.join(",")}]`;
-
     let query = this.db
       .select({ gameId: gameEmbeddings.gameId })
       .from(gameEmbeddings)
-      .orderBy(sql`embedding <=> ${vectorString}::vector`)
+      .orderBy(sql`embedding <=> ${JSON.stringify(embedding)}::vector`)
       .limit(limit);
 
     if (excludeIds.length > 0) {
@@ -108,12 +106,10 @@ export class EmbeddingRepository implements IEmbeddingRepository {
   async findSimilarCollections(embedding: number[], limit: number): Promise<string[]> {
     this.validateEmbedding(embedding);
 
-    const vectorString = `[${embedding.join(",")}]`;
-
     const results = await this.db
       .select({ collectionId: collectionEmbeddings.collectionId })
       .from(collectionEmbeddings)
-      .orderBy(sql`embedding <=> ${vectorString}::vector`)
+      .orderBy(sql`embedding <=> ${JSON.stringify(embedding)}::vector`)
       .limit(limit);
 
     return results.map((r) => r.collectionId);
