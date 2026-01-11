@@ -14,8 +14,10 @@ import { AI_MODELS } from "../types";
 @injectable()
 export class GatewayService implements IGatewayService {
   async generateEmbedding(text: string, config: GatewayConfig): Promise<EmbeddingResult> {
-    const provider = this.createProvider(config);
-    const model = provider.embeddingModel(AI_MODELS.EMBEDDING);
+    // Force OpenAI for embeddings (xAI doesn't support embeddings)
+    const openaiConfig: GatewayConfig = { ...config, provider: "openai" };
+    const provider = this.createProvider(openaiConfig) as ReturnType<typeof createOpenAI>;
+    const model = provider.embedding(AI_MODELS.EMBEDDING);
 
     const { embedding, usage } = await embed({
       model,

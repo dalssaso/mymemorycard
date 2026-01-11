@@ -50,7 +50,7 @@ mock.module("@ai-sdk/openai", () => ({
     const provider = Object.assign(
       mock(() => "mocked-text-model"), // Can be called as function
       {
-        embeddingModel: mock(() => "mocked-embedding-model"), // Has embeddingModel method
+        embedding: mock(() => "mocked-embedding-model"), // Has embedding method
       }
     );
     return provider;
@@ -62,7 +62,7 @@ mock.module("@ai-sdk/xai", () => ({
     const provider = Object.assign(
       mock(() => "mocked-xai-text-model"), // Can be called as function
       {
-        embeddingModel: mock(() => "mocked-xai-embedding-model"), // Has embeddingModel method
+        embedding: mock(() => "mocked-xai-embedding-model"), // Has embedding method
       }
     );
     return provider;
