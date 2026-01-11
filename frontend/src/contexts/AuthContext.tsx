@@ -21,7 +21,7 @@ export interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -62,8 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   );
 
   const register = useCallback(
-    async (username: string, password: string) => {
-      const response = await authAPI.register({ username, password });
+    async (username: string, email: string, password: string) => {
+      const response = await authAPI.register({ username, email, password });
       const { user: userData, token: userToken } = response.data as {
         user: User;
         token: string;

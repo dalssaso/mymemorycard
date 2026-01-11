@@ -12,6 +12,7 @@ const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 const registerSchema = z
   .object({
     username: z.string().min(1, "Username is required"),
+    email: z.string().min(1, "Email is required").email("Invalid email address"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -33,6 +34,7 @@ export function Register(): JSX.Element {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
@@ -45,7 +47,7 @@ export function Register(): JSX.Element {
 
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
-      await register(data.username, data.password);
+      await register(data.username, data.email, data.password);
       navigate({ to: "/platforms/onboarding" });
     } catch (error: unknown) {
       let message: string | null = null;
@@ -79,6 +81,7 @@ export function Register(): JSX.Element {
                 </div>
               ) : null}
               <FormField name="username" label="Username" />
+              <FormField name="email" label="Email" type="email" />
               <div className="space-y-2">
                 <FormField name="password" label="Password" type="password" />
                 {password.length > 0 ? (
