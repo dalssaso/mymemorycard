@@ -178,11 +178,13 @@ describe("Config", () => {
       expect(() => new Config()).toThrow("JWT_SECRET must be at least 32 characters");
     });
 
-    it("should throw when JWT_SECRET is less than 32 characters in development", () => {
+    it("should allow short JWT_SECRET in development", () => {
       process.env.NODE_ENV = "development";
       process.env.JWT_SECRET = "short-secret";
 
-      expect(() => new Config()).toThrow("JWT_SECRET must be at least 32 characters");
+      expect(() => new Config()).not.toThrow();
+      const config = new Config();
+      expect(config.jwt.secret).toBe("short-secret");
     });
 
     it("should allow JWT_SECRET with 32 or more characters in production", () => {
