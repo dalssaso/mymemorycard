@@ -3,6 +3,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { container } from "@/container";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 import type { IAiController } from "@/features/ai/controllers/ai.controller.interface";
+import type { User } from "@/features/auth/types";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { createErrorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
@@ -14,6 +15,7 @@ import { randomUUID } from "crypto";
 
 type Variables = {
   requestId: string;
+  user?: User;
 };
 
 export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
