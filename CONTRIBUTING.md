@@ -1036,7 +1036,7 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 3. **Docker images** are automatically built and published to GitHub Container Registry
 
-### Pre-releases
+### Prereleases
 
 For testing before official release, use the **Manual Prerelease** workflow in GitHub Actions.
 

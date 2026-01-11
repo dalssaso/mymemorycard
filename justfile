@@ -1,9 +1,8 @@
-set shell := ["zsh", "-cu"]
-
 default:
   just --list
 
 setup:
+  npm ci
   npm ci --prefix frontend
   cd backend && bun install --frozen-lockfile
   npx husky install
@@ -102,7 +101,7 @@ test-coverage:
   npm run test:coverage --prefix frontend
 
 db-shell:
-  docker exec -it mymemorycard-db psql -U mymemorycard -d mymemorycard
+  docker compose exec -it postgres psql -U mymemorycard -d mymemorycard
 
 db-generate:
   cd backend && bun run db:generate

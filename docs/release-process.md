@@ -34,18 +34,18 @@ Release-please automatically:
 - `feat(backend): add new endpoint`
 - `fix(frontend): resolve rendering issue`
 
-### Pre-Releases (Manual)
+### Pre-releases (Manual)
 
 For testing before official release:
 
-1. Go to **Actions** > **Manual Prerelease**
+1. Go to **Actions** > **Manual Pre-release**
 2. Select component (backend/frontend/both)
 3. Select version bump (patch/minor/major)
-4. Select prerelease type (alpha/beta/rc)
-5. Optionally set prerelease number (defaults to 1)
+4. Select pre-release type (alpha/beta/rc)
+5. Optionally set pre-release number (defaults to 1)
 6. Run workflow
 
-Pre-release images are tagged with the exact prerelease version (for example: `1.2.0-alpha.1`).
+Pre-release images are tagged with the exact pre-release version (for example: `1.2.0-alpha.1`).
 
 **Pre-release progression:**
 
@@ -216,10 +216,10 @@ If manifest and package.json versions diverge:
 
 ### Pre-release Validation Failed
 
-The manual prerelease workflow computes the version automatically. If it fails:
+The manual pre-release workflow computes the version automatically. If it fails:
 
 - Check the `.release-please-manifest.json` version for the component
-- Ensure the workflow inputs are valid for bump and prerelease type
+- Ensure the workflow inputs are valid for bump and pre-release type
 
 ## Configuration Files
 

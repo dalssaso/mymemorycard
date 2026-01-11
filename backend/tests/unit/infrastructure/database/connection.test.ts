@@ -64,10 +64,9 @@ describe("DatabaseConnection", () => {
       expect(typeof value).toBe("boolean");
     });
 
-    it("should return true when database is healthy", async () => {
-      if (!process.env.CI || !process.env.DATABASE_URL) {
-        return;
-      }
+    it.skipIf(!process.env.CI || !process.env.DATABASE_URL)(
+      "should return true when database is healthy",
+      async () => {
       const logger = new Logger("test");
       const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
@@ -83,7 +82,8 @@ describe("DatabaseConnection", () => {
       expect(typeof result).toBe("boolean");
       // Returns true if connection to local test database is available
       expect(result).toBe(true);
-    });
+      }
+    );
 
     it("should return false when database is unhealthy", async () => {
       const badConfig = makeTestConfig({

@@ -33,7 +33,7 @@ Prerequisite: install the `just` task runner from [just.systems](https://just.sy
 ```bash
 # Clone and install
 git clone https://github.com/dalssaso/MyMemoryCard.git
-cd mymemorycard
+cd MyMemoryCard
 just setup
 
 # Start PostgreSQL and Redis
@@ -139,6 +139,7 @@ Migrations run automatically on backend startup via Drizzle ORM. To create new m
 
 ```bash
 just db-generate      # Generate migration from schema changes
+just db-migrate       # Apply generated migrations
 just db-studio        # Open Drizzle Studio GUI
 ```
 
