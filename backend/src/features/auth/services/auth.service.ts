@@ -135,7 +135,6 @@ export class AuthService implements IAuthService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error("Failed to validate token", message);
-      this.logger.debug("Token validation error details", message);
       this.metrics.authAttemptsTotal.inc({
         type: "validateToken",
         success: "false",
