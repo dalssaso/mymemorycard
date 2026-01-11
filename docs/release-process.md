@@ -221,15 +221,14 @@ If the manual pre-release workflow fails:
 
 ## Configuration Files
 
-| File                                   | Purpose                     |
-| -------------------------------------- | --------------------------- |
-| `release-please-config.json`           | Release automation config   |
-| `.release-please-manifest.json`        | Current version tracker     |
-| `backend/package.json`                 | Backend version source      |
-| `frontend/package.json`                | Frontend version source     |
-| `.github/workflows/release-please.yml` | Automatic release workflow  |
-| `.github/workflows/docker.yml`         | Docker build workflow       |
-| `.github/workflows/docker.yml`         | Manual image build workflow |
+| File                                   | Purpose                                           |
+| -------------------------------------- | ------------------------------------------------- |
+| `release-please-config.json`           | Release automation config                         |
+| `.release-please-manifest.json`        | Current version tracker                           |
+| `backend/package.json`                 | Backend version source                            |
+| `frontend/package.json`                | Frontend version source                           |
+| `.github/workflows/release-please.yml` | Automatic release workflow                        |
+| `.github/workflows/docker.yml`         | Docker builds (workflow_call + workflow_dispatch) |
 
 ## Additional Resources
 
