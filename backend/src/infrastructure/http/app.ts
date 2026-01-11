@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { container } from "@/container";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
+import type { IAiController } from "@/features/ai/controllers/ai.controller.interface";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { createErrorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
@@ -57,6 +58,10 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   // Auth routes (DI-based)
   const authController = container.resolve<IAuthController>("IAuthController");
   app.route("/api/auth", authController.router);
+
+  // AI routes (DI-based)
+  const aiController = container.resolve<IAiController>("IAiController");
+  app.route("/api/ai", aiController.router);
 
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)

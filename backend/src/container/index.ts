@@ -27,6 +27,10 @@ import type { IAuthService } from "@/features/auth/services/auth.service.interfa
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 
+// AI - Controllers
+import { AiController } from "@/features/ai/controllers/ai.controller";
+import type { IAiController } from "@/features/ai/controllers/ai.controller.interface";
+
 // AI - Repositories
 import { AiSettingsRepository } from "@/features/ai/repositories/ai-settings.repository";
 import { EmbeddingRepository } from "@/features/ai/repositories/embedding.repository";
@@ -83,6 +87,9 @@ export function registerDependencies(): void {
   container.registerSingleton<IEmbeddingService>("IEmbeddingService", EmbeddingService);
   container.registerSingleton<ICuratorService>("ICuratorService", CuratorService);
   container.registerSingleton<IImageService>("IImageService", ImageService);
+
+  // AI Domain - Controllers
+  container.registerSingleton<IAiController>("IAiController", AiController);
 }
 
 /**
