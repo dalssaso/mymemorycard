@@ -126,11 +126,12 @@ describe("EmbeddingRepository", () => {
 
   describe("saveCollectionEmbedding", () => {
     it("should save collection embedding successfully", async () => {
+      const valuesMock = mock().mockReturnValue({
+        onConflictDoUpdate: mock().mockResolvedValue(undefined),
+      });
       const insertMock = mockDb.insert as ReturnType<typeof mock>;
       insertMock.mockReturnValue({
-        values: mock().mockReturnValue({
-          onConflictDoUpdate: mock().mockResolvedValue(undefined),
-        }),
+        values: valuesMock,
       });
 
       await repository.saveCollectionEmbedding(
@@ -139,7 +140,17 @@ describe("EmbeddingRepository", () => {
         "text-embedding-3-small"
       );
 
-      expect(mockDb.insert).toHaveBeenCalled();
+      expect(mockDb.insert).toHaveBeenCalledTimes(1);
+      expect(valuesMock).toHaveBeenCalledTimes(1);
+
+      const payload = valuesMock.mock.calls[0][0];
+      expect(payload).toMatchObject({
+        collectionId: "collection-999",
+        embedding: [0.11, 0.22, 0.33],
+        model: "text-embedding-3-small",
+      });
+      expect(payload.textHash).toBeDefined();
+      expect(typeof payload.textHash).toBe("string");
     });
   });
 
