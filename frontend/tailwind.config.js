@@ -6,90 +6,68 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/shadcn-ui/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-family)"],
+      },
       colors: {
-        ctp: {
-          base: "var(--ctp-base)",
-          mantle: "var(--ctp-mantle)",
-          crust: "var(--ctp-crust)",
-          surface0: "var(--ctp-surface0)",
-          surface1: "var(--ctp-surface1)",
-          surface2: "var(--ctp-surface2)",
-          overlay0: "var(--ctp-overlay0)",
-          overlay1: "var(--ctp-overlay1)",
-          overlay2: "var(--ctp-overlay2)",
-          subtext0: "var(--ctp-subtext0)",
-          subtext1: "var(--ctp-subtext1)",
-          text: "var(--ctp-text)",
-          rosewater: "var(--ctp-rosewater)",
-          flamingo: "var(--ctp-flamingo)",
-          pink: "var(--ctp-pink)",
-          mauve: "var(--ctp-mauve)",
-          red: "var(--ctp-red)",
-          maroon: "var(--ctp-maroon)",
-          peach: "var(--ctp-peach)",
-          yellow: "var(--ctp-yellow)",
-          green: "var(--ctp-green)",
-          teal: "var(--ctp-teal)",
-          sky: "var(--ctp-sky)",
-          sapphire: "var(--ctp-sapphire)",
-          blue: "var(--ctp-blue)",
-          lavender: "var(--ctp-lavender)",
+        // Core background colors
+        base: "var(--color-base)",
+        surface: "var(--color-surface)",
+        elevated: "var(--color-elevated)",
+
+        // Text colors
+        "text-primary": "var(--color-text-primary)",
+        "text-secondary": "var(--color-text-secondary)",
+        "text-muted": "var(--color-text-muted)",
+
+        // Accent
+        accent: {
+          DEFAULT: "var(--color-accent)",
+          hover: "var(--color-accent-hover)",
         },
-        primary: {
-          purple: "var(--ctp-mauve)",
-          cyan: "var(--ctp-teal)",
-          green: "var(--ctp-green)",
-          red: "var(--ctp-red)",
-          yellow: "var(--ctp-yellow)",
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        bg: {
-          primary: "var(--ctp-base)",
-          secondary: "var(--ctp-mantle)",
-          tertiary: "var(--ctp-surface0)",
-          hover: "var(--ctp-surface1)",
-        },
+
+        // Status colors
         status: {
-          backlog: "var(--ctp-overlay1)",
-          playing: "var(--ctp-teal)",
-          finished: "var(--ctp-green)",
-          dropped: "var(--ctp-red)",
-          completed: "var(--ctp-yellow)",
+          playing: "var(--color-status-playing)",
+          finished: "var(--color-status-finished)",
+          completed: "var(--color-status-completed)",
+          dropped: "var(--color-status-dropped)",
+          backlog: "var(--color-status-backlog)",
         },
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+
+        // shadcn compatibility
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
         },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
         chart: {
           1: "hsl(var(--chart-1))",
           2: "hsl(var(--chart-2))",
@@ -98,17 +76,61 @@ export default {
           5: "hsl(var(--chart-5))",
         },
       },
-      boxShadow: {
-        "glow-purple": "0 0 20px rgba(139, 92, 246, 0.5)",
-        "glow-cyan": "0 0 20px rgba(6, 182, 212, 0.5)",
-        "glow-green": "0 0 20px rgba(16, 185, 129, 0.5)",
+      spacing: {
+        "space-1": "var(--space-1)",
+        "space-2": "var(--space-2)",
+        "space-3": "var(--space-3)",
+        "space-4": "var(--space-4)",
+        "space-5": "var(--space-5)",
+        "space-6": "var(--space-6)",
+        "space-8": "var(--space-8)",
+        "space-10": "var(--space-10)",
+        "space-12": "var(--space-12)",
+        "space-16": "var(--space-16)",
+        "nav-rail": "var(--nav-rail-width)",
+        "top-bar": "var(--top-bar-height)",
+        "bottom-tab": "var(--bottom-tab-height)",
+      },
+      maxWidth: {
+        content: "var(--content-max-width)",
+      },
+      fontSize: {
+        xs: ["var(--font-size-xs)", { lineHeight: "var(--line-height-body)" }],
+        sm: ["var(--font-size-sm)", { lineHeight: "var(--line-height-body)" }],
+        base: ["var(--font-size-base)", { lineHeight: "var(--line-height-body)" }],
+        lg: ["var(--font-size-lg)", { lineHeight: "var(--line-height-body)" }],
+        xl: ["var(--font-size-xl)", { lineHeight: "var(--line-height-heading)" }],
+        "2xl": ["var(--font-size-2xl)", { lineHeight: "var(--line-height-heading)" }],
+        "3xl": ["var(--font-size-3xl)", { lineHeight: "var(--line-height-heading)" }],
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "var(--radius-sm)",
+        DEFAULT: "var(--radius-md)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        full: "var(--radius-full)",
+      },
+      boxShadow: {
+        sm: "var(--shadow-sm)",
+        DEFAULT: "var(--shadow-md)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        "card-hover": "var(--shadow-card-hover)",
+      },
+      transitionDuration: {
+        instant: "var(--duration-instant)",
+        quick: "var(--duration-quick)",
+        standard: "var(--duration-standard)",
+        smooth: "var(--duration-smooth)",
+        page: "var(--duration-page)",
+      },
+      transitionTimingFunction: {
+        out: "var(--ease-out)",
+        in: "var(--ease-in)",
+        spring: "var(--ease-spring)",
       },
     },
   },
   plugins: [tailwindcssAnimate],
-};
+}
