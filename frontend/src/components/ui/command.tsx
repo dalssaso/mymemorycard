@@ -14,7 +14,7 @@ const Command = React.forwardRef<
     <CommandPrimitive
       ref={ref}
       className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-md bg-ctp-surface0 text-ctp-text",
+        "flex h-full w-full flex-col overflow-hidden rounded-md bg-surface text-text-primary",
         className
       )}
       {...props}
@@ -27,7 +27,7 @@ const CommandDialog = ({ children, ...props }: DialogProps): JSX.Element => {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0">
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-ctp-subtext1 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-text-secondary [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
           {children}
         </Command>
       </DialogContent>
@@ -41,14 +41,14 @@ const CommandInput = React.forwardRef<
 >(
   ({ className, ...props }, ref): JSX.Element => (
     <div
-      className="bg-ctp-surface0/95 sticky top-0 z-10 flex items-center border-b border-ctp-surface2 px-3 backdrop-blur"
+      className="sticky top-0 z-10 flex items-center border-b border-border bg-surface/95 px-3 backdrop-blur"
       data-cmdk-input-wrapper=""
     >
       <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         ref={ref}
         className={cn(
-          "flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-ctp-subtext1 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-text-muted disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         {...props}
@@ -93,7 +93,7 @@ const CommandGroup = React.forwardRef<
     <CommandPrimitive.Group
       ref={ref}
       className={cn(
-        "overflow-hidden p-1 text-ctp-text [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-ctp-subtext1",
+        "overflow-hidden p-1 text-text-primary [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-text-secondary",
         className
       )}
       {...props}
@@ -125,7 +125,7 @@ const CommandItem = React.forwardRef<
     <CommandPrimitive.Item
       ref={ref}
       className={cn(
-        "relative flex cursor-default select-none items-center gap-2 rounded-md px-3 py-3 text-sm outline-none transition-colors hover:bg-ctp-surface1 hover:text-ctp-text data-[disabled=true]:pointer-events-none data-[selected=true]:bg-ctp-surface1 data-[selected=true]:text-ctp-text data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+        "relative flex cursor-default select-none items-center gap-2 rounded-md px-3 py-3 text-sm outline-none transition-colors duration-150 ease-smooth hover:bg-elevated hover:text-text-primary data-[disabled=true]:pointer-events-none data-[selected=true]:bg-elevated data-[selected=true]:text-text-primary data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
         className
       )}
       {...props}
@@ -141,7 +141,7 @@ const CommandShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>): JSX.Element => {
   return (
     <span
-      className={cn("ml-auto text-xs tracking-widest text-ctp-subtext1", className)}
+      className={cn("ml-auto text-xs tracking-widest text-text-secondary", className)}
       {...props}
     />
   );
