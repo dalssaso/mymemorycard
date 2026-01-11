@@ -23,12 +23,6 @@ export class AuthService implements IAuthService {
     this.logger.debug("Attempting user registration");
 
     // Input validation is performed by RegisterRequestSchema in the controller
-    const exists = await this.userRepo.exists(username);
-    if (exists) {
-      this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
-      throw new ConflictError(`User ${username} already exists`);
-    }
-
     const hash = await this.passwordHasher.hash(password);
 
     try {
@@ -51,8 +45,8 @@ export class AuthService implements IAuthService {
         token,
       };
     } catch (error) {
-      // Handle TOCTOU race condition: userRepo.create() may throw ConflictError
-      // even though exists() passed (another request could have created the user)
+      // Handle duplicate username: userRepo.create() throws ConflictError
+      // when username already exists (database constraint violation)
       if (error instanceof ConflictError) {
         this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
         throw error;
@@ -76,8 +70,7 @@ export class AuthService implements IAuthService {
 
     // Prevent timing attacks by always performing password comparison
     // If user doesn't exist, use a dummy hash so the comparison still takes time
-    const DUMMY_PASSWORD_HASH =
-      "$2a$10$invalidusernamepreventionhashthisisnotarealpassword";
+    const DUMMY_PASSWORD_HASH = "$2a$10$invalidusernamepreventionhashthisisnotarealpassword";
     const hashToCompare = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
 
     const isValid = await this.passwordHasher.compare(password, hashToCompare);
