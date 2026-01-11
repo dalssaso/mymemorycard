@@ -27,7 +27,7 @@ Always show commands with context:
 
 ```bash
 # Comment explaining what this does
-make dev-backend    # http://localhost:3000
+just dev-backend    # http://localhost:3000
 ```
 
 ### Tables

@@ -5,6 +5,7 @@
 - **Bun** v1.0+ - [bun.sh](https://bun.sh)
 - **Node.js** v20+ - [nodejs.org](https://nodejs.org)
 - **Docker** and **Docker Compose** - [docker.com](https://docs.docker.com/get-docker/)
+- **Just** task runner - [just.systems](https://just.systems)
 
 ## Setup
 
@@ -13,13 +14,13 @@
 ```bash
 git clone https://github.com/dalssaso/MyMemoryCard.git
 cd mymemorycard
-make install
+just setup
 ```
 
 ### 2. Start Services
 
 ```bash
-make dev
+just dev
 ```
 
 This starts PostgreSQL (port 5433) and Redis (port 6380) in Docker.
@@ -30,10 +31,10 @@ In separate terminals:
 
 ```bash
 # Terminal 1: Backend
-make dev-backend    # http://localhost:3000
+just dev-backend    # http://localhost:3000
 
 # Terminal 2: Frontend
-make dev-frontend   # http://localhost:5173
+just dev-frontend   # http://localhost:5173
 ```
 
 ## Verify Setup
@@ -53,34 +54,34 @@ Open http://localhost:5173 in your browser.
 Migrations run automatically on backend startup. For manual control:
 
 ```bash
-make db-shell       # Open PostgreSQL shell
-make db-generate    # Generate migration from schema changes
-make db-migrate     # Apply pending migrations via drizzle-kit
-make db-push        # Push schema directly (dev only)
-make db-studio      # Open Drizzle Studio GUI
+just db-shell       # Open PostgreSQL shell
+just db-generate    # Generate migration from schema changes
+just db-migrate     # Apply pending migrations via drizzle-kit
+just db-push        # Push schema directly (dev only)
+just db-studio      # Open Drizzle Studio GUI
 ```
 
 ### Testing
 
 ```bash
-make test-unit        # Unit tests (no Docker needed)
-make test-integration # Integration tests (requires running backend)
-make test-coverage    # Coverage report
+just test-unit        # Unit tests (no Docker needed)
+just test-integration # Integration tests (requires running backend)
+just test-coverage    # Coverage report
 ```
 
 ### Code Quality
 
 ```bash
-make typecheck      # TypeScript checking
-make lint           # ESLint (frontend)
-make format         # Prettier formatting
+just typecheck      # TypeScript checking
+just lint           # ESLint (backend + frontend)
+just format         # Prettier formatting
 ```
 
 ### Stop/Clean
 
 ```bash
-make stop           # Stop Docker containers
-make clean          # Stop and remove volumes (deletes data)
+just stop           # Stop Docker containers
+just clean          # Stop and remove volumes (deletes data)
 ```
 
 ## Troubleshooting
@@ -101,8 +102,8 @@ docker ps
 ### Reset database
 
 ```bash
-make clean
-make dev
+just clean
+just dev
 ```
 
 ## Configuration
@@ -118,4 +119,4 @@ The backend uses sensible defaults for local development. No `.env` file is need
 | `PORT`         | `3000`                                                              | Backend server port                       |
 | `ORIGIN`       | -                                                                   | Additional allowed CORS origin (optional) |
 
-For production, set these via environment variables in `docker-compose.prod.yml`.
+For production, set these via environment variables in `deploy/docker-compose.yml`.

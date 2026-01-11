@@ -38,17 +38,14 @@ Release-please automatically:
 
 For testing before official release:
 
-1. Go to **Actions** > **Manual Pre-Release Build**
-2. Select component (backend/frontend)
-3. Enter version: `X.Y.Z-(alpha|beta|rc).N`
-   - Examples: `1.2.0-alpha.1`, `1.2.0-beta.2`, `1.2.0-rc.1`
-4. Optionally enable "Dry run" to test without pushing
-5. Run workflow
+1. Go to **Actions** > **Manual Prerelease**
+2. Select component (backend/frontend/both)
+3. Select version bump (patch/minor/major)
+4. Select prerelease type (alpha/beta/rc)
+5. Optionally set prerelease number (defaults to 1)
+6. Run workflow
 
-Pre-release images are tagged with:
-
-- Full version: `1.2.0-alpha.1`
-- Type only: `alpha` (overwritten by subsequent alphas)
+Pre-release images are tagged with the exact prerelease version (for example: `1.2.0-alpha.1`).
 
 **Pre-release progression:**
 
@@ -219,11 +216,10 @@ If manifest and package.json versions diverge:
 
 ### Pre-release Validation Failed
 
-The manual release workflow validates version format. Ensure you use:
+The manual prerelease workflow computes the version automatically. If it fails:
 
-- Format: `X.Y.Z-(alpha|beta|rc).N`
-- Valid examples: `1.2.0-alpha.1`, `2.0.0-beta.3`, `1.0.0-rc.1`
-- Invalid: `1.2.0-alpha`, `1.2.0.alpha.1`, `1.2-alpha.1`
+- Check the `.release-please-manifest.json` version for the component
+- Ensure the workflow inputs are valid for bump and prerelease type
 
 ## Configuration Files
 

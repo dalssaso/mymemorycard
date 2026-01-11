@@ -36,18 +36,18 @@ Query these libraries:
 ## Quick Start
 
 ```bash
-docker compose up -d          # PostgreSQL (port 5433) + Redis (port 6380)
-cd backend && bun run dev     # Backend on :3000
-cd frontend && npm run dev    # Frontend on :5173
+just dev                      # PostgreSQL (port 5433) + Redis (port 6380)
+just dev-backend              # Backend on :3000
+just dev-frontend             # Frontend on :5173
 ```
 
-Make commands:
+Just commands:
 
 ```bash
-make install                  # Install all dependencies
-make dev                      # Start infrastructure
-make dev-backend              # Start backend (separate terminal)
-make dev-frontend             # Start frontend (separate terminal)
+just setup                    # Install all dependencies + git hooks
+just dev                      # Start infrastructure
+just dev-backend              # Start backend (separate terminal)
+just dev-frontend             # Start frontend (separate terminal)
 ```
 
 ## Git Worktrees
@@ -64,12 +64,7 @@ Git worktrees (`.worktrees/` directory):
 Bootstrap the environment after creating or switching to a worktree:
 
 ```bash
-# Install dependencies
-bun install          # Backend dependencies
-npm install          # Frontend dependencies
-
-# Setup git hooks (required)
-npx husky install    # Enable pre-commit hooks
+just setup           # Install dependencies + enable git hooks
 ```
 
 **Pre-commit Hooks:**
@@ -82,29 +77,22 @@ npx husky install    # Enable pre-commit hooks
 
 | Command                 | Description               |
 | ----------------------- | ------------------------- |
-| `npm run typecheck`     | Type check both projects  |
-| `npm run format`        | Prettier all files        |
-| `npm run format:check`  | Check formatting          |
-| `npm run lint:backend`  | Run ESLint on backend     |
-| `npm run lint:frontend` | Run ESLint on frontend    |
-| `npm test`              | Run frontend tests        |
-| `make help`             | Show all make commands    |
+| `just ci`               | Lint/typecheck/format-check (both) |
+| `just lint`             | Run ESLint on both        |
+| `just typecheck`        | Type check both projects  |
+| `just format`           | Prettier format both      |
+| `just format-check`     | Check formatting          |
+| `just test`             | Run frontend + backend tests |
+| `just build`            | Build local images (both) |
 
 ## After Every Code Change
 
 Run these commands after `feat`, `fix`, `refactor`, or `chore` changes:
 
 ```bash
-# Backend changes
-cd backend && bun run lint && bun run typecheck
-
-# Frontend changes
-cd frontend && npm run lint && npm run typecheck
-
-# Or from root for both
-npm run lint:backend && npm run typecheck
-npm run lint:frontend && npm run typecheck
-npm run format:check
+just lint
+just typecheck
+just format-check
 ```
 
 Fix any lint/type errors before committing.
@@ -136,14 +124,7 @@ If a tool is reporting issues that seem incorrect or overly strict, **ask the us
 **Format all changes before committing:**
 
 ```bash
-# Backend
-cd backend && bun run format
-
-# Frontend
-cd frontend && npm run format
-
-# Or from root for both
-npm run format
+just format
 ```
 
 Never commit unformatted code. The project's `.prettierrc` files define the exact formatting rules—respect them while developing and before creating commits.
@@ -188,21 +169,21 @@ import { db } from '@/services/db'
 
 ## Testing
 
-Frontend tests only (backend tests disabled):
+Tests are available for both packages:
 
 ```bash
-cd frontend && npm test       # Run vitest
-npm run test:coverage         # 90% coverage threshold
+just test                     # Unit + integration (backend) + frontend tests
+just test-unit                # Unit tests only
+just test-integration         # Backend integration tests (requires Docker + backend)
+just test-coverage            # Coverage reports
 ```
-
-Verify backend changes with `bun run typecheck` and manual testing.
 
 ## Database
 
 ```bash
-make db-shell                 # Open PostgreSQL shell
-make db-generate              # Generate migration from schema changes
-make db-studio                # Browse with Drizzle Studio
+just db-shell                 # Open PostgreSQL shell
+just db-generate              # Generate migration from schema changes
+just db-studio                # Browse with Drizzle Studio
 ```
 
 Connection: `postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard`

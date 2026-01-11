@@ -4,23 +4,7 @@
   "private": true,
   "description": "A self-hosted game library aggregator",
   "scripts": {
-    "prepare": "husky install",
-    "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "cd backend && bun test",
-    "test:frontend": "cd frontend && npm test",
-    "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
-    "typecheck:backend": "cd backend && bun run typecheck",
-    "typecheck:frontend": "cd frontend && npm run typecheck",
-    "lint:backend": "cd backend && bun run lint",
-    "lint:backend:fix": "cd backend && bun run lint:fix",
-    "lint:frontend": "cd frontend && npm run lint",
-    "lint:frontend:fix": "cd frontend && npm run lint:fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:backend": "prettier --write \"backend/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check:backend": "prettier --check \"backend/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:frontend": "prettier --write \"frontend/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check:frontend": "prettier --check \"frontend/**/*.{ts,tsx,js,jsx,json,md}\""
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.0",

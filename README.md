@@ -28,18 +28,20 @@ A self-hosted, privacy-focused game library aggregator that helps you track and 
 
 ### Development Setup
 
+Prerequisite: install the `just` task runner from [just.systems](https://just.systems).
+
 ```bash
 # Clone and install
 git clone https://github.com/dalssaso/MyMemoryCard.git
 cd mymemorycard
-make install
+just setup
 
 # Start PostgreSQL and Redis
-make dev
+just dev
 
 # In separate terminals:
-make dev-backend    # Backend on :3000
-make dev-frontend   # Frontend on :5173
+just dev-backend    # Backend on :3000
+just dev-frontend   # Frontend on :5173
 ```
 
 No `.env` file needed for local development - sensible defaults are built-in.
@@ -85,17 +87,17 @@ docker pull ghcr.io/dalssaso/mymemorycard/frontend:1.1.0 # x-release-please-vers
 
 ## Development
 
-Run `make help` to see all available commands.
+Run `just --list` to see all available commands.
 
 ### Common Commands
 
 ```bash
-make dev              # Start Docker services (postgres, redis)
-make dev-backend      # Run backend locally
-make dev-frontend     # Run frontend locally
-make typecheck        # TypeScript checking
-make lint             # ESLint
-make format           # Prettier formatting
+just dev              # Start Docker services (postgres, redis)
+just dev-backend      # Run backend locally
+just dev-frontend     # Run frontend locally
+just typecheck        # TypeScript checking
+just lint             # ESLint
+just format           # Prettier formatting
 ```
 
 ### Frontend UI (shadcn + Catppuccin)
@@ -136,8 +138,8 @@ mymemorycard/
 Migrations run automatically on backend startup via Drizzle ORM. To create new migrations:
 
 ```bash
-make db-generate      # Generate migration from schema changes
-make db-studio        # Open Drizzle Studio GUI
+just db-generate      # Generate migration from schema changes
+just db-studio        # Open Drizzle Studio GUI
 ```
 
 ## Docker Compose Files

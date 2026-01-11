@@ -25,6 +25,18 @@ query-docs: libraryId="/shadcn-ui/ui", query="dialog component"
 
 ## Commands
 
+Preferred (root):
+
+```bash
+just dev-frontend
+just lint-frontend
+just typecheck-frontend
+just test-unit-frontend
+just build-frontend
+```
+
+Direct (frontend directory):
+
 ```bash
 npm run dev           # Dev server on :5173
 npm run build         # Production build (tsc + vite)
@@ -41,7 +53,7 @@ npm run lint:fix      # ESLint with auto-fix
 Run after modifications:
 
 ```bash
-npm run lint && npm run typecheck
+just lint-frontend && just typecheck-frontend
 ```
 
 Fix type errors before committing.
