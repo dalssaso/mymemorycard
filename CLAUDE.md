@@ -178,6 +178,12 @@ just test-integration         # Backend integration tests (requires Docker + bac
 just test-coverage            # Coverage reports
 ```
 
+**Backend testing requirements:**
+
+- Run `just test-unit-backend` before every commit
+- All tests must pass (no failures tolerated)
+- Update test mocks when adding service dependencies
+
 ## Database
 
 ```bash
@@ -213,6 +219,16 @@ refactor: extract api client to separate module
 Release-please automates releases from conventional commits.
 
 **Commit only after user confirms changes work.**
+
+## Backend Patterns
+
+See [backend/CLAUDE.md](backend/CLAUDE.md) for detailed patterns on:
+
+- **Logging**: Never use console.log/error - inject Logger service
+- **Security**: Generic auth errors, parameterized queries, input validation
+- **Error handling**: ConfigurationError (503), ValidationError (400), proper HTTP codes
+- **Dependency injection**: tsyringe patterns, updating tests with mocks
+- **Zod validation**: UUID patterns, schema validation for untrusted input
 
 ## Frontend Patterns
 
