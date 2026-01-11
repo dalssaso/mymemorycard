@@ -100,16 +100,27 @@ describe("EmbeddingRepository", () => {
 
   describe("saveGameEmbedding", () => {
     it("should save game embedding successfully", async () => {
+      const valuesMock = mock().mockReturnValue({
+        onConflictDoUpdate: mock().mockResolvedValue(undefined),
+      });
       const insertMock = mockDb.insert as ReturnType<typeof mock>;
       insertMock.mockReturnValue({
-        values: mock().mockReturnValue({
-          onConflictDoUpdate: mock().mockResolvedValue(undefined),
-        }),
+        values: valuesMock,
       });
 
       await repository.saveGameEmbedding("game-789", [0.7, 0.8, 0.9], "text-embedding-3-small");
 
-      expect(mockDb.insert).toHaveBeenCalled();
+      expect(mockDb.insert).toHaveBeenCalledTimes(1);
+      expect(valuesMock).toHaveBeenCalledTimes(1);
+
+      const payload = valuesMock.mock.calls[0][0];
+      expect(payload).toMatchObject({
+        gameId: "game-789",
+        embedding: [0.7, 0.8, 0.9],
+        model: "text-embedding-3-small",
+      });
+      expect(payload.textHash).toBeDefined();
+      expect(typeof payload.textHash).toBe("string");
     });
   });
 
