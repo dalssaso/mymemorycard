@@ -8,17 +8,31 @@ import {
 import { ConfigurationError } from "@/features/ai/errors/configuration.error";
 import type { IGatewayService } from "@/features/ai/services/gateway.service.interface";
 import type { IAiSettingsRepository } from "@/features/ai/repositories/ai-settings.repository.interface";
+import type { Logger } from "@/infrastructure/logging/logger";
 
 describe("CuratorService", () => {
   let curatorService: CuratorService;
   let mockGateway: IGatewayService;
   let mockSettingsRepo: IAiSettingsRepository;
+  let mockLogger: Logger;
+
+  const createMockLogger = (): Logger => {
+    const mockInstance = {
+      debug: mock(() => {}),
+      info: mock(() => {}),
+      warn: mock(() => {}),
+      error: mock(() => {}),
+      child: mock(() => mockInstance),
+    };
+    return mockInstance as unknown as Logger;
+  };
 
   beforeEach(() => {
     mockGateway = createMockGatewayService();
     mockSettingsRepo = createMockAiSettingsRepository();
+    mockLogger = createMockLogger();
 
-    curatorService = new CuratorService(mockGateway, mockSettingsRepo);
+    curatorService = new CuratorService(mockGateway, mockSettingsRepo, mockLogger);
   });
 
   describe("suggestCollections", () => {
