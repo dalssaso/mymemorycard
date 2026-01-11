@@ -59,10 +59,10 @@ export class Config implements IConfig {
     this.redis = { url: this.requireEnv("REDIS_URL") };
     const jwtSecret = this.requireEnv("JWT_SECRET");
 
-    // Validate JWT secret length in production
-    if (this.isProduction && jwtSecret.length < 32) {
+    // Validate JWT secret length - required in all environments for consistency
+    if (jwtSecret.length < 32) {
       throw new Error(
-        `JWT_SECRET must be at least 32 characters in production (current length: ${jwtSecret.length})`
+        `JWT_SECRET must be at least 32 characters (current length: ${jwtSecret.length})`
       );
     }
 
