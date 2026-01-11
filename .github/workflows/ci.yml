@@ -133,6 +133,10 @@ jobs:
         env:
           DATABASE_URL: postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard
           REDIS_URL: redis://localhost:6380
+          JWT_SECRET: ci-jwt-secret-change-in-production-32chars-min
+          ENCRYPTION_SECRET: ci-encryption-secret-change-in-production-32chars-min
+          ENCRYPTION_SALT: ci-encryption-salt-min-16
+          RAWG_API_KEY: ci-rawg-api-key
         run: bun run test
 
   frontend-tests:
