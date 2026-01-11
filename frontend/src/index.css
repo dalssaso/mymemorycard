@@ -1,9 +1,18 @@
 @import './styles/fonts.css';
+@import './styles/tokens.css';
 @import './styles/theme.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base styles */
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-base);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-body);
+}
 
 @layer base {
   * {
@@ -15,8 +24,7 @@
   }
 
   body {
-    @apply bg-ctp-base text-ctp-text antialiased;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    @apply antialiased;
     scrollbar-width: thin;
     scrollbar-color: var(--ctp-surface2) transparent;
   }
@@ -284,8 +292,6 @@
     animation: slide-in 0.3s ease-out;
   }
 }
-
-
 
 @layer base {
   * {
