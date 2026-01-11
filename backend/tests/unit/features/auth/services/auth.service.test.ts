@@ -50,7 +50,10 @@ describe("AuthService", () => {
     });
 
     it("should throw ConflictError if user already exists", async () => {
-      mockUserRepo.exists = async () => true;
+      // Repository throws ConflictError on database constraint violation (TOCTOU-safe pattern)
+      mockUserRepo.create = async () => {
+        throw new ConflictError("User already exists");
+      };
 
       await expect(
         authService.register("existing", "existing@example.com", "password")

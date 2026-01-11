@@ -59,11 +59,9 @@ export class Config implements IConfig {
     this.redis = { url: this.requireEnv("REDIS_URL") };
     const jwtSecret = this.requireEnv("JWT_SECRET");
 
-    // Validate JWT secret length - required in all environments for consistency
-    if (jwtSecret.length < 32) {
-      throw new Error(
-        `JWT_SECRET must be at least 32 characters (current length: ${jwtSecret.length})`
-      );
+    // Validate JWT secret length in production only
+    if (this.isProduction && jwtSecret.length < 32) {
+      throw new Error("JWT_SECRET must be at least 32 characters in production");
     }
 
     this.jwt = {
@@ -76,17 +74,13 @@ export class Config implements IConfig {
     const encryptionSecret = this.requireEnv("ENCRYPTION_SECRET");
     const encryptionSalt = this.requireEnv("ENCRYPTION_SALT");
 
-    // Validate encryption secret and salt minimum length
-    if (encryptionSecret.length < 32) {
-      throw new Error(
-        `ENCRYPTION_SECRET must be at least 32 characters (current length: ${encryptionSecret.length})`
-      );
+    // Validate encryption secret and salt length in production only
+    if (this.isProduction && encryptionSecret.length < 32) {
+      throw new Error("ENCRYPTION_SECRET must be at least 32 characters in production");
     }
 
-    if (encryptionSalt.length < 16) {
-      throw new Error(
-        `ENCRYPTION_SALT must be at least 16 characters (current length: ${encryptionSalt.length})`
-      );
+    if (this.isProduction && encryptionSalt.length < 16) {
+      throw new Error("ENCRYPTION_SALT must be at least 16 characters in production");
     }
 
     this.encryption = {

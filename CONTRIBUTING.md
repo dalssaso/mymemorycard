@@ -25,6 +25,7 @@ Be respectful, constructive, and professional in all interactions. This project 
 - **Bun** 1.x or later ([install guide](https://bun.sh))
 - **Node.js** 20+ for frontend development
 - **Docker** and Docker Compose
+- **Just** task runner ([just.systems](https://just.systems))
 - **Git** for version control
 
 ### Setup Development Environment
@@ -47,37 +48,18 @@ git remote add upstream https://github.com/dalssaso/MyMemoryCard.git
 4. Install dependencies:
 
 ```bash
-# Backend
-cd backend
-bun install
-
-# Frontend
-cd ../frontend
-npm install
+just setup
 ```
 
 5. Start development services:
 
 ```bash
-# Terminal 1 - Start PostgreSQL and Redis
-docker-compose up -d postgres redis
-
-# Terminal 2 - Start backend
-cd backend
-bun run dev
-
-# Terminal 3 - Start frontend
-cd frontend
-npm run dev
+just dev            # Terminal 1 - PostgreSQL + Redis
+just dev-backend    # Terminal 2 - Backend
+just dev-frontend   # Terminal 3 - Frontend
 ```
 
-6. Install pre-commit hooks:
-
-```bash
-# From project root
-npm install -g husky
-npm install -g lint-staged
-```
+6. Pre-commit hooks are installed by `just setup`.
 
 ## Development Workflow
 
@@ -94,25 +76,13 @@ git checkout -b feature/your-feature-name
 4. **Run tests locally:**
 
 ```bash
-# Backend tests
-cd backend
-bun test
-
-# Frontend tests
-cd frontend
-npm test
+just test
 ```
 
 5. **Check types:**
 
 ```bash
-# Backend
-cd backend
-bun run typecheck
-
-# Frontend
-cd frontend
-npm run typecheck
+just typecheck
 ```
 
 6. **Commit your changes** (pre-commit hooks will run automatically)
@@ -149,7 +119,7 @@ git push --force-with-lease origin feature/your-feature-name
    - Use proper type imports
 
 3. **Code Formatting**
-   - Prettier is configured - run `npm run format` or let pre-commit hooks handle it
+   - Prettier is configured - run `just format` or let pre-commit hooks handle it
    - 2 spaces for indentation
    - Single quotes for strings
    - Semicolons required
@@ -999,20 +969,20 @@ We use Drizzle ORM for database schema management. Migrations run automatically 
 When adding database changes:
 
 1. Update the schema in `backend/src/db/schema.ts`
-2. Generate a new migration: `make db-generate`
+2. Generate a new migration: `just db-generate`
 3. Review the generated SQL in `backend/drizzle/`
 4. Test the migration by restarting the backend
 5. Include migration details in PR description
 
 ```bash
 # Generate migration from schema changes
-make db-generate
+just db-generate
 
 # Push schema directly during development (no migration file)
-make db-push
+just db-push
 
 # Open Drizzle Studio to browse data
-make db-studio
+just db-studio
 ```
 
 ### Adding New Dependencies
@@ -1066,9 +1036,9 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 3. **Docker images** are automatically built and published to GitHub Container Registry
 
-### Pre-releases
+### Prereleases
 
-For testing before official release, use the **Manual Pre-Release Build** workflow in GitHub Actions.
+For testing before official release, use the **Manual Prerelease** workflow in GitHub Actions.
 
 See [docs/release-process.md](docs/release-process.md) for complete documentation.
 

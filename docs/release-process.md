@@ -34,21 +34,16 @@ Release-please automatically:
 - `feat(backend): add new endpoint`
 - `fix(frontend): resolve rendering issue`
 
-### Pre-Releases (Manual)
+### Pre-releases (Manual)
 
-For testing before official release:
+For testing before official release, use the **Docker Build and Publish** workflow:
 
-1. Go to **Actions** > **Manual Pre-Release Build**
+1. Go to **Actions** > **Docker Build and Publish**
 2. Select component (backend/frontend)
-3. Enter version: `X.Y.Z-(alpha|beta|rc).N`
-   - Examples: `1.2.0-alpha.1`, `1.2.0-beta.2`, `1.2.0-rc.1`
-4. Optionally enable "Dry run" to test without pushing
-5. Run workflow
+3. Enter a pre-release version (e.g., `1.2.0-alpha.1`)
+4. Run workflow
 
-Pre-release images are tagged with:
-
-- Full version: `1.2.0-alpha.1`
-- Type only: `alpha` (overwritten by subsequent alphas)
+Pre-release images are tagged with the exact pre-release version (for example: `1.2.0-alpha.1`).
 
 **Pre-release progression:**
 
@@ -219,23 +214,21 @@ If manifest and package.json versions diverge:
 
 ### Pre-release Validation Failed
 
-The manual release workflow validates version format. Ensure you use:
+If the manual pre-release workflow fails:
 
-- Format: `X.Y.Z-(alpha|beta|rc).N`
-- Valid examples: `1.2.0-alpha.1`, `2.0.0-beta.3`, `1.0.0-rc.1`
-- Invalid: `1.2.0-alpha`, `1.2.0.alpha.1`, `1.2-alpha.1`
+- Ensure the version string is valid (e.g., `1.2.0-alpha.1`)
+- Verify the component selection matches the intended image
 
 ## Configuration Files
 
-| File                                   | Purpose                    |
-| -------------------------------------- | -------------------------- |
-| `release-please-config.json`           | Release automation config  |
-| `.release-please-manifest.json`        | Current version tracker    |
-| `backend/package.json`                 | Backend version source     |
-| `frontend/package.json`                | Frontend version source    |
-| `.github/workflows/release-please.yml` | Automatic release workflow |
-| `.github/workflows/docker.yml`         | Docker build workflow      |
-| `.github/workflows/manual-release.yml` | Pre-release workflow       |
+| File                                   | Purpose                                           |
+| -------------------------------------- | ------------------------------------------------- |
+| `release-please-config.json`           | Release automation config                         |
+| `.release-please-manifest.json`        | Current version tracker                           |
+| `backend/package.json`                 | Backend version source                            |
+| `frontend/package.json`                | Frontend version source                           |
+| `.github/workflows/release-please.yml` | Automatic release workflow                        |
+| `.github/workflows/docker.yml`         | Docker builds (workflow_call + workflow_dispatch) |
 
 ## Additional Resources
 

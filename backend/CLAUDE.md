@@ -13,6 +13,18 @@ Backend instructions for Claude Code. See root [CLAUDE.md](../CLAUDE.md).
 
 ## Commands
 
+Preferred (root):
+
+```bash
+just dev-backend
+just lint-backend
+just typecheck-backend
+just test-unit-backend
+just build-backend
+```
+
+Direct (backend directory):
+
 ```bash
 bun run dev           # Dev server with hot reload on :3000
 bun run start         # Production start
@@ -32,7 +44,7 @@ bun run db:studio     # Open Drizzle Studio GUI
 Run after modifications:
 
 ```bash
-bun run lint && bun run typecheck
+just lint-backend && just typecheck-backend
 ```
 
 Fix errors before committing. Lint runs with `--max-warnings=0`.
