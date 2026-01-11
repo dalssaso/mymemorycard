@@ -5,7 +5,7 @@ import type { IGatewayService } from "./gateway.service.interface";
 import type { IAiSettingsRepository } from "../repositories/ai-settings.repository.interface";
 import type { CollectionSuggestion, NextGameSuggestion } from "../types";
 import { ConfigurationError } from "../errors/configuration.error";
-import type { Logger } from "@/infrastructure/logging/logger";
+import { Logger } from "@/infrastructure/logging/logger";
 
 const COLLECTION_SUGGESTION_PROMPT = `You are a video game curator. Analyze the user's game library and suggest meaningful collections.
 Return JSON array of suggestions with: name, description, gameIds (array of game IDs), confidence (0-1).
@@ -33,7 +33,7 @@ export class CuratorService implements ICuratorService {
   constructor(
     @inject("IGatewayService") private gateway: IGatewayService,
     @inject("IAiSettingsRepository") private settingsRepo: IAiSettingsRepository,
-    @inject("Logger") private logger: Logger
+    @inject(Logger) private logger: Logger
   ) {}
 
   /**
