@@ -12,6 +12,19 @@ export class ImageService implements IImageService {
     @inject("IAiSettingsRepository") private settingsRepo: IAiSettingsRepository
   ) {}
 
+  /**
+   * Generates a collection cover image using xAI.
+   *
+   * Creates a stylized video game collection cover art based on the collection name
+   * and associated games. Uses xAI's image generation capabilities via the gateway.
+   * Limits game names to first 5 for optimal prompt length.
+   *
+   * @param userId - ID of the user who owns the AI settings
+   * @param collectionName - Name of the collection to generate cover for
+   * @param gameNames - Array of game names in the collection (uses first 5)
+   * @returns Promise resolving to image result with URL and model
+   * @throws {NotFoundError} If AI settings are not configured for the user
+   */
   async generateCollectionCover(
     userId: string,
     collectionName: string,

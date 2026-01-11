@@ -13,6 +13,16 @@ import { AI_MODELS } from "../types";
  */
 @injectable()
 export class GatewayService implements IGatewayService {
+  /**
+   * Generates embeddings for text using Vercel AI Gateway.
+   *
+   * Always uses OpenAI provider regardless of config, as xAI does not support embeddings.
+   * Uses the text-embedding-ada-002 model for consistent vector dimensions.
+   *
+   * @param text - The text to generate embeddings for
+   * @param config - Gateway configuration including API key and provider
+   * @returns Promise resolving to embedding result with vector, model, and token usage
+   */
   async generateEmbedding(text: string, config: GatewayConfig): Promise<EmbeddingResult> {
     // Force OpenAI for embeddings (xAI doesn't support embeddings)
     const openaiConfig: GatewayConfig = { ...config, provider: "openai" };
@@ -31,6 +41,17 @@ export class GatewayService implements IGatewayService {
     };
   }
 
+  /**
+   * Generates text completion using Vercel AI Gateway.
+   *
+   * Supports both OpenAI and xAI providers. Uses the configured provider's
+   * text generation model (gpt-4o or grok-beta).
+   *
+   * @param prompt - The user prompt for completion
+   * @param systemPrompt - The system prompt to set context
+   * @param config - Gateway configuration including API key and provider
+   * @returns Promise resolving to completion result with text, model, and token usage
+   */
   async generateCompletion(
     prompt: string,
     systemPrompt: string,
@@ -56,6 +77,19 @@ export class GatewayService implements IGatewayService {
     };
   }
 
+  /**
+   * Streams text completion using Vercel AI Gateway.
+   *
+   * Supports both OpenAI and xAI providers. Yields text chunks as they are generated
+   * for real-time streaming responses. The stream can be aborted using the AbortSignal.
+   *
+   * @param prompt - The user prompt for completion
+   * @param systemPrompt - The system prompt to set context
+   * @param config - Gateway configuration including API key and provider
+   * @param signal - Optional AbortSignal to cancel the stream
+   * @returns AsyncIterable yielding text chunks as they are generated
+   * @throws {Error} If the request is aborted or streaming fails
+   */
   async *streamCompletion(
     prompt: string,
     systemPrompt: string,
@@ -93,6 +127,17 @@ export class GatewayService implements IGatewayService {
     }
   }
 
+  /**
+   * Generates image using xAI via Vercel AI Gateway.
+   *
+   * Always uses xAI provider regardless of config, as it's the only provider
+   * that supports image generation in the current setup. Uses the grok-2-vision-1212
+   * model.
+   *
+   * @param prompt - The image generation prompt
+   * @param config - Gateway configuration including API key and provider
+   * @returns Promise resolving to image result with URL and model
+   */
   async generateImage(prompt: string, config: GatewayConfig): Promise<ImageResult> {
     // Force xAI for image generation
     const xaiConfig: GatewayConfig = { ...config, provider: "xai" };
