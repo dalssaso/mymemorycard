@@ -12,10 +12,13 @@ export const RegisterRequestSchema = z.object({
   email: z.email(),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(
-      32,
-      "Password must be at most 32 characters to ensure it stays under bcrypt's 72-byte limit"
+    .refine(
+      (value) => Buffer.byteLength(value, "utf8") >= 8,
+      "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)"
+    )
+    .refine(
+      (value) => Buffer.byteLength(value, "utf8") <= 72,
+      "Password must be at most 72 bytes to remain compatible with bcrypt"
     ),
 });
 
@@ -23,10 +26,13 @@ export const LoginRequestSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(
-      32,
-      "Password must be at most 32 characters to ensure it stays under bcrypt's 72-byte limit"
+    .refine(
+      (value) => Buffer.byteLength(value, "utf8") >= 8,
+      "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)"
+    )
+    .refine(
+      (value) => Buffer.byteLength(value, "utf8") <= 72,
+      "Password must be at most 72 bytes to remain compatible with bcrypt"
     ),
 });
 
