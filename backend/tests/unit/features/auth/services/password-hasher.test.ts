@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { PasswordHasher } from "@/features/auth/services/password-hasher";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 
@@ -24,7 +24,11 @@ function makeTestConfig(overrides?: Partial<IConfig>): IConfig {
 }
 
 describe("PasswordHasher", () => {
-  const hasher = new PasswordHasher(makeTestConfig());
+  let hasher: PasswordHasher;
+
+  beforeEach(() => {
+    hasher = new PasswordHasher(makeTestConfig());
+  });
 
   it("should hash password with valid bcrypt format", async () => {
     const password = "SecurePassword123!";
