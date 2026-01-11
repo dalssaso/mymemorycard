@@ -31,12 +31,14 @@ export interface IGatewayService {
    * @param prompt - The user prompt for completion
    * @param systemPrompt - The system prompt to set context
    * @param config - Gateway configuration including API key and provider
+   * @param signal - Optional AbortSignal to cancel the stream
    * @returns AsyncIterable yielding text chunks as they are generated
    */
   streamCompletion(
     prompt: string,
     systemPrompt: string,
-    config: GatewayConfig
+    config: GatewayConfig,
+    signal?: AbortSignal
   ): AsyncIterable<string>;
 
   /**

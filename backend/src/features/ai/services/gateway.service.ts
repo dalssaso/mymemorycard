@@ -59,19 +59,37 @@ export class GatewayService implements IGatewayService {
   async *streamCompletion(
     prompt: string,
     systemPrompt: string,
-    config: GatewayConfig
+    config: GatewayConfig,
+    signal?: AbortSignal
   ): AsyncIterable<string> {
-    const provider = this.createProvider(config);
-    const model = provider(AI_MODELS.TEXT);
+    try {
+      if (signal?.aborted) {
+        throw new Error("Request was aborted before streaming started");
+      }
 
-    const { textStream } = streamText({
-      model,
-      system: systemPrompt,
-      prompt,
-    });
+      const provider = this.createProvider(config);
+      const model = provider(AI_MODELS.TEXT);
 
-    for await (const chunk of textStream) {
-      yield chunk;
+      const { textStream } = streamText({
+        model,
+        system: systemPrompt,
+        prompt,
+        abortSignal: signal,
+      });
+
+      for await (const chunk of textStream) {
+        if (signal?.aborted) {
+          throw new Error("Stream was aborted");
+        }
+        yield chunk;
+      }
+    } catch (error) {
+      if (signal?.aborted) {
+        throw new Error("Stream cancelled by client");
+      }
+      throw new Error(
+        `Streaming failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
