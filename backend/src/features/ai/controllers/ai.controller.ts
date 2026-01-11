@@ -13,6 +13,13 @@ import {
   CollectionSuggestionSchema,
   NextGameSuggestionSchema,
 } from "../dtos/ai.dto"
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
+import type { User } from "@/features/auth/types"
+
+type Variables = {
+  requestId: string
+  user?: User
+}
 
 const ErrorResponseSchema = z.object({
   error: z.string(),
@@ -29,23 +36,26 @@ const ImageResponseSchema = z.object({
 
 @injectable()
 export class AiController implements IAiController {
-  public router: OpenAPIHono
+  public router: OpenAPIHono<{ Variables: Variables }>
 
   constructor(
     @inject("IEmbeddingService") private embeddingService: IEmbeddingService,
     @inject("ICuratorService") private curatorService: ICuratorService,
     @inject("IImageService") private imageService: IImageService,
   ) {
-    this.router = new OpenAPIHono()
+    this.router = new OpenAPIHono<{ Variables: Variables }>()
     this.registerRoutes()
   }
 
   private registerRoutes(): void {
+    const authMiddleware = createAuthMiddleware()
+
     // POST /embeddings/games - Generate game embedding
     const generateGameEmbeddingRoute = createRoute({
       method: "post",
       path: "/embeddings/games",
       tags: ["ai"],
+      middleware: [authMiddleware],
       request: {
         body: {
           content: {
@@ -85,10 +95,13 @@ export class AiController implements IAiController {
 
     this.router.openapi(generateGameEmbeddingRoute, async (c) => {
       const body = c.req.valid("json")
-      // TODO: Extract userId from authenticated user context
-      const userId = "mock-user-id"
+      const user = c.get("user")
 
-      await this.embeddingService.generateGameEmbedding(userId, body.gameId, body.text)
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
+
+      await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text)
 
       return c.json({ success: true }, 201)
     })
@@ -98,6 +111,7 @@ export class AiController implements IAiController {
       method: "post",
       path: "/embeddings/collections",
       tags: ["ai"],
+      middleware: [authMiddleware],
       request: {
         body: {
           content: {
@@ -137,10 +151,13 @@ export class AiController implements IAiController {
 
     this.router.openapi(generateCollectionEmbeddingRoute, async (c) => {
       const body = c.req.valid("json")
-      // TODO: Extract userId from authenticated user context
-      const userId = "mock-user-id"
+      const user = c.get("user")
 
-      await this.embeddingService.generateCollectionEmbedding(userId, body.gameId, body.text)
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
+
+      await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text)
 
       return c.json({ success: true }, 201)
     })
@@ -150,6 +167,7 @@ export class AiController implements IAiController {
       method: "post",
       path: "/suggestions/collections",
       tags: ["ai"],
+      middleware: [authMiddleware],
       request: {
         body: {
           content: {
@@ -189,10 +207,13 @@ export class AiController implements IAiController {
 
     this.router.openapi(suggestCollectionsRoute, async (c) => {
       const body = c.req.valid("json")
-      // TODO: Extract userId from authenticated user context
-      const userId = "mock-user-id"
+      const user = c.get("user")
 
-      const suggestions = await this.curatorService.suggestCollections(userId, body.gameIds)
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
+
+      const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds)
 
       return c.json(suggestions, 200)
     })
@@ -202,6 +223,7 @@ export class AiController implements IAiController {
       method: "post",
       path: "/suggestions/next-game",
       tags: ["ai"],
+      middleware: [authMiddleware],
       request: {
         body: {
           content: {
@@ -241,10 +263,13 @@ export class AiController implements IAiController {
 
     this.router.openapi(suggestNextGameRoute, async (c) => {
       const body = c.req.valid("json")
-      // TODO: Extract userId from authenticated user context
-      const userId = "mock-user-id"
+      const user = c.get("user")
 
-      const suggestions = await this.curatorService.suggestNextGame(userId, body.recentGameIds)
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
+
+      const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds)
 
       return c.json(suggestions, 200)
     })
@@ -254,6 +279,7 @@ export class AiController implements IAiController {
       method: "post",
       path: "/images/collection-cover",
       tags: ["ai"],
+      middleware: [authMiddleware],
       request: {
         body: {
           content: {
@@ -293,11 +319,14 @@ export class AiController implements IAiController {
 
     this.router.openapi(generateCoverRoute, async (c) => {
       const body = c.req.valid("json")
-      // TODO: Extract userId from authenticated user context
-      const userId = "mock-user-id"
+      const user = c.get("user")
+
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401)
+      }
 
       const result = await this.imageService.generateCollectionCover(
-        userId,
+        user.id,
         body.collectionName,
         body.gameNames,
       )
