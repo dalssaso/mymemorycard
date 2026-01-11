@@ -63,7 +63,7 @@ export function registerDependencies(): void {
     useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
 
-  // Logger singleton - optional context parameter handled by constructor
+  // Logger singleton - child loggers created via .child() method
   container.registerSingleton(Logger);
   container.registerSingleton(MetricsService);
 

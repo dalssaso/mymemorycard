@@ -21,9 +21,10 @@ const pinoInstance = pino({
 @injectable()
 export class Logger {
   private pinoLogger: pino.Logger;
+  private context?: string;
 
-  constructor(private context?: string) {
-    this.pinoLogger = context ? pinoInstance.child({ context }) : pinoInstance;
+  constructor() {
+    this.pinoLogger = pinoInstance;
   }
 
   /**
@@ -34,7 +35,10 @@ export class Logger {
    */
   child(context: string): Logger {
     const chainedContext = this.context ? `${this.context}:${context}` : context;
-    return new Logger(chainedContext);
+    const childLogger = new Logger();
+    childLogger.context = chainedContext;
+    childLogger.pinoLogger = pinoInstance.child({ context: chainedContext });
+    return childLogger;
   }
 
   debug(message: string, ...args: unknown[]): void {
