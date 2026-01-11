@@ -4,12 +4,26 @@ import { injectable, inject } from "tsyringe";
 import { collectionEmbeddings, gameEmbeddings } from "@/db/schema";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 
-import type { CollectionEmbedding, GameEmbedding } from "../types";
+import { EMBEDDING_DIMENSIONS, type CollectionEmbedding, type GameEmbedding } from "../types";
 import type { IEmbeddingRepository } from "./embedding.repository.interface";
 
 @injectable()
 export class EmbeddingRepository implements IEmbeddingRepository {
   constructor(@inject("Database") private db: DrizzleDB) {}
+
+  private validateEmbedding(embedding: number[]): void {
+    // Check dimension matches expected (1536 for text-embedding-3-small)
+    if (embedding.length !== EMBEDDING_DIMENSIONS) {
+      throw new Error(
+        `Invalid embedding dimensions: expected ${EMBEDDING_DIMENSIONS}, got ${embedding.length}`
+      );
+    }
+
+    // Check all values are finite numbers
+    if (!embedding.every(Number.isFinite)) {
+      throw new Error("Embedding contains non-finite values (NaN or Infinity)");
+    }
+  }
 
   async findByGameId(gameId: string): Promise<GameEmbedding | null> {
     const result = await this.db
@@ -86,6 +100,8 @@ export class EmbeddingRepository implements IEmbeddingRepository {
     limit: number,
     excludeIds: string[] = []
   ): Promise<string[]> {
+    this.validateEmbedding(embedding);
+
     const vectorString = `[${embedding.join(",")}]`;
 
     let query = this.db
@@ -104,6 +120,8 @@ export class EmbeddingRepository implements IEmbeddingRepository {
   }
 
   async findSimilarCollections(embedding: number[], limit: number): Promise<string[]> {
+    this.validateEmbedding(embedding);
+
     const vectorString = `[${embedding.join(",")}]`;
 
     const results = await this.db

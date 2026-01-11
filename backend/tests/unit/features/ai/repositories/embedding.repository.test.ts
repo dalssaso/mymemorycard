@@ -4,6 +4,12 @@ import { EmbeddingRepository } from "@/features/ai/repositories/embedding.reposi
 import { createMockDrizzleDB } from "@/tests/helpers/drizzle.mocks";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import type { GameEmbedding, CollectionEmbedding } from "@/features/ai/types";
+import { EMBEDDING_DIMENSIONS } from "@/features/ai/types";
+
+// Helper function to create a valid mock embedding with correct dimensions
+function createMockEmbedding(): number[] {
+  return new Array(EMBEDDING_DIMENSIONS).fill(0).map(() => Math.random());
+}
 
 describe("EmbeddingRepository", () => {
   let repository: EmbeddingRepository;
@@ -19,7 +25,7 @@ describe("EmbeddingRepository", () => {
       const mockEmbedding: GameEmbedding = {
         id: "embedding-1",
         gameId: "game-123",
-        embedding: [0.1, 0.2, 0.3],
+        embedding: createMockEmbedding(),
         textHash: "hash123",
         model: "text-embedding-3-small",
         createdAt: new Date("2024-01-01"),
@@ -61,7 +67,7 @@ describe("EmbeddingRepository", () => {
       const mockEmbedding: CollectionEmbedding = {
         id: "embedding-2",
         collectionId: "collection-456",
-        embedding: [0.4, 0.5, 0.6],
+        embedding: createMockEmbedding(),
         textHash: "hash456",
         model: "text-embedding-3-small",
         createdAt: new Date("2024-01-01"),
@@ -108,9 +114,11 @@ describe("EmbeddingRepository", () => {
         values: valuesMock,
       });
 
+      const testEmbedding = createMockEmbedding();
+
       await repository.saveGameEmbedding(
         "game-789",
-        [0.7, 0.8, 0.9],
+        testEmbedding,
         "text-embedding-3-small",
         "test-hash-123"
       );
@@ -121,7 +129,7 @@ describe("EmbeddingRepository", () => {
       const payload = valuesMock.mock.calls[0][0];
       expect(payload).toMatchObject({
         gameId: "game-789",
-        embedding: [0.7, 0.8, 0.9],
+        embedding: testEmbedding,
         model: "text-embedding-3-small",
         textHash: "test-hash-123",
       });
@@ -138,9 +146,11 @@ describe("EmbeddingRepository", () => {
         values: valuesMock,
       });
 
+      const testEmbedding = createMockEmbedding();
+
       await repository.saveCollectionEmbedding(
         "collection-999",
-        [0.11, 0.22, 0.33],
+        testEmbedding,
         "text-embedding-3-small",
         "test-hash-456"
       );
@@ -151,7 +161,7 @@ describe("EmbeddingRepository", () => {
       const payload = valuesMock.mock.calls[0][0];
       expect(payload).toMatchObject({
         collectionId: "collection-999",
-        embedding: [0.11, 0.22, 0.33],
+        embedding: testEmbedding,
         model: "text-embedding-3-small",
         textHash: "test-hash-456",
       });
@@ -173,7 +183,7 @@ describe("EmbeddingRepository", () => {
         }),
       });
 
-      const result = await repository.findSimilarGames([0.1, 0.2, 0.3], 3);
+      const result = await repository.findSimilarGames(createMockEmbedding(), 3);
 
       expect(result).toEqual(["game-1", "game-2", "game-3"]);
     });
@@ -197,7 +207,7 @@ describe("EmbeddingRepository", () => {
         }),
       });
 
-      const result = await repository.findSimilarGames([0.1, 0.2, 0.3], 2, ["game-1"]);
+      const result = await repository.findSimilarGames(createMockEmbedding(), 2, ["game-1"]);
 
       expect(result).toEqual(["game-2", "game-3"]);
     });
@@ -212,7 +222,7 @@ describe("EmbeddingRepository", () => {
         }),
       });
 
-      const result = await repository.findSimilarGames([0.1, 0.2, 0.3], 3);
+      const result = await repository.findSimilarGames(createMockEmbedding(), 3);
 
       expect(result).toEqual([]);
     });
@@ -232,7 +242,7 @@ describe("EmbeddingRepository", () => {
         }),
       });
 
-      const result = await repository.findSimilarCollections([0.4, 0.5, 0.6], 2);
+      const result = await repository.findSimilarCollections(createMockEmbedding(), 2);
 
       expect(result).toEqual(["collection-1", "collection-2"]);
     });
@@ -247,9 +257,63 @@ describe("EmbeddingRepository", () => {
         }),
       });
 
-      const result = await repository.findSimilarCollections([0.4, 0.5, 0.6], 2);
+      const result = await repository.findSimilarCollections(createMockEmbedding(), 2);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("embedding validation", () => {
+    it("should reject embedding with wrong dimensions in findSimilarGames", () => {
+      const invalidEmbedding = [0.1, 0.2, 0.3]; // Only 3 dimensions instead of 1536
+
+      expect(() => repository.findSimilarGames(invalidEmbedding, 5)).toThrow(
+        `Invalid embedding dimensions: expected ${EMBEDDING_DIMENSIONS}, got 3`
+      );
+    });
+
+    it("should reject embedding with NaN values in findSimilarGames", () => {
+      const invalidEmbedding = createMockEmbedding();
+      invalidEmbedding[0] = NaN;
+
+      expect(() => repository.findSimilarGames(invalidEmbedding, 5)).toThrow(
+        "Embedding contains non-finite values (NaN or Infinity)"
+      );
+    });
+
+    it("should reject embedding with Infinity values in findSimilarGames", () => {
+      const invalidEmbedding = createMockEmbedding();
+      invalidEmbedding[100] = Infinity;
+
+      expect(() => repository.findSimilarGames(invalidEmbedding, 5)).toThrow(
+        "Embedding contains non-finite values (NaN or Infinity)"
+      );
+    });
+
+    it("should reject embedding with wrong dimensions in findSimilarCollections", () => {
+      const invalidEmbedding = [0.4, 0.5]; // Only 2 dimensions instead of 1536
+
+      expect(() => repository.findSimilarCollections(invalidEmbedding, 3)).toThrow(
+        `Invalid embedding dimensions: expected ${EMBEDDING_DIMENSIONS}, got 2`
+      );
+    });
+
+    it("should reject embedding with NaN values in findSimilarCollections", () => {
+      const invalidEmbedding = createMockEmbedding();
+      invalidEmbedding[500] = NaN;
+
+      expect(() => repository.findSimilarCollections(invalidEmbedding, 3)).toThrow(
+        "Embedding contains non-finite values (NaN or Infinity)"
+      );
+    });
+
+    it("should reject embedding with Infinity values in findSimilarCollections", () => {
+      const invalidEmbedding = createMockEmbedding();
+      invalidEmbedding[1000] = -Infinity;
+
+      expect(() => repository.findSimilarCollections(invalidEmbedding, 3)).toThrow(
+        "Embedding contains non-finite values (NaN or Infinity)"
+      );
     });
   });
 });
