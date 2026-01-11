@@ -6,6 +6,13 @@ import type { InferSelectModel } from "drizzle-orm";
 import { type users } from "@/db/schema";
 import type { Logger } from "@/infrastructure/logging/logger";
 import type { MetricsService } from "@/infrastructure/metrics/metrics";
+import type { IGatewayService } from "@/features/ai/services/gateway.service.interface";
+import type {
+  EmbeddingResult,
+  CompletionResult,
+  ImageResult,
+  UserAiSettings,
+} from "@/features/ai/types";
 
 type User = InferSelectModel<typeof users>;
 
@@ -92,4 +99,58 @@ export function createMockMetricsService(): MetricsService {
     getMetrics: mock().mockResolvedValue("# metrics"),
   };
   return mockMetrics as unknown as MetricsService;
+}
+
+// ============================================================================
+// AI Domain Mocks
+// ============================================================================
+
+export function createMockGatewayService(
+  overrides?: Partial<IGatewayService>
+): IGatewayService {
+  return {
+    generateEmbedding: mock().mockResolvedValue({
+      embedding: new Array(1536).fill(0.1),
+      model: "text-embedding-3-small",
+      tokensUsed: 100,
+    } as EmbeddingResult),
+    generateCompletion: mock().mockResolvedValue({
+      text: "Mock completion response",
+      model: "gpt-4o-mini",
+      tokensUsed: { prompt: 50, completion: 100, total: 150 },
+    } as CompletionResult),
+    streamCompletion: mock().mockImplementation(async function* () {
+      yield "Mock ";
+      yield "streamed ";
+      yield "response";
+    }),
+    generateImage: mock().mockResolvedValue({
+      url: "https://example.com/image.png",
+      model: "grok-2-image",
+    } as ImageResult),
+    ...overrides,
+  };
+}
+
+export function createTestAiSettings(overrides?: Partial<UserAiSettings>): UserAiSettings {
+  return {
+    userId: "test-user-id",
+    provider: "openai",
+    baseUrl: null,
+    apiKeyEncrypted: "encrypted-key",
+    model: "gpt-4o-mini",
+    imageApiKeyEncrypted: null,
+    imageModel: null,
+    temperature: 0.7,
+    maxTokens: 2000,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
+    collectionSuggestionsModel: "gpt-4o-mini",
+    nextGameSuggestionsModel: "gpt-4o-mini",
+    coverGenerationModel: "grok-2-image",
+    enableSmartRouting: true,
+    gatewayApiKeyEncrypted: "encrypted-gateway-key",
+    ...overrides,
+  };
 }
