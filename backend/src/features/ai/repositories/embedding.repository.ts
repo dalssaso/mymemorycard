@@ -11,20 +11,6 @@ import type { IEmbeddingRepository } from "./embedding.repository.interface";
 export class EmbeddingRepository implements IEmbeddingRepository {
   constructor(@inject("Database") private db: DrizzleDB) {}
 
-  private validateEmbedding(embedding: number[]): void {
-    // Check dimension matches expected (1536 for text-embedding-3-small)
-    if (embedding.length !== EMBEDDING_DIMENSIONS) {
-      throw new Error(
-        `Invalid embedding dimensions: expected ${EMBEDDING_DIMENSIONS}, got ${embedding.length}`
-      );
-    }
-
-    // Check all values are finite numbers
-    if (!embedding.every(Number.isFinite)) {
-      throw new Error("Embedding contains non-finite values (NaN or Infinity)");
-    }
-  }
-
   async findByGameId(gameId: string): Promise<GameEmbedding | null> {
     const result = await this.db
       .select()
@@ -131,5 +117,19 @@ export class EmbeddingRepository implements IEmbeddingRepository {
       .limit(limit);
 
     return results.map((r) => r.collectionId);
+  }
+
+  private validateEmbedding(embedding: number[]): void {
+    // Check dimension matches expected (1536 for text-embedding-3-small)
+    if (embedding.length !== EMBEDDING_DIMENSIONS) {
+      throw new Error(
+        `Invalid embedding dimensions: expected ${EMBEDDING_DIMENSIONS}, got ${embedding.length}`
+      );
+    }
+
+    // Check all values are finite numbers
+    if (!embedding.every(Number.isFinite)) {
+      throw new Error("Embedding contains non-finite values (NaN or Infinity)");
+    }
   }
 }

@@ -6,7 +6,7 @@ import {
   createMockAiSettingsRepository,
   createMockEmbeddingRepository,
 } from "@/tests/helpers/repository.mocks";
-import { NotFoundError } from "@/shared/errors/base";
+import { ConfigurationError } from "@/features/ai/errors/configuration.error";
 import type { IGatewayService } from "@/features/ai/services/gateway.service.interface";
 import type { IAiSettingsRepository } from "@/features/ai/repositories/ai-settings.repository.interface";
 import type { IEmbeddingRepository } from "@/features/ai/repositories/embedding.repository.interface";
@@ -57,12 +57,12 @@ describe("EmbeddingService", () => {
       expect(textHash).toHaveLength(64); // SHA-256 hex string length
     });
 
-    it("should throw NotFoundError when AI settings not configured", async () => {
+    it("should throw ConfigurationError when AI settings not configured", async () => {
       mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue(null);
 
       await expect(
         embeddingService.generateGameEmbedding("user-1", "game-1", "Test game")
-      ).rejects.toThrow(NotFoundError);
+      ).rejects.toThrow(ConfigurationError);
 
       expect(mockGateway.generateEmbedding).not.toHaveBeenCalled();
       expect(mockEmbeddingRepo.saveGameEmbedding).not.toHaveBeenCalled();
@@ -105,12 +105,12 @@ describe("EmbeddingService", () => {
       expect(textHash).toHaveLength(64); // SHA-256 hex string length
     });
 
-    it("should throw NotFoundError when AI settings not configured", async () => {
+    it("should throw ConfigurationError when AI settings not configured", async () => {
       mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue(null);
 
       await expect(
         embeddingService.generateCollectionEmbedding("user-1", "collection-1", "Test collection")
-      ).rejects.toThrow(NotFoundError);
+      ).rejects.toThrow(ConfigurationError);
 
       expect(mockGateway.generateEmbedding).not.toHaveBeenCalled();
       expect(mockEmbeddingRepo.saveCollectionEmbedding).not.toHaveBeenCalled();
@@ -166,6 +166,44 @@ describe("EmbeddingService", () => {
       expect(mockEmbeddingRepo.findSimilarGames).not.toHaveBeenCalled();
       expect(result).toEqual([]);
     });
+
+    it("should clamp limit to maximum of 100", async () => {
+      mockEmbeddingRepo.findByGameId = mock().mockResolvedValue({
+        id: "embedding-1",
+        gameId: "game-1",
+        embedding: [0.1, 0.2, 0.3],
+        textHash: "hash123",
+        model: "text-embedding-3-small",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockEmbeddingRepo.findSimilarGames = mock().mockResolvedValue([]);
+
+      await embeddingService.findSimilarGames("user-1", "game-1", 150);
+
+      expect(mockEmbeddingRepo.findSimilarGames).toHaveBeenCalledWith([0.1, 0.2, 0.3], 100, [
+        "game-1",
+      ]);
+    });
+
+    it("should clamp limit to minimum of 1", async () => {
+      mockEmbeddingRepo.findByGameId = mock().mockResolvedValue({
+        id: "embedding-1",
+        gameId: "game-1",
+        embedding: [0.1, 0.2, 0.3],
+        textHash: "hash123",
+        model: "text-embedding-3-small",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockEmbeddingRepo.findSimilarGames = mock().mockResolvedValue([]);
+
+      await embeddingService.findSimilarGames("user-1", "game-1", 0);
+
+      expect(mockEmbeddingRepo.findSimilarGames).toHaveBeenCalledWith([0.1, 0.2, 0.3], 1, [
+        "game-1",
+      ]);
+    });
   });
 
   describe("findSimilarCollections", () => {
@@ -217,6 +255,40 @@ describe("EmbeddingService", () => {
       expect(mockEmbeddingRepo.findByCollectionId).toHaveBeenCalledWith("collection-1");
       expect(mockEmbeddingRepo.findSimilarCollections).not.toHaveBeenCalled();
       expect(result).toEqual([]);
+    });
+
+    it("should clamp limit to maximum of 100", async () => {
+      mockEmbeddingRepo.findByCollectionId = mock().mockResolvedValue({
+        id: "embedding-2",
+        collectionId: "collection-1",
+        embedding: [0.7, 0.8, 0.9],
+        textHash: "hash456",
+        model: "text-embedding-3-small",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockEmbeddingRepo.findSimilarCollections = mock().mockResolvedValue([]);
+
+      await embeddingService.findSimilarCollections("user-1", "collection-1", 200);
+
+      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 100);
+    });
+
+    it("should clamp limit to minimum of 1", async () => {
+      mockEmbeddingRepo.findByCollectionId = mock().mockResolvedValue({
+        id: "embedding-2",
+        collectionId: "collection-1",
+        embedding: [0.7, 0.8, 0.9],
+        textHash: "hash456",
+        model: "text-embedding-3-small",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockEmbeddingRepo.findSimilarCollections = mock().mockResolvedValue([]);
+
+      await embeddingService.findSimilarCollections("user-1", "collection-1", -5);
+
+      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 1);
     });
   });
 });
