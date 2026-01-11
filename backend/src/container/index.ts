@@ -11,8 +11,6 @@ import type { IConfig } from "@/infrastructure/config/config.interface";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 
-// Module-level cache for Logger singleton
-let loggerInstance: Logger | undefined;
 
 // Auth - Repositories
 import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
@@ -45,15 +43,8 @@ export function registerDependencies(): void {
     useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
 
-  // Logger singleton via factory to handle optional context parameter
-  container.register(Logger, {
-    useFactory: (): Logger => {
-      if (!loggerInstance) {
-        loggerInstance = new Logger();
-      }
-      return loggerInstance;
-    },
-  });
+  // Logger singleton - optional context parameter handled by constructor
+  container.registerSingleton(Logger);
   container.registerSingleton(MetricsService);
 
   // Auth Domain - Repositories
@@ -70,10 +61,9 @@ export function registerDependencies(): void {
 
 /**
  * Reset container (useful for testing)
- * Clears both registrations and instances, including the Logger singleton
+ * Clears all registrations and instances
  */
 export function resetContainer(): void {
-  loggerInstance = undefined;
   container.reset();
 }
 
