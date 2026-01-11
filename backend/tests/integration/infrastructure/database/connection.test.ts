@@ -21,7 +21,6 @@ describe("DatabaseConnection Integration Tests", () => {
     it("should return true when database is healthy", async () => {
       const result = await dbConnection.healthCheck();
 
-      expect(typeof result).toBe("boolean");
       // Returns true if connection to test database is available
       expect(result).toBe(true);
     });

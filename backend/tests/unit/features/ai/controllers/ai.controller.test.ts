@@ -379,9 +379,7 @@ describe("AiController", () => {
     });
 
     it("should return 400 for gameIds array exceeding max length", async () => {
-      const tooManyGameIds = Array.from({ length: 101 }, (_, i) =>
-        `550e8400-e29b-41d4-a716-44665544${String(i).padStart(4, "0")}`.slice(0, 36)
-      );
+      const tooManyGameIds = Array.from({ length: 101 }, () => crypto.randomUUID());
 
       const response = await controller.router.request("/suggestions/collections", {
         method: "POST",
@@ -494,9 +492,7 @@ describe("AiController", () => {
     });
 
     it("should return 400 for recentGameIds array exceeding max length", async () => {
-      const tooManyGameIds = Array.from({ length: 21 }, (_, i) =>
-        `550e8400-e29b-41d4-a716-44665544${String(i).padStart(4, "0")}`.slice(0, 36)
-      );
+      const tooManyGameIds = Array.from({ length: 21 }, () => crypto.randomUUID());
 
       const response = await controller.router.request("/suggestions/next-game", {
         method: "POST",
