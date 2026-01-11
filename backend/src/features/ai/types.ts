@@ -26,7 +26,7 @@ export type AiActivityLog = InferSelectModel<typeof aiActivityLogs>;
 
 export interface GatewayConfig {
   apiKey: string;
-  provider: "openai" | "xai";
+  provider: AiProvider;
 }
 
 // ============================================================================
