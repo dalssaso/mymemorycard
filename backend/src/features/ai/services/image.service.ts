@@ -3,7 +3,7 @@ import type { IImageService } from "./image.service.interface";
 import type { IGatewayService } from "./gateway.service.interface";
 import type { IAiSettingsRepository } from "../repositories/ai-settings.repository.interface";
 import type { ImageResult } from "../types";
-import { NotFoundError } from "@/shared/errors/base";
+import { ConfigurationError } from "../errors/configuration.error";
 
 @injectable()
 export class ImageService implements IImageService {
@@ -23,7 +23,7 @@ export class ImageService implements IImageService {
    * @param collectionName - Name of the collection to generate cover for
    * @param gameNames - Array of game names in the collection (uses first 5)
    * @returns Promise resolving to image result with URL and model
-   * @throws {NotFoundError} If AI settings are not configured for the user
+   * @throws {ConfigurationError} If AI settings are not configured for the user
    */
   async generateCollectionCover(
     userId: string,
@@ -32,7 +32,7 @@ export class ImageService implements IImageService {
   ): Promise<ImageResult> {
     const config = await this.settingsRepo.getGatewayConfig(userId);
     if (!config) {
-      throw new NotFoundError("AI settings not configured");
+      throw new ConfigurationError("AI settings not configured");
     }
 
     // Force xAI for image generation

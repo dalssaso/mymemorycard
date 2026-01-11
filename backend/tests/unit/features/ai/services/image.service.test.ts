@@ -5,7 +5,7 @@ import {
   createMockGatewayService,
   createMockAiSettingsRepository,
 } from "@/tests/helpers/repository.mocks";
-import { NotFoundError } from "@/shared/errors/base";
+import { ConfigurationError } from "@/features/ai/errors/configuration.error";
 import type { IGatewayService } from "@/features/ai/services/gateway.service.interface";
 import type { IAiSettingsRepository } from "@/features/ai/repositories/ai-settings.repository.interface";
 
@@ -77,12 +77,12 @@ describe("ImageService", () => {
       expect(config.apiKey).toBe("test-key");
     });
 
-    it("should throw NotFoundError when AI settings not configured", async () => {
+    it("should throw ConfigurationError when AI settings not configured", async () => {
       mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue(null);
 
       await expect(
         imageService.generateCollectionCover("user-1", "Test Collection", ["Game 1"])
-      ).rejects.toThrow(NotFoundError);
+      ).rejects.toThrow(ConfigurationError);
 
       expect(mockGateway.generateImage).not.toHaveBeenCalled();
     });
