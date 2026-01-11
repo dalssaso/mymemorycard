@@ -19,15 +19,6 @@ function parsePositiveInt(value: string | undefined, key: string): number | unde
   return parsed;
 }
 
-/**
- * Gets optional environment variable.
- * Returns undefined if not set or empty, otherwise returns the value.
- */
-function optionalEnv(key: string): string | undefined {
-  const value = process.env[key];
-  return value && value.trim() !== "" ? value : undefined;
-}
-
 @injectable()
 export class Config implements IConfig {
   readonly database: {
@@ -80,9 +71,7 @@ export class Config implements IConfig {
       expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     };
 
-    // RAWG_API_KEY is optional - rawg.ts supports graceful degradation
-    // Returns empty string for optional variable (type requires string)
-    this.rawg = { apiKey: optionalEnv("RAWG_API_KEY") || "" };
+    this.rawg = { apiKey: this.requireEnv("RAWG_API_KEY") };
 
     const encryptionSecret = this.requireEnv("ENCRYPTION_SECRET");
     const encryptionSalt = this.requireEnv("ENCRYPTION_SALT");
