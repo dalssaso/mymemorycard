@@ -6,27 +6,18 @@ import type { IEmbeddingService } from "../services/embedding.service.interface"
 import type { ICuratorService } from "../services/curator.service.interface";
 import type { IImageService } from "../services/image.service.interface";
 import {
-  GenerateEmbeddingRequestSchema,
+  GenerateGameEmbeddingRequestSchema,
+  GenerateCollectionEmbeddingRequestSchema,
   SuggestCollectionsRequestSchema,
   SuggestNextGameRequestSchema,
   GenerateCoverRequestSchema,
+  ErrorResponseSchema,
+  SuccessResponseSchema,
+  ImageResponseSchema,
   CollectionSuggestionSchema,
   NextGameSuggestionSchema,
 } from "../dtos/ai.dto";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
-
-const ErrorResponseSchema = z.object({
-  error: z.string(),
-});
-
-const SuccessResponseSchema = z.object({
-  success: z.boolean(),
-});
-
-const ImageResponseSchema = z.object({
-  url: z.string(),
-  model: z.string(),
-});
 
 @injectable()
 export class AiController implements IAiController {
@@ -54,7 +45,7 @@ export class AiController implements IAiController {
         body: {
           content: {
             "application/json": {
-              schema: GenerateEmbeddingRequestSchema,
+              schema: GenerateGameEmbeddingRequestSchema,
             },
           },
         },
@@ -128,7 +119,7 @@ export class AiController implements IAiController {
         body: {
           content: {
             "application/json": {
-              schema: GenerateEmbeddingRequestSchema,
+              schema: GenerateCollectionEmbeddingRequestSchema,
             },
           },
         },
@@ -173,13 +164,17 @@ export class AiController implements IAiController {
       try {
         const body = c.req.valid("json");
         const user = c.get("user")!;
-        await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text);
+        await this.embeddingService.generateCollectionEmbedding(
+          user.id,
+          body.collectionId,
+          body.text
+        );
 
         return c.json({ success: true }, 201);
       } catch (error) {
         console.error("Error in generateCollectionEmbedding:", {
           userId: c.get("user")?.id,
-          gameId: c.req.valid("json")?.gameId,
+          collectionId: c.req.valid("json")?.collectionId,
           error: error instanceof Error ? error.message : String(error),
         });
 

@@ -184,7 +184,7 @@ describe("AiController", () => {
           Authorization: `Bearer ${testToken}`,
         },
         body: JSON.stringify({
-          gameId: validGameId,
+          collectionId: validGameId,
           text: "My favorite RPGs",
         }),
       });
@@ -207,7 +207,7 @@ describe("AiController", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          gameId: validGameId,
+          collectionId: validGameId,
           text: "Test text",
         }),
       });
@@ -223,7 +223,7 @@ describe("AiController", () => {
           Authorization: `Bearer ${testToken}`,
         },
         body: JSON.stringify({
-          gameId: "not-a-uuid",
+          collectionId: "not-a-uuid",
           text: "",
         }),
       });
@@ -243,7 +243,7 @@ describe("AiController", () => {
           Authorization: `Bearer ${testToken}`,
         },
         body: JSON.stringify({
-          gameId: validGameId,
+          collectionId: validGameId,
           text: "Test collection",
         }),
       });

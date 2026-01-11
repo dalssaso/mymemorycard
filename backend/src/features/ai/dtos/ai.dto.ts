@@ -1,11 +1,22 @@
 import { z } from "zod";
 
-export const GenerateEmbeddingRequestSchema = z.object({
+// Request schemas
+export const GenerateGameEmbeddingRequestSchema = z.object({
   gameId: z
     .string()
     .regex(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      "Must be a valid UUID v4"
+      "Must be a valid UUID"
+    ),
+  text: z.string().min(1),
+});
+
+export const GenerateCollectionEmbeddingRequestSchema = z.object({
+  collectionId: z
+    .string()
+    .regex(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      "Must be a valid UUID"
     ),
   text: z.string().min(1),
 });
@@ -17,7 +28,7 @@ export const SuggestCollectionsRequestSchema = z.object({
         .string()
         .regex(
           /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-          "Must be a valid UUID v4"
+          "Must be a valid UUID"
         )
     )
     .min(1)
@@ -31,7 +42,7 @@ export const SuggestNextGameRequestSchema = z.object({
         .string()
         .regex(
           /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-          "Must be a valid UUID v4"
+          "Must be a valid UUID"
         )
     )
     .min(1)
@@ -44,6 +55,19 @@ export const GenerateCoverRequestSchema = z.object({
 });
 
 // Response schemas
+export const ErrorResponseSchema = z.object({
+  error: z.string(),
+});
+
+export const SuccessResponseSchema = z.object({
+  success: z.boolean(),
+});
+
+export const ImageResponseSchema = z.object({
+  url: z.string(),
+  model: z.string(),
+});
+
 export const CollectionSuggestionSchema = z.object({
   name: z.string(),
   description: z.string(),
