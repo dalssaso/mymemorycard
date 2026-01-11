@@ -63,10 +63,14 @@ describe("PasswordHasher", () => {
     expect(isValid).toBe(true);
   });
 
-  it("should not accept passwords over 72 bytes (truncation risk)", async () => {
-    // Note: Validation layer should reject this before reaching hasher
-    // This test documents that passwords over 72 bytes create collision risk:
-    // Two different 73+ byte passwords differing only after byte 72 would hash identically
+  it("documents bcrypt 72-byte truncation edge case", async () => {
+    // This test documents bcrypt's 72-byte truncation behavior:
+    // Two different passwords differing only after byte 72 will hash identically.
+    // This is a security concern (collision risk) but is prevented by DTO validation.
+    //
+    // DTO validation (RegisterRequestSchema.refine enforces max 72 bytes via
+    // Buffer.byteLength) prevents passwords over 72 bytes from reaching the hasher.
+    // This ensures the edge case never occurs in production.
     const password73 = "a".repeat(73);
     const hash = await hasher.hash(password73);
 
@@ -74,9 +78,7 @@ describe("PasswordHasher", () => {
     const password73Different = "a".repeat(72) + "b";
     const isValid = await hasher.compare(password73Different, hash);
 
-    // They hash identically due to bcryptjs truncation at 72 bytes - this is a problem!
-    // DTO validation (max 32 characters via RegisterRequestSchema) prevents this scenario
-    // from reaching the hasher. Note: multi-byte UTF-8 characters could exceed 32 bytes.
-    expect(isValid).toBe(true); // Both truncate to 72 'a's
+    // Both truncate to 72 'a's due to bcryptjs behavior at the 72-byte boundary
+    expect(isValid).toBe(true);
   });
 });
