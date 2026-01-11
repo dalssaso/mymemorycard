@@ -37,12 +37,22 @@ export class CuratorService implements ICuratorService {
     try {
       const suggestions = JSON.parse(result.text) as CollectionSuggestion[];
       return suggestions;
-    } catch {
+    } catch (error) {
+      console.error("Failed to parse collection suggestions:", {
+        userId,
+        gameIds,
+        responseText: result.text,
+        error: error instanceof Error ? error.message : String(error),
+      });
       return [];
     }
   }
 
   async suggestNextGame(userId: string, recentGameIds: string[]): Promise<NextGameSuggestion[]> {
+    if (!recentGameIds || recentGameIds.length === 0) {
+      return [];
+    }
+
     const config = await this.settingsRepo.getGatewayConfig(userId);
     if (!config) {
       throw new ConfigurationError("AI settings not configured");
@@ -55,7 +65,14 @@ export class CuratorService implements ICuratorService {
     try {
       const suggestions = JSON.parse(result.text) as NextGameSuggestion[];
       return suggestions;
-    } catch {
+    } catch (error) {
+      console.error("Failed to parse next game suggestions:", {
+        userId,
+        recentGameIds,
+        prompt: NEXT_GAME_PROMPT,
+        responseText: result.text,
+        error: error instanceof Error ? error.message : String(error),
+      });
       return [];
     }
   }
