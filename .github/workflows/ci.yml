@@ -131,8 +131,8 @@ jobs:
       - name: Run backend tests
         working-directory: ./backend
         env:
-          DATABASE_URL: postgresql://mymemorycard:${{ secrets.POSTGRES_PASSWORD }}@localhost:${{ job.services.postgres.ports[0] }}/mymemorycard
-          REDIS_URL: redis://localhost:${{ job.services.redis.ports[0] }}
+          DATABASE_URL: postgresql://mymemorycard:${{ secrets.POSTGRES_PASSWORD }}@localhost:${{ job.services.postgres.ports['5432'] }}/mymemorycard
+          REDIS_URL: redis://localhost:${{ job.services.redis.ports['6379'] }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
           ENCRYPTION_SALT: ${{ secrets.ENCRYPTION_SALT }}

@@ -67,21 +67,21 @@ describe("DatabaseConnection", () => {
     it.skipIf(!process.env.CI || !process.env.DATABASE_URL)(
       "should return true when database is healthy",
       async () => {
-      const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+        const logger = new Logger("test");
+        const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
-      let result = false;
-      for (let attempt = 0; attempt < 5; attempt += 1) {
-        result = await dbConnection.healthCheck();
-        if (result) {
-          break;
+        let result = false;
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          result = await dbConnection.healthCheck();
+          if (result) {
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
 
-      expect(typeof result).toBe("boolean");
-      // Returns true if connection to local test database is available
-      expect(result).toBe(true);
+        expect(typeof result).toBe("boolean");
+        // Returns true if connection to local test database is available
+        expect(result).toBe(true);
       }
     );
 
