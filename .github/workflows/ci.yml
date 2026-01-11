@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Filter paths
         id: filter
@@ -101,7 +103,7 @@ jobs:
         image: postgres:16-alpine
         env:
           POSTGRES_USER: mymemorycard
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PASSWORD: ci_password
           POSTGRES_DB: mymemorycard
         options: >-
           --health-cmd="pg_isready -U mymemorycard"
@@ -122,7 +124,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: 1.3.5
 
       - name: Install backend dependencies
         working-directory: ./backend
@@ -131,7 +133,7 @@ jobs:
       - name: Run backend tests
         working-directory: ./backend
         env:
-          DATABASE_URL: postgresql://mymemorycard:${{ secrets.POSTGRES_PASSWORD }}@localhost:${{ job.services.postgres.ports['5432'] }}/mymemorycard
+          DATABASE_URL: postgresql://mymemorycard:ci_password@localhost:${{ job.services.postgres.ports['5432'] }}/mymemorycard
           REDIS_URL: redis://localhost:${{ job.services.redis.ports['6379'] }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
