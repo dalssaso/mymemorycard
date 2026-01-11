@@ -152,5 +152,27 @@ describe("ImageService", () => {
       expect(prompt).toContain("Game A");
       expect(prompt).toContain("Game B");
     });
+
+    it("should handle empty game names array with fallback text", async () => {
+      mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue({
+        apiKey: "test-key",
+        provider: "xai",
+      });
+
+      const mockGenerateImage = mock().mockResolvedValue({
+        url: "https://example.com/image.png",
+        model: "grok-2-image",
+      });
+      mockGateway.generateImage = mockGenerateImage;
+
+      await imageService.generateCollectionCover("user-1", "Empty Collection", []);
+
+      const callArgs = mockGenerateImage.mock.calls[0];
+      const prompt = callArgs[0];
+
+      expect(prompt).toContain("Empty Collection");
+      expect(prompt).toContain("various popular titles");
+      expect(prompt).not.toContain("featuring games like: .");
+    });
   });
 });

@@ -25,7 +25,10 @@ export class ImageService implements IImageService {
     // Force xAI for image generation
     const xaiConfig = { ...config, provider: "xai" as const };
 
-    const prompt = `Create a stylized video game collection cover art for a collection named "${collectionName}" featuring games like: ${gameNames.slice(0, 5).join(", ")}. Style: modern, minimalist, gaming aesthetic.`;
+    const gamesText =
+      gameNames.length === 0 ? "various popular titles" : gameNames.slice(0, 5).join(", ");
+
+    const prompt = `Create a stylized video game collection cover art for a collection named "${collectionName}" featuring games like: ${gamesText}. Style: modern, minimalist, gaming aesthetic.`;
 
     const result = await this.gateway.generateImage(prompt, xaiConfig);
 
