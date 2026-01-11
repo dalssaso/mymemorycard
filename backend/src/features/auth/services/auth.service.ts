@@ -74,14 +74,17 @@ export class AuthService implements IAuthService {
 
     const user = await this.userRepo.findByUsername(username);
 
-    if (!user) {
-      this.metrics.authAttemptsTotal.inc({ type: "login", success: "false" });
-      throw new UnauthorizedError("Invalid credentials");
-    }
+    // Prevent timing attacks by always performing password comparison
+    // If user doesn't exist, use a dummy hash so the comparison still takes time
+    const DUMMY_PASSWORD_HASH =
+      "$2a$10$invalidusernamepreventionhashthisisnotarealpassword";
+    const hashToCompare = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
 
-    const isValid = await this.passwordHasher.compare(password, user.passwordHash);
+    const isValid = await this.passwordHasher.compare(password, hashToCompare);
 
-    if (!isValid) {
+    // Return same error for both "user not found" and "wrong password"
+    // to prevent username enumeration via timing analysis
+    if (!user || !isValid) {
       this.metrics.authAttemptsTotal.inc({ type: "login", success: "false" });
       throw new UnauthorizedError("Invalid credentials");
     }
