@@ -2,7 +2,7 @@
  * Typography tokens matching CSS variables in tokens.css
  */
 
-export const fontFamily = "var(--font-family)";
+export const fontFamily = "var(--font-family)" as const;
 
 export const fontWeight = {
   regular: "var(--font-weight-regular)",
