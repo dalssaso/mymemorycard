@@ -2,6 +2,9 @@ import "reflect-metadata";
 import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
 import { container } from "tsyringe";
 import { AiController } from "@/features/ai/controllers/ai.controller";
+import { ConfigurationError } from "@/features/ai/errors/configuration.error";
+import { ValidationError } from "@/shared/errors/base";
+import type { Logger } from "@/infrastructure/logging/logger";
 import {
   createMockEmbeddingService,
   createMockCuratorService,
@@ -20,6 +23,17 @@ describe("AiController", () => {
   let mockImageService: MockImageService;
   const validGameId = "550e8400-e29b-41d4-a716-446655440000";
   const testToken = "token_test-user-id";
+
+  const createMockLogger = (): Logger => {
+    const mockInstance = {
+      debug: mock(() => {}),
+      info: mock(() => {}),
+      warn: mock(() => {}),
+      error: mock(() => {}),
+      child: mock(() => mockInstance),
+    };
+    return mockInstance as unknown as Logger;
+  };
 
   beforeEach(() => {
     // Register required dependencies for createAuthMiddleware
@@ -57,7 +71,13 @@ describe("AiController", () => {
     ]);
     mockImageService = createMockImageService();
 
-    controller = new AiController(mockEmbeddingService, mockCuratorService, mockImageService);
+    const mockLogger = createMockLogger();
+    controller = new AiController(
+      mockEmbeddingService,
+      mockCuratorService,
+      mockImageService,
+      mockLogger
+    );
   });
 
   afterEach(() => {
@@ -172,6 +192,50 @@ describe("AiController", () => {
       expect(response.status).toBe(500);
       const data = (await response.json()) as { error: string };
       expect(data.error).toBe("AI service error");
+    });
+
+    it("should return 503 when service throws ConfigurationError", async () => {
+      mockEmbeddingService.generateGameEmbedding.mockRejectedValueOnce(
+        new ConfigurationError("AI provider not configured")
+      );
+
+      const response = await controller.router.request("/embeddings/games", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${testToken}`,
+        },
+        body: JSON.stringify({
+          gameId: validGameId,
+          text: "Test text",
+        }),
+      });
+
+      expect(response.status).toBe(503);
+      const data = (await response.json()) as { error: string };
+      expect(data.error).toBe("AI provider not configured");
+    });
+
+    it("should return 400 when service throws ValidationError", async () => {
+      mockEmbeddingService.generateGameEmbedding.mockRejectedValueOnce(
+        new ValidationError("Invalid embedding parameters")
+      );
+
+      const response = await controller.router.request("/embeddings/games", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${testToken}`,
+        },
+        body: JSON.stringify({
+          gameId: validGameId,
+          text: "Test text",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+      const data = (await response.json()) as { error: string };
+      expect(data.error).toBe("Invalid embedding parameters");
     });
   });
 

@@ -18,6 +18,9 @@ import {
   NextGameSuggestionSchema,
 } from "../dtos/ai.dto";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
+import { ConfigurationError } from "../errors/configuration.error";
+import { ValidationError } from "@/shared/errors/base";
+import { Logger } from "@/infrastructure/logging/logger";
 
 @injectable()
 export class AiController implements IAiController {
@@ -26,7 +29,8 @@ export class AiController implements IAiController {
   constructor(
     @inject("IEmbeddingService") private embeddingService: IEmbeddingService,
     @inject("ICuratorService") private curatorService: ICuratorService,
-    @inject("IImageService") private imageService: IImageService
+    @inject("IImageService") private imageService: IImageService,
+    @inject(Logger) private logger: Logger
   ) {
     this.router = new OpenAPIHono<{ Variables: AiControllerVariables }>();
     this.registerRoutes();
@@ -83,6 +87,14 @@ export class AiController implements IAiController {
           },
           description: "Internal server error",
         },
+        503: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Service unavailable - AI configuration error",
+        },
       },
     });
 
@@ -94,7 +106,25 @@ export class AiController implements IAiController {
 
         return c.json({ success: true }, 201);
       } catch (error) {
-        console.error("Error in generateGameEmbedding:", {
+        if (error instanceof ConfigurationError) {
+          this.logger.error("AI configuration error in generateGameEmbedding", {
+            userId: c.get("user")?.id,
+            gameId: c.req.valid("json")?.gameId,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 503);
+        }
+
+        if (error instanceof ValidationError) {
+          this.logger.error("Validation error in generateGameEmbedding", {
+            userId: c.get("user")?.id,
+            gameId: c.req.valid("json")?.gameId,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 400);
+        }
+
+        this.logger.error("Error in generateGameEmbedding", {
           userId: c.get("user")?.id,
           gameId: c.req.valid("json")?.gameId,
           error: error instanceof Error ? error.message : String(error),
@@ -157,6 +187,14 @@ export class AiController implements IAiController {
           },
           description: "Internal server error",
         },
+        503: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Service unavailable - AI configuration error",
+        },
       },
     });
 
@@ -172,7 +210,25 @@ export class AiController implements IAiController {
 
         return c.json({ success: true }, 201);
       } catch (error) {
-        console.error("Error in generateCollectionEmbedding:", {
+        if (error instanceof ConfigurationError) {
+          this.logger.error("AI configuration error in generateCollectionEmbedding", {
+            userId: c.get("user")?.id,
+            collectionId: c.req.valid("json")?.collectionId,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 503);
+        }
+
+        if (error instanceof ValidationError) {
+          this.logger.error("Validation error in generateCollectionEmbedding", {
+            userId: c.get("user")?.id,
+            collectionId: c.req.valid("json")?.collectionId,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 400);
+        }
+
+        this.logger.error("Error in generateCollectionEmbedding", {
           userId: c.get("user")?.id,
           collectionId: c.req.valid("json")?.collectionId,
           error: error instanceof Error ? error.message : String(error),
@@ -235,6 +291,14 @@ export class AiController implements IAiController {
           },
           description: "Internal server error",
         },
+        503: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Service unavailable - AI configuration error",
+        },
       },
     });
 
@@ -246,7 +310,25 @@ export class AiController implements IAiController {
 
         return c.json(suggestions, 200);
       } catch (error) {
-        console.error("Error in suggestCollections:", {
+        if (error instanceof ConfigurationError) {
+          this.logger.error("AI configuration error in suggestCollections", {
+            userId: c.get("user")?.id,
+            gameIdsCount: c.req.valid("json")?.gameIds?.length,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 503);
+        }
+
+        if (error instanceof ValidationError) {
+          this.logger.error("Validation error in suggestCollections", {
+            userId: c.get("user")?.id,
+            gameIdsCount: c.req.valid("json")?.gameIds?.length,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 400);
+        }
+
+        this.logger.error("Error in suggestCollections", {
           userId: c.get("user")?.id,
           gameIdsCount: c.req.valid("json")?.gameIds?.length,
           error: error instanceof Error ? error.message : String(error),
@@ -309,6 +391,14 @@ export class AiController implements IAiController {
           },
           description: "Internal server error",
         },
+        503: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Service unavailable - AI configuration error",
+        },
       },
     });
 
@@ -320,7 +410,25 @@ export class AiController implements IAiController {
 
         return c.json(suggestions, 200);
       } catch (error) {
-        console.error("Error in suggestNextGame:", {
+        if (error instanceof ConfigurationError) {
+          this.logger.error("AI configuration error in suggestNextGame", {
+            userId: c.get("user")?.id,
+            recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 503);
+        }
+
+        if (error instanceof ValidationError) {
+          this.logger.error("Validation error in suggestNextGame", {
+            userId: c.get("user")?.id,
+            recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 400);
+        }
+
+        this.logger.error("Error in suggestNextGame", {
           userId: c.get("user")?.id,
           recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
           error: error instanceof Error ? error.message : String(error),
@@ -383,6 +491,14 @@ export class AiController implements IAiController {
           },
           description: "Internal server error",
         },
+        503: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Service unavailable - AI configuration error",
+        },
       },
     });
 
@@ -398,7 +514,27 @@ export class AiController implements IAiController {
 
         return c.json(result, 201);
       } catch (error) {
-        console.error("Error in generateCollectionCover:", {
+        if (error instanceof ConfigurationError) {
+          this.logger.error("AI configuration error in generateCollectionCover", {
+            userId: c.get("user")?.id,
+            collectionName: c.req.valid("json")?.collectionName,
+            gameNamesCount: c.req.valid("json")?.gameNames?.length,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 503);
+        }
+
+        if (error instanceof ValidationError) {
+          this.logger.error("Validation error in generateCollectionCover", {
+            userId: c.get("user")?.id,
+            collectionName: c.req.valid("json")?.collectionName,
+            gameNamesCount: c.req.valid("json")?.gameNames?.length,
+            error: error.message,
+          });
+          return c.json({ error: error.message }, 400);
+        }
+
+        this.logger.error("Error in generateCollectionCover", {
           userId: c.get("user")?.id,
           collectionName: c.req.valid("json")?.collectionName,
           gameNamesCount: c.req.valid("json")?.gameNames?.length,
