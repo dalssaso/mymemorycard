@@ -9,7 +9,7 @@ Frontend instructions for Claude Code. See root [CLAUDE.md](../CLAUDE.md).
 - **Routing**: TanStack Router (file-based routes)
 - **State**: TanStack Query (server state), React Context (auth/theme)
 - **Tables**: TanStack Table
-- **Styling**: Tailwind CSS with Catppuccin Mocha dark theme
+- **Styling**: Tailwind CSS with semantic design tokens
 - **UI Components**: shadcn/ui (Radix primitives)
 - **Build**: Vite
 - **Testing**: Vitest + Testing Library
@@ -135,7 +135,7 @@ import { getStatusConfig } from '@/lib/constants/status'
 
 // Get configuration for a status
 const config = getStatusConfig('playing')
-// { id: 'playing', label: 'Playing', icon: '...', color: 'ctp-teal', ... }
+// { id: 'playing', label: 'Playing', icon: '...', color: 'status-playing', ... }
 ```
 
 **StatusButton Component** - Two modes:
@@ -161,12 +161,12 @@ import { StatusButton } from '@/components/ui/status-button'
 ```
 
 **Available Status IDs:**
-- `total` - Total games (mauve)
-- `playing` - Currently playing (teal)
-- `completed` - Finished games (green)
-- `backlog` - Unplayed games (gray)
-- `dropped` - Abandoned games (red)
-- `favorites` - Favorite games (red with filled heart)
+- `total` - Total games (accent)
+- `playing` - Currently playing (status.playing)
+- `completed` - Finished games (status.completed)
+- `backlog` - Unplayed games (status.backlog)
+- `dropped` - Abandoned games (status.dropped)
+- `favorites` - Favorite games (status.finished)
 
 **Benefits:**
 - Consistent styling across all status buttons
@@ -425,20 +425,55 @@ export function useToggleFavorite(): UseMutationResult<...> {
 
 ### Styling
 
-Use Tailwind with Catppuccin theme colors (`ctp-*` prefix):
+Use Tailwind with semantic design tokens (no `ctp-*` prefixes):
 
 ```tsx
-<div className="bg-ctp-base text-ctp-text border-ctp-surface0">
-  <span className="text-ctp-green">Success</span>
+import { colors } from '@/design-system'
+
+// Tailwind classes use semantic token class names
+<div className="bg-base text-text-primary border-border">
+  <span className="text-status-finished">Success</span>
+</div>
+
+// For JS-based styling, access tokens directly
+const bgColor = colors.base // "var(--color-base)"
+const textColor = colors.text.primary // "var(--color-text-primary)"
+const statusColor = colors.status.playing // "var(--color-status-playing)"
+```
+
+### Design Tokens
+
+The design system uses semantic color tokens defined in `design-system/tokens/colors.ts`:
+
+**Color Hierarchy:**
+
+- `base`, `surface`, `elevated` - Background layers
+- `text.primary`, `text.secondary`, `text.muted` - Text colors
+- `accent`, `accent.hover` - Action colors
+- `status.playing`, `status.finished`, `status.completed`, `status.dropped`, `status.backlog` - Status colors
+- `border` - Border color
+
+**Usage in Tailwind:**
+
+```tsx
+// Use semantic token class names (no ctp- prefix)
+<div className="bg-base text-text-primary border-border">
+  <button className="bg-accent hover:bg-accent-hover">Action</button>
 </div>
 ```
 
-Status colors:
-- backlog: `ctp-overlay0` (gray)
-- playing: `ctp-teal` (cyan)
-- finished: `ctp-green`
-- completed: `ctp-yellow`
-- dropped: `ctp-red`
+**Usage in JavaScript:**
+
+```typescript
+import { colors } from '@/design-system'
+
+const boxColor = colors.base // "var(--color-base)"
+const statusColor = colors.status.playing // "var(--color-status-playing)"
+```
+
+**Migration from Catppuccin classes:**
+
+Previous code used `ctp-*` class prefixes (e.g., `ctp-mauve`, `ctp-teal`). These have been replaced with semantic tokens. If you see `ctp-*` classes in the codebase, they should be updated to use semantic token equivalents.
 
 ### Utilities
 
@@ -643,7 +678,7 @@ if (!(await hasUserPlatforms(queryClient))) {
 
 1. Define TypeScript interface for props
 2. Include ARIA attributes for interactive elements
-3. Use `ctp-*` theme colors
+3. Use semantic design tokens (no `ctp-*` prefixes)
 4. Use `@/*` path alias for imports
 5. Follow code style rules from root [CLAUDE.md](../CLAUDE.md)
 6. Use shadcn/ui components (never raw HTML buttons/inputs)
