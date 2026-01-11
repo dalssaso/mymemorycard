@@ -1,4 +1,4 @@
-import type { EmbeddingResult, CompletionResult, ImageResult, GatewayConfig } from "../types"
+import type { EmbeddingResult, CompletionResult, ImageResult, GatewayConfig } from "../types";
 
 /**
  * Interface for AI Gateway service operations.
@@ -11,7 +11,7 @@ export interface IGatewayService {
    * @param config - Gateway configuration including API key and provider
    * @returns Promise resolving to embedding result with vector, model, and token usage
    */
-  generateEmbedding(text: string, config: GatewayConfig): Promise<EmbeddingResult>
+  generateEmbedding(text: string, config: GatewayConfig): Promise<EmbeddingResult>;
 
   /**
    * Generate text completion using Vercel AI Gateway
@@ -24,7 +24,7 @@ export interface IGatewayService {
     prompt: string,
     systemPrompt: string,
     config: GatewayConfig
-  ): Promise<CompletionResult>
+  ): Promise<CompletionResult>;
 
   /**
    * Stream text completion using Vercel AI Gateway
@@ -37,7 +37,7 @@ export interface IGatewayService {
     prompt: string,
     systemPrompt: string,
     config: GatewayConfig
-  ): AsyncIterable<string>
+  ): AsyncIterable<string>;
 
   /**
    * Generate image using xAI via Vercel AI Gateway
@@ -45,5 +45,5 @@ export interface IGatewayService {
    * @param config - Gateway configuration including API key and provider
    * @returns Promise resolving to image result with URL and model
    */
-  generateImage(prompt: string, config: GatewayConfig): Promise<ImageResult>
+  generateImage(prompt: string, config: GatewayConfig): Promise<ImageResult>;
 }
