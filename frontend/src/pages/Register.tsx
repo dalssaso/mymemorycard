@@ -52,7 +52,7 @@ export function Register(): JSX.Element {
       navigate({ to: "/platforms/onboarding" });
     } catch (error: unknown) {
       const message = normalizeAuthError(error);
-      form.setError("root", { message: message || "Failed to create account" });
+      form.setError("root", { message });
     }
   });
 
