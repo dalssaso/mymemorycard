@@ -23,7 +23,7 @@ export const easing = {
   out: [0, 0, 0.2, 1] as const,
   in: [0.4, 0, 1, 1] as const,
   spring: [0.34, 1.56, 0.64, 1] as const,
-};
+} as const;
 
 export const easingCSS = {
   out: "var(--ease-out)",
