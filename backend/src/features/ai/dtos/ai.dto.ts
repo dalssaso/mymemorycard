@@ -5,7 +5,7 @@ export const GenerateEmbeddingRequestSchema = z.object({
     .string()
     .regex(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      "Invalid UUID"
+      "Must be a valid UUID v4"
     ),
   text: z.string().min(1),
 });
@@ -17,7 +17,7 @@ export const SuggestCollectionsRequestSchema = z.object({
         .string()
         .regex(
           /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-          "Invalid UUID"
+          "Must be a valid UUID v4"
         )
     )
     .min(1)
@@ -31,7 +31,7 @@ export const SuggestNextGameRequestSchema = z.object({
         .string()
         .regex(
           /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-          "Invalid UUID"
+          "Must be a valid UUID v4"
         )
     )
     .min(1)
@@ -40,7 +40,7 @@ export const SuggestNextGameRequestSchema = z.object({
 
 export const GenerateCoverRequestSchema = z.object({
   collectionName: z.string().min(1),
-  gameNames: z.array(z.string()).min(1).max(10),
+  gameNames: z.array(z.string().min(1)).min(1).max(10),
 });
 
 // Response schemas
