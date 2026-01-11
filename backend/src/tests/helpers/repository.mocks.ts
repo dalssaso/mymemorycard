@@ -6,7 +6,6 @@ import type { InferSelectModel } from "drizzle-orm";
 import { type users } from "@/db/schema";
 import type { Logger } from "@/infrastructure/logging/logger";
 import type { MetricsService } from "@/infrastructure/metrics/metrics";
-import type { IGatewayService } from "@/features/ai/services/gateway.service.interface";
 import type {
   EmbeddingResult,
   CompletionResult,
@@ -105,9 +104,12 @@ export function createMockMetricsService(): MetricsService {
 // AI Domain Mocks
 // ============================================================================
 
-export function createMockGatewayService(
-  overrides?: Partial<IGatewayService>
-): IGatewayService {
+export function createMockGatewayService(): {
+  generateEmbedding: ReturnType<typeof mock>;
+  generateCompletion: ReturnType<typeof mock>;
+  streamCompletion: ReturnType<typeof mock>;
+  generateImage: ReturnType<typeof mock>;
+} {
   return {
     generateEmbedding: mock().mockResolvedValue({
       embedding: new Array(1536).fill(0.1),
@@ -128,7 +130,6 @@ export function createMockGatewayService(
       url: "https://example.com/image.png",
       model: "grok-2-image",
     } as ImageResult),
-    ...overrides,
   };
 }
 
@@ -152,5 +153,38 @@ export function createTestAiSettings(overrides?: Partial<UserAiSettings>): UserA
     enableSmartRouting: true,
     gatewayApiKeyEncrypted: "encrypted-gateway-key",
     ...overrides,
+  };
+}
+
+export function createMockAiSettingsRepository(): {
+  findByUserId: ReturnType<typeof mock>;
+  save: ReturnType<typeof mock>;
+  getGatewayConfig: ReturnType<typeof mock>;
+} {
+  return {
+    findByUserId: mock().mockResolvedValue(null),
+    save: mock().mockResolvedValue(undefined),
+    getGatewayConfig: mock().mockResolvedValue({
+      apiKey: "test-gateway-key",
+      provider: "openai" as const,
+    }),
+  };
+}
+
+export function createMockEmbeddingRepository(): {
+  findByGameId: ReturnType<typeof mock>;
+  findByCollectionId: ReturnType<typeof mock>;
+  saveGameEmbedding: ReturnType<typeof mock>;
+  saveCollectionEmbedding: ReturnType<typeof mock>;
+  findSimilarGames: ReturnType<typeof mock>;
+  findSimilarCollections: ReturnType<typeof mock>;
+} {
+  return {
+    findByGameId: mock().mockResolvedValue(null),
+    findByCollectionId: mock().mockResolvedValue(null),
+    saveGameEmbedding: mock().mockResolvedValue(undefined),
+    saveCollectionEmbedding: mock().mockResolvedValue(undefined),
+    findSimilarGames: mock().mockResolvedValue([]),
+    findSimilarCollections: mock().mockResolvedValue([]),
   };
 }

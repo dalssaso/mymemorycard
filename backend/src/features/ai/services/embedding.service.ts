@@ -1,10 +1,10 @@
-import { injectable, inject } from "tsyringe"
+import { injectable, inject } from "tsyringe";
 
-import type { IEmbeddingService } from "./embedding.service.interface"
-import type { IGatewayService } from "./gateway.service.interface"
-import type { IEmbeddingRepository } from "../repositories/embedding.repository.interface"
-import type { IAiSettingsRepository } from "../repositories/ai-settings.repository.interface"
-import { NotFoundError } from "@/shared/errors/base"
+import type { IEmbeddingService } from "./embedding.service.interface";
+import type { IGatewayService } from "./gateway.service.interface";
+import type { IEmbeddingRepository } from "../repositories/embedding.repository.interface";
+import type { IAiSettingsRepository } from "../repositories/ai-settings.repository.interface";
+import { NotFoundError } from "@/shared/errors/base";
 
 @injectable()
 export class EmbeddingService implements IEmbeddingService {
@@ -14,18 +14,14 @@ export class EmbeddingService implements IEmbeddingService {
     @inject("IAiSettingsRepository") private settingsRepo: IAiSettingsRepository
   ) {}
 
-  async generateGameEmbedding(
-    userId: string,
-    gameId: string,
-    gameText: string
-  ): Promise<void> {
-    const config = await this.settingsRepo.getGatewayConfig(userId)
+  async generateGameEmbedding(userId: string, gameId: string, gameText: string): Promise<void> {
+    const config = await this.settingsRepo.getGatewayConfig(userId);
     if (!config) {
-      throw new NotFoundError("AI settings not configured")
+      throw new NotFoundError("AI settings not configured");
     }
 
-    const result = await this.gateway.generateEmbedding(gameText, config)
-    await this.embeddingRepo.saveGameEmbedding(gameId, result.embedding, result.model)
+    const result = await this.gateway.generateEmbedding(gameText, config);
+    await this.embeddingRepo.saveGameEmbedding(gameId, result.embedding, result.model);
   }
 
   async generateCollectionEmbedding(
@@ -33,27 +29,23 @@ export class EmbeddingService implements IEmbeddingService {
     collectionId: string,
     collectionText: string
   ): Promise<void> {
-    const config = await this.settingsRepo.getGatewayConfig(userId)
+    const config = await this.settingsRepo.getGatewayConfig(userId);
     if (!config) {
-      throw new NotFoundError("AI settings not configured")
+      throw new NotFoundError("AI settings not configured");
     }
 
-    const result = await this.gateway.generateEmbedding(collectionText, config)
-    await this.embeddingRepo.saveCollectionEmbedding(
-      collectionId,
-      result.embedding,
-      result.model
-    )
+    const result = await this.gateway.generateEmbedding(collectionText, config);
+    await this.embeddingRepo.saveCollectionEmbedding(collectionId, result.embedding, result.model);
   }
 
   async findSimilarGames(_userId: string, gameId: string, limit: number): Promise<string[]> {
-    const record = await this.embeddingRepo.findByGameId(gameId)
+    const record = await this.embeddingRepo.findByGameId(gameId);
     if (!record?.embedding) {
-      return []
+      return [];
     }
 
-    const embedding = record.embedding
-    return this.embeddingRepo.findSimilarGames(embedding, limit, [gameId])
+    const embedding = record.embedding;
+    return this.embeddingRepo.findSimilarGames(embedding, limit, [gameId]);
   }
 
   async findSimilarCollections(
@@ -61,12 +53,12 @@ export class EmbeddingService implements IEmbeddingService {
     collectionId: string,
     limit: number
   ): Promise<string[]> {
-    const record = await this.embeddingRepo.findByCollectionId(collectionId)
+    const record = await this.embeddingRepo.findByCollectionId(collectionId);
     if (!record?.embedding) {
-      return []
+      return [];
     }
 
-    const embedding = record.embedding
-    return this.embeddingRepo.findSimilarCollections(embedding, limit)
+    const embedding = record.embedding;
+    return this.embeddingRepo.findSimilarCollections(embedding, limit);
   }
 }

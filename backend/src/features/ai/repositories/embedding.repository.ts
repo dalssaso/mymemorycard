@@ -1,12 +1,12 @@
-import crypto from "crypto"
-import { eq, notInArray, sql } from "drizzle-orm"
-import { injectable, inject } from "tsyringe"
+import crypto from "crypto";
+import { eq, notInArray, sql } from "drizzle-orm";
+import { injectable, inject } from "tsyringe";
 
-import { collectionEmbeddings, gameEmbeddings } from "@/db/schema"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
+import { collectionEmbeddings, gameEmbeddings } from "@/db/schema";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
 
-import type { CollectionEmbedding, GameEmbedding } from "../types"
-import type { IEmbeddingRepository } from "./embedding.repository.interface"
+import type { CollectionEmbedding, GameEmbedding } from "../types";
+import type { IEmbeddingRepository } from "./embedding.repository.interface";
 
 @injectable()
 export class EmbeddingRepository implements IEmbeddingRepository {
@@ -17,9 +17,9 @@ export class EmbeddingRepository implements IEmbeddingRepository {
       .select()
       .from(gameEmbeddings)
       .where(eq(gameEmbeddings.gameId, gameId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async findByCollectionId(collectionId: string): Promise<CollectionEmbedding | null> {
@@ -27,13 +27,13 @@ export class EmbeddingRepository implements IEmbeddingRepository {
       .select()
       .from(collectionEmbeddings)
       .where(eq(collectionEmbeddings.collectionId, collectionId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async saveGameEmbedding(gameId: string, embedding: number[], model: string): Promise<void> {
-    const textHash = crypto.createHash("sha256").update(gameId).digest("hex")
+    const textHash = crypto.createHash("sha256").update(gameId).digest("hex");
 
     await this.db
       .insert(gameEmbeddings)
@@ -51,7 +51,7 @@ export class EmbeddingRepository implements IEmbeddingRepository {
           model,
           updatedAt: new Date(),
         },
-      })
+      });
   }
 
   async saveCollectionEmbedding(
@@ -59,7 +59,7 @@ export class EmbeddingRepository implements IEmbeddingRepository {
     embedding: number[],
     model: string
   ): Promise<void> {
-    const textHash = crypto.createHash("sha256").update(collectionId).digest("hex")
+    const textHash = crypto.createHash("sha256").update(collectionId).digest("hex");
 
     await this.db
       .insert(collectionEmbeddings)
@@ -77,7 +77,7 @@ export class EmbeddingRepository implements IEmbeddingRepository {
           model,
           updatedAt: new Date(),
         },
-      })
+      });
   }
 
   async findSimilarGames(
@@ -85,32 +85,32 @@ export class EmbeddingRepository implements IEmbeddingRepository {
     limit: number,
     excludeIds: string[] = []
   ): Promise<string[]> {
-    const vectorString = `[${embedding.join(",")}]`
+    const vectorString = `[${embedding.join(",")}]`;
 
     let query = this.db
       .select({ gameId: gameEmbeddings.gameId })
       .from(gameEmbeddings)
       .orderBy(sql`embedding <=> ${vectorString}::vector`)
-      .limit(limit)
+      .limit(limit);
 
     if (excludeIds.length > 0) {
-      query = query.where(notInArray(gameEmbeddings.gameId, excludeIds)) as typeof query
+      query = query.where(notInArray(gameEmbeddings.gameId, excludeIds)) as typeof query;
     }
 
-    const results = await query
+    const results = await query;
 
-    return results.map((r) => r.gameId)
+    return results.map((r) => r.gameId);
   }
 
   async findSimilarCollections(embedding: number[], limit: number): Promise<string[]> {
-    const vectorString = `[${embedding.join(",")}]`
+    const vectorString = `[${embedding.join(",")}]`;
 
     const results = await this.db
       .select({ collectionId: collectionEmbeddings.collectionId })
       .from(collectionEmbeddings)
       .orderBy(sql`embedding <=> ${vectorString}::vector`)
-      .limit(limit)
+      .limit(limit);
 
-    return results.map((r) => r.collectionId)
+    return results.map((r) => r.collectionId);
   }
 }

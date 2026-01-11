@@ -1,10 +1,10 @@
-import { injectable, inject } from "tsyringe"
-import { eq } from "drizzle-orm"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
-import { userAiSettings } from "@/db/schema"
-import { decrypt } from "@/lib/encryption"
-import type { IAiSettingsRepository } from "./ai-settings.repository.interface"
-import type { GatewayConfig, UserAiSettings } from "../types"
+import { injectable, inject } from "tsyringe";
+import { eq } from "drizzle-orm";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { userAiSettings } from "@/db/schema";
+import { decrypt } from "@/lib/encryption";
+import type { IAiSettingsRepository } from "./ai-settings.repository.interface";
+import type { GatewayConfig, UserAiSettings } from "../types";
 
 @injectable()
 export class AiSettingsRepository implements IAiSettingsRepository {
@@ -15,9 +15,9 @@ export class AiSettingsRepository implements IAiSettingsRepository {
       .select()
       .from(userAiSettings)
       .where(eq(userAiSettings.userId, userId))
-      .limit(1)
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   async save(settings: Partial<UserAiSettings> & { userId: string }): Promise<void> {
@@ -30,19 +30,19 @@ export class AiSettingsRepository implements IAiSettingsRepository {
           ...settings,
           updatedAt: new Date(),
         },
-      })
+      });
   }
 
   async getGatewayConfig(userId: string): Promise<GatewayConfig | null> {
-    const settings = await this.findByUserId(userId)
+    const settings = await this.findByUserId(userId);
 
     if (!settings?.gatewayApiKeyEncrypted) {
-      return null
+      return null;
     }
 
     return {
       apiKey: decrypt(settings.gatewayApiKeyEncrypted),
       provider: settings.provider,
-    }
+    };
   }
 }
