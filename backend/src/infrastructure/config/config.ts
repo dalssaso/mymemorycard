@@ -124,8 +124,10 @@ export class Config implements IConfig {
     this.cors = {
       origin: validatedOrigin,
       allowedOrigins: [
-        "http://localhost:5173",
-        "http://localhost:3000",
+        // Include localhost origins only in development (not production)
+        ...(!this.isProduction
+          ? ["http://localhost:5173", "http://localhost:3000"]
+          : []),
         ...(validatedOrigin ? [validatedOrigin] : []),
       ],
     };

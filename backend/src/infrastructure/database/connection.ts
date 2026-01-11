@@ -66,7 +66,7 @@ export class DatabaseConnection {
       connect_timeout: poolConfig.connectTimeout ?? 10,
     });
     this.db = drizzle(this.queryClient, { schema });
-    this.logger = logger;
+    this.logger = logger.child("DatabaseConnection");
   }
 
   async healthCheck(): Promise<boolean> {

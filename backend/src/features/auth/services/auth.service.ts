@@ -20,7 +20,7 @@ export class AuthService implements IAuthService {
   }
 
   async register(username: string, email: string, password: string): Promise<AuthResult> {
-    this.logger.info("Attempting user registration", username);
+    this.logger.debug("Attempting user registration", username);
 
     // Input validation is performed by RegisterRequestSchema in the controller
     const exists = await this.userRepo.exists(username);
@@ -58,22 +58,19 @@ export class AuthService implements IAuthService {
         throw error;
       }
 
-      // Handle other creation errors (database issues, etc.)
+      // Handle all other creation errors (database issues, etc.)
       if (error instanceof Error) {
-        this.logger.error("Failed to create user", username, error.message);
-        this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
-        throw error;
+        this.logger.error("Failed to create user", error.message);
+        this.logger.debug("User creation error details", username, error.message);
       }
 
-      // Unknown error
-      this.logger.error("Unknown error during registration", username);
       this.metrics.authAttemptsTotal.inc({ type: "register", success: "false" });
       throw error;
     }
   }
 
   async login(username: string, password: string): Promise<AuthResult> {
-    this.logger.info("Attempting user login", username);
+    this.logger.debug("Attempting user login", username);
 
     const user = await this.userRepo.findByUsername(username);
 
