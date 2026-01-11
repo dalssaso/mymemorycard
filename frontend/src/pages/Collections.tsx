@@ -305,7 +305,7 @@ export function Collections() {
                     </span>
                     {collections.length > 0 && (
                       <Button
-                        variant="ghost-text"
+                        variant="ghost"
                         size="sm"
                         onClick={() =>
                           setSelectedCollectionIds(
@@ -319,7 +319,7 @@ export function Collections() {
                     )}
                     {selectedCollectionIds.length > 0 && (
                       <Button
-                        variant="ghost-text"
+                        variant="ghost"
                         size="sm"
                         onClick={() => setSelectedCollectionIds([])}
                         className="h-auto px-2 text-sm"
@@ -331,7 +331,7 @@ export function Collections() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     {selectedCollectionIds.length > 0 && (
                       <Button
-                        variant="outline-red"
+                        variant="destructive"
                         size="sm"
                         onClick={() => setShowDeleteConfirm(true)}
                       >
@@ -538,7 +538,7 @@ export function Collections() {
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-ctp-green">AI Suggestion</span>
                     <Button
-                      variant="ghost-text"
+                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         setAiSuggestion(null);
@@ -636,7 +636,7 @@ export function Collections() {
                           className="mx-auto max-h-48 rounded-lg"
                         />
                         <Button
-                          variant="ghost-text"
+                          variant="ghost"
                           size="sm"
                           onClick={() => {
                             setNewCollectionCoverFile(null);

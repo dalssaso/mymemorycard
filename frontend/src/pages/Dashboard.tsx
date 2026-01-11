@@ -411,21 +411,21 @@ export function Dashboard() {
                 <div className="flex gap-1 rounded-lg bg-ctp-surface0 p-1">
                   <Button
                     onClick={() => setHeatmapType("activity")}
-                    variant={heatmapType === "activity" ? "secondary" : "ghost-text"}
+                    variant={heatmapType === "activity" ? "secondary" : "ghost"}
                     className="h-auto rounded px-3 py-1 text-sm"
                   >
                     Play Sessions
                   </Button>
                   <Button
                     onClick={() => setHeatmapType("completion")}
-                    variant={heatmapType === "completion" ? "default" : "ghost-text"}
+                    variant={heatmapType === "completion" ? "default" : "ghost"}
                     className="h-auto rounded px-3 py-1 text-sm"
                   >
                     Completion
                   </Button>
                   <Button
                     onClick={() => setHeatmapType("achievement")}
-                    variant={heatmapType === "achievement" ? "secondary" : "ghost-text"}
+                    variant={heatmapType === "achievement" ? "secondary" : "ghost"}
                     className="h-auto rounded px-3 py-1 text-sm"
                   >
                     Achievements

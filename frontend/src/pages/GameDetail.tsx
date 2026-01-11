@@ -939,7 +939,7 @@ export function GameDetail() {
                 </div>
               ) : (
                 <Button
-                  variant="outline-red"
+                  variant="destructive"
                   onClick={() => setShowDeleteConfirm(true)}
                   className="h-auto w-full border-2 py-3 font-semibold"
                 >

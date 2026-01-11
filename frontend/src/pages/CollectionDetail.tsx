@@ -652,7 +652,7 @@ export function CollectionDetail() {
                   ) : (
                     <>
                       <Button
-                        variant="outline-mauve"
+                        variant="outline"
                         size="sm"
                         onClick={() => setSelectionMode(true)}
                         disabled={games.length === 0}

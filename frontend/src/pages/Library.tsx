@@ -436,10 +436,10 @@ export function Library() {
 
           {/* Export Buttons */}
           <div className="flex gap-2">
-            <Button variant="outline-teal" onClick={() => handleExport("json")}>
+            <Button variant="outline" onClick={() => handleExport("json")}>
               Export JSON
             </Button>
-            <Button variant="outline-green" onClick={() => handleExport("csv")}>
+            <Button variant="secondary" onClick={() => handleExport("csv")}>
               Export CSV
             </Button>
           </div>
@@ -601,7 +601,7 @@ export function Library() {
               </span>
               {filteredGames.length > 0 && (
                 <Button
-                  variant="ghost-text"
+                  variant="ghost"
                   size="lg"
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
                   className="px-2 text-sm"
@@ -611,7 +611,7 @@ export function Library() {
               )}
               {selectedGameIds.length > 0 && (
                 <Button
-                  variant="ghost-text"
+                  variant="ghost"
                   size="lg"
                   onClick={() => setRowSelection({})}
                   className="px-2 text-sm"
@@ -629,7 +629,7 @@ export function Library() {
                     onOpenChange={setShowCollectionDropdown}
                   >
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline-teal" size="lg">
+                      <Button variant="outline" size="lg">
                         Add to Collection
                       </Button>
                     </DropdownMenuTrigger>
@@ -662,7 +662,7 @@ export function Library() {
 
                   {/* Delete */}
                   <Button
-                    variant="outline-red"
+                    variant="destructive"
                     size="lg"
                     onClick={() => setShowDeleteConfirm(true)}
                   >
