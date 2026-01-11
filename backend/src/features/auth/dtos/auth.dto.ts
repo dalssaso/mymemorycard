@@ -13,7 +13,10 @@ export const RegisterRequestSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .max(32, "Password must be at most 32 characters to ensure it stays under bcrypt's 72-byte limit"),
+    .max(
+      32,
+      "Password must be at most 32 characters to ensure it stays under bcrypt's 72-byte limit"
+    ),
 });
 
 export const LoginRequestSchema = z.object({
@@ -21,7 +24,10 @@ export const LoginRequestSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .max(32, "Password must be at most 32 characters to ensure it stays under bcrypt's 72-byte limit"),
+    .max(
+      32,
+      "Password must be at most 32 characters to ensure it stays under bcrypt's 72-byte limit"
+    ),
 });
 
 export const AuthResponseSchema = z.object({

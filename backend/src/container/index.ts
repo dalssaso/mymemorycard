@@ -11,7 +11,6 @@ import type { IConfig } from "@/infrastructure/config/config.interface";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
 
-
 // Auth - Repositories
 import { PostgresUserRepository } from "@/features/auth/repositories/user.repository";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";

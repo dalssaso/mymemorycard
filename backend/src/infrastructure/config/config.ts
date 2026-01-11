@@ -125,9 +125,7 @@ export class Config implements IConfig {
       origin: validatedOrigin,
       allowedOrigins: [
         // Include localhost origins only in development (not production)
-        ...(!this.isProduction
-          ? ["http://localhost:5173", "http://localhost:3000"]
-          : []),
+        ...(!this.isProduction ? ["http://localhost:5173", "http://localhost:3000"] : []),
         ...(validatedOrigin ? [validatedOrigin] : []),
       ],
     };
