@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { injectable, inject } from "tsyringe";
 
 import type { IEmbeddingService } from "./embedding.service.interface";
@@ -20,8 +21,9 @@ export class EmbeddingService implements IEmbeddingService {
       throw new NotFoundError("AI settings not configured");
     }
 
+    const textHash = createHash("sha256").update(gameText).digest("hex");
     const result = await this.gateway.generateEmbedding(gameText, config);
-    await this.embeddingRepo.saveGameEmbedding(gameId, result.embedding, result.model);
+    await this.embeddingRepo.saveGameEmbedding(gameId, result.embedding, result.model, textHash);
   }
 
   async generateCollectionEmbedding(
@@ -34,8 +36,14 @@ export class EmbeddingService implements IEmbeddingService {
       throw new NotFoundError("AI settings not configured");
     }
 
+    const textHash = createHash("sha256").update(collectionText).digest("hex");
     const result = await this.gateway.generateEmbedding(collectionText, config);
-    await this.embeddingRepo.saveCollectionEmbedding(collectionId, result.embedding, result.model);
+    await this.embeddingRepo.saveCollectionEmbedding(
+      collectionId,
+      result.embedding,
+      result.model,
+      textHash
+    );
   }
 
   async findSimilarGames(_userId: string, gameId: string, limit: number): Promise<string[]> {

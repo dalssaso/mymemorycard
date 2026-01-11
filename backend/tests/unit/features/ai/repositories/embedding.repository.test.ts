@@ -108,7 +108,12 @@ describe("EmbeddingRepository", () => {
         values: valuesMock,
       });
 
-      await repository.saveGameEmbedding("game-789", [0.7, 0.8, 0.9], "text-embedding-3-small");
+      await repository.saveGameEmbedding(
+        "game-789",
+        [0.7, 0.8, 0.9],
+        "text-embedding-3-small",
+        "test-hash-123"
+      );
 
       expect(mockDb.insert).toHaveBeenCalledTimes(1);
       expect(valuesMock).toHaveBeenCalledTimes(1);
@@ -118,9 +123,8 @@ describe("EmbeddingRepository", () => {
         gameId: "game-789",
         embedding: [0.7, 0.8, 0.9],
         model: "text-embedding-3-small",
+        textHash: "test-hash-123",
       });
-      expect(payload.textHash).toBeDefined();
-      expect(typeof payload.textHash).toBe("string");
     });
   });
 
@@ -137,7 +141,8 @@ describe("EmbeddingRepository", () => {
       await repository.saveCollectionEmbedding(
         "collection-999",
         [0.11, 0.22, 0.33],
-        "text-embedding-3-small"
+        "text-embedding-3-small",
+        "test-hash-456"
       );
 
       expect(mockDb.insert).toHaveBeenCalledTimes(1);
@@ -148,9 +153,8 @@ describe("EmbeddingRepository", () => {
         collectionId: "collection-999",
         embedding: [0.11, 0.22, 0.33],
         model: "text-embedding-3-small",
+        textHash: "test-hash-456",
       });
-      expect(payload.textHash).toBeDefined();
-      expect(typeof payload.textHash).toBe("string");
     });
   });
 

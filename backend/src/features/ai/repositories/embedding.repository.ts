@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { eq, notInArray, sql } from "drizzle-orm";
 import { injectable, inject } from "tsyringe";
 
@@ -32,9 +31,12 @@ export class EmbeddingRepository implements IEmbeddingRepository {
     return result[0] ?? null;
   }
 
-  async saveGameEmbedding(gameId: string, embedding: number[], model: string): Promise<void> {
-    const textHash = crypto.createHash("sha256").update(gameId).digest("hex");
-
+  async saveGameEmbedding(
+    gameId: string,
+    embedding: number[],
+    model: string,
+    textHash: string
+  ): Promise<void> {
     await this.db
       .insert(gameEmbeddings)
       .values({
@@ -57,10 +59,9 @@ export class EmbeddingRepository implements IEmbeddingRepository {
   async saveCollectionEmbedding(
     collectionId: string,
     embedding: number[],
-    model: string
+    model: string,
+    textHash: string
   ): Promise<void> {
-    const textHash = crypto.createHash("sha256").update(collectionId).digest("hex");
-
     await this.db
       .insert(collectionEmbeddings)
       .values({

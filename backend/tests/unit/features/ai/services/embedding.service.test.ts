@@ -44,11 +44,17 @@ describe("EmbeddingService", () => {
         apiKey: "test-key",
         provider: "openai",
       });
-      expect(mockEmbeddingRepo.saveGameEmbedding).toHaveBeenCalledWith(
-        "game-1",
-        [0.1, 0.2, 0.3],
-        "text-embedding-3-small"
-      );
+
+      // Verify saveGameEmbedding was called with the correct parameters
+      expect(mockEmbeddingRepo.saveGameEmbedding).toHaveBeenCalledTimes(1);
+      const [gameId, embedding, model, textHash] = (
+        mockEmbeddingRepo.saveGameEmbedding as ReturnType<typeof mock>
+      ).mock.calls[0];
+      expect(gameId).toBe("game-1");
+      expect(embedding).toEqual([0.1, 0.2, 0.3]);
+      expect(model).toBe("text-embedding-3-small");
+      expect(typeof textHash).toBe("string");
+      expect(textHash).toHaveLength(64); // SHA-256 hex string length
     });
 
     it("should throw NotFoundError when AI settings not configured", async () => {
@@ -86,11 +92,17 @@ describe("EmbeddingService", () => {
         apiKey: "test-key",
         provider: "xai",
       });
-      expect(mockEmbeddingRepo.saveCollectionEmbedding).toHaveBeenCalledWith(
-        "collection-1",
-        [0.4, 0.5, 0.6],
-        "text-embedding-3-small"
-      );
+
+      // Verify saveCollectionEmbedding was called with the correct parameters
+      expect(mockEmbeddingRepo.saveCollectionEmbedding).toHaveBeenCalledTimes(1);
+      const [collectionId, embedding, model, textHash] = (
+        mockEmbeddingRepo.saveCollectionEmbedding as ReturnType<typeof mock>
+      ).mock.calls[0];
+      expect(collectionId).toBe("collection-1");
+      expect(embedding).toEqual([0.4, 0.5, 0.6]);
+      expect(model).toBe("text-embedding-3-small");
+      expect(typeof textHash).toBe("string");
+      expect(textHash).toHaveLength(64); // SHA-256 hex string length
     });
 
     it("should throw NotFoundError when AI settings not configured", async () => {
