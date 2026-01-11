@@ -28,3 +28,4 @@ export const lineHeight = {
 
 export type FontSizeToken = keyof typeof fontSize;
 export type FontWeightToken = keyof typeof fontWeight;
+export type LineHeightToken = keyof typeof lineHeight;
