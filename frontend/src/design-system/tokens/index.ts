@@ -1,4 +1,4 @@
-export { colors, type ColorToken, type StatusColor } from "./colors";
+export { colors, type ColorTokens, type StatusColor } from "./colors";
 export { spacing, layout, type SpacingToken } from "./spacing";
 export {
   fontFamily,
