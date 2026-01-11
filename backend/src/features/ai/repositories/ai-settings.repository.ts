@@ -5,11 +5,17 @@ import { userAiSettings } from "@/db/schema";
 import { decrypt } from "@/lib/encryption";
 import type { IAiSettingsRepository } from "./ai-settings.repository.interface";
 import type { GatewayConfig, UserAiSettings } from "../types";
+import { AI_MODELS } from "../types";
 
 @injectable()
 export class AiSettingsRepository implements IAiSettingsRepository {
   constructor(@inject("Database") private db: DrizzleDB) {}
 
+  /**
+   * Find AI settings for a user by their ID
+   * @param userId - The user's unique identifier
+   * @returns The user's AI settings, or null if not found
+   */
   async findByUserId(userId: string): Promise<UserAiSettings | null> {
     const result = await this.db
       .select()
@@ -20,6 +26,12 @@ export class AiSettingsRepository implements IAiSettingsRepository {
     return result[0] ?? null;
   }
 
+  /**
+   * Save or update AI settings for a user
+   * @param settings - The AI settings to save (userId and provider are required)
+   * @returns A promise that resolves when the settings are saved
+   * @throws Error if userId or provider are missing
+   */
   async save(settings: Partial<UserAiSettings> & { userId: string }): Promise<void> {
     if (!settings.userId || !settings.provider) {
       throw new Error("userId and provider are required");
@@ -31,7 +43,7 @@ export class AiSettingsRepository implements IAiSettingsRepository {
       provider: settings.provider,
       baseUrl: settings.baseUrl ?? null,
       apiKeyEncrypted: settings.apiKeyEncrypted ?? null,
-      model: settings.model ?? "gpt-4.1-mini",
+      model: settings.model ?? AI_MODELS.TEXT,
       imageApiKeyEncrypted: settings.imageApiKeyEncrypted ?? null,
       imageModel: settings.imageModel ?? "dall-e-3",
       temperature: settings.temperature ?? 0.7,
@@ -78,6 +90,11 @@ export class AiSettingsRepository implements IAiSettingsRepository {
       });
   }
 
+  /**
+   * Get gateway configuration from user AI settings
+   * @param userId - The user's unique identifier
+   * @returns Gateway config with provider and apiKey, or null if settings not found or gateway not configured
+   */
   async getGatewayConfig(userId: string): Promise<GatewayConfig | null> {
     const settings = await this.findByUserId(userId);
 
