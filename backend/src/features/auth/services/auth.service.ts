@@ -13,8 +13,8 @@ export class AuthService implements IAuthService {
     @inject("IUserRepository") private userRepo: IUserRepository,
     @inject("IPasswordHasher") private passwordHasher: IPasswordHasher,
     @inject("ITokenService") private tokenService: ITokenService,
-    private logger: Logger,
-    private metrics: MetricsService
+    @inject(Logger) private logger: Logger,
+    @inject(MetricsService) private metrics: MetricsService
   ) {
     this.logger = logger.child("AuthService");
   }
