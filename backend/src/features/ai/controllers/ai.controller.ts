@@ -1,7 +1,7 @@
 import { injectable, inject } from "tsyringe"
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
 import { z } from "zod"
-import type { IAiController } from "./ai.controller.interface"
+import type { IAiController, Variables } from "./ai.controller.interface"
 import type { IEmbeddingService } from "../services/embedding.service.interface"
 import type { ICuratorService } from "../services/curator.service.interface"
 import type { IImageService } from "../services/image.service.interface"
@@ -14,12 +14,6 @@ import {
   NextGameSuggestionSchema,
 } from "../dtos/ai.dto"
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
-import type { User } from "@/features/auth/types"
-
-type Variables = {
-  requestId: string
-  user?: User
-}
 
 const ErrorResponseSchema = z.object({
   error: z.string(),
@@ -95,12 +89,7 @@ export class AiController implements IAiController {
 
     this.router.openapi(generateGameEmbeddingRoute, async (c) => {
       const body = c.req.valid("json")
-      const user = c.get("user")
-
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401)
-      }
-
+      const user = c.get("user")!
       await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text)
 
       return c.json({ success: true }, 201)
@@ -151,12 +140,7 @@ export class AiController implements IAiController {
 
     this.router.openapi(generateCollectionEmbeddingRoute, async (c) => {
       const body = c.req.valid("json")
-      const user = c.get("user")
-
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401)
-      }
-
+      const user = c.get("user")!
       await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text)
 
       return c.json({ success: true }, 201)
@@ -207,12 +191,7 @@ export class AiController implements IAiController {
 
     this.router.openapi(suggestCollectionsRoute, async (c) => {
       const body = c.req.valid("json")
-      const user = c.get("user")
-
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401)
-      }
-
+      const user = c.get("user")!
       const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds)
 
       return c.json(suggestions, 200)
@@ -263,12 +242,7 @@ export class AiController implements IAiController {
 
     this.router.openapi(suggestNextGameRoute, async (c) => {
       const body = c.req.valid("json")
-      const user = c.get("user")
-
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401)
-      }
-
+      const user = c.get("user")!
       const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds)
 
       return c.json(suggestions, 200)
@@ -319,12 +293,7 @@ export class AiController implements IAiController {
 
     this.router.openapi(generateCoverRoute, async (c) => {
       const body = c.req.valid("json")
-      const user = c.get("user")
-
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401)
-      }
-
+      const user = c.get("user")!
       const result = await this.imageService.generateCollectionCover(
         user.id,
         body.collectionName,
