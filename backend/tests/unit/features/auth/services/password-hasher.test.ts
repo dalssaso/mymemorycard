@@ -1,27 +1,7 @@
 import "reflect-metadata";
 import { describe, it, expect, beforeEach } from "bun:test";
 import { PasswordHasher } from "@/features/auth/services/password-hasher";
-import type { IConfig } from "@/infrastructure/config/config.interface";
-
-/**
- * Helper to create minimal test config with sensible defaults.
- * Allows overrides for specific test scenarios.
- */
-function makeTestConfig(overrides?: Partial<IConfig>): IConfig {
-  return {
-    port: 3000,
-    database: { url: "postgresql://test" },
-    redis: { url: "redis://localhost:6380" },
-    jwt: { secret: "test-secret", expiresIn: "7d" },
-    bcrypt: { saltRounds: 10 },
-    rawg: { apiKey: "test-key" },
-    encryption: { secret: "test-encryption-secret-very-long", salt: "test-salt" },
-    cors: { allowedOrigins: ["http://localhost:5173"] },
-    isProduction: false,
-    skipRedisConnect: true,
-    ...overrides,
-  };
-}
+import { makeTestConfig } from "../../../helpers/make-test-config";
 
 describe("PasswordHasher", () => {
   let hasher: PasswordHasher;

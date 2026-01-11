@@ -2,51 +2,21 @@ import "reflect-metadata";
 import { describe, it, expect } from "bun:test";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { Logger } from "@/infrastructure/logging/logger";
-import type { IConfig } from "@/infrastructure/config/config.interface";
-
-const mockConfig: IConfig = {
-  database: {
-    url: "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard",
-  },
-  redis: {
-    url: "redis://localhost:6380",
-  },
-  jwt: {
-    secret: "test-jwt-secret",
-    expiresIn: "7d",
-  },
-  rawg: {
-    apiKey: "test-api-key",
-  },
-  encryption: {
-    secret: "test-encryption-secret-very-long",
-    salt: "test-salt",
-  },
-  port: 3000,
-  cors: {
-    allowedOrigins: [],
-  },
-  bcrypt: {
-    saltRounds: 10,
-  },
-  isProduction: false,
-  skipRedisConnect: true,
-};
+import { makeTestConfig } from "../../helpers/make-test-config";
 
 describe("DatabaseConnection", () => {
   it("should create database connection with db instance", () => {
     const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(mockConfig, logger);
+    const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
     expect(dbConnection.db).toBeDefined();
   });
 
   it("should accept connection string from config", () => {
-    const customConfig: IConfig = {
-      ...mockConfig,
+    const customConfig = makeTestConfig({
       database: {
         url: "postgresql://user:pass@localhost/db",
       },
-    };
+    });
     const logger = new Logger("test");
     const dbConnection = new DatabaseConnection(customConfig, logger);
 
@@ -54,17 +24,16 @@ describe("DatabaseConnection", () => {
   });
 
   it("should apply database pool configuration from config", () => {
-    const configWithPool: IConfig = {
-      ...mockConfig,
+    const configWithPool = makeTestConfig({
       database: {
-        url: mockConfig.database.url,
+        url: "postgresql://test",
         pool: {
           max: 20,
           idleTimeout: 60,
           connectTimeout: 15,
         },
       },
-    };
+    });
     const logger = new Logger("test");
     const dbConnection = new DatabaseConnection(configWithPool, logger);
 
@@ -72,12 +41,11 @@ describe("DatabaseConnection", () => {
   });
 
   it("should apply default pool configuration when none provided", () => {
-    const configNoPool: IConfig = {
-      ...mockConfig,
+    const configNoPool = makeTestConfig({
       database: {
-        url: mockConfig.database.url,
+        url: "postgresql://test",
       },
-    };
+    });
     const logger = new Logger("test");
     const dbConnection = new DatabaseConnection(configNoPool, logger);
 
@@ -87,7 +55,7 @@ describe("DatabaseConnection", () => {
   describe("healthCheck()", () => {
     it("should return a boolean promise", async () => {
       const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(mockConfig, logger);
+      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.healthCheck();
 
@@ -98,7 +66,7 @@ describe("DatabaseConnection", () => {
 
     it("should return true when database is healthy", async () => {
       const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(mockConfig, logger);
+      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = await dbConnection.healthCheck();
 
@@ -108,12 +76,11 @@ describe("DatabaseConnection", () => {
     });
 
     it("should return false when database is unhealthy", async () => {
-      const badConfig: IConfig = {
-        ...mockConfig,
+      const badConfig = makeTestConfig({
         database: {
           url: "postgresql://invalid:invalid@nonexistent:5555/nonexistent",
         },
-      };
+      });
       const logger = new Logger("test");
       const dbConnection = new DatabaseConnection(badConfig, logger);
 
@@ -128,7 +95,7 @@ describe("DatabaseConnection", () => {
   describe("close()", () => {
     it("should return a void promise", async () => {
       const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(mockConfig, logger);
+      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.close();
 
@@ -139,7 +106,7 @@ describe("DatabaseConnection", () => {
 
     it("should not throw errors during close", async () => {
       const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(mockConfig, logger);
+      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       // Should resolve successfully
       const result = dbConnection.close();
