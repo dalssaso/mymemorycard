@@ -34,11 +34,11 @@
 
   --radius: var(--radius-md);
 
-  --chart-1: 217 91% 60%;
-  --chart-2: 142 71% 45%;
-  --chart-3: 45 93% 47%;
-  --chart-4: 0 84% 60%;
-  --chart-5: 262 83% 58%;
+  --chart-1: var(--color-chart-1);
+  --chart-2: var(--color-chart-2);
+  --chart-3: var(--color-chart-3);
+  --chart-4: var(--color-chart-4);
+  --chart-5: var(--color-chart-5);
 }
 
 .dark {
