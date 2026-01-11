@@ -1,11 +1,11 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { User } from "@/features/auth/types";
 
-export type Variables = {
+export type AiControllerVariables = {
   requestId: string;
-  user?: User;
+  user: User;
 };
 
 export interface IAiController {
-  router: OpenAPIHono<{ Variables: Variables }>;
+  router: OpenAPIHono<{ Variables: AiControllerVariables }>;
 }

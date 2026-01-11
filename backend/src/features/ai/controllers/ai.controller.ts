@@ -1,7 +1,7 @@
 import { injectable, inject } from "tsyringe";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
-import type { IAiController, Variables } from "./ai.controller.interface";
+import type { IAiController, AiControllerVariables } from "./ai.controller.interface";
 import type { IEmbeddingService } from "../services/embedding.service.interface";
 import type { ICuratorService } from "../services/curator.service.interface";
 import type { IImageService } from "../services/image.service.interface";
@@ -30,14 +30,14 @@ const ImageResponseSchema = z.object({
 
 @injectable()
 export class AiController implements IAiController {
-  public router: OpenAPIHono<{ Variables: Variables }>;
+  public router: OpenAPIHono<{ Variables: AiControllerVariables }>;
 
   constructor(
     @inject("IEmbeddingService") private embeddingService: IEmbeddingService,
     @inject("ICuratorService") private curatorService: ICuratorService,
     @inject("IImageService") private imageService: IImageService
   ) {
-    this.router = new OpenAPIHono<{ Variables: Variables }>();
+    this.router = new OpenAPIHono<{ Variables: AiControllerVariables }>();
     this.registerRoutes();
   }
 
