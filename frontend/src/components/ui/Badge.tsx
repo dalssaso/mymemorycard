@@ -21,7 +21,7 @@ export function Badge({
       backlog: "bg-status-backlog/20 border border-status-backlog/50 text-status-backlog",
       playing: "bg-status-playing/20 border border-status-playing rounded-lg text-status-playing",
       finished:
-        "bg-status-completed/20 border border-status-completed rounded-lg text-status-completed",
+        "bg-status-finished/20 border border-status-finished rounded-lg text-status-finished",
       dropped: "bg-status-dropped/20 border border-status-dropped rounded-lg text-status-dropped",
       completed:
         "bg-status-completed/20 border border-status-completed rounded-lg text-status-completed",
