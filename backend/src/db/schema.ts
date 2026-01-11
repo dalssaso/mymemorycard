@@ -678,7 +678,7 @@ export const userAiSettings = pgTable(
     provider: aiProviderEnum("provider").notNull(),
     baseUrl: text("base_url"),
     apiKeyEncrypted: text("api_key_encrypted"),
-    model: varchar("model", { length: 100 }).notNull().default("gpt-4.1-mini"),
+    model: varchar("model", { length: 100 }).notNull().default("gpt-4o-mini"),
     imageApiKeyEncrypted: text("image_api_key_encrypted"),
     imageModel: varchar("image_model", { length: 100 }).default("dall-e-3"),
     temperature: real("temperature").default(0.7),

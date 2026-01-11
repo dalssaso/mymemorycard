@@ -22,7 +22,7 @@ describe("AuthController", () => {
       validateToken: mock().mockResolvedValue(null),
     };
 
-    mockLogger = new Logger("AuthController");
+    mockLogger = new Logger().child("AuthController");
 
     controller = new AuthController(mockAuthService, mockLogger);
   });

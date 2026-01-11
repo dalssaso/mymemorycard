@@ -27,6 +27,26 @@ import type { IAuthService } from "@/features/auth/services/auth.service.interfa
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 
+// AI - Controllers
+import { AiController } from "@/features/ai/controllers/ai.controller";
+import type { IAiController } from "@/features/ai/controllers/ai.controller.interface";
+
+// AI - Repositories
+import { AiSettingsRepository } from "@/features/ai/repositories/ai-settings.repository";
+import { EmbeddingRepository } from "@/features/ai/repositories/embedding.repository";
+import type { IAiSettingsRepository } from "@/features/ai/repositories/ai-settings.repository.interface";
+import type { IEmbeddingRepository } from "@/features/ai/repositories/embedding.repository.interface";
+
+// AI - Services
+import { GatewayService } from "@/features/ai/services/gateway.service";
+import { EmbeddingService } from "@/features/ai/services/embedding.service";
+import { CuratorService } from "@/features/ai/services/curator.service";
+import { ImageService } from "@/features/ai/services/image.service";
+import type { IGatewayService } from "@/features/ai/services/gateway.service.interface";
+import type { IEmbeddingService } from "@/features/ai/services/embedding.service.interface";
+import type { ICuratorService } from "@/features/ai/services/curator.service.interface";
+import type { IImageService } from "@/features/ai/services/image.service.interface";
+
 /**
  * Register all dependencies for the application.
  * Called once at application startup.
@@ -43,7 +63,7 @@ export function registerDependencies(): void {
     useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
 
-  // Logger singleton - optional context parameter handled by constructor
+  // Logger singleton - child loggers created via .child() method
   container.registerSingleton(Logger);
   container.registerSingleton(MetricsService);
 
@@ -57,6 +77,19 @@ export function registerDependencies(): void {
 
   // Auth Domain - Controllers
   container.registerSingleton<IAuthController>("IAuthController", AuthController);
+
+  // AI Domain - Repositories
+  container.registerSingleton<IAiSettingsRepository>("IAiSettingsRepository", AiSettingsRepository);
+  container.registerSingleton<IEmbeddingRepository>("IEmbeddingRepository", EmbeddingRepository);
+
+  // AI Domain - Services
+  container.registerSingleton<IGatewayService>("IGatewayService", GatewayService);
+  container.registerSingleton<IEmbeddingService>("IEmbeddingService", EmbeddingService);
+  container.registerSingleton<ICuratorService>("ICuratorService", CuratorService);
+  container.registerSingleton<IImageService>("IImageService", ImageService);
+
+  // AI Domain - Controllers
+  container.registerSingleton<IAiController>("IAiController", AiController);
 }
 
 /**

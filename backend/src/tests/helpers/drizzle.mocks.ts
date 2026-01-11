@@ -38,6 +38,7 @@ export function mockInsertResult<T>(mockDb: DrizzleDB, result: T[]): void {
   insertMock.mockReturnValue({
     values: mock().mockReturnValue({
       returning: mock().mockResolvedValue(result),
+      onConflictDoUpdate: mock().mockResolvedValue(result),
     }),
   });
 }

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.7",
+    "@ai-sdk/xai": "^3.0.13",
     "@hono/zod-openapi": "^1.2.0",
     "@simplewebauthn/server": "^13.2.2",
     "ai": "^6.0.27",

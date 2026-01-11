@@ -11,6 +11,8 @@ import { mock } from "bun:test";
 import "reflect-metadata";
 import { container } from "@/container";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import type { ITokenService, JWTPayload } from "@/features/auth/services/token.service.interface";
+import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 
 // Register IConfig for tests
 const mockConfig: IConfig = {
@@ -45,6 +47,47 @@ const mockConfig: IConfig = {
 
 container.register<IConfig>("IConfig", {
   useValue: mockConfig,
+});
+
+// Register mock ITokenService for auth middleware tests
+const mockTokenService: ITokenService = {
+  generateToken: (payload: JWTPayload): string => `mock-token-${payload.userId}`,
+  verifyToken: (token: string): JWTPayload | null => {
+    if (token.startsWith("mock-token-")) {
+      return { userId: token.replace("mock-token-", ""), username: "testuser" };
+    }
+    return null;
+  },
+};
+
+container.register<ITokenService>("ITokenService", {
+  useValue: mockTokenService,
+});
+
+// Register mock IUserRepository for auth middleware tests
+const mockUserRepository: IUserRepository = {
+  findById: async (id: string) => ({
+    id,
+    username: "testuser",
+    email: "test@example.com",
+    passwordHash: "hashed-password",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+  findByUsername: async () => null,
+  create: async () => ({
+    id: "new-user-id",
+    username: "newuser",
+    email: "new@example.com",
+    passwordHash: "hashed-password",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+  exists: async () => false,
+};
+
+container.register<IUserRepository>("IUserRepository", {
+  useValue: mockUserRepository,
 });
 
 // Mock the database module

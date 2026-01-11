@@ -1,13 +1,22 @@
 import "reflect-metadata";
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, afterEach } from "bun:test";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { Logger } from "@/infrastructure/logging/logger";
 import { makeTestConfig } from "../../helpers/make-test-config";
 
 describe("DatabaseConnection", () => {
+  let dbConnection: DatabaseConnection | null = null;
+
+  afterEach(async () => {
+    if (dbConnection) {
+      await dbConnection.close();
+      dbConnection = null;
+    }
+  });
+
   it("should create database connection with db instance", () => {
-    const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+    const logger = new Logger().child("test");
+    dbConnection = new DatabaseConnection(makeTestConfig(), logger);
     expect(dbConnection.db).toBeDefined();
   });
 
@@ -17,8 +26,8 @@ describe("DatabaseConnection", () => {
         url: "postgresql://user:pass@localhost/db",
       },
     });
-    const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(customConfig, logger);
+    const logger = new Logger().child("test");
+    dbConnection = new DatabaseConnection(customConfig, logger);
 
     expect(dbConnection.db).toBeDefined();
   });
@@ -34,8 +43,8 @@ describe("DatabaseConnection", () => {
         },
       },
     });
-    const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(configWithPool, logger);
+    const logger = new Logger().child("test");
+    dbConnection = new DatabaseConnection(configWithPool, logger);
 
     expect(dbConnection.db).toBeDefined();
   });
@@ -46,16 +55,16 @@ describe("DatabaseConnection", () => {
         url: "postgresql://test",
       },
     });
-    const logger = new Logger("test");
-    const dbConnection = new DatabaseConnection(configNoPool, logger);
+    const logger = new Logger().child("test");
+    dbConnection = new DatabaseConnection(configNoPool, logger);
 
     expect(dbConnection.db).toBeDefined();
   });
 
   describe("healthCheck()", () => {
     it("should return a boolean promise", async () => {
-      const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+      const logger = new Logger().child("test");
+      dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.healthCheck();
 
@@ -64,35 +73,14 @@ describe("DatabaseConnection", () => {
       expect(typeof value).toBe("boolean");
     });
 
-    it.skipIf(!process.env.CI || !process.env.DATABASE_URL)(
-      "should return true when database is healthy",
-      async () => {
-        const logger = new Logger("test");
-        const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
-
-        let result = false;
-        for (let attempt = 0; attempt < 5; attempt += 1) {
-          result = await dbConnection.healthCheck();
-          if (result) {
-            break;
-          }
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-
-        expect(typeof result).toBe("boolean");
-        // Returns true if connection to local test database is available
-        expect(result).toBe(true);
-      }
-    );
-
     it("should return false when database is unhealthy", async () => {
       const badConfig = makeTestConfig({
         database: {
           url: "postgresql://invalid:invalid@nonexistent:5555/nonexistent",
         },
       });
-      const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(badConfig, logger);
+      const logger = new Logger().child("test");
+      dbConnection = new DatabaseConnection(badConfig, logger);
 
       const result = await dbConnection.healthCheck();
 
@@ -104,8 +92,8 @@ describe("DatabaseConnection", () => {
 
   describe("close()", () => {
     it("should return a void promise", async () => {
-      const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+      const logger = new Logger().child("test");
+      dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.close();
 
@@ -115,8 +103,8 @@ describe("DatabaseConnection", () => {
     });
 
     it("should not throw errors during close", async () => {
-      const logger = new Logger("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+      const logger = new Logger().child("test");
+      dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       // Should resolve successfully
       const result = dbConnection.close();

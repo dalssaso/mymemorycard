@@ -44,10 +44,16 @@ bun run db:studio     # Open Drizzle Studio GUI
 Run after modifications:
 
 ```bash
-just lint-backend && just typecheck-backend
+just format-backend && just lint-backend && just typecheck-backend
 ```
 
 Fix errors before committing. Lint runs with `--max-warnings=0`.
+
+**Before every commit:**
+
+```bash
+just test-unit-backend  # Verify all tests pass
+```
 
 ## Directory Structure
 
@@ -248,4 +254,177 @@ return new Response(JSON.stringify({ error: 'Not found' }), {
   status: 404,
   headers: { 'Content-Type': 'application/json' },
 })
+```
+
+## Logging Rules
+
+**CRITICAL: Never use console.log or console.error**
+
+Inject Logger service in all classes:
+
+```typescript
+import type { Logger } from "@/infrastructure/logging/logger"
+
+@injectable()
+export class MyService {
+  constructor(
+    @inject("Logger") private logger: Logger
+  ) {}
+
+  async doSomething(): Promise<void> {
+    this.logger.error("Operation failed", {
+      userId: "123",
+      error: error.message,
+    })
+  }
+}
+```
+
+**When NOT to log:**
+- Authentication failures (expected events, enables timing attacks)
+- Validation errors from user input (expected, logged at boundary)
+- Normal operation flow
+
+**When TO log:**
+- Unexpected errors (database failures, external API errors)
+- Configuration errors preventing operation
+- Security events (not auth failures)
+
+## Security Patterns
+
+### Authentication Errors
+
+Return generic messages - never reveal system internals:
+
+```typescript
+// GOOD - Generic message
+if (!user) {
+  return c.json({ error: "Unauthorized" }, 401)
+}
+
+// BAD - Information leakage
+if (!authHeader) {
+  return c.json({ error: "Missing authorization header" }, 401)
+}
+```
+
+### SQL Injection Prevention
+
+Use parameterized queries, never string interpolation:
+
+```typescript
+// GOOD - Parameterized
+import { sql } from "drizzle-orm"
+
+const vectorString = JSON.stringify(embedding)
+sql`embedding <-> ${vectorString}`
+
+// BAD - String interpolation
+const vectorString = `[${embedding.join(",")}]`
+sql`embedding <-> ${vectorString}` // SQL injection risk
+```
+
+### Untrusted Input Validation
+
+Validate AI responses and external data with Zod:
+
+```typescript
+import { z } from "zod"
+
+const ResponseSchema = z.object({
+  name: z.string(),
+  confidence: z.number().min(0).max(1),
+})
+
+const parsed = JSON.parse(aiResponse)
+const validation = z.array(ResponseSchema).safeParse(parsed)
+
+if (!validation.success) {
+  this.logger.error("Invalid AI response", {
+    error: validation.error.message,
+  })
+  return []
+}
+
+return validation.data
+```
+
+## Error Types and HTTP Status Codes
+
+Match error types to HTTP status codes:
+
+```typescript
+import { ConfigurationError } from "@/features/ai/errors/configuration.error"
+import { ValidationError } from "@/shared/errors/base"
+
+try {
+  await service.doWork()
+} catch (error) {
+  if (error instanceof ConfigurationError) {
+    return c.json({ error: error.message }, 503) // Service Unavailable
+  }
+
+  if (error instanceof ValidationError) {
+    return c.json({ error: error.message }, 400) // Bad Request
+  }
+
+  // Unknown error
+  this.logger.error("Unexpected error", { error: error.message })
+  return c.json({ error: "Internal server error" }, 500)
+}
+```
+
+## Dependency Injection with tsyringe
+
+When adding dependencies, update tests with mocks:
+
+```typescript
+// Service
+constructor(
+  @inject("IRepository") private repo: IRepository,
+  @inject("Logger") private logger: Logger
+) {}
+
+// Test setup
+const mockLogger: Logger = {
+  debug: mock(() => {}),
+  info: mock(() => {}),
+  warn: mock(() => {}),
+  error: mock(() => {}),
+  child: mock(() => mockLogger),
+}
+
+const service = new MyService(mockRepo, mockLogger)
+```
+
+## Zod Patterns
+
+**UUID Validation** - `z.uuid()` is deprecated:
+
+```typescript
+// GOOD - Regex pattern
+z.string().regex(
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+  "Must be a valid UUID"
+)
+
+// BAD - Deprecated
+z.uuid() // Shows deprecation warning
+```
+
+**Schema Validation** - Always validate untrusted input:
+
+```typescript
+const schema = z.object({
+  field: z.string(),
+})
+
+const result = schema.safeParse(input)
+if (!result.success) {
+  // Handle validation error
+  return { error: result.error.message }
+}
+
+// Use validated data
+return result.data
 ```

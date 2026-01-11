@@ -2,11 +2,8 @@ import { router } from "@/lib/router";
 import { requireAuth } from "@/middleware/auth";
 import { query, queryOne, queryMany } from "@/services/db";
 import { corsHeaders } from "@/middleware/cors";
-import {
-  detectDuplicateCollection,
-  generateCollectionEmbedding,
-} from "@/services/ai/duplicate-detection";
-import { getUserAiSettings } from "@/services/ai/service";
+
+// TODO: AI services removed for full rewrite - duplicate detection and embeddings will be re-added via DI
 
 interface Collection {
   id: string;
@@ -188,17 +185,7 @@ router.post(
 
       const newCollection = result.rows[0];
 
-      // Generate embedding for duplicate detection (async, don't wait)
-      getUserAiSettings(user.id).then((settings) => {
-        if (settings && settings.enabled) {
-          generateCollectionEmbedding(
-            settings,
-            newCollection.id,
-            newCollection.name,
-            newCollection.description
-          ).catch((err) => console.error("Failed to generate collection embedding:", err));
-        }
-      });
+      // TODO: AI embedding generation removed for full rewrite - will be re-added via DI
 
       return new Response(JSON.stringify({ collection: newCollection }), {
         status: 201,
@@ -807,46 +794,14 @@ router.get("/api/collection-covers/:filename", async (req, params) => {
 });
 
 // Check for duplicate collections
+// TODO: AI duplicate detection removed for full rewrite - returns stub response until re-implemented via DI
 router.post(
   "/api/collections/check-duplicate",
-  requireAuth(async (req, user) => {
-    try {
-      const body = (await req.json()) as { name: string; description?: string };
-
-      if (!body.name) {
-        return new Response(JSON.stringify({ error: "Collection name is required" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders() },
-        });
-      }
-
-      const settings = await getUserAiSettings(user.id);
-
-      if (!settings || !settings.enabled) {
-        // If AI is disabled, skip duplicate check
-        return new Response(JSON.stringify({ isDuplicate: false, similarCollections: [] }), {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders() },
-        });
-      }
-
-      const result = await detectDuplicateCollection(
-        settings,
-        user.id,
-        body.name,
-        body.description ?? null
-      );
-
-      return new Response(JSON.stringify(result), {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders() },
-      });
-    } catch (error) {
-      console.error("Check duplicate collection error:", error);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders() },
-      });
-    }
+  requireAuth(async (_req, _user) => {
+    // Return stub response - AI services being rewritten
+    return new Response(JSON.stringify({ isDuplicate: false, similarCollections: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders() },
+    });
   })
 );
