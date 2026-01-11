@@ -111,6 +111,12 @@ export type MockGatewayService = {
   generateImage: ReturnType<typeof mock>;
 };
 
+/**
+ * Creates a mock gateway service for testing AI operations
+ * @param overrides - Optional partial mock to override default implementations
+ * @returns Mock gateway service with stub methods for embedding generation,
+ * text completion (streaming and non-streaming), and image generation
+ */
 export function createMockGatewayService(
   overrides?: Partial<MockGatewayService>
 ): MockGatewayService {
@@ -138,6 +144,12 @@ export function createMockGatewayService(
   };
 }
 
+/**
+ * Creates test AI settings for a user
+ * @param overrides - Optional partial settings to override defaults
+ * @returns UserAiSettings with OpenAI provider configuration, default models,
+ * and smart routing enabled
+ */
 export function createTestAiSettings(overrides?: Partial<UserAiSettings>): UserAiSettings {
   return {
     userId: "test-user-id",
@@ -167,6 +179,12 @@ export type MockAiSettingsRepository = {
   getGatewayConfig: ReturnType<typeof mock>;
 };
 
+/**
+ * Creates a mock AI settings repository for testing
+ * @param overrides - Optional partial mock to override default implementations
+ * @returns Mock repository with stub methods for finding, saving, and retrieving
+ * gateway configuration for AI settings
+ */
 export function createMockAiSettingsRepository(
   overrides?: Partial<MockAiSettingsRepository>
 ): MockAiSettingsRepository {
@@ -190,6 +208,12 @@ export type MockEmbeddingRepository = {
   findSimilarCollections: ReturnType<typeof mock>;
 };
 
+/**
+ * Creates a mock embedding repository for testing vector operations
+ * @param overrides - Optional partial mock to override default implementations
+ * @returns Mock repository with stub methods for finding, saving, and searching
+ * game and collection embeddings using vector similarity
+ */
 export function createMockEmbeddingRepository(
   overrides?: Partial<MockEmbeddingRepository>
 ): MockEmbeddingRepository {
@@ -211,6 +235,12 @@ export type MockEmbeddingService = {
   findSimilarCollections: ReturnType<typeof mock>;
 };
 
+/**
+ * Creates a mock embedding service for testing vector embedding operations
+ * @param overrides - Optional partial mock to override default implementations
+ * @returns Mock service with stub methods for generating embeddings and finding
+ * similar games and collections based on vector similarity
+ */
 export function createMockEmbeddingService(
   overrides?: Partial<MockEmbeddingService>
 ): MockEmbeddingService {
@@ -228,6 +258,12 @@ export type MockCuratorService = {
   suggestNextGame: ReturnType<typeof mock>;
 };
 
+/**
+ * Creates a mock curator service for testing AI-powered game recommendations
+ * @param overrides - Optional partial mock to override default implementations
+ * @returns Mock service with stub methods for suggesting collections and
+ * recommending next games to play based on user preferences
+ */
 export function createMockCuratorService(
   overrides?: Partial<MockCuratorService>
 ): MockCuratorService {
@@ -242,6 +278,12 @@ export type MockImageService = {
   generateCollectionCover: ReturnType<typeof mock>;
 };
 
+/**
+ * Creates a mock image service for testing AI image generation
+ * @param overrides - Optional partial mock to override default implementations
+ * @returns Mock service with stub methods for generating collection cover images
+ * using AI image models
+ */
 export function createMockImageService(overrides?: Partial<MockImageService>): MockImageService {
   return {
     generateCollectionCover: mock().mockResolvedValue({
