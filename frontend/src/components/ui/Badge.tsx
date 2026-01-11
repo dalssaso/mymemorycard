@@ -18,7 +18,7 @@ export function Badge({
 
   if (variant === "status" && status) {
     const statusStyles = {
-      backlog: "bg-status-backlog/20 border border-status-backlog/50 text-status-backlog",
+      backlog: "bg-status-backlog/20 border border-status-backlog rounded-lg text-status-backlog",
       playing: "bg-status-playing/20 border border-status-playing rounded-lg text-status-playing",
       finished:
         "bg-status-finished/20 border border-status-finished rounded-lg text-status-finished",
