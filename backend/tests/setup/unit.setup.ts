@@ -8,6 +8,44 @@
  */
 
 import { mock } from "bun:test";
+import "reflect-metadata";
+import { container } from "@/container";
+import type { IConfig } from "@/infrastructure/config/config.interface";
+
+// Register IConfig for tests
+const mockConfig: IConfig = {
+  database: {
+    url: "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard",
+  },
+  redis: {
+    url: "redis://localhost:6380",
+  },
+  jwt: {
+    secret: "test-jwt-secret",
+    expiresIn: "7d",
+  },
+  rawg: {
+    apiKey: "test-rawg-key",
+  },
+  encryption: {
+    secret: "test-encryption-secret-very-long",
+    salt: "test-salt",
+  },
+  port: 3000,
+  cors: {
+    origin: undefined,
+    allowedOrigins: ["http://localhost:5173", "http://localhost:3000"],
+  },
+  bcrypt: {
+    saltRounds: 10,
+  },
+  isProduction: false,
+  skipRedisConnect: true,
+};
+
+container.register<IConfig>("IConfig", {
+  useValue: mockConfig,
+});
 
 // Mock the database module
 mock.module("@/services/db", () => {
@@ -78,7 +116,11 @@ mock.module("@/services/redis", () => {
     },
     expire: async (_key: string, _seconds: number) => 1,
     keys: async (pattern: string) => {
-      const regex = new RegExp(pattern.replace("*", ".*"));
+      // Escape special regex characters and convert Redis glob pattern to regex
+      const escapedPattern = pattern
+        .replace(/[.+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
+        .replace(/\*/g, ".*"); // Convert * (glob wildcard) to .* (regex)
+      const regex = new RegExp(`^${escapedPattern}$`);
       return Array.from(store.keys()).filter((k) => regex.test(k));
     },
     incr: async (key: string) => {

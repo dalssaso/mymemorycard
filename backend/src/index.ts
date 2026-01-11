@@ -1,10 +1,14 @@
-import { router } from "@/lib/router";
-import { handleCors, corsHeaders } from "@/middleware/cors";
+import "reflect-metadata";
+import { registerDependencies, container } from "@/container";
+import { createHonoApp } from "@/infrastructure/http/app";
 import { runMigrations, closeMigrationConnection } from "@/db";
 import { seedPlatforms } from "@/db/seed";
-import { config } from "@/config";
+import { initializeEncryptionKey } from "@/lib/encryption";
+import type { IConfig } from "@/infrastructure/config/config.interface";
+import { DatabaseConnection } from "@/infrastructure/database/connection";
+import redisClient from "@/services/redis";
 
-// Import routes
+// Import legacy routes (registers them with the old router)
 import "@/routes/auth";
 import "@/routes/import";
 import "@/routes/platforms";
@@ -25,60 +29,76 @@ import "@/routes/user-platforms";
 import "@/routes/ai";
 
 async function startServer(): Promise<void> {
+  // Run migrations and seed data
   await runMigrations();
   await seedPlatforms();
   await closeMigrationConnection();
 
+  // Register DI dependencies
+  registerDependencies();
+
+  // Initialize encryption key (must be after registerDependencies)
+  initializeEncryptionKey();
+
+  // Create Hono app (includes legacy routes proxy)
+  const app = createHonoApp();
+
+  // Start server
+  const config = container.resolve<IConfig>("IConfig");
   const server = Bun.serve({
     port: config.port,
-    async fetch(req) {
-      const url = new URL(req.url);
-
-      // Handle CORS preflight
-      const corsResponse = handleCors(req);
-      if (corsResponse) return corsResponse;
-
-      console.log(`${req.method} ${url.pathname}`);
-
-      // Match route
-      const match = router.match(url.pathname, req.method);
-
-      if (match) {
-        try {
-          const response = await match.route.handler(req, match.params);
-
-          // Add CORS headers to response
-          const headers = new Headers(response.headers);
-          const cors = corsHeaders(req.headers.get("Origin") || undefined);
-          Object.entries(cors).forEach(([key, value]) => {
-            headers.set(key, value);
-          });
-
-          return new Response(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers,
-          });
-        } catch (error) {
-          console.error(
-            "Route handler error:",
-            error instanceof Error ? error.message : "Unknown error"
-          );
-          return new Response(JSON.stringify({ error: "Internal server error" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...corsHeaders() },
-          });
-        }
-      }
-
-      return new Response(JSON.stringify({ error: "Not Found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json", ...corsHeaders() },
-      });
-    },
+    fetch: app.fetch,
   });
 
   console.log(`Server running on http://localhost:${server.port}`);
+
+  // Graceful shutdown handlers with timeout
+  const shutdown = async (signal: string): Promise<void> => {
+    console.log(`\n${signal} received, shutting down gracefully...`);
+
+    const SHUTDOWN_TIMEOUT = 10000; // 10 seconds
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    try {
+      // Create shutdown operations promise
+      const shutdownPromise = (async () => {
+        // Stop accepting new connections
+        server.stop();
+
+        // Close database connection
+        const dbConnection = container.resolve(DatabaseConnection);
+        await dbConnection.close();
+
+        // Close Redis connection
+        await redisClient.quit();
+      })();
+
+      // Create timeout promise that rejects after SHUTDOWN_TIMEOUT
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Shutdown timeout exceeded (${SHUTDOWN_TIMEOUT}ms)`));
+        }, SHUTDOWN_TIMEOUT);
+      });
+
+      // Race shutdown operations against timeout
+      await Promise.race([shutdownPromise, timeoutPromise]);
+
+      // Clear timeout on success
+      if (timeoutId) clearTimeout(timeoutId);
+
+      console.log("Shutdown complete");
+      process.exit(0);
+    } catch (error) {
+      // Clear timeout on error
+      if (timeoutId) clearTimeout(timeoutId);
+
+      console.error("Error during shutdown:", error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 startServer().catch((error) => {

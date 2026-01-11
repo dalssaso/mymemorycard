@@ -1,6 +1,6 @@
 # Backend CLAUDE.md
 
-Backend-specific instructions for Claude Code. See also the root [CLAUDE.md](../CLAUDE.md).
+Backend instructions for Claude Code. See root [CLAUDE.md](../CLAUDE.md).
 
 ## Tech Stack
 
@@ -29,13 +29,13 @@ bun run db:studio     # Open Drizzle Studio GUI
 
 ## After Every Code Change
 
-Run these commands after any modifications:
+Run after modifications:
 
 ```bash
 bun run lint && bun run typecheck
 ```
 
-Fix any errors before committing. The lint command runs with `--max-warnings=0`.
+Fix errors before committing. Lint runs with `--max-warnings=0`.
 
 ## Directory Structure
 
@@ -75,23 +75,23 @@ drizzle/              # Migration files (auto-generated)
 postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard
 ```
 
-Migrations run automatically on backend startup.
+Migrations run on backend startup.
 
 ### Schema Overview
 
-Key tables in `src/db/schema.ts`:
+Tables in `src/db/schema.ts`:
 
 | Table            | Description                                     |
 | ---------------- | ----------------------------------------------- |
 | users            | User accounts                                   |
 | games            | Game metadata (from RAWG)                       |
-| userGames        | User's library entries (ownership per platform) |
+| userGames        | User library entries (ownership per platform)   |
 | userGameProgress | Status, rating, completion, favorites           |
 | playSessions     | Play session tracking                           |
 | completionLogs   | Completion percentage history                   |
 | collections      | User-created game collections                   |
 | platforms        | Gaming platforms (Steam, PSN, etc.)             |
-| userPlatforms    | User's connected platforms                      |
+| userPlatforms    | User connected platforms                        |
 | achievements     | Game achievements                               |
 | gameAdditions    | DLC and editions                                |
 
@@ -118,21 +118,21 @@ await db.transaction(async (tx) => {
 
 ### Database Migrations
 
-**IMPORTANT**: Never create SQL migration files manually. Always use Drizzle's migration workflow:
+**IMPORTANT**: Use Drizzle's migration workflow (never create SQL files manually):
 
 ```bash
 # 1. Modify schema.ts with your changes
 # 2. Generate migration from schema changes
 bun run db:generate
 
-# 3. Review the generated SQL in drizzle/ directory
-# 4. Apply migration (runs automatically on backend startup)
+# 3. Review generated SQL in drizzle/ directory
+# 4. Apply migration (runs on backend startup)
 bun run db:migrate
 ```
 
-**For data migrations** (e.g., deleting records, transforming data):
-1. Create the schema-only migration using `db:generate`
-2. Manually edit the generated SQL file to add data migration logic
+**For data migrations** (deleting records, transforming data):
+1. Create schema-only migration with `db:generate`
+2. Edit generated SQL to add data migration logic
 3. Apply with `db:migrate`
 
 Example workflow:
@@ -188,26 +188,39 @@ async function handler(req: Request, params: Record<string, string>, user?: JWTP
 
 ## Testing
 
-Backend tests are currently disabled due to stability issues.
-
-Verify changes with:
+Run the test suite to verify changes:
 
 ```bash
+bun test                     # Run unit and integration tests
 bun run lint && bun run typecheck
 ```
 
-And manual testing against the running server.
+Review test output and verify critical paths manually against running server.
 
 ## Environment Variables
 
-| Variable     | Default                                        | Description                |
-| ------------ | ---------------------------------------------- | -------------------------- |
-| DATABASE_URL | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection      |
-| REDIS_URL    | `redis://localhost:6380`                       | Redis connection           |
-| JWT_SECRET   | `dev-jwt-secret-change-in-production`          | JWT signing key            |
-| RAWG_API_KEY | -                                              | RAWG API for game metadata |
-| PORT         | `3000`                                         | Server port                |
-| ORIGIN       | -                                              | Additional CORS origin     |
+Copy `.env.example` to `.env` and customize for your environment.
+
+| Variable            | Default                                        | Description                       |
+| ------------------- | ---------------------------------------------- | --------------------------------- |
+| DATABASE_URL        | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection             |
+| REDIS_URL           | `redis://localhost:6380`                       | Redis connection                  |
+| JWT_SECRET          | `dev-jwt-secret-change-in-production`          | JWT signing key                   |
+| RAWG_API_KEY        | -                                              | RAWG API for game metadata        |
+| PORT                | `3000`                                         | Server port                       |
+| ORIGIN              | -                                              | Additional CORS origin            |
+| TEST_DATABASE_URL   | Same as DATABASE_URL                           | PostgreSQL for integration tests  |
+| API_BASE_URL        | `http://localhost:3000`                        | API URL for integration tests     |
+
+**Testing**: Integration tests use `DATABASE_URL` from environment or fall back to the default Docker postgres connection. To override for CI or different environments, set `DATABASE_URL` before running tests:
+
+```bash
+# Use default (local Docker postgres)
+bun run test:integration
+
+# Override for CI or custom database
+DATABASE_URL=postgresql://user:pass@host:port/db bun run test:integration
+```
 
 ## API Response Patterns
 

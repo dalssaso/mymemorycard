@@ -2,14 +2,13 @@
 
 Project-wide instructions for Claude Code. See also:
 
-- [frontend/CLAUDE.md](frontend/CLAUDE.md) - Frontend-specific guidance
-- [backend/CLAUDE.md](backend/CLAUDE.md) - Backend-specific guidance
+- [frontend/CLAUDE.md](frontend/CLAUDE.md) - Frontend guidance
+- [backend/CLAUDE.md](backend/CLAUDE.md) - Backend guidance
 - [docs/CLAUDE.md](docs/CLAUDE.md) - Documentation guidance
 
 ## Project Overview
 
-MyMemoryCard is a self-hosted game library aggregator for tracking your gaming collection across
-platforms.
+MyMemoryCard aggregates game libraries across platforms for self-hosted tracking.
 
 **Tech Stack:**
 
@@ -18,7 +17,7 @@ platforms.
 
 ## Documentation Lookup
 
-When implementing features, use **Context7 MCP** (if available) to fetch up-to-date documentation:
+Use **Context7 MCP** to fetch current documentation when implementing features:
 
 ```
 # Resolve library ID first
@@ -28,7 +27,7 @@ resolve-library-id: "tanstack query"
 query-docs: libraryId="/tanstack/query", query="optimistic updates mutation"
 ```
 
-Useful libraries to query:
+Query these libraries:
 - `/tanstack/query` - Server state, mutations, optimistic updates
 - `/tanstack/router` - File-based routing, loaders
 - `/shadcn-ui/ui` - UI components, installation
@@ -37,12 +36,12 @@ Useful libraries to query:
 ## Quick Start
 
 ```bash
-docker compose up -d          # Start PostgreSQL (port 5433) + Redis (port 6380)
+docker compose up -d          # PostgreSQL (port 5433) + Redis (port 6380)
 cd backend && bun run dev     # Backend on :3000
 cd frontend && npm run dev    # Frontend on :5173
 ```
 
-Or use Make:
+Make commands:
 
 ```bash
 make install                  # Install all dependencies
@@ -50,6 +49,34 @@ make dev                      # Start infrastructure
 make dev-backend              # Start backend (separate terminal)
 make dev-frontend             # Start frontend (separate terminal)
 ```
+
+## Git Worktrees
+
+Git worktrees (`.worktrees/` directory):
+
+**Critical Rules:**
+
+- **Commit changes in the worktree**, not in the main repository
+- Verify location before committing: `git rev-parse --show-toplevel`
+
+**Setup Requirements:**
+
+Bootstrap the environment after creating or switching to a worktree:
+
+```bash
+# Install dependencies
+bun install          # Backend dependencies
+npm install          # Frontend dependencies
+
+# Setup git hooks (required)
+npx husky install    # Enable pre-commit hooks
+```
+
+**Pre-commit Hooks:**
+
+- **Fix all pre-commit failures** (never use `--no-verify`)
+- Fix linting, formatting, and type errors shown by hooks
+- Hooks enforce code quality and prevent broken commits
 
 ## Commands Reference
 
@@ -65,7 +92,7 @@ make dev-frontend             # Start frontend (separate terminal)
 
 ## After Every Code Change
 
-Run these commands after any `feat`, `fix`, `refactor`, or `chore` modifications:
+Run these commands after `feat`, `fix`, `refactor`, or `chore` changes:
 
 ```bash
 # Backend changes
@@ -82,6 +109,20 @@ npm run format:check
 
 Fix any lint/type errors before committing.
 
+## Configuration Files - DO NOT MODIFY
+
+**EXPLICITLY PROHIBITED** without asking the user first:
+
+- `.prettierrc` / `prettier.config.js` - Formatting rules
+- `.eslintrc` / `eslint.config.ts` - Linting rules
+- `.commitlint.config.ts` - Commit message rules
+- `tsconfig.json` - TypeScript configuration
+- Any other style, guide, or linting configuration files
+
+**Rule:** When tools report errors or violations, **FIX THE CODE**, never modify the configuration files to suppress them.
+
+If a tool is reporting issues that seem incorrect or overly strict, **ask the user first** before considering any config changes. The configuration represents the project's standards and must be respected.
+
 ## Code Style
 
 ### Prettier (enforced)
@@ -92,25 +133,40 @@ Fix any lint/type errors before committing.
 - Trailing commas (ES5)
 - Arrow function parens: always `(x) => x`
 
-### TypeScript (enforced by ESLint)
+**Format all changes before committing:**
+
+```bash
+# Backend
+cd backend && bun run format
+
+# Frontend
+cd frontend && npm run format
+
+# Or from root for both
+npm run format
+```
+
+Never commit unformatted code. The project's `.prettierrc` files define the exact formatting rules—respect them while developing and before creating commits.
+
+### TypeScript (ESLint enforced)
 
 - **NO EMOJIS** in code, logs, console output, error messages, or commits
 - **No `any`** - use proper types or `unknown`
-- **Explicit return types** on all functions
-- **Type imports** must use `import type { X }` or `import { type X }`
+- **Explicit return types** on functions
+- **Type imports** use `import type { X }` or `import { type X }`
 
-### Naming Conventions (enforced by ESLint)
+### Naming Conventions (ESLint enforced)
 
-| Element    | Convention                                        |
-| ---------- | ------------------------------------------------- |
-| Variables  | `camelCase`, `UPPER_CASE`, `snake_case`           |
-| Parameters | `camelCase` (leading `_` allowed for unused)      |
-| Functions  | `camelCase`                                       |
-| Types      | `PascalCase`                                      |
-| Interfaces | `PascalCase`                                      |
-| Components | `PascalCase`                                      |
-| Constants  | `SCREAMING_SNAKE_CASE`                            |
-| Properties | `camelCase`, `snake_case` (or any with `-` `/`)   |
+| Element    | Convention                                      |
+| ---------- | ----------------------------------------------- |
+| Variables  | `camelCase`, `UPPER_CASE`, `snake_case`         |
+| Parameters | `camelCase` (leading `_` for unused)            |
+| Functions  | `camelCase`                                     |
+| Types      | `PascalCase`                                    |
+| Interfaces | `PascalCase`                                    |
+| Components | `PascalCase`                                    |
+| Constants  | `SCREAMING_SNAKE_CASE`                          |
+| Properties | `camelCase`, `snake_case` (or with `-` `/`)     |
 
 ### Imports Order
 
@@ -132,14 +188,14 @@ import { db } from '@/services/db'
 
 ## Testing
 
-Frontend tests only (backend tests currently disabled):
+Frontend tests only (backend tests disabled):
 
 ```bash
 cd frontend && npm test       # Run vitest
-npm run test:coverage         # With 90% coverage threshold
+npm run test:coverage         # 90% coverage threshold
 ```
 
-Backend changes: verify with `bun run typecheck` and manual testing.
+Verify backend changes with `bun run typecheck` and manual testing.
 
 ## Database
 
@@ -151,7 +207,7 @@ make db-studio                # Browse with Drizzle Studio
 
 Connection: `postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard`
 
-Migrations run automatically on backend startup.
+Migrations run on backend startup.
 
 ## Commit Format
 
@@ -159,11 +215,11 @@ Migrations run automatically on backend startup.
 type: short description
 ```
 
-Rules (enforced by commitlint):
+Rules (commitlint enforced):
 
 - **Types**: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`
-- **Subject**: lowercase, no period at end
-- **Header max length**: 100 characters
+- **Subject**: lowercase, no period
+- **Header**: 100 characters maximum
 
 Examples:
 
@@ -173,9 +229,9 @@ fix: resolve null pointer in game search
 refactor: extract api client to separate module
 ```
 
-Releases are automated via release-please based on conventional commits.
+Release-please automates releases from conventional commits.
 
-**Commit only after user tests and confirms changes work.**
+**Commit only after user confirms changes work.**
 
 ## Frontend Patterns
 

@@ -139,14 +139,15 @@ interface RAWGSearchResponse {
   results: RAWGGame[];
 }
 
-import { config } from "@/config";
-
-const RAWG_API_KEY = config.rawg.apiKey;
+// Legacy RAWG service using environment variables directly
+// This is used by legacy code before DI migration is complete
+// Runtime guards in methods allow graceful degradation if API key missing
+const RAWG_API_KEY = process.env.RAWG_API_KEY;
 const RAWG_BASE_URL = "https://api.rawg.io/api";
 
 // Rate limiter to stay under RAWG's 5 req/sec limit
 class RateLimiter {
-  private queue: Array<() => void> = [];
+  private queue: Array<() => Promise<void>> = [];
   private processing = false;
   private lastRequestTime = 0;
   private minInterval = 210; // 210ms = ~4.7 req/sec (safe margin)
@@ -169,33 +170,31 @@ class RateLimiter {
   }
 
   private async processQueue(): Promise<void> {
-    if (this.queue.length === 0) {
-      this.processing = false;
-      return;
-    }
-
     this.processing = true;
-    const now = Date.now();
-    const timeSinceLastRequest = now - this.lastRequestTime;
 
-    if (timeSinceLastRequest < this.minInterval) {
-      await new Promise((resolve) => setTimeout(resolve, this.minInterval - timeSinceLastRequest));
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastRequestTime;
+
+      if (timeSinceLastRequest < this.minInterval) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.minInterval - timeSinceLastRequest)
+        );
+      }
+
+      const task = this.queue.shift();
+      this.lastRequestTime = Date.now();
+
+      if (task) {
+        await task();
+      }
     }
 
-    const task = this.queue.shift();
-    this.lastRequestTime = Date.now();
-
-    if (task) {
-      await task();
-    }
-
-    this.processQueue();
+    this.processing = false;
   }
 }
 
 const rateLimiter = new RateLimiter();
-
-// Removed getRawgPlatforms - platforms are now pre-seeded in database
 
 export async function searchGames(query: string, useCache = true): Promise<RAWGGame[]> {
   if (!RAWG_API_KEY) {
@@ -561,8 +560,6 @@ import { incrementRAWGRequestCount } from "./api-monitor";
 
 const CACHE_TTL_SEARCH = 60 * 60 * 24 * 7; // 7 days for search results
 const CACHE_TTL_DETAILS = 60 * 60 * 24 * 30; // 30 days for game details
-
-// Removed getPlatformsFromDb - no longer needed
 
 async function getCachedSearch(query: string): Promise<RAWGGame[] | null> {
   try {

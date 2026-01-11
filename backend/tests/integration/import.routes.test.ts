@@ -7,15 +7,14 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { pool } from "@/services/db";
-import { API_BASE_URL } from "../setup/integration.setup";
+import { API_BASE_URL, testPool } from "../setup/integration.setup";
 
 describe("Import Routes (integration)", () => {
   let authToken: string;
   let userId: string;
 
   beforeAll(async () => {
-    await pool.query("DELETE FROM users WHERE email LIKE $1", ["%@import-test.com"]);
+    await testPool.query("DELETE FROM users WHERE email LIKE $1", ["%@import-test.com"]);
 
     const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
@@ -36,7 +35,7 @@ describe("Import Routes (integration)", () => {
   });
 
   afterAll(async () => {
-    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+    await testPool.query("DELETE FROM users WHERE id = $1", [userId]);
   });
 
   describe("POST /api/import/bulk", () => {

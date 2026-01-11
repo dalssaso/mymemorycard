@@ -1,6 +1,6 @@
 # Frontend CLAUDE.md
 
-Frontend-specific instructions for Claude Code. See also the root [CLAUDE.md](../CLAUDE.md).
+Frontend instructions for Claude Code. See root [CLAUDE.md](../CLAUDE.md).
 
 ## Tech Stack
 
@@ -16,7 +16,7 @@ Frontend-specific instructions for Claude Code. See also the root [CLAUDE.md](..
 
 ## Documentation Lookup
 
-Use **Context7 MCP** (if available) for up-to-date docs:
+Use **Context7 MCP** for current docs:
 
 ```
 resolve-library-id: "shadcn ui"
@@ -38,13 +38,13 @@ npm run lint:fix      # ESLint with auto-fix
 
 ## After Every Code Change
 
-Run these commands after any modifications:
+Run after modifications:
 
 ```bash
 npm run lint && npm run typecheck
 ```
 
-Fix any type errors before committing.
+Fix type errors before committing.
 
 ## Directory Structure
 
@@ -77,10 +77,10 @@ npx shadcn@latest add dialog
 
 ### Component Standards
 
-1. **Use shadcn components** for all UI primitives (Button, Input, Dialog, etc.)
-2. **Never use raw HTML** elements like `<button>` or `<input>` - import from `@/components/ui`
-3. **Extend shadcn variants** in the component file when needed
-4. **Catppuccin theming** is pre-configured via CSS variables
+1. **Use shadcn components** for UI primitives (Button, Input, Dialog, etc.)
+2. **Import from `@/components/ui`** (never use raw `<button>` or `<input>`)
+3. **Extend shadcn variants** in component file when needed
+4. **Catppuccin theming** via CSS variables
 
 ```tsx
 // Good - use shadcn Button
@@ -115,7 +115,7 @@ import {
 
 ### Status Configuration System
 
-Centralized status management with consistent styling and icons:
+Centralized status management:
 
 ```typescript
 // lib/constants/status.ts
@@ -126,7 +126,7 @@ const config = getStatusConfig('playing')
 // { id: 'playing', label: 'Playing', icon: '...', color: 'ctp-teal', ... }
 ```
 
-**StatusButton Component** - Reusable status button with two modes:
+**StatusButton Component** - Two modes:
 
 ```tsx
 import { StatusButton } from '@/components/ui/status-button'
@@ -166,7 +166,7 @@ import { StatusButton } from '@/components/ui/status-button'
 
 ### API Client
 
-All API calls go through `lib/api.ts`:
+Route API calls through `lib/api.ts`:
 
 ```typescript
 import api, { gamesAPI, collectionsAPI } from '@/lib/api'
@@ -176,14 +176,14 @@ const games = await gamesAPI.getAll({ status: 'playing' })
 const game = await gamesAPI.getOne(id)
 ```
 
-The client automatically:
+Client features:
 - Adds Bearer token from localStorage
-- Redirects to /login on 401 responses
-- Proxies /api requests to backend in dev mode
+- Redirects to /login on 401
+- Proxies /api to backend in dev
 
 ### API Layer Modularization
 
-API layer is organized into domain-based modules in `lib/api/`:
+Organize API layer into domain modules in `lib/api/`:
 
 ```typescript
 // lib/api/games.ts
@@ -234,7 +234,7 @@ export type { GameAddition, AdditionType } from "./additions"
 **Guidelines:**
 - One file per domain
 - Export typed API object: `export const gamesAPI = { ... }`
-- Export related types from same file
+- Export types from same file
 - Update barrel export in `index.ts`
 
 ### TanStack Router
@@ -261,7 +261,7 @@ const { data, isLoading } = useQuery({
 
 ### Custom Hooks
 
-Encapsulate query/mutation logic in dedicated hooks under `src/hooks/`:
+Encapsulate query/mutation logic in `src/hooks/`:
 
 **Query Hooks** (Data Fetching):
 
@@ -359,7 +359,7 @@ export function useToggleFavorite(): UseMutationResult<...> {
 
 ### Route Loaders
 
-Prefetch data in route loaders using `ensureQueryData`:
+Prefetch data with `ensureQueryData`:
 
 ```typescript
 // src/routes/library.index.tsx
@@ -379,7 +379,7 @@ export const Route = createFileRoute("/library/")({
 
 ### Optimistic Updates
 
-For mutations that update UI immediately:
+Update UI immediately:
 
 ```typescript
 export function useToggleFavorite(): UseMutationResult<...> {
@@ -450,7 +450,7 @@ Uses `clsx` + `tailwind-merge` to:
 
 **Prettier + Tailwind Class Sorting:**
 
-Classes are auto-sorted by `prettier-plugin-tailwindcss`:
+`prettier-plugin-tailwindcss` auto-sorts classes:
 
 ```tsx
 // Before save
@@ -460,7 +460,7 @@ Classes are auto-sorted by `prettier-plugin-tailwindcss`:
 <div className="rounded bg-blue-500 p-4 text-white">
 ```
 
-Configured in `.prettierrc` to work with `cn()`, `clsx()`, and `cva()`.
+`.prettierrc` configures it for `cn()`, `clsx()`, and `cva()`.
 
 ### Layout Context Pattern
 
@@ -498,7 +498,7 @@ function CustomPage() {
 
 ### Global Search Architecture
 
-Search uses a cached index for instant client-side filtering:
+Cached index enables instant client-side filtering:
 
 ```typescript
 import { useSearchData } from '@/hooks/useSearchData'
@@ -559,7 +559,7 @@ const unsubscribe = subscribe((newToken) => {
 
 **AuthRedirectListener Component:**
 
-Handles 401 responses globally:
+Handles 401 responses:
 
 ```typescript
 // Listens for auth:unauthorized events from Axios interceptor
@@ -567,7 +567,7 @@ Handles 401 responses globally:
 // Prevents redirect loops on auth pages
 ```
 
-Rendered in `__root.tsx` for all routes.
+Renders in `__root.tsx` for all routes.
 
 **Onboarding Flow:**
 
@@ -631,11 +631,11 @@ if (!(await hasUserPlatforms(queryClient))) {
 
 1. Define TypeScript interface for props
 2. Include ARIA attributes for interactive elements
-3. Use `ctp-*` theme colors for consistency
+3. Use `ctp-*` theme colors
 4. Use `@/*` path alias for imports
 5. Follow code style rules from root [CLAUDE.md](../CLAUDE.md)
-6. Use shadcn/ui components - never raw HTML buttons/inputs
-7. Use explicit return types on all functions (including hooks)
+6. Use shadcn/ui components (never raw HTML buttons/inputs)
+7. Use explicit return types on functions (including hooks)
 
 ## Reference Files
 
