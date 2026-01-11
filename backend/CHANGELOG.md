@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0](https://github.com/dalssaso/mymemorycard/compare/backend-v1.3.0...backend-v1.4.0) (2026-01-11)
+
+
+### Features
+
+* add embeddings infrastructure for ai features ([#27](https://github.com/dalssaso/mymemorycard/issues/27)) ([9d78fa2](https://github.com/dalssaso/mymemorycard/commit/9d78fa2862da90b7f06dcfafc65c571893bd8a61))
+* rag integration with semantic search ([#28](https://github.com/dalssaso/mymemorycard/issues/28)) ([6a6ed5a](https://github.com/dalssaso/mymemorycard/commit/6a6ed5af09b01b32eeeff101a81224128246a2bd))
+
+
+### Code Refactoring
+
+* auth domain di migration ([#30](https://github.com/dalssaso/mymemorycard/issues/30)) ([d4eb273](https://github.com/dalssaso/mymemorycard/commit/d4eb2738ff22a915c29340264f0c28ed76a6ebf4))
+* migrate from openai sdk to vercel ai sdk ([#25](https://github.com/dalssaso/mymemorycard/issues/25)) ([bc62e1a](https://github.com/dalssaso/mymemorycard/commit/bc62e1aa8d65348b06c6687f62d1d1e30dcb41ad))
+
 ## [1.3.0](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.3...backend-v1.3.0) (2026-01-08)
 
 

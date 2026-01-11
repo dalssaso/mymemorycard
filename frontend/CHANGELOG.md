@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/dalssaso/mymemorycard/compare/frontend-v1.3.0...frontend-v1.3.1) (2026-01-11)
+
+
+### Code Refactoring
+
+* auth domain di migration ([#30](https://github.com/dalssaso/mymemorycard/issues/30)) ([d4eb273](https://github.com/dalssaso/mymemorycard/commit/d4eb2738ff22a915c29340264f0c28ed76a6ebf4))
+
 ## [1.3.0](https://github.com/dalssaso/mymemorycard/compare/frontend-v1.2.2...frontend-v1.3.0) (2026-01-08)
 
 
