@@ -3,7 +3,7 @@ import type { ICuratorService } from "./curator.service.interface";
 import type { IGatewayService } from "./gateway.service.interface";
 import type { IAiSettingsRepository } from "../repositories/ai-settings.repository.interface";
 import type { CollectionSuggestion, NextGameSuggestion } from "../types";
-import { NotFoundError } from "@/shared/errors/base";
+import { ConfigurationError } from "../errors/configuration.error";
 
 const COLLECTION_SUGGESTION_PROMPT = `You are a video game curator. Analyze the user's game library and suggest meaningful collections.
 Return JSON array of suggestions with: name, description, gameIds (array of game IDs), confidence (0-1).
@@ -23,7 +23,7 @@ export class CuratorService implements ICuratorService {
   async suggestCollections(userId: string, gameIds: string[]): Promise<CollectionSuggestion[]> {
     const config = await this.settingsRepo.getGatewayConfig(userId);
     if (!config) {
-      throw new NotFoundError("AI settings not configured");
+      throw new ConfigurationError("AI settings not configured");
     }
 
     const prompt = `Games in library: ${gameIds.join(", ")}`;
@@ -45,7 +45,7 @@ export class CuratorService implements ICuratorService {
   async suggestNextGame(userId: string, recentGameIds: string[]): Promise<NextGameSuggestion[]> {
     const config = await this.settingsRepo.getGatewayConfig(userId);
     if (!config) {
-      throw new NotFoundError("AI settings not configured");
+      throw new ConfigurationError("AI settings not configured");
     }
 
     const prompt = `Recently played games: ${recentGameIds.join(", ")}`;
