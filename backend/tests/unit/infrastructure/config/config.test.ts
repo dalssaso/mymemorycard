@@ -190,6 +190,8 @@ describe("Config", () => {
     it("should allow JWT_SECRET with 32 or more characters in production", () => {
       process.env.NODE_ENV = "production";
       process.env.JWT_SECRET = "this-is-a-very-long-secret-with-32-characters";
+      process.env.ENCRYPTION_SECRET = "this-is-a-very-long-encryption-secret-32chars";
+      process.env.ENCRYPTION_SALT = "this-is-a-long-encryption-salt";
 
       expect(() => new Config()).not.toThrow();
       const config = new Config();
@@ -210,6 +212,8 @@ describe("Config", () => {
     it("should set isProduction to true when NODE_ENV is production", () => {
       process.env.NODE_ENV = "production";
       process.env.JWT_SECRET = "this-is-a-very-long-secret-with-32-characters";
+      process.env.ENCRYPTION_SECRET = "this-is-a-very-long-encryption-secret-32chars";
+      process.env.ENCRYPTION_SALT = "this-is-a-long-encryption-salt";
       const config = new Config();
       expect(config.isProduction).toBe(true);
     });

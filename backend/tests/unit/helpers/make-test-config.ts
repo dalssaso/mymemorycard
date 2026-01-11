@@ -8,7 +8,7 @@ import type { IConfig } from "@/infrastructure/config/config.interface";
 export function makeTestConfig(overrides?: Partial<IConfig>): IConfig {
   return {
     port: 3000,
-    database: { url: "postgresql://test" },
+    database: { url: process.env.DATABASE_URL || "postgresql://test" },
     redis: { url: "redis://localhost:6380" },
     jwt: {
       secret: "test-jwt-secret-key-minimum-32-chars",
