@@ -75,7 +75,8 @@ describe("PasswordHasher", () => {
     const isValid = await hasher.compare(password73Different, hash);
 
     // They hash identically due to bcryptjs truncation at 72 bytes - this is a problem!
-    // DTO validation (max 72) prevents this scenario from reaching the hasher
+    // DTO validation (max 32 characters via RegisterRequestSchema) prevents this scenario
+    // from reaching the hasher. Note: multi-byte UTF-8 characters could exceed 32 bytes.
     expect(isValid).toBe(true); // Both truncate to 72 'a's
   });
 });

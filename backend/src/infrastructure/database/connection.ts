@@ -82,6 +82,13 @@ export class DatabaseConnection {
   }
 
   async close(): Promise<void> {
-    await this.queryClient.end();
+    try {
+      await this.queryClient.end();
+      this.logger.info("Database connection closed successfully");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error("Failed to close database connection", message);
+      throw error;
+    }
   }
 }
