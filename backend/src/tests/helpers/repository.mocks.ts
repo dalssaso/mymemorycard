@@ -188,3 +188,38 @@ export function createMockEmbeddingRepository(): {
     findSimilarCollections: mock().mockResolvedValue([]),
   };
 }
+
+export function createMockEmbeddingService(): {
+  generateGameEmbedding: ReturnType<typeof mock>;
+  generateCollectionEmbedding: ReturnType<typeof mock>;
+  findSimilarGames: ReturnType<typeof mock>;
+  findSimilarCollections: ReturnType<typeof mock>;
+} {
+  return {
+    generateGameEmbedding: mock().mockResolvedValue(undefined),
+    generateCollectionEmbedding: mock().mockResolvedValue(undefined),
+    findSimilarGames: mock().mockResolvedValue([]),
+    findSimilarCollections: mock().mockResolvedValue([]),
+  };
+}
+
+export function createMockCuratorService(): {
+  suggestCollections: ReturnType<typeof mock>;
+  suggestNextGame: ReturnType<typeof mock>;
+} {
+  return {
+    suggestCollections: mock().mockResolvedValue([]),
+    suggestNextGame: mock().mockResolvedValue([]),
+  };
+}
+
+export function createMockImageService(): {
+  generateCollectionCover: ReturnType<typeof mock>;
+} {
+  return {
+    generateCollectionCover: mock().mockResolvedValue({
+      url: "https://example.com/image.png",
+      model: "test-model",
+    }),
+  };
+}
