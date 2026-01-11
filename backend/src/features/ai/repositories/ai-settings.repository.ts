@@ -21,15 +21,60 @@ export class AiSettingsRepository implements IAiSettingsRepository {
   }
 
   async save(settings: Partial<UserAiSettings> & { userId: string }): Promise<void> {
+    if (!settings.userId || !settings.provider) {
+      throw new Error("userId and provider are required");
+    }
+
+    // Explicit insert payload - only non-nullable and provided fields
+    const insertPayload = {
+      userId: settings.userId,
+      provider: settings.provider,
+      baseUrl: settings.baseUrl ?? null,
+      apiKeyEncrypted: settings.apiKeyEncrypted ?? null,
+      model: settings.model ?? "gpt-4.1-mini",
+      imageApiKeyEncrypted: settings.imageApiKeyEncrypted ?? null,
+      imageModel: settings.imageModel ?? "dall-e-3",
+      temperature: settings.temperature ?? 0.7,
+      maxTokens: settings.maxTokens ?? 2000,
+      isActive: settings.isActive ?? false,
+      collectionSuggestionsModel: settings.collectionSuggestionsModel ?? null,
+      nextGameSuggestionsModel: settings.nextGameSuggestionsModel ?? null,
+      coverGenerationModel: settings.coverGenerationModel ?? null,
+      enableSmartRouting: settings.enableSmartRouting ?? true,
+      gatewayApiKeyEncrypted: settings.gatewayApiKeyEncrypted ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // Explicit update payload - only mutable columns (exclude conflict keys and createdAt)
+    const updatePayload = {
+      baseUrl: settings.baseUrl,
+      apiKeyEncrypted: settings.apiKeyEncrypted,
+      model: settings.model,
+      imageApiKeyEncrypted: settings.imageApiKeyEncrypted,
+      imageModel: settings.imageModel,
+      temperature: settings.temperature,
+      maxTokens: settings.maxTokens,
+      isActive: settings.isActive,
+      collectionSuggestionsModel: settings.collectionSuggestionsModel,
+      nextGameSuggestionsModel: settings.nextGameSuggestionsModel,
+      coverGenerationModel: settings.coverGenerationModel,
+      enableSmartRouting: settings.enableSmartRouting,
+      gatewayApiKeyEncrypted: settings.gatewayApiKeyEncrypted,
+      updatedAt: new Date(),
+    };
+
+    // Remove undefined values from update payload
+    const cleanUpdatePayload = Object.fromEntries(
+      Object.entries(updatePayload).filter(([_, v]) => v !== undefined)
+    );
+
     await this.db
       .insert(userAiSettings)
-      .values(settings as UserAiSettings)
+      .values(insertPayload)
       .onConflictDoUpdate({
         target: [userAiSettings.userId, userAiSettings.provider],
-        set: {
-          ...settings,
-          updatedAt: new Date(),
-        },
+        set: cleanUpdatePayload,
       });
   }
 
