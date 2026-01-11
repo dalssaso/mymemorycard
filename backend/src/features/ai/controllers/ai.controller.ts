@@ -84,15 +84,38 @@ export class AiController implements IAiController {
           },
           description: "Unauthorized",
         },
+        500: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Internal server error",
+        },
       },
     });
 
     this.router.openapi(generateGameEmbeddingRoute, async (c) => {
-      const body = c.req.valid("json");
-      const user = c.get("user")!;
-      await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text);
+      try {
+        const body = c.req.valid("json");
+        const user = c.get("user")!;
+        await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text);
 
-      return c.json({ success: true }, 201);
+        return c.json({ success: true }, 201);
+      } catch (error) {
+        console.error("Error in generateGameEmbedding:", {
+          userId: c.get("user")?.id,
+          gameId: c.req.valid("json")?.gameId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        return c.json(
+          {
+            error: error instanceof Error ? error.message : "Internal server error",
+          },
+          500
+        );
+      }
     });
 
     // POST /embeddings/collections - Generate collection embedding
@@ -135,15 +158,38 @@ export class AiController implements IAiController {
           },
           description: "Unauthorized",
         },
+        500: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Internal server error",
+        },
       },
     });
 
     this.router.openapi(generateCollectionEmbeddingRoute, async (c) => {
-      const body = c.req.valid("json");
-      const user = c.get("user")!;
-      await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text);
+      try {
+        const body = c.req.valid("json");
+        const user = c.get("user")!;
+        await this.embeddingService.generateCollectionEmbedding(user.id, body.gameId, body.text);
 
-      return c.json({ success: true }, 201);
+        return c.json({ success: true }, 201);
+      } catch (error) {
+        console.error("Error in generateCollectionEmbedding:", {
+          userId: c.get("user")?.id,
+          gameId: c.req.valid("json")?.gameId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        return c.json(
+          {
+            error: error instanceof Error ? error.message : "Internal server error",
+          },
+          500
+        );
+      }
     });
 
     // POST /suggestions/collections - Suggest collections
@@ -186,15 +232,38 @@ export class AiController implements IAiController {
           },
           description: "Unauthorized",
         },
+        500: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Internal server error",
+        },
       },
     });
 
     this.router.openapi(suggestCollectionsRoute, async (c) => {
-      const body = c.req.valid("json");
-      const user = c.get("user")!;
-      const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds);
+      try {
+        const body = c.req.valid("json");
+        const user = c.get("user")!;
+        const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds);
 
-      return c.json(suggestions, 200);
+        return c.json(suggestions, 200);
+      } catch (error) {
+        console.error("Error in suggestCollections:", {
+          userId: c.get("user")?.id,
+          gameIdsCount: c.req.valid("json")?.gameIds?.length,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        return c.json(
+          {
+            error: error instanceof Error ? error.message : "Internal server error",
+          },
+          500
+        );
+      }
     });
 
     // POST /suggestions/next-game - Suggest next game
@@ -237,15 +306,38 @@ export class AiController implements IAiController {
           },
           description: "Unauthorized",
         },
+        500: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Internal server error",
+        },
       },
     });
 
     this.router.openapi(suggestNextGameRoute, async (c) => {
-      const body = c.req.valid("json");
-      const user = c.get("user")!;
-      const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds);
+      try {
+        const body = c.req.valid("json");
+        const user = c.get("user")!;
+        const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds);
 
-      return c.json(suggestions, 200);
+        return c.json(suggestions, 200);
+      } catch (error) {
+        console.error("Error in suggestNextGame:", {
+          userId: c.get("user")?.id,
+          recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        return c.json(
+          {
+            error: error instanceof Error ? error.message : "Internal server error",
+          },
+          500
+        );
+      }
     });
 
     // POST /images/collection-cover - Generate collection cover
@@ -288,19 +380,43 @@ export class AiController implements IAiController {
           },
           description: "Unauthorized",
         },
+        500: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Internal server error",
+        },
       },
     });
 
     this.router.openapi(generateCoverRoute, async (c) => {
-      const body = c.req.valid("json");
-      const user = c.get("user")!;
-      const result = await this.imageService.generateCollectionCover(
-        user.id,
-        body.collectionName,
-        body.gameNames
-      );
+      try {
+        const body = c.req.valid("json");
+        const user = c.get("user")!;
+        const result = await this.imageService.generateCollectionCover(
+          user.id,
+          body.collectionName,
+          body.gameNames
+        );
 
-      return c.json(result, 201);
+        return c.json(result, 201);
+      } catch (error) {
+        console.error("Error in generateCollectionCover:", {
+          userId: c.get("user")?.id,
+          collectionName: c.req.valid("json")?.collectionName,
+          gameNamesCount: c.req.valid("json")?.gameNames?.length,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        return c.json(
+          {
+            error: error instanceof Error ? error.message : "Internal server error",
+          },
+          500
+        );
+      }
     });
   }
 }
