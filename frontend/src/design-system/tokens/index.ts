@@ -1,5 +1,5 @@
-export { colors, type ColorToken, type StatusColor } from "./colors"
-export { spacing, layout, type SpacingToken } from "./spacing"
+export { colors, type ColorToken, type StatusColor } from "./colors";
+export { spacing, layout, type SpacingToken } from "./spacing";
 export {
   fontFamily,
   fontWeight,
@@ -7,7 +7,7 @@ export {
   lineHeight,
   type FontSizeToken,
   type FontWeightToken,
-} from "./typography"
+} from "./typography";
 export {
   duration,
   durationCSS,
@@ -16,4 +16,4 @@ export {
   spring,
   type DurationToken,
   type EasingToken,
-} from "./motion"
+} from "./motion";

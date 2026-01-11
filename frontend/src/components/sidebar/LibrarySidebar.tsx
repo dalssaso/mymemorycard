@@ -52,11 +52,11 @@ export function LibrarySidebar({
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
+      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ export function LibrarySidebar({
         </div>
 
         {/* Favorites Toggle */}
-        <div className="flex justify-center border-t border-ctp-surface0 pt-2">
+        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
           <Button
             variant="ghost"
             size="icon"
@@ -145,7 +145,7 @@ export function LibrarySidebar({
 
         {/* Clear Filters */}
         {hasActiveFilters && (
-          <div className="flex justify-center border-t border-ctp-surface0 pt-2">
+          <div className="border-ctp-surface0 flex justify-center border-t pt-2">
             <Button
               variant="ghost"
               size="icon"
@@ -173,7 +173,7 @@ export function LibrarySidebar({
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-ctp-mauve/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-ctp-mauve px-3 py-2 text-sm font-medium text-ctp-base transition-colors"
+        className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -182,7 +182,7 @@ export function LibrarySidebar({
       </Link>
       <Link
         to="/platforms"
-        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-ctp-surface0 px-3 py-2 text-sm font-medium text-ctp-text transition-colors hover:bg-ctp-surface1"
+        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -196,9 +196,9 @@ export function LibrarySidebar({
       </Link>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-mauve"
+            className="text-ctp-mauve h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -261,9 +261,9 @@ export function LibrarySidebar({
       </div>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-teal"
+            className="text-ctp-teal h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -424,9 +424,9 @@ export function LibrarySidebar({
       </FilterSection>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-red"
+            className="text-ctp-red h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -440,13 +440,13 @@ export function LibrarySidebar({
           </svg>
           Filters
         </h3>
-        <div className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-ctp-surface0">
+        <div className="hover:bg-ctp-surface0 flex items-center gap-2 rounded-lg px-3 py-2 transition-colors">
           <Checkbox
             id="filters-favorites"
             checked={filters.favorites}
             onCheckedChange={(checked) => setFilter("favorites", checked === true)}
           />
-          <label htmlFor="filters-favorites" className="cursor-pointer text-sm text-ctp-subtext1">
+          <label htmlFor="filters-favorites" className="text-ctp-subtext1 cursor-pointer text-sm">
             Favorites Only
           </label>
         </div>
@@ -456,7 +456,7 @@ export function LibrarySidebar({
         <Button
           variant="outline"
           onClick={onClearFilters}
-          className="w-full border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
+          className="border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text w-full"
         >
           Clear All Filters
         </Button>

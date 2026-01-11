@@ -76,7 +76,9 @@ export function StatusButton({
         <span className="text-text-secondary">{config.label}</span>
       </div>
       {count !== undefined && (
-        <span className="min-w-[2rem] text-right font-semibold text-text-primary">{animatedCount}</span>
+        <span className="min-w-[2rem] text-right font-semibold text-text-primary">
+          {animatedCount}
+        </span>
       )}
     </Button>
   );

@@ -31,7 +31,7 @@ export const colors = {
     dropped: "var(--color-status-dropped)",
     backlog: "var(--color-status-backlog)",
   },
-} as const
+} as const;
 
-export type ColorToken = typeof colors
-export type StatusColor = keyof typeof colors.status
+export type ColorToken = typeof colors;
+export type StatusColor = keyof typeof colors.status;

@@ -118,11 +118,11 @@ export function PlatformOnboarding() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
             />
-            <h1 className="text-4xl font-bold text-ctp-text">Choose Your Platforms</h1>
+            <h1 className="text-ctp-text text-4xl font-bold">Choose Your Platforms</h1>
           </div>
-          <p className="mt-2 text-ctp-subtext0">
+          <p className="text-ctp-subtext0 mt-2">
             Select the platforms you use. This keeps your imports focused and relevant.
           </p>
         </div>
@@ -141,8 +141,8 @@ export function PlatformOnboarding() {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-ctp-text">Platforms</h2>
-            <span className="text-sm text-ctp-subtext0">{selectedPlatformIds.length} selected</span>
+            <h2 className="text-ctp-text text-lg font-semibold">Platforms</h2>
+            <span className="text-ctp-subtext0 text-sm">{selectedPlatformIds.length} selected</span>
           </div>
 
           {isLoadingPlatforms ? (
@@ -166,8 +166,8 @@ export function PlatformOnboarding() {
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="font-medium text-ctp-text">{platform.display_name}</div>
-                      {isLocked && <span className="text-xs text-ctp-mauve">Saved</span>}
+                      <div className="text-ctp-text font-medium">{platform.display_name}</div>
+                      {isLocked && <span className="text-ctp-mauve text-xs">Saved</span>}
                     </div>
                     <PlatformTypeIcon
                       type={platform.platform_type}

@@ -412,7 +412,7 @@ export function CollectionDetail() {
         <div className="mb-6">
           <Link
             to="/collections"
-            className="mb-4 hidden text-ctp-teal transition-colors hover:text-ctp-mauve md:inline-block"
+            className="text-ctp-teal hover:text-ctp-mauve mb-4 hidden transition-colors md:inline-block"
           >
             Back to Collections
           </Link>
@@ -422,16 +422,16 @@ export function CollectionDetail() {
                 <div className="mb-2 flex items-center gap-3">
                   <BackButton
                     iconOnly={true}
-                    className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+                    className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
                   />
                   <Input
                     type="text"
                     {...collectionForm.register("name")}
-                    className="flex-1 bg-ctp-mantle text-4xl font-bold text-ctp-text focus-visible:ring-ctp-mauve"
+                    className="bg-ctp-mantle text-ctp-text focus-visible:ring-ctp-mauve flex-1 text-4xl font-bold"
                   />
                 </div>
                 {collectionForm.formState.errors.name && (
-                  <p className="mb-2 text-xs text-ctp-red">
+                  <p className="text-ctp-red mb-2 text-xs">
                     {collectionForm.formState.errors.name.message}
                   </p>
                 )}
@@ -460,9 +460,9 @@ export function CollectionDetail() {
                 <div className="flex items-center gap-3">
                   <BackButton
                     iconOnly={true}
-                    className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+                    className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
                   />
-                  <h1 className="text-4xl font-bold text-ctp-text">{collection.name}</h1>
+                  <h1 className="text-ctp-text text-4xl font-bold">{collection.name}</h1>
                 </div>
                 <Button
                   variant="ghost"
@@ -474,7 +474,7 @@ export function CollectionDetail() {
                     });
                     setIsEditingName(true);
                   }}
-                  className="text-ctp-teal hover:bg-transparent hover:text-ctp-mauve"
+                  className="text-ctp-teal hover:text-ctp-mauve hover:bg-transparent"
                 >
                   Edit
                 </Button>
@@ -489,7 +489,7 @@ export function CollectionDetail() {
             {/* Cover Art */}
             <div
               className={cn(
-                "mb-4 overflow-hidden rounded-lg bg-ctp-surface0",
+                "bg-ctp-surface0 mb-4 overflow-hidden rounded-lg",
                 collection.cover_filename || collection.cover_art_url
                   ? "aspect-[3/4]"
                   : "aspect-[4/5] lg:aspect-[5/6]"
@@ -508,7 +508,7 @@ export function CollectionDetail() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
+                <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
                   <span className="text-sm">No Cover</span>
                 </div>
               )}
@@ -539,8 +539,8 @@ export function CollectionDetail() {
 
             {/* Game Count */}
             <div className="bg-ctp-teal/10 border-ctp-teal/30 mb-4 rounded-lg border p-3">
-              <div className="text-xs text-ctp-teal">Games</div>
-              <div className="text-lg font-semibold text-ctp-text">
+              <div className="text-ctp-teal text-xs">Games</div>
+              <div className="text-ctp-text text-lg font-semibold">
                 {games.length} {games.length === 1 ? "game" : "games"}
               </div>
             </div>
@@ -556,7 +556,7 @@ export function CollectionDetail() {
             {/* Collection Description */}
             <div id="description" className="bg-ctp-surface0/30 mb-6 rounded-lg p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-ctp-mauve">Description</h2>
+                <h2 className="text-ctp-mauve text-xl font-semibold">Description</h2>
                 {!isEditingDescription && (
                   <Button
                     variant="ghost"
@@ -568,7 +568,7 @@ export function CollectionDetail() {
                       });
                       setIsEditingDescription(true);
                     }}
-                    className="text-ctp-teal hover:bg-transparent hover:text-ctp-mauve"
+                    className="text-ctp-teal hover:text-ctp-mauve hover:bg-transparent"
                   >
                     {collection.description ? "Edit" : "Add Description"}
                   </Button>
@@ -579,11 +579,11 @@ export function CollectionDetail() {
                 <form onSubmit={handleSaveDescription}>
                   <Textarea
                     {...collectionForm.register("description")}
-                    className="min-h-24 bg-ctp-mantle text-ctp-text focus-visible:ring-ctp-mauve"
+                    className="bg-ctp-mantle text-ctp-text focus-visible:ring-ctp-mauve min-h-24"
                     placeholder="Describe your collection..."
                   />
                   {collectionForm.formState.errors.description && (
-                    <p className="mt-1 text-xs text-ctp-red">
+                    <p className="text-ctp-red mt-1 text-xs">
                       {collectionForm.formState.errors.description.message}
                     </p>
                   )}
@@ -608,7 +608,7 @@ export function CollectionDetail() {
                   </div>
                 </form>
               ) : (
-                <div className="bg-ctp-mantle/50 rounded-lg p-4 text-ctp-subtext1">
+                <div className="bg-ctp-mantle/50 text-ctp-subtext1 rounded-lg p-4">
                   {collection.description || "No description yet"}
                 </div>
               )}
@@ -617,7 +617,7 @@ export function CollectionDetail() {
             {/* Games Section */}
             <div id="games" className="bg-ctp-surface0/30 mb-6 rounded-lg p-4">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-xl font-semibold text-ctp-mauve">Games in Collection</h2>
+                <h2 className="text-ctp-mauve text-xl font-semibold">Games in Collection</h2>
                 <div className="flex items-center gap-2">
                   {selectionMode ? (
                     <>
@@ -671,7 +671,7 @@ export function CollectionDetail() {
                 </div>
               </div>
               {games.length === 0 ? (
-                <p className="py-8 text-center text-ctp-subtext0">
+                <p className="text-ctp-subtext0 py-8 text-center">
                   No games in this collection yet. Add games from your library!
                 </p>
               ) : (
@@ -694,10 +694,10 @@ export function CollectionDetail() {
                           tabIndex={0}
                         >
                           <div
-                            className={`relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-ctp-surface0 transition-colors ${
+                            className={`bg-ctp-surface0 relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border transition-colors ${
                               isSelected
                                 ? "bg-ctp-mauve/20 border-ctp-mauve"
-                                : "border-dashed border-ctp-surface1 hover:border-ctp-mauve"
+                                : "border-ctp-surface1 hover:border-ctp-mauve border-dashed"
                             }`}
                           >
                             {game.cover_art_url ? (
@@ -711,19 +711,19 @@ export function CollectionDetail() {
                                 }`}
                               />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
+                              <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
                                 No Cover
                               </div>
                             )}
                             {isSelected && (
-                              <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
+                              <div className="bg-ctp-mauve absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   strokeWidth={3}
                                   stroke="currentColor"
-                                  className="h-4 w-4 text-ctp-text"
+                                  className="text-ctp-text h-4 w-4"
                                 >
                                   <path
                                     strokeLinecap="round"
@@ -734,7 +734,7 @@ export function CollectionDetail() {
                               </div>
                             )}
                           </div>
-                          <p className="mb-1 truncate text-sm text-ctp-subtext0 group-hover:text-ctp-subtext1">
+                          <p className="text-ctp-subtext0 group-hover:text-ctp-subtext1 mb-1 truncate text-sm">
                             {game.name}
                           </p>
                         </div>
@@ -744,7 +744,7 @@ export function CollectionDetail() {
                     return (
                       <div key={game.id} className="group relative">
                         <Link to="/library/$id" params={{ id: game.id }}>
-                          <div className="mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
+                          <div className="bg-ctp-surface0 mb-2 aspect-[3/4] overflow-hidden rounded-lg">
                             {game.cover_art_url ? (
                               <img
                                 src={game.cover_art_url}
@@ -752,12 +752,12 @@ export function CollectionDetail() {
                                 className="h-full w-full object-cover transition-transform group-hover:scale-105"
                               />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
+                              <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
                                 No Cover
                               </div>
                             )}
                           </div>
-                          <p className="truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
+                          <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
                             {game.name}
                           </p>
                         </Link>
@@ -765,7 +765,7 @@ export function CollectionDetail() {
                           variant="ghost"
                           size="icon"
                           onClick={() => removeGameMutation.mutate([game.id])}
-                          className="bg-ctp-red/80 absolute right-2 top-2 h-6 w-6 rounded-full text-ctp-base opacity-0 hover:bg-ctp-red group-hover:opacity-100"
+                          className="bg-ctp-red/80 text-ctp-base hover:bg-ctp-red absolute right-2 top-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100"
                           title="Remove from collection"
                         >
                           ×
@@ -781,12 +781,12 @@ export function CollectionDetail() {
       </div>
 
       {selectionMode && selectedCollectionGameIds.length > 0 && (
-        <div className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border border-ctp-surface1 bg-ctp-mantle px-6 py-4 shadow-xl md:bottom-6">
-          <span className="font-medium text-ctp-text">
+        <div className="border-ctp-surface1 bg-ctp-mantle fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border px-6 py-4 shadow-xl md:bottom-6">
+          <span className="text-ctp-text font-medium">
             {selectedCollectionGameIds.length} game
             {selectedCollectionGameIds.length !== 1 ? "s" : ""} selected
           </span>
-          <div className="h-6 w-px bg-ctp-surface1" />
+          <div className="bg-ctp-surface1 h-6 w-px" />
           <Button
             variant="destructive"
             onClick={() => removeGameMutation.mutate(selectedCollectionGameIds)}
@@ -808,9 +808,9 @@ export function CollectionDetail() {
           }
         }}
       >
-        <DialogContent className="max-w-2xl border-ctp-surface1 bg-ctp-mantle">
+        <DialogContent className="border-ctp-surface1 bg-ctp-mantle max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-ctp-text">Add Games</DialogTitle>
+            <DialogTitle className="text-ctp-text text-2xl font-bold">Add Games</DialogTitle>
             <DialogDescription className="flex items-center justify-between">
               <span>Search your library and select multiple games to add.</span>
               {selectedGameIds.length > 0 && (
@@ -818,7 +818,7 @@ export function CollectionDetail() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedGameIds([])}
-                  className="h-auto py-0 text-xs text-ctp-subtext0 hover:bg-transparent hover:text-ctp-text"
+                  className="text-ctp-subtext0 hover:text-ctp-text h-auto py-0 text-xs hover:bg-transparent"
                 >
                   Clear selection
                 </Button>
@@ -835,7 +835,7 @@ export function CollectionDetail() {
           {normalizedQuery && (
             <ScrollFade axis="y" className="max-h-80 space-y-2 overflow-y-auto">
               {searchResults.length === 0 ? (
-                <div className="py-6 text-center text-sm text-ctp-subtext0">
+                <div className="text-ctp-subtext0 py-6 text-center text-sm">
                   No games matched your search.
                 </div>
               ) : (
@@ -853,7 +853,7 @@ export function CollectionDetail() {
                       checked={selectedGameIds.includes(game.id)}
                       onCheckedChange={() => toggleSelectedGame(game.id)}
                     />
-                    <div className="h-14 w-10 flex-shrink-0 overflow-hidden rounded-md bg-ctp-surface0">
+                    <div className="bg-ctp-surface0 h-14 w-10 flex-shrink-0 overflow-hidden rounded-md">
                       {game.cover_art_url ? (
                         <img
                           src={game.cover_art_url}
@@ -861,14 +861,14 @@ export function CollectionDetail() {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-ctp-overlay1">
+                        <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center text-xs">
                           No Cover
                         </div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm text-ctp-text">{game.name}</div>
-                      <div className="truncate text-xs text-ctp-subtext0">
+                      <div className="text-ctp-text truncate text-sm">{game.name}</div>
+                      <div className="text-ctp-subtext0 truncate text-xs">
                         {game.platform_display_name}
                       </div>
                     </div>
@@ -878,7 +878,7 @@ export function CollectionDetail() {
             </ScrollFade>
           )}
           <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
-            <div className="text-sm text-ctp-subtext0">{selectedGameIds.length} selected</div>
+            <div className="text-ctp-subtext0 text-sm">{selectedGameIds.length} selected</div>
             <div className="flex gap-2">
               <Button
                 variant="secondary"

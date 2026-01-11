@@ -57,7 +57,11 @@ export function Register(): JSX.Element {
         // Handle both string errors and Zod validation error objects
         if (typeof responseError === "string") {
           message = responseError;
-        } else if (responseError && typeof responseError === "object" && "message" in responseError) {
+        } else if (
+          responseError &&
+          typeof responseError === "object" &&
+          "message" in responseError
+        ) {
           message = String((responseError as { message: unknown }).message);
         }
       }
@@ -66,17 +70,17 @@ export function Register(): JSX.Element {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ctp-base px-4">
-      <Card className="bg-ctp-surface0/60 w-full max-w-sm border-ctp-surface1">
+    <div className="bg-ctp-base flex min-h-screen items-center justify-center px-4">
+      <Card className="bg-ctp-surface0/60 border-ctp-surface1 w-full max-w-sm">
         <CardHeader>
-          <h1 className="text-center text-2xl font-semibold text-ctp-mauve">Create Account</h1>
-          <p className="text-center text-sm text-ctp-subtext1">Start organizing your library</p>
+          <h1 className="text-ctp-mauve text-center text-2xl font-semibold">Create Account</h1>
+          <p className="text-ctp-subtext1 text-center text-sm">Start organizing your library</p>
         </CardHeader>
         <CardContent>
           <FormProvider {...form}>
             <form onSubmit={handleSubmit} className="space-y-4">
               {form.formState.errors.root?.message ? (
-                <div className="border-ctp-red/30 bg-ctp-red/10 rounded-md border px-3 py-2 text-sm text-ctp-red">
+                <div className="border-ctp-red/30 bg-ctp-red/10 text-ctp-red rounded-md border px-3 py-2 text-sm">
                   {form.formState.errors.root.message}
                 </div>
               ) : null}
@@ -105,7 +109,7 @@ export function Register(): JSX.Element {
               </Button>
             </form>
           </FormProvider>
-          <p className="mt-4 text-center text-sm text-ctp-subtext1">
+          <p className="text-ctp-subtext1 mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link to="/login" className="text-ctp-teal hover:text-ctp-sky">
               Login

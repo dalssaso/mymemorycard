@@ -13,13 +13,13 @@ export const spacing = {
   space10: "var(--space-10)",
   space12: "var(--space-12)",
   space16: "var(--space-16)",
-} as const
+} as const;
 
 export const layout = {
   navRailWidth: "var(--nav-rail-width)",
   topBarHeight: "var(--top-bar-height)",
   bottomTabHeight: "var(--bottom-tab-height)",
   contentMaxWidth: "var(--content-max-width)",
-} as const
+} as const;
 
-export type SpacingToken = keyof typeof spacing
+export type SpacingToken = keyof typeof spacing;

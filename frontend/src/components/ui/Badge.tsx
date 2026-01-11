@@ -30,7 +30,8 @@ export function Badge({
   } else if (variant === "platform") {
     variantStyles = "bg-accent/20 border border-accent rounded-lg text-accent";
   } else if (variant === "genre") {
-    variantStyles = "bg-status-playing/10 border border-status-playing/30 rounded text-status-playing";
+    variantStyles =
+      "bg-status-playing/10 border border-status-playing/30 rounded text-status-playing";
   } else {
     variantStyles = "bg-surface text-text-secondary";
   }

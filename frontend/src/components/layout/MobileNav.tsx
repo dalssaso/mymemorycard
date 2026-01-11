@@ -14,7 +14,7 @@ export function MobileNav(): JSX.Element {
     }`;
 
   return (
-    <nav className="supports-[backdrop-filter]:bg-ctp-mantle/90 fixed bottom-0 left-0 right-0 z-50 h-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] border-t border-ctp-surface0 bg-ctp-mantle pb-[env(safe-area-inset-bottom)] supports-[backdrop-filter]:backdrop-blur md:hidden">
+    <nav className="supports-[backdrop-filter]:bg-ctp-mantle/90 border-ctp-surface0 bg-ctp-mantle fixed bottom-0 left-0 right-0 z-50 h-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] border-t pb-[env(safe-area-inset-bottom)] supports-[backdrop-filter]:backdrop-blur md:hidden">
       <div className="grid h-[var(--mobile-nav-height)] grid-cols-5 gap-1 px-2">
         <Link to="/dashboard" className={getNavLinkClass(locationHref.includes("/dashboard"))}>
           <span className="text-xs">Home</span>
@@ -27,7 +27,7 @@ export function MobileNav(): JSX.Element {
         <Button
           type="button"
           variant="ghost"
-          className="flex h-auto flex-col items-center justify-center rounded-lg text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+          className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex h-auto flex-col items-center justify-center rounded-lg"
           aria-label="Open search"
           onClick={() => openSearch(document.activeElement)}
         >

@@ -243,7 +243,7 @@ export function Dashboard() {
     const color = data?.color || "#a1a1aa";
 
     return (
-      <div className="rounded-lg border border-ctp-surface1 bg-ctp-mantle px-3 py-2 text-sm">
+      <div className="border-ctp-surface1 bg-ctp-mantle rounded-lg border px-3 py-2 text-sm">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
           <span className="text-ctp-subtext1">
@@ -261,14 +261,14 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
             />
-            <h1 className="text-4xl font-bold text-ctp-text">Dashboard</h1>
+            <h1 className="text-ctp-text text-4xl font-bold">Dashboard</h1>
           </div>
           <div className="hidden gap-3 sm:flex">
             <Link
               to="/platforms"
-              className="flex items-center gap-2 rounded-lg bg-ctp-surface0 px-4 py-2 text-ctp-text transition-colors hover:bg-ctp-surface1"
+              className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex items-center gap-2 rounded-lg px-4 py-2 transition-colors"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -282,7 +282,7 @@ export function Dashboard() {
             </Link>
             <Link
               to="/import"
-              className="hover:bg-ctp-mauve/80 flex items-center gap-2 rounded-lg bg-ctp-mauve px-4 py-2 text-ctp-base transition-colors"
+              className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex items-center gap-2 rounded-lg px-4 py-2 transition-colors"
             >
               <span className="material-symbols-outlined text-xl">download</span>
               Import Games
@@ -325,8 +325,8 @@ export function Dashboard() {
             style={counterCardStyles.total}
             onClick={() => navigateToLibrary({})}
           >
-            <h3 className="mb-2 text-sm text-ctp-subtext0">Total Games</h3>
-            <p className="text-3xl font-bold text-ctp-text">{animatedTotalGames}</p>
+            <h3 className="text-ctp-subtext0 mb-2 text-sm">Total Games</h3>
+            <p className="text-ctp-text text-3xl font-bold">{animatedTotalGames}</p>
           </Card>
 
           <Card
@@ -335,8 +335,8 @@ export function Dashboard() {
             style={counterCardStyles.playing}
             onClick={() => navigateToLibrary({ status: "playing" })}
           >
-            <h3 className="mb-2 text-sm text-ctp-subtext0">Currently Playing</h3>
-            <p className="text-3xl font-bold text-ctp-text">{animatedInProgressGames}</p>
+            <h3 className="text-ctp-subtext0 mb-2 text-sm">Currently Playing</h3>
+            <p className="text-ctp-text text-3xl font-bold">{animatedInProgressGames}</p>
           </Card>
 
           <Card
@@ -345,8 +345,8 @@ export function Dashboard() {
             style={counterCardStyles.completed}
             onClick={() => navigateToLibrary({ status: "completed" })}
           >
-            <h3 className="mb-2 text-sm text-ctp-subtext0">Completed</h3>
-            <p className="text-3xl font-bold text-ctp-text">{animatedCompletedGames}</p>
+            <h3 className="text-ctp-subtext0 mb-2 text-sm">Completed</h3>
+            <p className="text-ctp-text text-3xl font-bold">{animatedCompletedGames}</p>
           </Card>
 
           <Card
@@ -355,15 +355,15 @@ export function Dashboard() {
             style={counterCardStyles.backlog}
             onClick={() => navigateToLibrary({ status: "backlog" })}
           >
-            <h3 className="mb-2 text-sm text-ctp-subtext0">Backlog</h3>
-            <p className="text-3xl font-bold text-ctp-text">{animatedBacklogGames}</p>
+            <h3 className="text-ctp-subtext0 mb-2 text-sm">Backlog</h3>
+            <p className="text-ctp-text text-3xl font-bold">{animatedBacklogGames}</p>
           </Card>
         </div>
 
         {/* Currently Playing Carousel */}
         {currentlyPlayingRecent.length > 0 && (
           <Card className="bg-ctp-teal/5 border-ctp-teal/20 mb-8" padded={true}>
-            <h2 className="mb-4 text-2xl font-bold text-ctp-teal">Currently Playing</h2>
+            <h2 className="text-ctp-teal mb-4 text-2xl font-bold">Currently Playing</h2>
             <div className="relative">
               <ScrollFade axis="x" className="flex gap-4 overflow-x-auto pb-4">
                 {currentlyPlayingRecent.map((game) => (
@@ -373,7 +373,7 @@ export function Dashboard() {
                     params={{ id: game.id }}
                     className="group flex-shrink-0"
                   >
-                    <div className="relative aspect-[3/4] w-32 overflow-hidden rounded-lg bg-ctp-surface0">
+                    <div className="bg-ctp-surface0 relative aspect-[3/4] w-32 overflow-hidden rounded-lg">
                       {game.cover_art_url ? (
                         <img
                           src={game.cover_art_url}
@@ -381,17 +381,17 @@ export function Dashboard() {
                           className="h-full w-full object-cover transition-transform group-hover:scale-105"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
+                        <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
                           No Cover
                         </div>
                       )}
                       <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:via-transparent" />
                     </div>
-                    <p className="mt-2 w-32 truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
+                    <p className="text-ctp-subtext1 group-hover:text-ctp-text mt-2 w-32 truncate text-sm">
                       {game.name}
                     </p>
                     {game.last_played && (
-                      <p className="text-xs text-ctp-overlay1">
+                      <p className="text-ctp-overlay1 text-xs">
                         {new Date(game.last_played).toLocaleDateString()}
                       </p>
                     )}
@@ -407,8 +407,8 @@ export function Dashboard() {
           <div className="lg:col-span-2">
             <Card padded={true}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-ctp-mauve">Your Activity</h2>
-                <div className="flex gap-1 rounded-lg bg-ctp-surface0 p-1">
+                <h2 className="text-ctp-mauve text-2xl font-bold">Your Activity</h2>
+                <div className="bg-ctp-surface0 flex gap-1 rounded-lg p-1">
                   <Button
                     onClick={() => setHeatmapType("activity")}
                     variant={heatmapType === "activity" ? "secondary" : "ghost"}
@@ -437,7 +437,7 @@ export function Dashboard() {
           </div>
           <div>
             <Card className="lg:flex lg:h-[366px] lg:flex-col" padded={true}>
-              <h2 className="mb-4 text-xl font-bold text-ctp-mauve">Recent Activity</h2>
+              <h2 className="text-ctp-mauve mb-4 text-xl font-bold">Recent Activity</h2>
               <ActivityFeed
                 desktopLimit={12}
                 mobileLimit={5}
@@ -459,7 +459,7 @@ export function Dashboard() {
           <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Status Distribution */}
             <Card padded={true}>
-              <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Status Distribution</h2>
+              <h2 className="text-ctp-mauve mb-4 text-2xl font-bold">Status Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -507,7 +507,7 @@ export function Dashboard() {
 
             {/* Platform Distribution */}
             <Card padded={true}>
-              <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Platform Distribution</h2>
+              <h2 className="text-ctp-mauve mb-4 text-2xl font-bold">Platform Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -553,7 +553,7 @@ export function Dashboard() {
             {/* Genre Distribution */}
             {genreChartData.length > 0 && (
               <Card padded={true}>
-                <h2 className="mb-4 text-2xl font-bold text-ctp-mauve">Top Genres</h2>
+                <h2 className="text-ctp-mauve mb-4 text-2xl font-bold">Top Genres</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={genreChartData}
@@ -598,11 +598,11 @@ export function Dashboard() {
         {/* Favorites Section */}
         {favoriteGames.length > 0 && (
           <Card className="bg-ctp-red/10 border-ctp-red/30 mb-6" padded={true}>
-            <h2 className="mb-4 text-2xl font-bold text-ctp-red">
+            <h2 className="text-ctp-red mb-4 text-2xl font-bold">
               <Button
                 type="button"
                 variant="ghost"
-                className="h-auto p-0 transition-colors hover:text-ctp-red"
+                className="hover:text-ctp-red h-auto p-0 transition-colors"
                 onClick={() => navigateToLibrary({ favorites: true })}
               >
                 Favorites
@@ -616,7 +616,7 @@ export function Dashboard() {
                   params={{ id: game.id }}
                   className="group relative"
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
+                  <div className="bg-ctp-surface0 relative aspect-[3/4] overflow-hidden rounded-lg">
                     {game.cover_art_url ? (
                       <img
                         src={game.cover_art_url}
@@ -624,11 +624,11 @@ export function Dashboard() {
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
+                      <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
                         No Cover
                       </div>
                     )}
-                    <div className="absolute right-2 top-2 text-ctp-red">
+                    <div className="text-ctp-red absolute right-2 top-2">
                       <svg
                         className="h-5 w-5"
                         viewBox="0 0 24 24"
@@ -645,7 +645,7 @@ export function Dashboard() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
+                  <p className="text-ctp-subtext1 group-hover:text-ctp-text mt-2 truncate text-sm">
                     {game.name}
                   </p>
                 </Link>

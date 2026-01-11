@@ -59,7 +59,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
   });
 
   if (isLoading) {
-    return <div className="h-10 animate-pulse rounded bg-ctp-surface1" />;
+    return <div className="bg-ctp-surface1 h-10 animate-pulse rounded" />;
   }
 
   const hasEditions = data && data.availableEditions.length > 0;
@@ -78,7 +78,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
             size="sm"
             onClick={() => resetEditionMutation.mutate()}
             disabled={resetEditionMutation.isPending}
-            className="border-ctp-surface1 bg-ctp-surface0 text-xs text-ctp-subtext1 hover:border-ctp-teal hover:bg-ctp-surface1 hover:text-ctp-teal"
+            className="border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1 hover:border-ctp-teal hover:bg-ctp-surface1 hover:text-ctp-teal text-xs"
           >
             Reset to Base Game
           </Button>
@@ -87,19 +87,19 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
 
       {isUsingEdition && data?.currentDisplay && (
         <div className="bg-ctp-mauve/10 border-ctp-mauve/30 rounded-lg border p-3">
-          <div className="whitespace-normal break-words text-sm text-ctp-text">
+          <div className="text-ctp-text whitespace-normal break-words text-sm">
             {data.currentDisplay.edition_name}
           </div>
-          <div className="mt-1 text-xs text-ctp-mauve">Currently displaying</div>
+          <div className="text-ctp-mauve mt-1 text-xs">Currently displaying</div>
         </div>
       )}
 
       {!isUsingEdition && data?.baseGame && (
-        <div className="bg-ctp-surface0/50 rounded-lg border border-ctp-surface1 p-3">
-          <div className="whitespace-normal break-words text-sm text-ctp-text">
+        <div className="bg-ctp-surface0/50 border-ctp-surface1 rounded-lg border p-3">
+          <div className="text-ctp-text whitespace-normal break-words text-sm">
             {data.baseGame.name}
           </div>
-          <div className="mt-1 text-xs text-ctp-overlay1">Base game</div>
+          <div className="text-ctp-overlay1 mt-1 text-xs">Base game</div>
         </div>
       )}
 
@@ -108,7 +108,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
           <Button
             variant="outline"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full justify-between border-ctp-surface2 bg-ctp-surface0 text-sm text-ctp-subtext1 hover:bg-ctp-surface1"
+            className="border-ctp-surface2 bg-ctp-surface0 text-ctp-subtext1 hover:bg-ctp-surface1 w-full justify-between text-sm"
           >
             <span>Switch to Different Edition</span>
             <svg
@@ -131,7 +131,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
                   key={edition.rawg_id}
                   onClick={() => setEditionMutation.mutate(edition)}
                   disabled={setEditionMutation.isPending}
-                  className="bg-ctp-mantle/50 w-full justify-start gap-3 border-ctp-surface1 p-3 text-left hover:border-ctp-mauve hover:bg-ctp-mantle disabled:opacity-50"
+                  className="bg-ctp-mantle/50 border-ctp-surface1 hover:border-ctp-mauve hover:bg-ctp-mantle w-full justify-start gap-3 p-3 text-left disabled:opacity-50"
                 >
                   {edition.cover_url && (
                     <img
@@ -141,10 +141,10 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
                     />
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="whitespace-normal break-words text-sm leading-snug text-ctp-text">
+                    <div className="text-ctp-text whitespace-normal break-words text-sm leading-snug">
                       {edition.name}
                     </div>
-                    <div className="mt-2 text-xs text-ctp-teal">
+                    <div className="text-ctp-teal mt-2 text-xs">
                       Click to use this edition&apos;s metadata
                     </div>
                   </div>
@@ -155,7 +155,7 @@ export function EditionSwitcher({ gameId, platformId }: EditionSwitcherProps) {
         </>
       )}
 
-      <p className="text-xs text-ctp-overlay1">
+      <p className="text-ctp-overlay1 text-xs">
         Switching editions changes the displayed name, cover art, and description. Achievements are
         always from the base game.
       </p>

@@ -11,22 +11,22 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
+      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <div
-            className="bg-ctp-surface0/50 flex h-10 w-10 items-center justify-center rounded-lg border border-ctp-surface0 text-sm text-ctp-teal"
+            className="bg-ctp-surface0/50 border-ctp-surface0 text-ctp-teal flex h-10 w-10 items-center justify-center rounded-lg border text-sm"
             title="Platforms Saved"
           >
             {platformCount}
           </div>
         </div>
-        <div className="flex justify-center border-t border-ctp-surface0 pt-2">
+        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
           <Button
             type="button"
             onClick={onAddCustomPlatform}
             variant="ghost"
             size="icon"
-            className="rounded-lg p-2 text-ctp-teal transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-teal hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
             title="Add Custom Platform"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,12 +45,12 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
 
   return (
     <div className="space-y-6">
-      <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface0 p-4">
-        <h3 className="mb-1 text-sm font-semibold text-ctp-text">Manage Platforms</h3>
-        <p className="text-xs text-ctp-subtext0">
+      <div className="bg-ctp-surface0/40 border-ctp-surface0 rounded-lg border p-4">
+        <h3 className="text-ctp-text mb-1 text-sm font-semibold">Manage Platforms</h3>
+        <p className="text-ctp-subtext0 text-xs">
           Keep your platform list current for accurate imports.
         </p>
-        <div className="mt-3 text-sm text-ctp-teal">{platformCount} saved</div>
+        <div className="text-ctp-teal mt-3 text-sm">{platformCount} saved</div>
       </div>
 
       <Button
@@ -70,18 +70,18 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
       </Button>
 
       <div>
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 text-xs font-semibold uppercase tracking-wider">
           Tips
         </h3>
-        <div className="space-y-3 text-sm text-ctp-subtext0">
+        <div className="text-ctp-subtext0 space-y-3 text-sm">
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="mb-1 font-medium text-ctp-subtext1">Add new platforms anytime</p>
+            <p className="text-ctp-subtext1 mb-1 font-medium">Add new platforms anytime</p>
             <p className="text-xs">
               Use the available list to add platforms as you expand your library.
             </p>
           </div>
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="mb-1 font-medium text-ctp-subtext1">Keep notes updated</p>
+            <p className="text-ctp-subtext1 mb-1 font-medium">Keep notes updated</p>
             <p className="text-xs">Add usernames or links to help you remember account details.</p>
           </div>
         </div>
