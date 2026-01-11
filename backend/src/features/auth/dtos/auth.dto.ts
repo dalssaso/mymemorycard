@@ -6,20 +6,12 @@ import { z } from "zod";
  */
 const passwordSchema = z
   .string()
-  .refine(
-    (value) => Buffer.byteLength(value, "utf8") >= 8,
-    {
-      message:
-        "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)",
-    }
-  )
-  .refine(
-    (value) => Buffer.byteLength(value, "utf8") <= 72,
-    {
-      message:
-        "Password must be at most 72 bytes to remain compatible with bcrypt",
-    }
-  );
+  .refine((value) => Buffer.byteLength(value, "utf8") >= 8, {
+    message: "Password must be at least 8 bytes (accommodate multi-byte UTF-8 characters)",
+  })
+  .refine((value) => Buffer.byteLength(value, "utf8") <= 72, {
+    message: "Password must be at most 72 bytes to remain compatible with bcrypt",
+  });
 
 export const RegisterRequestSchema = z.object({
   username: z
@@ -27,8 +19,7 @@ export const RegisterRequestSchema = z.object({
     .min(3, { message: "Username must be at least 3 characters" })
     .max(50, { message: "Username must be at most 50 characters" })
     .regex(/^[a-zA-Z0-9_-]+$/, {
-      message:
-        "Username must contain only letters, numbers, underscores, and hyphens",
+      message: "Username must contain only letters, numbers, underscores, and hyphens",
     }),
   email: z.email(),
   password: passwordSchema,
