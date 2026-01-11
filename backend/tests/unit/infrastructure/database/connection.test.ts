@@ -1,13 +1,22 @@
 import "reflect-metadata";
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, afterEach } from "bun:test";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { Logger } from "@/infrastructure/logging/logger";
 import { makeTestConfig } from "../../helpers/make-test-config";
 
 describe("DatabaseConnection", () => {
+  let dbConnection: DatabaseConnection | null = null;
+
+  afterEach(async () => {
+    if (dbConnection) {
+      await dbConnection.close();
+      dbConnection = null;
+    }
+  });
+
   it("should create database connection with db instance", () => {
     const logger = new Logger().child("test");
-    const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+    dbConnection = new DatabaseConnection(makeTestConfig(), logger);
     expect(dbConnection.db).toBeDefined();
   });
 
@@ -18,7 +27,7 @@ describe("DatabaseConnection", () => {
       },
     });
     const logger = new Logger().child("test");
-    const dbConnection = new DatabaseConnection(customConfig, logger);
+    dbConnection = new DatabaseConnection(customConfig, logger);
 
     expect(dbConnection.db).toBeDefined();
   });
@@ -35,7 +44,7 @@ describe("DatabaseConnection", () => {
       },
     });
     const logger = new Logger().child("test");
-    const dbConnection = new DatabaseConnection(configWithPool, logger);
+    dbConnection = new DatabaseConnection(configWithPool, logger);
 
     expect(dbConnection.db).toBeDefined();
   });
@@ -47,7 +56,7 @@ describe("DatabaseConnection", () => {
       },
     });
     const logger = new Logger().child("test");
-    const dbConnection = new DatabaseConnection(configNoPool, logger);
+    dbConnection = new DatabaseConnection(configNoPool, logger);
 
     expect(dbConnection.db).toBeDefined();
   });
@@ -55,7 +64,7 @@ describe("DatabaseConnection", () => {
   describe("healthCheck()", () => {
     it("should return a boolean promise", async () => {
       const logger = new Logger().child("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+      dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.healthCheck();
 
@@ -71,7 +80,7 @@ describe("DatabaseConnection", () => {
         },
       });
       const logger = new Logger().child("test");
-      const dbConnection = new DatabaseConnection(badConfig, logger);
+      dbConnection = new DatabaseConnection(badConfig, logger);
 
       const result = await dbConnection.healthCheck();
 
@@ -84,7 +93,7 @@ describe("DatabaseConnection", () => {
   describe("close()", () => {
     it("should return a void promise", async () => {
       const logger = new Logger().child("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+      dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.close();
 
@@ -95,7 +104,7 @@ describe("DatabaseConnection", () => {
 
     it("should not throw errors during close", async () => {
       const logger = new Logger().child("test");
-      const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
+      dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       // Should resolve successfully
       const result = dbConnection.close();

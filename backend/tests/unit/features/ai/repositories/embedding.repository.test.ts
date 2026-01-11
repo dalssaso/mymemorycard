@@ -11,6 +11,46 @@ function createMockEmbedding(): number[] {
   return new Array(EMBEDDING_DIMENSIONS).fill(0).map(() => Math.random());
 }
 
+// Helper function to create a mock select chain for similarity queries
+function createMockSelectChain(
+  mockDb: DrizzleDB,
+  resultArray: Array<{ gameId?: string; collectionId?: string }>
+): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+
+  if (resultArray.length === 0) {
+    // Simple case: no where clause, just resolve with empty array
+    selectMock.mockReturnValue({
+      from: mock().mockReturnValue({
+        orderBy: mock().mockReturnValue({
+          limit: mock().mockResolvedValue([]),
+        }),
+      }),
+    });
+  } else {
+    // With results: create a limit result that has an optional where() method
+    const mockLimitResult = {
+      where: mock(() => Promise.resolve(resultArray)),
+    };
+
+    // Make the limit result itself a thenable (for queries without where)
+    Object.assign(mockLimitResult, {
+      then: (resolve: (value: unknown) => void) => {
+        resolve(resultArray);
+        return Promise.resolve(resultArray);
+      },
+    });
+
+    selectMock.mockReturnValue({
+      from: mock().mockReturnValue({
+        orderBy: mock().mockReturnValue({
+          limit: mock().mockReturnValue(mockLimitResult),
+        }),
+      }),
+    });
+  }
+}
+
 describe("EmbeddingRepository", () => {
   let repository: EmbeddingRepository;
   let mockDb: DrizzleDB;
@@ -170,18 +210,11 @@ describe("EmbeddingRepository", () => {
 
   describe("findSimilarGames", () => {
     it("should find similar games without exclusions", async () => {
-      const selectMock = mockDb.select as ReturnType<typeof mock>;
-      selectMock.mockReturnValue({
-        from: mock().mockReturnValue({
-          orderBy: mock().mockReturnValue({
-            limit: mock().mockResolvedValue([
-              { gameId: "game-1" },
-              { gameId: "game-2" },
-              { gameId: "game-3" },
-            ]),
-          }),
-        }),
-      });
+      createMockSelectChain(mockDb, [
+        { gameId: "game-1" },
+        { gameId: "game-2" },
+        { gameId: "game-3" },
+      ]);
 
       const result = await repository.findSimilarGames(createMockEmbedding(), 3);
 
@@ -189,23 +222,7 @@ describe("EmbeddingRepository", () => {
     });
 
     it("should find similar games with exclusions", async () => {
-      const selectMock = mockDb.select as ReturnType<typeof mock>;
-
-      // Create a promise-like object that resolves to the result
-      const resultArray = [{ gameId: "game-2" }, { gameId: "game-3" }];
-
-      // Mock the limit() result that has a where() method
-      const mockLimitResult = {
-        where: mock(() => Promise.resolve(resultArray)),
-      };
-
-      selectMock.mockReturnValue({
-        from: mock().mockReturnValue({
-          orderBy: mock().mockReturnValue({
-            limit: mock().mockReturnValue(mockLimitResult),
-          }),
-        }),
-      });
+      createMockSelectChain(mockDb, [{ gameId: "game-2" }, { gameId: "game-3" }]);
 
       const result = await repository.findSimilarGames(createMockEmbedding(), 2, ["game-1"]);
 
@@ -213,14 +230,7 @@ describe("EmbeddingRepository", () => {
     });
 
     it("should return empty array when no similar games found", async () => {
-      const selectMock = mockDb.select as ReturnType<typeof mock>;
-      selectMock.mockReturnValue({
-        from: mock().mockReturnValue({
-          orderBy: mock().mockReturnValue({
-            limit: mock().mockResolvedValue([]),
-          }),
-        }),
-      });
+      createMockSelectChain(mockDb, []);
 
       const result = await repository.findSimilarGames(createMockEmbedding(), 3);
 
@@ -230,17 +240,10 @@ describe("EmbeddingRepository", () => {
 
   describe("findSimilarCollections", () => {
     it("should find similar collections", async () => {
-      const selectMock = mockDb.select as ReturnType<typeof mock>;
-      selectMock.mockReturnValue({
-        from: mock().mockReturnValue({
-          orderBy: mock().mockReturnValue({
-            limit: mock().mockResolvedValue([
-              { collectionId: "collection-1" },
-              { collectionId: "collection-2" },
-            ]),
-          }),
-        }),
-      });
+      createMockSelectChain(mockDb, [
+        { collectionId: "collection-1" },
+        { collectionId: "collection-2" },
+      ]);
 
       const result = await repository.findSimilarCollections(createMockEmbedding(), 2);
 
@@ -248,14 +251,7 @@ describe("EmbeddingRepository", () => {
     });
 
     it("should return empty array when no similar collections found", async () => {
-      const selectMock = mockDb.select as ReturnType<typeof mock>;
-      selectMock.mockReturnValue({
-        from: mock().mockReturnValue({
-          orderBy: mock().mockReturnValue({
-            limit: mock().mockResolvedValue([]),
-          }),
-        }),
-      });
+      createMockSelectChain(mockDb, []);
 
       const result = await repository.findSimilarCollections(createMockEmbedding(), 2);
 
