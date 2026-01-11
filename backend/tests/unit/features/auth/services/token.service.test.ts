@@ -41,4 +41,23 @@ describe("TokenService", () => {
 
     expect(verified).toBeNull();
   });
+
+  it("should return null for expired token", async () => {
+    // Create a token service with very short expiry
+    const shortExpiryService = new TokenService(
+      makeTestConfig({
+        jwt: { secret: "test-secret", expiresIn: "1ms" },
+      })
+    );
+
+    const payload = { userId: "user-123", username: "testuser" };
+    const token = shortExpiryService.generateToken(payload);
+
+    // Wait briefly for token to expire
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // Verify the expired token returns null
+    const verified = shortExpiryService.verifyToken(token);
+    expect(verified).toBeNull();
+  });
 });
