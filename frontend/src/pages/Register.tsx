@@ -48,10 +48,17 @@ export function Register(): JSX.Element {
       await register(data.username, data.password);
       navigate({ to: "/platforms/onboarding" });
     } catch (error: unknown) {
-      const message =
-        error && typeof error === "object" && "response" in error
-          ? (error as { response?: { data?: { error?: string } } }).response?.data?.error
-          : null;
+      let message: string | null = null;
+      if (error && typeof error === "object" && "response" in error) {
+        const responseError = (error as { response?: { data?: { error?: unknown } } }).response
+          ?.data?.error;
+        // Handle both string errors and Zod validation error objects
+        if (typeof responseError === "string") {
+          message = responseError;
+        } else if (responseError && typeof responseError === "object" && "message" in responseError) {
+          message = String((responseError as { message: unknown }).message);
+        }
+      }
       form.setError("root", { message: message ?? "Failed to create account" });
     }
   });
