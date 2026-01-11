@@ -156,11 +156,15 @@ export function createTestAiSettings(overrides?: Partial<UserAiSettings>): UserA
   };
 }
 
-export function createMockAiSettingsRepository(): {
+export type MockAiSettingsRepository = {
   findByUserId: ReturnType<typeof mock>;
   save: ReturnType<typeof mock>;
   getGatewayConfig: ReturnType<typeof mock>;
-} {
+};
+
+export function createMockAiSettingsRepository(
+  overrides?: Partial<MockAiSettingsRepository>
+): MockAiSettingsRepository {
   return {
     findByUserId: mock().mockResolvedValue(null),
     save: mock().mockResolvedValue(undefined),
@@ -168,17 +172,22 @@ export function createMockAiSettingsRepository(): {
       apiKey: "test-gateway-key",
       provider: "openai" as const,
     }),
+    ...overrides,
   };
 }
 
-export function createMockEmbeddingRepository(): {
+export type MockEmbeddingRepository = {
   findByGameId: ReturnType<typeof mock>;
   findByCollectionId: ReturnType<typeof mock>;
   saveGameEmbedding: ReturnType<typeof mock>;
   saveCollectionEmbedding: ReturnType<typeof mock>;
   findSimilarGames: ReturnType<typeof mock>;
   findSimilarCollections: ReturnType<typeof mock>;
-} {
+};
+
+export function createMockEmbeddingRepository(
+  overrides?: Partial<MockEmbeddingRepository>
+): MockEmbeddingRepository {
   return {
     findByGameId: mock().mockResolvedValue(null),
     findByCollectionId: mock().mockResolvedValue(null),
@@ -186,6 +195,7 @@ export function createMockEmbeddingRepository(): {
     saveCollectionEmbedding: mock().mockResolvedValue(undefined),
     findSimilarGames: mock().mockResolvedValue([]),
     findSimilarCollections: mock().mockResolvedValue([]),
+    ...overrides,
   };
 }
 
