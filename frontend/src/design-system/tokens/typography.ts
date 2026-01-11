@@ -17,8 +17,8 @@ export const fontSize = {
   base: "var(--font-size-base)",
   lg: "var(--font-size-lg)",
   xl: "var(--font-size-xl)",
-  "2xl": "var(--font-size-2xl)",
-  "3xl": "var(--font-size-3xl)",
+  xxl: "var(--font-size-2xl)",
+  xxxl: "var(--font-size-3xl)",
 } as const
 
 export const lineHeight = {
