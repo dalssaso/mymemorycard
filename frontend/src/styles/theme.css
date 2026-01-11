@@ -69,4 +69,6 @@
   --border: var(--color-border);
   --input: var(--color-border);
   --ring: var(--color-accent);
+
+  --radius: var(--radius-md);
 }
