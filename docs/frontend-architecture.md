@@ -38,7 +38,7 @@ src/
   pages/              # Route-level pages (Library, GameDetail, Collections, etc.)
   routes/             # File-based routes (TanStack Router)
   styles/
-    theme.css         # Catppuccin theme mapping
+    theme.css         # Design tokens and theme configuration
   components.json     # shadcn/ui configuration
 ```
 
