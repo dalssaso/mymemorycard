@@ -149,7 +149,7 @@ export function PlatformOnboardingSidebar({
         to="/import"
         className={cn(
           "flex w-full items-center justify-center gap-2 px-4 py-2.5",
-          "hover:bg-accent/80 bg-accent text-base",
+          "hover:bg-accent/80 bg-accent text-text-primary",
           "rounded-lg font-medium transition-colors duration-standard"
         )}
       >
