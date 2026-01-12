@@ -1,7 +1,7 @@
 import type { ElementType, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export interface TextDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TextDisplayProps extends React.HTMLAttributes<HTMLElement> {
   variant?: "primary" | "secondary" | "muted";
   size?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
   weight?: "regular" | "medium" | "semibold" | "bold";
