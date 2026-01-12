@@ -1,5 +1,5 @@
 export { colors, type ColorTokens, type StatusColor } from "./colors";
-export { spacing, layout, type SpacingToken } from "./spacing";
+export { spacing, layout, type SpacingToken, type LayoutToken } from "./spacing";
 export {
   fontFamily,
   fontWeight,
