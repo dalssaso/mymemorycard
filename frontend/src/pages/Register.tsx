@@ -102,7 +102,7 @@ export function Register(): JSX.Element {
           </FormProvider>
           <p className="mt-4 text-center text-sm text-text-muted">
             Already have an account?{" "}
-            <Link to="/login" className="text-accent hover:text-accent">
+            <Link to="/login" className="text-accent hover:underline">
               Login
             </Link>
           </p>

@@ -62,7 +62,7 @@ export function Login(): JSX.Element {
           </FormProvider>
           <p className="mt-4 text-center text-sm text-text-muted">
             Don&apos;t have an account?{" "}
-            <Link to="/register" className="text-accent hover:text-accent">
+            <Link to="/register" className="text-accent hover:underline">
               Register
             </Link>
           </p>
