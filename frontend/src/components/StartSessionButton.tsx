@@ -126,7 +126,7 @@ export function StartSessionButton({
           onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
           disabled={endSessionMutation.isPending}
           variant="ghost"
-          className="hover:bg-status-dropped/80 h-auto w-full rounded-lg bg-status-dropped py-2 text-base text-sm font-semibold transition-colors disabled:opacity-50"
+          className="hover:bg-status-dropped/80 h-auto w-full rounded-lg bg-status-dropped py-2 text-sm font-semibold transition-colors duration-standard disabled:opacity-50"
         >
           {endSessionMutation.isPending ? "Stopping..." : "Stop Session"}
         </Button>
@@ -147,7 +147,7 @@ export function StartSessionButton({
       onClick={() => startSessionMutation.mutate()}
       disabled={startSessionMutation.isPending}
       variant="ghost"
-      className="hover:bg-status-finished/80 flex h-auto w-full items-center justify-center gap-2 rounded-lg bg-status-finished py-2.5 text-base text-sm font-semibold transition-colors disabled:opacity-50"
+      className="hover:bg-status-finished/80 flex h-auto w-full items-center justify-center gap-2 rounded-lg bg-status-finished py-2.5 text-sm font-semibold transition-colors duration-standard disabled:opacity-50"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
