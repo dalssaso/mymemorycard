@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ScrollFade } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { franchisesAPI, type OwnedGame } from "@/lib/api";
 
 interface FranchisePreviewProps {
@@ -38,7 +39,10 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
             key={game.id}
             to="/library/$id"
             params={{ id: game.id }}
-            className={`group shrink-0 ${game.id === currentGameId ? "rounded ring-2 ring-accent" : ""}`}
+            className={cn(
+              "group shrink-0",
+              game.id === currentGameId && "rounded ring-2 ring-accent"
+            )}
           >
             {game.cover_art_url ? (
               <img
