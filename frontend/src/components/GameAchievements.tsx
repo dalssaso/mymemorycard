@@ -321,12 +321,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
             />
           </div>
           <div className="w-full">
-            <label
-              className="mb-2 block text-sm font-medium text-text-secondary"
-              htmlFor="manual-achievement-description"
-            >
-              Description (optional)
-            </label>
+            <Label htmlFor="manual-achievement-description">Description (optional)</Label>
             <Textarea
               id="manual-achievement-description"
               className="min-h-[42px] bg-base text-text-primary placeholder:text-text-muted focus-visible:ring-accent"
@@ -402,7 +397,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       }}
                       disabled={bulkDeleteManualMutation.isPending}
                       variant="ghost"
-                      className="h-auto p-0 text-base text-sm font-semibold disabled:opacity-60"
+                      className="h-auto p-0 text-sm font-semibold disabled:opacity-60"
                       aria-label="Delete achievement"
                     >
                       Delete

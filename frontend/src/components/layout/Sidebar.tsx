@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { Button, ScrollFade } from "@/components/ui";
 import { Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import { useCollections } from "@/hooks/useCollections";
 import { useFranchises } from "@/hooks/useFranchises";
 import { useGameSummaries } from "@/hooks/useGameSummaries";
@@ -271,7 +272,12 @@ export function Sidebar({
             <div className="p-4 pt-[4.5rem]">
               {showBackButton && (
                 <div className="mb-6">
-                  <BackButton className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors hover:border-elevated hover:text-text-primary" />
+                  <BackButton
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors",
+                      "hover:bg-elevated hover:text-text-primary"
+                    )}
+                  />
                 </div>
               )}
               {/* User Section - only show when no custom sidebar content */}
@@ -416,7 +422,10 @@ export function Sidebar({
                         {collections.length > 5 && (
                           <Link
                             to="/collections"
-                            className="block px-2 py-1 text-xs text-accent transition-colors hover:text-accent"
+                            className={cn(
+                              "block px-2 py-1 text-xs text-accent transition-colors",
+                              "hover:bg-elevated"
+                            )}
                           >
                             View all ({collections.length})
                           </Link>
@@ -448,7 +457,10 @@ export function Sidebar({
                         {franchises.length > 5 && (
                           <Link
                             to="/franchises"
-                            className="block px-2 py-1 text-xs text-accent transition-colors hover:text-accent"
+                            className={cn(
+                              "block px-2 py-1 text-xs text-accent transition-colors",
+                              "hover:bg-elevated"
+                            )}
                           >
                             View all ({franchises.length})
                           </Link>
