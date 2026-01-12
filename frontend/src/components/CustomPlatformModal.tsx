@@ -10,6 +10,7 @@ import {
   Input,
   ScrollFade,
 } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { PlatformIconBadge } from "./PlatformIcon";
 import { PlatformTypeIcon } from "./PlatformTypeIcon";
 
@@ -135,11 +136,12 @@ export function CustomPlatformModal({
                   variant="outline"
                   type="button"
                   onClick={() => setPlatformType(type.value)}
-                  className={`flex h-auto items-center gap-2 rounded-lg px-3 py-2 text-sm ${
+                  className={cn(
+                    "flex h-auto items-center gap-2 rounded-lg px-3 py-2 text-sm",
                     platformType === type.value
                       ? "bg-accent/10 hover:bg-accent/20 border-accent text-accent"
                       : "border-elevated text-text-secondary transition-colors duration-standard hover:bg-surface"
-                  }`}
+                  )}
                 >
                   <PlatformTypeIcon type={type.value} size="sm" />
                   <span>{type.label}</span>
