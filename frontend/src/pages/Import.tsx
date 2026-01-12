@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BackButton, PageLayout } from "@/components/layout";
 import { ImportSidebar } from "@/components/sidebar";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Card,
@@ -350,7 +351,7 @@ export function Import() {
         <div className="mb-2 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
           />
           <h1 className="text-4xl font-bold text-text-primary">Import Games</h1>
         </div>
@@ -382,11 +383,12 @@ export function Import() {
                   type="button"
                   onClick={() => setSelectedPlatform(platform.id)}
                   disabled={importMutation.isPending}
-                  className={
+                  className={cn(
+                    "transition-colors duration-standard",
                     selectedPlatform === platform.id
-                      ? "hover:bg-accent/90 shadow-glow-purple border-accent bg-accent text-base"
-                      : "border-border bg-base text-text-secondary hover:border-border hover:text-text-primary"
-                  }
+                      ? "shadow-glow-purple hover:bg-accent/90 border-accent bg-accent text-text-primary"
+                      : "border-border bg-base text-text-secondary hover:border-accent hover:text-text-primary"
+                  )}
                 >
                   {platform.display_name}
                 </Button>
@@ -576,11 +578,12 @@ export function Import() {
                     }}
                     role="button"
                     tabIndex={0}
-                    className={`flex cursor-pointer items-center gap-3 rounded border p-3 transition-colors ${
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded border p-3 transition-colors duration-standard",
                       isSelected
                         ? "bg-accent/10 border-accent"
                         : "bg-surface/60 border-border hover:bg-surface"
-                    }`}
+                    )}
                   >
                     <Checkbox
                       id={`import-select-${candidate.id}`}
