@@ -233,7 +233,7 @@ export function Settings() {
           <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
             <TextDisplay as="h1" size="2xl" weight="bold">
               Settings
@@ -258,7 +258,7 @@ export function Settings() {
         <div className="mb-8 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
           />
           <TextDisplay as="h1" size="2xl" weight="bold">
             Settings
@@ -351,7 +351,7 @@ export function Settings() {
                   variant="ghost"
                   className={`h-auto rounded-lg border px-4 py-2 transition-all ${
                     preferences.items_per_page === size
-                      ? "bg-status-finished/20 border-status-finished text-status-finished"
+                      ? "bg-accent/20 border-accent text-accent"
                       : "border-border bg-surface text-text-secondary hover:border-elevated"
                   }`}
                 >
@@ -398,15 +398,12 @@ export function Settings() {
             </TextDisplay>
 
             <div className="mb-6">
-              <TextDisplay
-                as="p"
-                size="sm"
-                weight="medium"
-                variant="primary"
-                className="mb-3 block"
+              <Label
+                htmlFor="provider-select"
+                className="mb-3 block text-sm font-medium text-text-primary"
               >
                 AI Provider
-              </TextDisplay>
+              </Label>
               <div className="border-accent/50 bg-accent/20 rounded-lg border-2 px-4 py-3 text-sm text-accent">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-status-finished"></span>

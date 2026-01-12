@@ -693,7 +693,7 @@ export function Library() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="border-border bg-surface text-text-primary hover:bg-elevated">
+              <AlertDialogCancel className="border-border bg-elevated text-text-primary hover:bg-elevated">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
