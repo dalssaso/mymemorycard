@@ -55,7 +55,7 @@ export function CollectionDetailSidebar({
         <div className="flex justify-center border-t border-surface pt-2">
           <Link
             to="/platforms"
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ export function CollectionDetailSidebar({
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
               size="icon"
-              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
               title={section.label}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@ export function CollectionDetailSidebar({
       <div>
         <Link
           to="/collections"
-          className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors hover:border-elevated hover:text-text-primary"
+          className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors duration-standard hover:border-elevated hover:text-text-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +121,7 @@ export function CollectionDetailSidebar({
       </div>
       <Link
         to="/platforms"
-        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-elevated"
+        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-colors duration-standard hover:bg-elevated"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
