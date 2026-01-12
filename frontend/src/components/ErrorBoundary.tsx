@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <Alert variant="destructive" className="max-w-lg">
           <AlertTitle>Something went wrong</AlertTitle>
           <AlertDescription className="space-y-4">
-            <p className="text-text-muted text-sm">{this.state.message}</p>
+            <p className="text-sm text-text-muted">{this.state.message}</p>
             <Button type="button" onClick={() => window.location.reload()}>
               Reload page
             </Button>

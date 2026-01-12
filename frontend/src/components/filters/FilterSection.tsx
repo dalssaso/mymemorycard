@@ -44,7 +44,7 @@ export function FilterSection({
         <Button
           onClick={() => setIsOpen(!isOpen)}
           variant="ghost"
-          className="text-text-secondary hover:text-text-primary flex h-auto cursor-pointer items-center gap-2 p-0 text-xs font-semibold uppercase tracking-wider transition-colors"
+          className="flex h-auto cursor-pointer items-center gap-2 p-0 text-xs font-semibold uppercase tracking-wider text-text-secondary transition-colors hover:text-text-primary"
           aria-expanded={isOpen}
         >
           <svg
@@ -62,7 +62,7 @@ export function FilterSection({
           <Button
             onClick={onClear}
             variant="ghost"
-            className="text-text-muted hover:text-text-primary h-auto px-2 py-0.5 text-xs transition-colors"
+            className="h-auto px-2 py-0.5 text-xs text-text-muted transition-colors hover:text-text-primary"
           >
             Clear
           </Button>

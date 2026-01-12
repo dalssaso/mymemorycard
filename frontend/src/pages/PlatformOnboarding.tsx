@@ -118,11 +118,11 @@ export function PlatformOnboarding() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-text-primary text-4xl font-bold">Choose Your Platforms</h1>
+            <h1 className="text-4xl font-bold text-text-primary">Choose Your Platforms</h1>
           </div>
-          <p className="text-text-secondary mt-2">
+          <p className="mt-2 text-text-secondary">
             Select the platforms you use. This keeps your imports focused and relevant.
           </p>
         </div>
@@ -141,8 +141,10 @@ export function PlatformOnboarding() {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-text-primary text-lg font-semibold">Platforms</h2>
-            <span className="text-text-secondary text-sm">{selectedPlatformIds.length} selected</span>
+            <h2 className="text-lg font-semibold text-text-primary">Platforms</h2>
+            <span className="text-sm text-text-secondary">
+              {selectedPlatformIds.length} selected
+            </span>
           </div>
 
           {isLoadingPlatforms ? (
@@ -166,8 +168,8 @@ export function PlatformOnboarding() {
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="text-text-primary font-medium">{platform.display_name}</div>
-                      {isLocked && <span className="text-accent text-xs">Saved</span>}
+                      <div className="font-medium text-text-primary">{platform.display_name}</div>
+                      {isLocked && <span className="text-xs text-accent">Saved</span>}
                     </div>
                     <PlatformTypeIcon
                       type={platform.platform_type}

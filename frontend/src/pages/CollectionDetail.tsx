@@ -412,7 +412,7 @@ export function CollectionDetail() {
         <div className="mb-6">
           <Link
             to="/collections"
-            className="text-accent hover:text-accent mb-4 hidden transition-colors md:inline-block"
+            className="mb-4 hidden text-accent transition-colors hover:text-accent md:inline-block"
           >
             Back to Collections
           </Link>
@@ -422,16 +422,16 @@ export function CollectionDetail() {
                 <div className="mb-2 flex items-center gap-3">
                   <BackButton
                     iconOnly={true}
-                    className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
+                    className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
                   />
                   <Input
                     type="text"
                     {...collectionForm.register("name")}
-                    className="bg-elevated text-text-primary focus-visible:ring-accent flex-1 text-4xl font-bold"
+                    className="flex-1 bg-elevated text-4xl font-bold text-text-primary focus-visible:ring-accent"
                   />
                 </div>
                 {collectionForm.formState.errors.name && (
-                  <p className="text-status-dropped mb-2 text-xs">
+                  <p className="mb-2 text-xs text-status-dropped">
                     {collectionForm.formState.errors.name.message}
                   </p>
                 )}
@@ -460,9 +460,9 @@ export function CollectionDetail() {
                 <div className="flex items-center gap-3">
                   <BackButton
                     iconOnly={true}
-                    className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
+                    className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
                   />
-                  <h1 className="text-text-primary text-4xl font-bold">{collection.name}</h1>
+                  <h1 className="text-4xl font-bold text-text-primary">{collection.name}</h1>
                 </div>
                 <Button
                   variant="ghost"
@@ -474,7 +474,7 @@ export function CollectionDetail() {
                     });
                     setIsEditingName(true);
                   }}
-                  className="text-accent hover:text-accent hover:bg-transparent"
+                  className="text-accent hover:bg-transparent hover:text-accent"
                 >
                   Edit
                 </Button>
@@ -489,7 +489,7 @@ export function CollectionDetail() {
             {/* Cover Art */}
             <div
               className={cn(
-                "bg-surface mb-4 overflow-hidden rounded-lg",
+                "mb-4 overflow-hidden rounded-lg bg-surface",
                 collection.cover_filename || collection.cover_art_url
                   ? "aspect-[3/4]"
                   : "aspect-[4/5] lg:aspect-[5/6]"
@@ -508,7 +508,7 @@ export function CollectionDetail() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="text-text-muted flex h-full w-full items-center justify-center">
+                <div className="flex h-full w-full items-center justify-center text-text-muted">
                   <span className="text-sm">No Cover</span>
                 </div>
               )}
@@ -539,8 +539,8 @@ export function CollectionDetail() {
 
             {/* Game Count */}
             <div className="bg-accent/10 border-accent/30 mb-4 rounded-lg border p-3">
-              <div className="text-accent text-xs">Games</div>
-              <div className="text-text-primary text-lg font-semibold">
+              <div className="text-xs text-accent">Games</div>
+              <div className="text-lg font-semibold text-text-primary">
                 {games.length} {games.length === 1 ? "game" : "games"}
               </div>
             </div>
@@ -556,7 +556,7 @@ export function CollectionDetail() {
             {/* Collection Description */}
             <div id="description" className="bg-surface/30 mb-6 rounded-lg p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-accent text-xl font-semibold">Description</h2>
+                <h2 className="text-xl font-semibold text-accent">Description</h2>
                 {!isEditingDescription && (
                   <Button
                     variant="ghost"
@@ -568,7 +568,7 @@ export function CollectionDetail() {
                       });
                       setIsEditingDescription(true);
                     }}
-                    className="text-accent hover:text-accent hover:bg-transparent"
+                    className="text-accent hover:bg-transparent hover:text-accent"
                   >
                     {collection.description ? "Edit" : "Add Description"}
                   </Button>
@@ -579,11 +579,11 @@ export function CollectionDetail() {
                 <form onSubmit={handleSaveDescription}>
                   <Textarea
                     {...collectionForm.register("description")}
-                    className="bg-elevated text-text-primary focus-visible:ring-accent min-h-24"
+                    className="min-h-24 bg-elevated text-text-primary focus-visible:ring-accent"
                     placeholder="Describe your collection..."
                   />
                   {collectionForm.formState.errors.description && (
-                    <p className="text-status-dropped mt-1 text-xs">
+                    <p className="mt-1 text-xs text-status-dropped">
                       {collectionForm.formState.errors.description.message}
                     </p>
                   )}
@@ -608,7 +608,7 @@ export function CollectionDetail() {
                   </div>
                 </form>
               ) : (
-                <div className="bg-elevated/50 text-text-muted rounded-lg p-4">
+                <div className="bg-elevated/50 rounded-lg p-4 text-text-muted">
                   {collection.description || "No description yet"}
                 </div>
               )}
@@ -617,7 +617,7 @@ export function CollectionDetail() {
             {/* Games Section */}
             <div id="games" className="bg-surface/30 mb-6 rounded-lg p-4">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-accent text-xl font-semibold">Games in Collection</h2>
+                <h2 className="text-xl font-semibold text-accent">Games in Collection</h2>
                 <div className="flex items-center gap-2">
                   {selectionMode ? (
                     <>
@@ -671,7 +671,7 @@ export function CollectionDetail() {
                 </div>
               </div>
               {games.length === 0 ? (
-                <p className="text-text-secondary py-8 text-center">
+                <p className="py-8 text-center text-text-secondary">
                   No games in this collection yet. Add games from your library!
                 </p>
               ) : (
@@ -694,10 +694,10 @@ export function CollectionDetail() {
                           tabIndex={0}
                         >
                           <div
-                            className={`bg-surface relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border transition-colors ${
+                            className={`relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-surface transition-colors ${
                               isSelected
                                 ? "bg-accent/20 border-accent"
-                                : "border-border hover:border-accent border-dashed"
+                                : "border-dashed border-border hover:border-accent"
                             }`}
                           >
                             {game.cover_art_url ? (
@@ -711,19 +711,19 @@ export function CollectionDetail() {
                                 }`}
                               />
                             ) : (
-                              <div className="text-text-muted flex h-full w-full items-center justify-center">
+                              <div className="flex h-full w-full items-center justify-center text-text-muted">
                                 No Cover
                               </div>
                             )}
                             {isSelected && (
-                              <div className="bg-accent absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
+                              <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   strokeWidth={3}
                                   stroke="currentColor"
-                                  className="text-text-primary h-4 w-4"
+                                  className="h-4 w-4 text-text-primary"
                                 >
                                   <path
                                     strokeLinecap="round"
@@ -734,7 +734,7 @@ export function CollectionDetail() {
                               </div>
                             )}
                           </div>
-                          <p className="text-text-secondary group-hover:text-text-muted mb-1 truncate text-sm">
+                          <p className="mb-1 truncate text-sm text-text-secondary group-hover:text-text-muted">
                             {game.name}
                           </p>
                         </div>
@@ -744,7 +744,7 @@ export function CollectionDetail() {
                     return (
                       <div key={game.id} className="group relative">
                         <Link to="/library/$id" params={{ id: game.id }}>
-                          <div className="bg-surface mb-2 aspect-[3/4] overflow-hidden rounded-lg">
+                          <div className="mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-surface">
                             {game.cover_art_url ? (
                               <img
                                 src={game.cover_art_url}
@@ -752,12 +752,12 @@ export function CollectionDetail() {
                                 className="h-full w-full object-cover transition-transform group-hover:scale-105"
                               />
                             ) : (
-                              <div className="text-text-muted flex h-full w-full items-center justify-center">
+                              <div className="flex h-full w-full items-center justify-center text-text-muted">
                                 No Cover
                               </div>
                             )}
                           </div>
-                          <p className="text-text-muted group-hover:text-text-primary truncate text-sm">
+                          <p className="truncate text-sm text-text-muted group-hover:text-text-primary">
                             {game.name}
                           </p>
                         </Link>
@@ -765,7 +765,7 @@ export function CollectionDetail() {
                           variant="ghost"
                           size="icon"
                           onClick={() => removeGameMutation.mutate([game.id])}
-                          className="bg-status-dropped/80 text-base hover:bg-status-dropped absolute right-2 top-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100"
+                          className="bg-status-dropped/80 absolute right-2 top-2 h-6 w-6 rounded-full text-base opacity-0 hover:bg-status-dropped group-hover:opacity-100"
                           title="Remove from collection"
                         >
                           ×
@@ -781,12 +781,12 @@ export function CollectionDetail() {
       </div>
 
       {selectionMode && selectedCollectionGameIds.length > 0 && (
-        <div className="border-border bg-elevated fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border px-6 py-4 shadow-xl md:bottom-6">
-          <span className="text-text-primary font-medium">
+        <div className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border border-border bg-elevated px-6 py-4 shadow-xl md:bottom-6">
+          <span className="font-medium text-text-primary">
             {selectedCollectionGameIds.length} game
             {selectedCollectionGameIds.length !== 1 ? "s" : ""} selected
           </span>
-          <div className="bg-border h-6 w-px" />
+          <div className="h-6 w-px bg-border" />
           <Button
             variant="destructive"
             onClick={() => removeGameMutation.mutate(selectedCollectionGameIds)}
@@ -808,9 +808,9 @@ export function CollectionDetail() {
           }
         }}
       >
-        <DialogContent className="border-border bg-elevated max-w-2xl">
+        <DialogContent className="max-w-2xl border-border bg-elevated">
           <DialogHeader>
-            <DialogTitle className="text-text-primary text-2xl font-bold">Add Games</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-text-primary">Add Games</DialogTitle>
             <DialogDescription className="flex items-center justify-between">
               <span>Search your library and select multiple games to add.</span>
               {selectedGameIds.length > 0 && (
@@ -818,7 +818,7 @@ export function CollectionDetail() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedGameIds([])}
-                  className="text-text-secondary hover:text-text-primary h-auto py-0 text-xs hover:bg-transparent"
+                  className="h-auto py-0 text-xs text-text-secondary hover:bg-transparent hover:text-text-primary"
                 >
                   Clear selection
                 </Button>
@@ -835,7 +835,7 @@ export function CollectionDetail() {
           {normalizedQuery && (
             <ScrollFade axis="y" className="max-h-80 space-y-2 overflow-y-auto">
               {searchResults.length === 0 ? (
-                <div className="text-text-secondary py-6 text-center text-sm">
+                <div className="py-6 text-center text-sm text-text-secondary">
                   No games matched your search.
                 </div>
               ) : (
@@ -853,7 +853,7 @@ export function CollectionDetail() {
                       checked={selectedGameIds.includes(game.id)}
                       onCheckedChange={() => toggleSelectedGame(game.id)}
                     />
-                    <div className="bg-surface h-14 w-10 flex-shrink-0 overflow-hidden rounded-md">
+                    <div className="h-14 w-10 flex-shrink-0 overflow-hidden rounded-md bg-surface">
                       {game.cover_art_url ? (
                         <img
                           src={game.cover_art_url}
@@ -861,14 +861,14 @@ export function CollectionDetail() {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="text-text-muted flex h-full w-full items-center justify-center text-xs">
+                        <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">
                           No Cover
                         </div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-text-primary truncate text-sm">{game.name}</div>
-                      <div className="text-text-secondary truncate text-xs">
+                      <div className="truncate text-sm text-text-primary">{game.name}</div>
+                      <div className="truncate text-xs text-text-secondary">
                         {game.platform_display_name}
                       </div>
                     </div>
@@ -878,7 +878,7 @@ export function CollectionDetail() {
             </ScrollFade>
           )}
           <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
-            <div className="text-text-secondary text-sm">{selectedGameIds.length} selected</div>
+            <div className="text-sm text-text-secondary">{selectedGameIds.length} selected</div>
             <div className="flex gap-2">
               <Button
                 variant="secondary"

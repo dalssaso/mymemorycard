@@ -91,10 +91,10 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
           Add to Collection
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="border-elevated bg-surface w-64">
+      <DropdownMenuContent align="end" className="w-64 border-elevated bg-surface">
         <ScrollFade axis="y" className="max-h-64 overflow-y-auto">
           {collections.length === 0 ? (
-            <div className="text-text-secondary px-4 py-3 text-center text-sm">
+            <div className="px-4 py-3 text-center text-sm text-text-secondary">
               No collections yet. Create one first!
             </div>
           ) : (
@@ -106,7 +106,7 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
                 className="flex flex-col items-start gap-0.5"
               >
                 <span className="font-medium">{collection.name}</span>
-                <span className="text-text-muted text-xs">{collection.game_count} games</span>
+                <span className="text-xs text-text-muted">{collection.game_count} games</span>
               </DropdownMenuItem>
             ))
           )}

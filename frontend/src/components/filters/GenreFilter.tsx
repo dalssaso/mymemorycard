@@ -20,11 +20,11 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
   };
 
   if (isLoading) {
-    return <div className="text-text-muted text-sm">Loading genres...</div>;
+    return <div className="text-sm text-text-muted">Loading genres...</div>;
   }
 
   if (genres.length === 0) {
-    return <div className="text-text-muted text-sm">No genres found</div>;
+    return <div className="text-sm text-text-muted">No genres found</div>;
   }
 
   return (
@@ -39,11 +39,11 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
             className={`flex h-auto w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-all ${
               isSelected
                 ? "bg-accent/20 border-accent text-accent"
-                : "text-text-secondary hover:bg-surface hover:text-text-primary border-transparent"
+                : "border-transparent text-text-secondary hover:bg-surface hover:text-text-primary"
             }`}
           >
             <span>{genre.name}</span>
-            <span className="text-text-muted text-xs">{genre.count}</span>
+            <span className="text-xs text-text-muted">{genre.count}</span>
           </Button>
         );
       })}

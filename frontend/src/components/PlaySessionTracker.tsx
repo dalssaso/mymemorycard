@@ -186,8 +186,8 @@ export function PlaySessionTracker({
   return (
     <div className="space-y-4">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-text-primary text-lg font-semibold">Play Sessions</h3>
-        <div className="text-text-secondary text-sm">Total: {formatDuration(totalMinutes)}</div>
+        <h3 className="text-lg font-semibold text-text-primary">Play Sessions</h3>
+        <div className="text-sm text-text-secondary">Total: {formatDuration(totalMinutes)}</div>
       </div>
 
       {activeSession && !isActiveForThisGame && (
@@ -200,15 +200,15 @@ export function PlaySessionTracker({
         <div className="bg-accent/10 border-accent/30 rounded-lg border p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <div className="text-accent text-sm">Session in progress</div>
-              <div className="text-text-primary mt-1 font-mono text-3xl">
+              <div className="text-sm text-accent">Session in progress</div>
+              <div className="mt-1 font-mono text-3xl text-text-primary">
                 {formatElapsedTime(elapsedSeconds)}
               </div>
             </div>
             <Button
               onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
               disabled={endSessionMutation.isPending}
-              className="hover:bg-status-dropped/80 bg-status-dropped text-base h-auto w-full px-6 py-3 font-semibold sm:w-auto"
+              className="hover:bg-status-dropped/80 h-auto w-full bg-status-dropped px-6 py-3 text-base font-semibold sm:w-auto"
             >
               {endSessionMutation.isPending ? "Stopping..." : "Stop"}
             </Button>
@@ -221,7 +221,7 @@ export function PlaySessionTracker({
             disabled={
               startSessionMutation.isPending || Boolean(activeSession && !isActiveForThisGame)
             }
-            className="hover:bg-status-finished/80 bg-status-finished text-base h-auto w-full py-3 font-semibold sm:flex-1"
+            className="hover:bg-status-finished/80 h-auto w-full bg-status-finished py-3 text-base font-semibold sm:flex-1"
           >
             {startSessionMutation.isPending ? "Starting..." : "Start Session"}
           </Button>
@@ -243,7 +243,7 @@ export function PlaySessionTracker({
         <div className="bg-surface/50 space-y-3 rounded-lg p-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="manual-date" className="text-text-secondary mb-1 block text-sm">
+              <label htmlFor="manual-date" className="mb-1 block text-sm text-text-secondary">
                 Date
               </label>
               <Input
@@ -255,7 +255,7 @@ export function PlaySessionTracker({
               />
             </div>
             <div>
-              <label htmlFor="manual-duration" className="text-text-secondary mb-1 block text-sm">
+              <label htmlFor="manual-duration" className="mb-1 block text-sm text-text-secondary">
                 Duration (minutes)
               </label>
               <Input
@@ -270,7 +270,7 @@ export function PlaySessionTracker({
             </div>
           </div>
           <div>
-            <label htmlFor="session-notes" className="text-text-secondary mb-1 block text-sm">
+            <label htmlFor="session-notes" className="mb-1 block text-sm text-text-secondary">
               Notes (optional)
             </label>
             <Input
@@ -286,7 +286,7 @@ export function PlaySessionTracker({
             <Button
               onClick={() => addManualSessionMutation.mutate()}
               disabled={addManualSessionMutation.isPending || !manualDuration}
-              className="hover:bg-accent/80 bg-accent text-base flex-1 font-semibold"
+              className="hover:bg-accent/80 flex-1 bg-accent text-base font-semibold"
             >
               {addManualSessionMutation.isPending ? "Adding..." : "Add Session"}
             </Button>
@@ -297,7 +297,7 @@ export function PlaySessionTracker({
                 setManualDuration("");
                 setSessionNotes("");
               }}
-              className="bg-elevated text-text-primary hover:bg-elevated flex-1"
+              className="flex-1 bg-elevated text-text-primary hover:bg-elevated"
             >
               Cancel
             </Button>
@@ -306,10 +306,10 @@ export function PlaySessionTracker({
       )}
 
       {loadingSessions ? (
-        <div className="text-text-secondary text-sm">Loading sessions...</div>
+        <div className="text-sm text-text-secondary">Loading sessions...</div>
       ) : sessions.length > 0 ? (
         <div className="space-y-2">
-          <h4 className="text-text-secondary text-sm font-medium">Recent Sessions</h4>
+          <h4 className="text-sm font-medium text-text-secondary">Recent Sessions</h4>
           <ScrollFade axis="y" className="max-h-64 space-y-2 overflow-y-auto">
             {sessions.map((session) => (
               <div
@@ -318,12 +318,12 @@ export function PlaySessionTracker({
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-text-primary font-medium">
+                    <span className="font-medium text-text-primary">
                       {session.ended_at
                         ? formatDuration(session.duration_minutes || 0)
                         : "In progress"}
                     </span>
-                    <span className="text-text-muted text-sm">
+                    <span className="text-sm text-text-muted">
                       {new Date(session.started_at).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -333,7 +333,7 @@ export function PlaySessionTracker({
                     </span>
                   </div>
                   {session.notes && (
-                    <p className="text-text-secondary mt-1 text-sm">{session.notes}</p>
+                    <p className="mt-1 text-sm text-text-secondary">{session.notes}</p>
                   )}
                 </div>
                 <Button
@@ -341,7 +341,7 @@ export function PlaySessionTracker({
                   size="icon"
                   onClick={() => deleteSessionMutation.mutate(session.id)}
                   disabled={deleteSessionMutation.isPending || !session.ended_at}
-                  className="text-text-muted hover:text-status-dropped h-8 w-8 hover:bg-transparent"
+                  className="h-8 w-8 text-text-muted hover:bg-transparent hover:text-status-dropped"
                   title={session.ended_at ? "Delete session" : "Cannot delete active session"}
                 >
                   <svg
@@ -364,7 +364,7 @@ export function PlaySessionTracker({
           </ScrollFade>
         </div>
       ) : (
-        <div className="text-text-muted py-4 text-center text-sm">
+        <div className="py-4 text-center text-sm text-text-muted">
           No sessions recorded yet. Start tracking your playtime!
         </div>
       )}

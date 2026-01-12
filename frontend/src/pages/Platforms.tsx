@@ -200,11 +200,11 @@ export function Platforms() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
+                className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
               />
-              <h1 className="text-text-primary text-4xl font-bold">Platforms</h1>
+              <h1 className="text-4xl font-bold text-text-primary">Platforms</h1>
             </div>
-            <p className="text-text-secondary mt-1">
+            <p className="mt-1 text-text-secondary">
               Keep your platform list current for accurate imports.
             </p>
           </div>
@@ -220,7 +220,7 @@ export function Platforms() {
 
         {userPlatforms.length === 0 ? (
           <Card className="mb-8 p-6">
-            <p className="text-text-secondary py-8 text-center">
+            <p className="py-8 text-center text-text-secondary">
               No platforms saved yet. Add your first platform to get started.
             </p>
           </Card>
@@ -236,7 +236,7 @@ export function Platforms() {
                 <Link to="/platforms/$id" params={{ id: platform.id }}>
                   <div
                     className={[
-                      "bg-surface aspect-square overflow-hidden rounded-lg",
+                      "aspect-square overflow-hidden rounded-lg bg-surface",
                       "relative mb-2",
                     ].join(" ")}
                   >
@@ -253,8 +253,10 @@ export function Platforms() {
                       ].join(" ")}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-text-primary truncate font-medium">{platform.display_name}</p>
-                      <p className="text-accent truncate text-sm">
+                      <p className="truncate font-medium text-text-primary">
+                        {platform.display_name}
+                      </p>
+                      <p className="truncate text-sm text-accent">
                         {platform.username || "No username set"}
                       </p>
                     </div>
@@ -279,8 +281,10 @@ export function Platforms() {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-text-primary text-lg font-semibold">Add Platforms</h2>
-            <span className="text-text-secondary text-sm">{selectedPlatformIds.length} selected</span>
+            <h2 className="text-lg font-semibold text-text-primary">Add Platforms</h2>
+            <span className="text-sm text-text-secondary">
+              {selectedPlatformIds.length} selected
+            </span>
           </div>
 
           {isLoadingPlatforms ? (
@@ -292,7 +296,7 @@ export function Platforms() {
                   variant={platformTypeFilter === "all" ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setPlatformTypeFilter("all")}
-                  className="border-border rounded-full border px-3"
+                  className="rounded-full border border-border px-3"
                 >
                   All
                 </Button>
@@ -309,7 +313,7 @@ export function Platforms() {
                     variant={platformTypeFilter === option.value ? "secondary" : "ghost"}
                     size="sm"
                     onClick={() => setPlatformTypeFilter(option.value)}
-                    className="border-border rounded-full border px-3"
+                    className="rounded-full border border-border px-3"
                   >
                     {option.label}
                   </Button>
@@ -329,7 +333,7 @@ export function Platforms() {
 
                 return (
                   <div key={group.type}>
-                    <div className="text-text-secondary mb-3 flex items-center gap-2 text-sm font-semibold">
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-secondary">
                       <PlatformTypeIcon type={group.type} size="sm" showLabel={false} />
                       <span>{group.label}</span>
                     </div>
@@ -352,10 +356,10 @@ export function Platforms() {
                           >
                             <div className="w-full">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="text-text-primary font-medium">
+                                <div className="font-medium text-text-primary">
                                   {platform.display_name}
                                 </div>
-                                {isLocked && <span className="text-accent text-xs">Saved</span>}
+                                {isLocked && <span className="text-xs text-accent">Saved</span>}
                               </div>
                               <PlatformTypeIcon
                                 type={platform.platform_type}

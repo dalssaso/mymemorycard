@@ -26,7 +26,7 @@ export function CollectionFilter({
   };
 
   if (collections.length === 0) {
-    return <div className="text-text-muted text-sm">No collections yet</div>;
+    return <div className="text-sm text-text-muted">No collections yet</div>;
   }
 
   return (
@@ -41,11 +41,11 @@ export function CollectionFilter({
             className={`flex h-auto w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-all ${
               isSelected
                 ? "bg-accent/20 border-accent text-accent"
-                : "text-text-secondary hover:bg-surface hover:text-text-primary border-transparent"
+                : "border-transparent text-text-secondary hover:bg-surface hover:text-text-primary"
             }`}
           >
             <span className="truncate">{collection.name}</span>
-            <span className="text-text-muted flex-shrink-0 text-xs">{collection.game_count}</span>
+            <span className="flex-shrink-0 text-xs text-text-muted">{collection.game_count}</span>
           </Button>
         );
       })}

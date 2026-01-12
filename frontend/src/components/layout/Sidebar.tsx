@@ -58,13 +58,13 @@ export function Sidebar({
         onClick={toggleSidebar}
         variant="ghost"
         size="icon"
-        className={`border-elevated bg-surface hover:border-elevated hover:bg-elevated fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border transition-all duration-300 md:flex ${
+        className={`fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-elevated bg-surface transition-all duration-300 hover:border-elevated hover:bg-elevated md:flex ${
           isCollapsed ? "left-[52px]" : "left-[228px]"
         }`}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <svg
-          className={`text-text-secondary h-3 w-3 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`}
+          className={`h-3 w-3 text-text-secondary transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -74,7 +74,7 @@ export function Sidebar({
       </Button>
 
       <aside
-        className={`border-surface bg-base fixed bottom-0 left-0 top-0 hidden border-r transition-all duration-300 md:block ${
+        className={`fixed bottom-0 left-0 top-0 hidden border-r border-surface bg-base transition-all duration-300 md:block ${
           isCollapsed ? "w-16" : "w-60"
         }`}
       >
@@ -83,20 +83,20 @@ export function Sidebar({
           {isCollapsed && (
             <div className="p-2 pt-[4.5rem]">
               {showBackButton && (
-                <div className="border-surface mb-4 flex justify-center border-b pb-3">
+                <div className="mb-4 flex justify-center border-b border-surface pb-3">
                   <BackButton
                     iconOnly={true}
-                    className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+                    className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
                   />
                 </div>
               )}
               {/* User Avatar */}
-              <div className="border-surface mb-4 flex justify-center border-b pb-3">
+              <div className="mb-4 flex justify-center border-b border-surface pb-3">
                 <div
-                  className="border-elevated bg-elevated flex h-8 w-8 items-center justify-center rounded-full border"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-elevated bg-elevated"
                   title={user?.username}
                 >
-                  <span className="text-text-primary text-sm font-medium">
+                  <span className="text-sm font-medium text-text-primary">
                     {user?.username?.charAt(0).toUpperCase() || "U"}
                   </span>
                 </div>
@@ -116,7 +116,7 @@ export function Sidebar({
                       title="Total Games"
                     >
                       <svg
-                        className="text-accent h-5 w-5"
+                        className="h-5 w-5 text-accent"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -128,7 +128,7 @@ export function Sidebar({
                           d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                         />
                       </svg>
-                      <span className="text-text-primary text-xs font-semibold">{totalGames}</span>
+                      <span className="text-xs font-semibold text-text-primary">{totalGames}</span>
                     </Link>
                     <Link
                       to="/library"
@@ -138,7 +138,7 @@ export function Sidebar({
                       title="Playing"
                     >
                       <svg
-                        className="text-accent h-5 w-5"
+                        className="h-5 w-5 text-accent"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -156,7 +156,9 @@ export function Sidebar({
                           d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <span className="text-text-primary text-xs font-semibold">{playingGames}</span>
+                      <span className="text-xs font-semibold text-text-primary">
+                        {playingGames}
+                      </span>
                     </Link>
                     <Link
                       to="/library"
@@ -166,7 +168,7 @@ export function Sidebar({
                       title="Completed"
                     >
                       <svg
-                        className="text-status-finished h-5 w-5"
+                        className="h-5 w-5 text-status-finished"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -178,7 +180,9 @@ export function Sidebar({
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <span className="text-text-primary text-xs font-semibold">{completedGames}</span>
+                      <span className="text-xs font-semibold text-text-primary">
+                        {completedGames}
+                      </span>
                     </Link>
                     <Link
                       to="/library"
@@ -187,23 +191,29 @@ export function Sidebar({
                       style={quickStatStyles.favorites}
                       title="Favorites"
                     >
-                      <svg className="text-status-dropped h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="h-5 w-5 text-status-dropped"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
-                      <span className="text-text-primary text-xs font-semibold">{favoriteGames}</span>
+                      <span className="text-xs font-semibold text-text-primary">
+                        {favoriteGames}
+                      </span>
                     </Link>
                   </div>
 
                   {/* Collections Icon */}
                   {collections.length > 0 && (
-                    <div className="border-surface mb-4 border-t pt-3">
+                    <div className="mb-4 border-t border-surface pt-3">
                       <Link
                         to="/collections"
-                        className="hover:text-accent flex flex-col items-center gap-1 transition-colors"
+                        className="flex flex-col items-center gap-1 transition-colors hover:text-accent"
                         title="Collections"
                       >
                         <svg
-                          className="text-text-secondary h-5 w-5"
+                          className="h-5 w-5 text-text-secondary"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -215,7 +225,7 @@ export function Sidebar({
                             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                           />
                         </svg>
-                        <span className="text-text-secondary text-xs font-medium">
+                        <span className="text-xs font-medium text-text-secondary">
                           {collections.length}
                         </span>
                       </Link>
@@ -224,14 +234,14 @@ export function Sidebar({
 
                   {/* Franchises Icon */}
                   {franchises.length > 0 && (
-                    <div className="border-surface mb-4 border-t pt-3">
+                    <div className="mb-4 border-t border-surface pt-3">
                       <Link
                         to="/franchises"
-                        className="hover:text-accent flex flex-col items-center gap-1 transition-colors"
+                        className="flex flex-col items-center gap-1 transition-colors hover:text-accent"
                         title="Franchises"
                       >
                         <svg
-                          className="text-text-secondary h-5 w-5"
+                          className="h-5 w-5 text-text-secondary"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -243,7 +253,7 @@ export function Sidebar({
                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                           />
                         </svg>
-                        <span className="text-text-secondary text-xs font-medium">
+                        <span className="text-xs font-medium text-text-secondary">
                           {franchises.length}
                         </span>
                       </Link>
@@ -259,20 +269,22 @@ export function Sidebar({
             <div className="p-4 pt-[4.5rem]">
               {showBackButton && (
                 <div className="mb-6">
-                  <BackButton className="border-elevated bg-surface text-text-muted hover:border-elevated hover:text-text-primary flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors" />
+                  <BackButton className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors hover:border-elevated hover:text-text-primary" />
                 </div>
               )}
               {/* User Section - only show when no custom sidebar content */}
               {!children && (
-                <div className="border-surface mb-6 border-b pb-4">
+                <div className="mb-6 border-b border-surface pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="border-elevated bg-elevated flex h-10 w-10 items-center justify-center rounded-full border">
-                      <span className="text-text-primary font-medium">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-elevated bg-elevated">
+                      <span className="font-medium text-text-primary">
                         {user?.username?.charAt(0).toUpperCase() || "U"}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-text-primary truncate text-sm font-medium">{user?.username}</p>
+                      <p className="truncate text-sm font-medium text-text-primary">
+                        {user?.username}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -285,7 +297,7 @@ export function Sidebar({
                 <>
                   {/* Quick Stats */}
                   <div className="mb-6">
-                    <h3 className="text-text-secondary mb-3 text-xs font-semibold uppercase tracking-wider">
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
                       Quick Stats
                     </h3>
                     <div className="space-y-2">
@@ -295,7 +307,7 @@ export function Sidebar({
                       >
                         <div className="flex items-center gap-2">
                           <svg
-                            className="text-accent h-4 w-4"
+                            className="h-4 w-4 text-accent"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -309,7 +321,7 @@ export function Sidebar({
                           </svg>
                           <span className="text-text-secondary">Total Games</span>
                         </div>
-                        <span className="text-text-primary font-semibold">{totalGames}</span>
+                        <span className="font-semibold text-text-primary">{totalGames}</span>
                       </div>
                       <div
                         className="flex items-center justify-between rounded-lg px-2 py-1 text-sm"
@@ -317,7 +329,7 @@ export function Sidebar({
                       >
                         <div className="flex items-center gap-2">
                           <svg
-                            className="text-accent h-4 w-4"
+                            className="h-4 w-4 text-accent"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -337,7 +349,7 @@ export function Sidebar({
                           </svg>
                           <span className="text-text-secondary">Playing</span>
                         </div>
-                        <span className="text-text-primary font-semibold">{playingGames}</span>
+                        <span className="font-semibold text-text-primary">{playingGames}</span>
                       </div>
                       <div
                         className="flex items-center justify-between rounded-lg px-2 py-1 text-sm"
@@ -345,7 +357,7 @@ export function Sidebar({
                       >
                         <div className="flex items-center gap-2">
                           <svg
-                            className="text-status-finished h-4 w-4"
+                            className="h-4 w-4 text-status-finished"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -359,7 +371,7 @@ export function Sidebar({
                           </svg>
                           <span className="text-text-secondary">Completed</span>
                         </div>
-                        <span className="text-text-primary font-semibold">{completedGames}</span>
+                        <span className="font-semibold text-text-primary">{completedGames}</span>
                       </div>
                       <div
                         className="flex items-center justify-between rounded-lg px-2 py-1 text-sm"
@@ -367,7 +379,7 @@ export function Sidebar({
                       >
                         <div className="flex items-center gap-2">
                           <svg
-                            className="text-status-dropped h-4 w-4"
+                            className="h-4 w-4 text-status-dropped"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
@@ -375,7 +387,7 @@ export function Sidebar({
                           </svg>
                           <span className="text-text-secondary">Favorites</span>
                         </div>
-                        <span className="text-text-primary font-semibold">{favoriteGames}</span>
+                        <span className="font-semibold text-text-primary">{favoriteGames}</span>
                       </div>
                     </div>
                   </div>
@@ -383,7 +395,7 @@ export function Sidebar({
                   {/* Collections */}
                   {collections.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-text-secondary mb-3 text-xs font-semibold uppercase tracking-wider">
+                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
                         My Collections
                       </h3>
                       <div className="space-y-1">
@@ -392,18 +404,16 @@ export function Sidebar({
                             key={collection.id}
                             to="/collections/$id"
                             params={{ id: collection.id }}
-                            className="hover:bg-surface flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors"
+                            className="flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors hover:bg-surface"
                           >
-                            <span className="text-text-muted truncate">{collection.name}</span>
-                            <span className="text-text-muted text-xs">
-                              {collection.game_count}
-                            </span>
+                            <span className="truncate text-text-muted">{collection.name}</span>
+                            <span className="text-xs text-text-muted">{collection.game_count}</span>
                           </Link>
                         ))}
                         {collections.length > 5 && (
                           <Link
                             to="/collections"
-                            className="text-accent hover:text-accent block px-2 py-1 text-xs transition-colors"
+                            className="block px-2 py-1 text-xs text-accent transition-colors hover:text-accent"
                           >
                             View all ({collections.length})
                           </Link>
@@ -415,7 +425,7 @@ export function Sidebar({
                   {/* Franchises */}
                   {franchises.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-text-secondary mb-3 text-xs font-semibold uppercase tracking-wider">
+                      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
                         Franchises
                       </h3>
                       <div className="space-y-1">
@@ -424,20 +434,18 @@ export function Sidebar({
                             key={franchise.series_name}
                             to="/franchises/$seriesName"
                             params={{ seriesName: franchise.series_name }}
-                            className="hover:bg-surface flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors"
+                            className="flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors hover:bg-surface"
                           >
-                            <span className="text-text-muted truncate">
+                            <span className="truncate text-text-muted">
                               {franchise.series_name}
                             </span>
-                            <span className="text-text-muted text-xs">
-                              {franchise.game_count}
-                            </span>
+                            <span className="text-xs text-text-muted">{franchise.game_count}</span>
                           </Link>
                         ))}
                         {franchises.length > 5 && (
                           <Link
                             to="/franchises"
-                            className="text-accent hover:text-accent block px-2 py-1 text-xs transition-colors"
+                            className="block px-2 py-1 text-xs text-accent transition-colors hover:text-accent"
                           >
                             View all ({franchises.length})
                           </Link>

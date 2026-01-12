@@ -33,7 +33,7 @@ export function Navbar(): JSX.Element {
 
   return (
     <nav
-      className={`border-surface bg-base fixed left-0 top-0 z-50 h-16 w-full border-b transition-all duration-300 ${
+      className={`fixed left-0 top-0 z-50 h-16 w-full border-b border-surface bg-base transition-all duration-300 ${
         isCollapsed ? "md:ml-16 md:w-[calc(100%-4rem)]" : "md:ml-60 md:w-[calc(100%-15rem)]"
       }`}
     >
@@ -41,7 +41,7 @@ export function Navbar(): JSX.Element {
         <div className="flex min-w-0 flex-shrink items-center gap-2 sm:gap-4">
           <Link to="/dashboard" className="flex flex-shrink-0 items-center gap-2">
             <img src="/favicon.svg" alt="MyMemoryCard" className="h-8 w-8" />
-            <span className="text-text-primary hidden text-lg font-semibold sm:inline">
+            <span className="hidden text-lg font-semibold text-text-primary sm:inline">
               MyMemoryCard
             </span>
           </Link>
@@ -72,8 +72,8 @@ export function Navbar(): JSX.Element {
             className="hidden w-48 justify-between lg:flex"
             onClick={() => openSearch(document.activeElement)}
           >
-            <span className="text-text-muted truncate text-sm">Search...</span>
-            <span className="bg-elevated text-text-muted rounded px-2 py-0.5 text-[10px] uppercase">
+            <span className="truncate text-sm text-text-muted">Search...</span>
+            <span className="rounded bg-elevated px-2 py-0.5 text-[10px] uppercase text-text-muted">
               Ctrl K
             </span>
           </Button>
@@ -92,12 +92,12 @@ export function Navbar(): JSX.Element {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 px-2">
-                <div className="border-elevated bg-elevated flex h-8 w-8 items-center justify-center rounded-full border">
-                  <span className="text-text-primary text-sm font-medium">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-elevated bg-elevated">
+                  <span className="text-sm font-medium text-text-primary">
                     {user?.username?.charAt(0).toUpperCase() || "U"}
                   </span>
                 </div>
-                <span className="text-text-muted hidden text-sm xl:inline">{user?.username}</span>
+                <span className="hidden text-sm text-text-muted xl:inline">{user?.username}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">

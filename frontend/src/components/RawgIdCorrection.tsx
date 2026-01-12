@@ -75,16 +75,14 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-text-secondary text-sm font-medium">RAWG ID</span>
-        {currentRawgId && (
-          <span className="text-text-muted text-xs">Current: {currentRawgId}</span>
-        )}
+        <span className="text-sm font-medium text-text-secondary">RAWG ID</span>
+        {currentRawgId && <span className="text-xs text-text-muted">Current: {currentRawgId}</span>}
       </div>
 
       <Button
         onClick={() => setIsExpanded(!isExpanded)}
         variant="outline"
-        className="border-elevated bg-surface text-text-muted hover:bg-elevated w-full justify-between text-sm"
+        className="w-full justify-between border-elevated bg-surface text-sm text-text-muted hover:bg-elevated"
       >
         <span>Correct Game Metadata</span>
         <svg
@@ -100,8 +98,8 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
       </Button>
 
       {isExpanded && (
-        <div className="bg-base/50 border-elevated space-y-4 rounded-lg border p-4">
-          <div className="text-text-muted text-sm">
+        <div className="bg-base/50 space-y-4 rounded-lg border border-elevated p-4">
+          <div className="text-sm text-text-muted">
             <p className="mb-2">
               If this game has wrong metadata (wrong cover, wrong description, etc.), you can
               correct it by providing the correct RAWG game page URL.
@@ -109,8 +107,8 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
           </div>
 
           <div className="bg-accent/10 border-accent/30 rounded-lg border p-3">
-            <p className="text-accent mb-2 text-sm font-medium">How to find the correct game:</p>
-            <ol className="text-text-muted list-inside list-decimal space-y-1.5 text-xs">
+            <p className="mb-2 text-sm font-medium text-accent">How to find the correct game:</p>
+            <ol className="list-inside list-decimal space-y-1.5 text-xs text-text-muted">
               <li>
                 Go to{" "}
                 <a
@@ -125,7 +123,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
               <li>Click on the correct game in the results</li>
               <li>
                 Copy the URL from your browser (e.g.,{" "}
-                <code className="bg-surface rounded px-1">
+                <code className="rounded bg-surface px-1">
                   rawg.io/games/<strong>god-of-war-2</strong>
                 </code>
                 )
@@ -135,7 +133,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
           </div>
 
           <div>
-            <label htmlFor="rawg-input" className="text-text-secondary mb-2 block text-sm">
+            <label htmlFor="rawg-input" className="mb-2 block text-sm text-text-secondary">
               RAWG URL or Slug
             </label>
             <Input
@@ -146,14 +144,14 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
               placeholder="e.g., god-of-war-2 or https://rawg.io/games/god-of-war-2"
               className="bg-surface text-text-primary placeholder:text-text-muted focus-visible:ring-accent"
             />
-            {error && <p className="text-status-dropped mt-2 text-sm">{error}</p>}
+            {error && <p className="mt-2 text-sm text-status-dropped">{error}</p>}
           </div>
 
           <div className="flex gap-2">
             <Button
               onClick={handleSubmit}
               disabled={updateMutation.isPending || !rawgInput}
-              className="hover:bg-accent/80 bg-accent text-base flex-1"
+              className="hover:bg-accent/80 flex-1 bg-accent text-base"
             >
               {updateMutation.isPending ? "Updating..." : "Update Metadata"}
             </Button>
@@ -169,7 +167,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
             </Button>
           </div>
 
-          <p className="text-text-muted text-xs">
+          <p className="text-xs text-text-muted">
             This will update the game&apos;s name, cover art, description, genres, and other
             metadata from RAWG.
           </p>

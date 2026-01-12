@@ -187,7 +187,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
   return (
     <div className="space-y-4" ref={containerRef}>
       <div className="flex items-center justify-between">
-        <h3 className="text-text-primary text-lg font-semibold">
+        <h3 className="text-lg font-semibold text-text-primary">
           {type === "activity"
             ? "Play Activity"
             : type === "completion"
@@ -200,7 +200,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             disabled={year <= 2020}
             variant="ghost"
             size="icon"
-            className="text-text-secondary hover:text-text-primary h-auto w-auto p-1 disabled:opacity-50"
+            className="h-auto w-auto p-1 text-text-secondary hover:text-text-primary disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -213,13 +213,13 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </Button>
-          <span className="text-text-primary min-w-[60px] text-center font-medium">{year}</span>
+          <span className="min-w-[60px] text-center font-medium text-text-primary">{year}</span>
           <Button
             onClick={() => setYear((y) => y + 1)}
             disabled={year >= currentYear}
             variant="ghost"
             size="icon"
-            className="text-text-secondary hover:text-text-primary h-auto w-auto p-1 disabled:opacity-50"
+            className="h-auto w-auto p-1 text-text-secondary hover:text-text-primary disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -238,14 +238,14 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
       {summary && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 shadow-sm">
-            <div className="text-text-secondary text-xs">
+            <div className="text-xs text-text-secondary">
               {type === "activity"
                 ? "Total Sessions"
                 : type === "completion"
                   ? "Total Progress Updates"
                   : "Achievements Unlocked"}
             </div>
-            <div className="text-text-primary text-xl font-bold">
+            <div className="text-xl font-bold text-text-primary">
               {type === "activity"
                 ? summary.totalSessions
                 : type === "completion"
@@ -255,19 +255,19 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
           </div>
           {type === "activity" && (
             <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 shadow-sm">
-              <div className="text-text-secondary text-xs">Total Playtime</div>
-              <div className="text-status-finished text-xl font-bold">
+              <div className="text-xs text-text-secondary">Total Playtime</div>
+              <div className="text-xl font-bold text-status-finished">
                 {formatMinutes(summary.totalMinutes)}
               </div>
             </div>
           )}
           <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 shadow-sm">
-            <div className="text-text-secondary text-xs">Active Days</div>
-            <div className="text-accent text-xl font-bold">{summary.activeDays}</div>
+            <div className="text-xs text-text-secondary">Active Days</div>
+            <div className="text-xl font-bold text-accent">{summary.activeDays}</div>
           </div>
           <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 shadow-sm">
-            <div className="text-text-secondary text-xs">Current Streak</div>
-            <div className="text-accent text-xl font-bold">
+            <div className="text-xs text-text-secondary">Current Streak</div>
+            <div className="text-xl font-bold text-accent">
               {summary.currentStreak} {summary.currentStreak === 1 ? "day" : "days"}
             </div>
           </div>
@@ -275,12 +275,12 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
       )}
 
       {isLoading ? (
-        <div className="text-text-secondary flex h-[140px] items-center justify-center">
+        <div className="flex h-[140px] items-center justify-center text-text-secondary">
           Loading activity data...
         </div>
       ) : (
         <div className="relative overflow-hidden">
-          <div className="text-text-muted relative ml-7 h-4 text-xs">
+          <div className="relative ml-7 h-4 text-xs text-text-muted">
             {displayMonthLabels.map(({ month, weekIndex }) => (
               <div
                 key={`${month}-${weekIndex}`}
@@ -292,7 +292,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             ))}
           </div>
           <div className="flex gap-[2px]">
-            <div className="text-text-muted mr-1 flex shrink-0 flex-col gap-[2px] text-xs">
+            <div className="mr-1 flex shrink-0 flex-col gap-[2px] text-xs text-text-muted">
               {DAYS.map((day, i) => (
                 <div
                   key={day}
@@ -315,7 +315,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
                     return (
                       <div
                         key={dayIndex}
-                        className="hover:ring-text-primary h-[10px] w-[10px] cursor-pointer rounded-sm transition-all hover:ring-1"
+                        className="h-[10px] w-[10px] cursor-pointer rounded-sm transition-all hover:ring-1 hover:ring-text-primary"
                         style={{ backgroundColor: colors[level] }}
                         onMouseEnter={(e) => {
                           const rect = e.currentTarget.getBoundingClientRect();
@@ -337,15 +337,15 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
 
           {hoveredDay && (
             <div
-              className="border-elevated bg-base pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full transform rounded-lg border px-3 py-2 text-sm"
+              className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full transform rounded-lg border border-elevated bg-base px-3 py-2 text-sm"
               style={{ left: hoveredDay.x, top: hoveredDay.y }}
             >
-              <div className="text-text-primary mb-1 font-medium">{hoveredDay.date}</div>
+              <div className="mb-1 font-medium text-text-primary">{hoveredDay.date}</div>
               {hoveredDay.data ? (
                 <div className="space-y-0.5">
                   {hoveredDay.data.sessions.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="bg-accent h-2 w-2 rounded-full" />
+                      <span className="h-2 w-2 rounded-full bg-accent" />
                       <span className="text-text-muted">
                         {hoveredDay.data.sessions.count} session
                         {hoveredDay.data.sessions.count > 1 ? "s" : ""}
@@ -360,7 +360,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
                   )}
                   {hoveredDay.data.completions.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="bg-accent h-2 w-2 rounded-full" />
+                      <span className="h-2 w-2 rounded-full bg-accent" />
                       <span className="text-text-muted">
                         {hoveredDay.data.completions.count} progress update
                         {hoveredDay.data.completions.count > 1 ? "s" : ""}
@@ -369,7 +369,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
                   )}
                   {hoveredDay.data.achievements.count > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="bg-accent h-2 w-2 rounded-full" />
+                      <span className="h-2 w-2 rounded-full bg-accent" />
                       <span className="text-text-muted">
                         {hoveredDay.data.achievements.count} achievement
                         {hoveredDay.data.achievements.count > 1 ? "s" : ""}
@@ -383,7 +383,7 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
             </div>
           )}
 
-          <div className="text-text-muted mt-2 flex items-center justify-end gap-1 text-xs">
+          <div className="mt-2 flex items-center justify-end gap-1 text-xs text-text-muted">
             <span>Less</span>
             {colors.map((color, i) => (
               <div

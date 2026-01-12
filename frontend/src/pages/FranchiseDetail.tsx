@@ -249,16 +249,16 @@ export function FranchiseDetail() {
         <div className="mb-8">
           <Link
             to="/franchises"
-            className="text-accent hover:text-accent mb-4 hidden transition-colors md:inline-block"
+            className="mb-4 hidden text-accent transition-colors hover:text-accent md:inline-block"
           >
             Back to Franchises
           </Link>
           <div className="mb-2 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-text-primary text-4xl font-bold">{series_name}</h1>
+            <h1 className="text-4xl font-bold text-text-primary">{series_name}</h1>
           </div>
           <p className="text-text-secondary">
             {owned_games.length} owned
@@ -268,12 +268,12 @@ export function FranchiseDetail() {
 
         {/* Owned Games */}
         <div className="mb-10">
-          <h2 id="owned-games" className="text-accent mb-4 text-2xl font-bold">
+          <h2 id="owned-games" className="mb-4 text-2xl font-bold text-accent">
             Your Games
           </h2>
           {owned_games.length === 0 ? (
             <Card>
-              <p className="text-text-secondary py-8 text-center">
+              <p className="py-8 text-center text-text-secondary">
                 No games owned in this franchise.
               </p>
             </Card>
@@ -281,7 +281,7 @@ export function FranchiseDetail() {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
               {owned_games.map((game: OwnedGame) => (
                 <Link key={game.id} to="/library/$id" params={{ id: game.id }} className="group">
-                  <div className="bg-surface relative mb-2 aspect-[3/4] overflow-hidden rounded-lg">
+                  <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-surface">
                     {game.cover_art_url ? (
                       <img
                         src={game.cover_art_url}
@@ -289,7 +289,7 @@ export function FranchiseDetail() {
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (
-                      <div className="text-text-muted flex h-full w-full items-center justify-center">
+                      <div className="flex h-full w-full items-center justify-center text-text-muted">
                         No Cover
                       </div>
                     )}
@@ -298,10 +298,10 @@ export function FranchiseDetail() {
                       title={game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     />
                   </div>
-                  <p className="text-text-muted group-hover:text-text-primary mb-1 truncate text-sm">
+                  <p className="mb-1 truncate text-sm text-text-muted group-hover:text-text-primary">
                     {game.name}
                   </p>
-                  <div className="text-text-muted flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
                     {game.release_date && <span>{new Date(game.release_date).getFullYear()}</span>}
                     {game.platforms.length > 0 && (
                       <>
@@ -320,7 +320,7 @@ export function FranchiseDetail() {
         {missing_games.length > 0 && (
           <div>
             <div className="mb-4 flex items-center justify-between">
-              <h2 id="missing-games" className="text-accent text-2xl font-bold">
+              <h2 id="missing-games" className="text-2xl font-bold text-accent">
                 Missing from Your Library
               </h2>
               <div className="flex items-center gap-2">
@@ -374,10 +374,10 @@ export function FranchiseDetail() {
                     tabIndex={0}
                   >
                     <div
-                      className={`bg-surface relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border transition-colors ${
+                      className={`relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-surface transition-colors ${
                         isSelected
                           ? "bg-accent/20 border-accent"
-                          : "border-border hover:border-accent border-dashed"
+                          : "border-dashed border-border hover:border-accent"
                       }`}
                     >
                       {game.background_image ? (
@@ -391,20 +391,20 @@ export function FranchiseDetail() {
                           }`}
                         />
                       ) : (
-                        <div className="text-text-muted flex h-full w-full items-center justify-center">
+                        <div className="flex h-full w-full items-center justify-center text-text-muted">
                           No Image
                         </div>
                       )}
                       {selectionMode ? (
                         isSelected && (
-                          <div className="bg-accent absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="text-text-primary h-4 w-4"
+                              className="h-4 w-4 text-text-primary"
                             >
                               <path
                                 strokeLinecap="round"
@@ -416,17 +416,17 @@ export function FranchiseDetail() {
                         )
                       ) : (
                         <div className="bg-base/50 absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-                          <span className="text-text-primary text-sm font-medium">
+                          <span className="text-sm font-medium text-text-primary">
                             + Add to Library
                           </span>
                         </div>
                       )}
                     </div>
-                    <p className="text-text-secondary group-hover:text-text-muted mb-1 truncate text-sm">
+                    <p className="mb-1 truncate text-sm text-text-secondary group-hover:text-text-muted">
                       {game.name}
                     </p>
                     {game.released && (
-                      <p className="text-text-muted text-xs">
+                      <p className="text-xs text-text-muted">
                         {new Date(game.released).getFullYear()}
                       </p>
                     )}
@@ -439,18 +439,18 @@ export function FranchiseDetail() {
 
         {/* Bulk Import Floating Action Bar */}
         {selectionMode && selectedGames.size > 0 && (
-          <div className="border-border bg-elevated fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border px-6 py-4 shadow-xl md:bottom-6">
-            <span className="text-text-primary font-medium">
+          <div className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border border-border bg-elevated px-6 py-4 shadow-xl md:bottom-6">
+            <span className="font-medium text-text-primary">
               {selectedGames.size} game{selectedGames.size !== 1 ? "s" : ""} selected
             </span>
-            <div className="bg-border h-6 w-px" />
+            <div className="h-6 w-px bg-border" />
             <div className="flex items-center gap-2">
-              <span className="text-text-secondary text-sm">Import to:</span>
+              <span className="text-sm text-text-secondary">Import to:</span>
               <Button
                 variant="secondary"
                 onClick={openBulkImportModal}
                 disabled={bulkImportMutation.isPending}
-                className="bg-accent/20 hover:bg-accent/30 border-accent text-accent focus:ring-accent border px-3 py-1 text-sm shadow-none"
+                className="bg-accent/20 hover:bg-accent/30 border border-accent px-3 py-1 text-sm text-accent shadow-none focus:ring-accent"
               >
                 Choose platforms
               </Button>
@@ -467,9 +467,9 @@ export function FranchiseDetail() {
             }
           }}
         >
-          <DialogContent className="border-border bg-elevated max-w-md">
+          <DialogContent className="max-w-md border-border bg-elevated">
             <DialogHeader>
-              <DialogTitle className="text-text-primary text-xl font-bold">
+              <DialogTitle className="text-xl font-bold text-text-primary">
                 {isBulkImport ? "Bulk Import" : "Add to Library"}
               </DialogTitle>
               <DialogDescription className="text-text-secondary">
@@ -478,7 +478,7 @@ export function FranchiseDetail() {
                   : selectedGame?.name}
               </DialogDescription>
             </DialogHeader>
-            <p className="text-text-muted text-sm">Select platform(s):</p>
+            <p className="text-sm text-text-muted">Select platform(s):</p>
             <ScrollFade axis="y" className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto">
               {platforms.map((platform) => {
                 const isSelected = selectedPlatformIds.has(platform.id);

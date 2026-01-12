@@ -571,7 +571,7 @@ export function GameDetail() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${activePlatform.background_image_url})` }}
           />
-          <div className="via-base/50 to-base absolute inset-0 bg-gradient-to-b from-transparent" />
+          <div className="via-base/50 absolute inset-0 bg-gradient-to-b from-transparent to-base" />
         </div>
       )}
 
@@ -579,7 +579,7 @@ export function GameDetail() {
         <div className="mb-4 flex items-center gap-3 md:hidden">
           <BackButton
             iconOnly={true}
-            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
           />
           <h1 className="text-3xl font-bold">{activePlatform.name}</h1>
         </div>
@@ -593,7 +593,7 @@ export function GameDetail() {
                 className="w-full rounded-lg shadow-lg"
               />
             ) : (
-              <div className="bg-surface flex aspect-[3/4] w-full items-center justify-center rounded-lg">
+              <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg bg-surface">
                 <span className="text-text-muted">No cover art</span>
               </div>
             )}
@@ -606,7 +606,7 @@ export function GameDetail() {
             {/* Platform Selector (for multi-platform games) */}
             {platforms.length > 0 && (
               <div className="mt-4">
-                <span className="text-text-secondary mb-2 block text-sm font-medium">
+                <span className="mb-2 block text-sm font-medium text-text-secondary">
                   {platforms.length === 1 ? "Platform" : "Platforms"}
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -632,12 +632,12 @@ export function GameDetail() {
                           }}
                           size="md"
                         />
-                        <span className="text-text-muted text-sm">
+                        <span className="text-sm text-text-muted">
                           {platform.platform_display_name}
                         </span>
                         {isActivePlatform && (
                           <span
-                            className="text-accent inline-flex items-center gap-1 text-xs"
+                            className="inline-flex items-center gap-1 text-xs text-accent"
                             title="Tracking progress on this platform"
                           >
                             <svg
@@ -660,7 +660,7 @@ export function GameDetail() {
                   })}
                 </div>
                 {hasMultiplePlatforms && (
-                  <p className="text-text-muted mt-1 text-xs">
+                  <p className="mt-1 text-xs text-text-muted">
                     Stats and progress are tracked per platform
                   </p>
                 )}
@@ -668,7 +668,7 @@ export function GameDetail() {
                 {/* Add to Platform section */}
                 {availablePlatforms.length > 0 && (
                   <div className="mt-3">
-                    <span className="text-text-muted mb-2 block text-xs font-medium">
+                    <span className="mb-2 block text-xs font-medium text-text-muted">
                       Add to Platform
                     </span>
                     <div className="flex flex-wrap gap-2">
@@ -681,7 +681,7 @@ export function GameDetail() {
                           }
                           disabled={addToPlatformMutation.isPending}
                           variant="ghost"
-                          className="bg-surface/50 hover:border-accent/50 hover:bg-accent/10 border-border flex h-auto items-center gap-2 rounded-lg border border-dashed px-2 py-1.5 transition-all disabled:opacity-50"
+                          className="bg-surface/50 hover:border-accent/50 hover:bg-accent/10 flex h-auto items-center gap-2 rounded-lg border border-dashed border-border px-2 py-1.5 transition-all disabled:opacity-50"
                         >
                           <PlatformIconBadge
                             platform={{
@@ -691,9 +691,9 @@ export function GameDetail() {
                             }}
                             size="md"
                           />
-                          <span className="text-text-muted text-sm">{platform.display_name}</span>
+                          <span className="text-sm text-text-muted">{platform.display_name}</span>
                           <svg
-                            className="text-text-muted h-3.5 w-3.5"
+                            className="h-3.5 w-3.5 text-text-muted"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={2}
@@ -717,7 +717,7 @@ export function GameDetail() {
             <div className="mt-4">
               <label
                 htmlFor="game-status"
-                className="text-text-secondary mb-2 block text-sm font-medium"
+                className="mb-2 block text-sm font-medium text-text-secondary"
               >
                 Status
               </label>
@@ -731,7 +731,7 @@ export function GameDetail() {
                   onClick={() => setIsStatusOpen((open) => !open)}
                   disabled={updateStatusMutation.isPending}
                   variant="ghost"
-                  className="text-text-primary focus:border-accent flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition focus:outline-none disabled:opacity-60"
+                  className="flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-text-primary transition focus:border-accent focus:outline-none disabled:opacity-60"
                   style={activeStatusConfig.activeStyle}
                 >
                   <span className="flex items-center gap-2">
@@ -744,7 +744,7 @@ export function GameDetail() {
                     </span>
                   </span>
                   <svg
-                    className={`text-text-secondary h-4 w-4 transition-transform ${isStatusOpen ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 text-text-secondary transition-transform ${isStatusOpen ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -768,7 +768,7 @@ export function GameDetail() {
                       onClick={() => setIsStatusOpen(false)}
                     />
                     <div
-                      className="border-border bg-elevated absolute z-50 mt-2 w-full rounded-lg border p-2 shadow-lg"
+                      className="absolute z-50 mt-2 w-full rounded-lg border border-border bg-elevated p-2 shadow-lg"
                       role="listbox"
                       aria-labelledby="game-status"
                     >
@@ -789,7 +789,7 @@ export function GameDetail() {
                               }}
                               variant="ghost"
                               className={`flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition hover:brightness-110 ${
-                                config.id === activeStatus ? "ring-accent ring-1" : ""
+                                config.id === activeStatus ? "ring-1 ring-accent" : ""
                               }`}
                               style={config.activeStyle}
                             >
@@ -802,7 +802,7 @@ export function GameDetail() {
                               </span>
                               {config.id === activeStatus && (
                                 <svg
-                                  className="text-accent h-4 w-4"
+                                  className="h-4 w-4 text-accent"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -830,8 +830,8 @@ export function GameDetail() {
             {/* Play Stats */}
             <div className="mt-4 grid grid-cols-1 gap-3">
               <div className="bg-accent/10 border-accent/30 rounded-lg border p-3">
-                <div className="text-accent text-xs">Playtime</div>
-                <div className="text-text-primary text-lg font-semibold">
+                <div className="text-xs text-accent">Playtime</div>
+                <div className="text-lg font-semibold text-text-primary">
                   {Math.floor(activePlatform.total_minutes / 60)}h{" "}
                   {activePlatform.total_minutes % 60}m
                 </div>
@@ -847,7 +847,7 @@ export function GameDetail() {
                           placeholder="Hours"
                           value={playtimeHours}
                           onChange={(event) => setPlaytimeHours(event.target.value)}
-                          className="border-border bg-elevated focus:border-accent text-sm"
+                          className="border-border bg-elevated text-sm focus:border-accent"
                           aria-label="Playtime hours"
                         />
                         <Input
@@ -859,7 +859,7 @@ export function GameDetail() {
                           placeholder="Minutes"
                           value={playtimeMinutes}
                           onChange={(event) => setPlaytimeMinutes(event.target.value)}
-                          className="border-border bg-elevated focus:border-accent text-sm"
+                          className="border-border bg-elevated text-sm focus:border-accent"
                           aria-label="Playtime minutes"
                         />
                       </div>
@@ -868,7 +868,7 @@ export function GameDetail() {
                           type="button"
                           onClick={() => addPlaytimeMutation.mutate()}
                           disabled={addPlaytimeMutation.isPending || !hasValidPlaytimeInput}
-                          className="hover:bg-accent/80 bg-accent text-base flex-1"
+                          className="hover:bg-accent/80 flex-1 bg-accent text-base"
                         >
                           {addPlaytimeMutation.isPending ? "Saving..." : "Add Playtime"}
                         </Button>
@@ -880,7 +880,7 @@ export function GameDetail() {
                             setPlaytimeHours("");
                             setPlaytimeMinutes("");
                           }}
-                          className="border-border text-text-secondary hover:bg-elevated hover:text-text-primary flex-1"
+                          className="flex-1 border-border text-text-secondary hover:bg-elevated hover:text-text-primary"
                         >
                           Cancel
                         </Button>
@@ -891,7 +891,7 @@ export function GameDetail() {
                       variant="link"
                       type="button"
                       onClick={() => setShowPlaytimeInput(true)}
-                      className="text-accent hover:text-accent h-auto p-0 text-xs"
+                      className="h-auto p-0 text-xs text-accent hover:text-accent"
                     >
                       Add playtime
                     </Button>
@@ -900,8 +900,8 @@ export function GameDetail() {
               </div>
               {activePlatform.last_played && (
                 <div className="bg-accent/10 border-accent/30 rounded-lg border p-3">
-                  <div className="text-accent text-xs">Last Played</div>
-                  <div className="text-text-primary text-sm font-semibold">
+                  <div className="text-xs text-accent">Last Played</div>
+                  <div className="text-sm font-semibold text-text-primary">
                     {new Date(activePlatform.last_played).toLocaleDateString()}
                   </div>
                 </div>
@@ -912,7 +912,7 @@ export function GameDetail() {
             <div className="mt-4">
               {showDeleteConfirm ? (
                 <div className="bg-status-dropped/20 border-status-dropped/50 rounded-lg border p-4">
-                  <p className="text-text-muted mb-3 text-sm">
+                  <p className="mb-3 text-sm text-text-muted">
                     Remove <strong>{activePlatform.platform_display_name}</strong> version from your
                     library? This will delete all progress, sessions, and notes for this platform.
                   </p>
@@ -951,17 +951,17 @@ export function GameDetail() {
             {/* Metadata */}
             <div className="mt-4 flex flex-wrap gap-2">
               {game.release_date && (
-                <span className="bg-surface text-text-secondary rounded-lg px-3 py-1 text-sm">
+                <span className="rounded-lg bg-surface px-3 py-1 text-sm text-text-secondary">
                   {new Date(game.release_date).getFullYear()}
                 </span>
               )}
               {game.metacritic_score && (
-                <span className="bg-status-finished/20 border-status-finished text-status-finished rounded-lg border px-3 py-1 text-sm">
+                <span className="bg-status-finished/20 rounded-lg border border-status-finished px-3 py-1 text-sm text-status-finished">
                   Metacritic: {game.metacritic_score}
                 </span>
               )}
               {game.expected_playtime && game.expected_playtime > 0 && (
-                <span className="bg-accent/20 border-accent text-accent group relative inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-sm">
+                <span className="bg-accent/20 group relative inline-flex items-center gap-1.5 rounded-lg border border-accent px-3 py-1 text-sm text-accent">
                   ~{game.expected_playtime}h to beat
                   <span className="cursor-help" title="Average playtime based on Steam player data">
                     <svg
@@ -980,7 +980,7 @@ export function GameDetail() {
                 </span>
               )}
               {game.esrb_rating && (
-                <span className="bg-surface text-text-secondary rounded-lg px-3 py-1 text-sm">
+                <span className="rounded-lg bg-surface px-3 py-1 text-sm text-text-secondary">
                   {game.esrb_rating.toUpperCase()}
                 </span>
               )}
@@ -992,7 +992,7 @@ export function GameDetail() {
                 {genres.map((genre) => (
                   <span
                     key={genre}
-                    className="bg-accent/10 border-accent/30 text-accent rounded border px-2 py-1 text-xs"
+                    className="bg-accent/10 border-accent/30 rounded border px-2 py-1 text-xs text-accent"
                   >
                     {genre}
                   </span>
@@ -1003,14 +1003,16 @@ export function GameDetail() {
             {/* Franchise */}
             {game.series_name && (
               <div className="mt-4">
-                <span className="text-text-secondary mb-2 block text-sm font-medium">Franchise</span>
+                <span className="mb-2 block text-sm font-medium text-text-secondary">
+                  Franchise
+                </span>
                 <FranchisePreview seriesName={game.series_name} currentGameId={game.id} />
               </div>
             )}
 
             {/* External Resources */}
             <div className="mt-4">
-              <span className="text-text-secondary mb-2 block text-sm font-medium">
+              <span className="mb-2 block text-sm font-medium text-text-secondary">
                 External Resources
               </span>
               <div className="flex flex-col gap-2">
@@ -1018,7 +1020,7 @@ export function GameDetail() {
                   href={`https://howlongtobeat.com/?q=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border-border bg-surface text-text-muted hover:border-accent hover:bg-elevated hover:text-accent w-full rounded-lg border px-3 py-2 text-center text-sm transition-all"
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-center text-sm text-text-muted transition-all hover:border-accent hover:bg-elevated hover:text-accent"
                 >
                   HowLongToBeat
                 </a>
@@ -1028,7 +1030,7 @@ export function GameDetail() {
                     .replace(/[^a-z0-9]+/g, "-")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border-border bg-surface text-text-muted hover:border-accent hover:bg-elevated hover:text-accent w-full rounded-lg border px-3 py-2 text-center text-sm transition-all"
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-center text-sm text-text-muted transition-all hover:border-accent hover:bg-elevated hover:text-accent"
                 >
                   IGN Guide
                 </a>
@@ -1036,7 +1038,7 @@ export function GameDetail() {
                   href={`https://www.powerpyx.com/?s=${encodeURIComponent(normalizeGameName(activePlatform.name))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border-border bg-surface text-text-muted hover:border-accent hover:bg-elevated hover:text-accent w-full rounded-lg border px-3 py-2 text-center text-sm transition-all"
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-center text-sm text-text-muted transition-all hover:border-accent hover:bg-elevated hover:text-accent"
                 >
                   PowerPyx Guide
                 </a>
@@ -1044,8 +1046,10 @@ export function GameDetail() {
             </div>
 
             {/* Game Version */}
-            <div className="bg-surface/30 border-border mt-4 rounded-lg border p-4">
-              <span className="text-text-secondary mb-2 block text-sm font-medium">Game Version</span>
+            <div className="bg-surface/30 mt-4 rounded-lg border border-border p-4">
+              <span className="mb-2 block text-sm font-medium text-text-secondary">
+                Game Version
+              </span>
               <EditionSwitcher gameId={game.id} platformId={activePlatformId} />
             </div>
           </div>
@@ -1055,13 +1059,13 @@ export function GameDetail() {
             <div className="mb-4 hidden items-center gap-3 md:flex">
               <BackButton
                 iconOnly={true}
-                className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+                className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
               />
               <h1 className="text-4xl font-bold">{activePlatform.name}</h1>
             </div>
 
             <div>
-              <div className="bg-surface/30 border-border mb-6 rounded-lg border p-4">
+              <div className="bg-surface/30 mb-6 rounded-lg border border-border p-4">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div>
                     <ProgressDisplay gameId={game.id} platformId={activePlatformId} />
@@ -1069,7 +1073,7 @@ export function GameDetail() {
                   <div className="flex flex-col gap-4">
                     <div>
                       <span
-                        className="text-text-secondary mb-2 block text-sm font-medium"
+                        className="mb-2 block text-sm font-medium text-text-secondary"
                         id="user-rating-label"
                       >
                         Your Rating
@@ -1089,7 +1093,7 @@ export function GameDetail() {
                             aria-pressed={activePlatform.user_rating === rating}
                             className={
                               activePlatform.user_rating === rating
-                                ? "shadow-accent/50 hover:bg-accent/90 bg-accent text-base hover:text-base shadow-lg"
+                                ? "shadow-accent/50 hover:bg-accent/90 bg-accent text-base shadow-lg hover:text-base"
                                 : "bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary"
                             }
                           >
@@ -1109,8 +1113,8 @@ export function GameDetail() {
                       disabled={toggleFavoriteMutation.isPending}
                       className={`h-auto w-full py-3 font-semibold ${
                         activePlatform.is_favorite
-                          ? "bg-status-dropped/20 hover:bg-status-dropped/30 border-status-dropped text-status-dropped hover:text-status-dropped border-2"
-                          : "border-border bg-surface text-text-secondary hover:border-status-dropped hover:bg-elevated hover:text-status-dropped border-2"
+                          ? "bg-status-dropped/20 hover:bg-status-dropped/30 border-2 border-status-dropped text-status-dropped hover:text-status-dropped"
+                          : "border-2 border-border bg-surface text-text-secondary hover:border-status-dropped hover:bg-elevated hover:text-status-dropped"
                       }`}
                     >
                       <span className="inline-flex items-center justify-center gap-2">
@@ -1135,27 +1139,21 @@ export function GameDetail() {
                 </div>
               </div>
               {activePlatform.description && (
-                <div
-                  id="about"
-                  className="bg-surface/30 border-border mb-6 rounded-lg border p-4"
-                >
-                  <h2 className="text-accent mb-3 text-xl font-semibold">About</h2>
-                  <p className="text-text-muted leading-relaxed">{activePlatform.description}</p>
+                <div id="about" className="bg-surface/30 mb-6 rounded-lg border border-border p-4">
+                  <h2 className="mb-3 text-xl font-semibold text-accent">About</h2>
+                  <p className="leading-relaxed text-text-muted">{activePlatform.description}</p>
                 </div>
               )}
 
               {/* Notes Section */}
-              <div
-                id="notes"
-                className="bg-surface/30 border-border mb-6 rounded-lg border p-4"
-              >
+              <div id="notes" className="bg-surface/30 mb-6 rounded-lg border border-border p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-accent text-xl font-semibold">Notes</h2>
+                  <h2 className="text-xl font-semibold text-accent">Notes</h2>
                   {!isEditingNotes && (
                     <Button
                       variant="link"
                       onClick={startEditingNotes}
-                      className="text-accent hover:text-accent h-auto p-0 text-sm"
+                      className="h-auto p-0 text-sm text-accent hover:text-accent"
                     >
                       {activePlatform.notes ? "Edit" : "Add Notes"}
                     </Button>
@@ -1167,7 +1165,7 @@ export function GameDetail() {
                     <Textarea
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
-                      className="border-border bg-elevated focus:border-accent min-h-32 w-full"
+                      className="min-h-32 w-full border-border bg-elevated focus:border-accent"
                       placeholder="Add your notes about this game..."
                     />
                     <div className="mt-2 flex gap-2">
@@ -1180,7 +1178,7 @@ export function GameDetail() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-elevated/50 text-text-muted rounded-lg p-4">
+                  <div className="bg-elevated/50 rounded-lg p-4 text-text-muted">
                     {activePlatform.notes || "No notes yet"}
                   </div>
                 )}
@@ -1189,11 +1187,9 @@ export function GameDetail() {
               {/* Edition & DLC Ownership Section */}
               <div
                 id="ownership"
-                className="bg-surface/30 border-border mb-6 rounded-lg border p-4"
+                className="bg-surface/30 mb-6 rounded-lg border border-border p-4"
               >
-                <h2 className="text-accent mb-4 text-xl font-semibold">
-                  Edition & DLC Ownership
-                </h2>
+                <h2 className="mb-4 text-xl font-semibold text-accent">Edition & DLC Ownership</h2>
                 <EditionOwnership gameId={game.id} platformId={activePlatformId} />
               </div>
 
@@ -1201,9 +1197,9 @@ export function GameDetail() {
               <div
                 id="achievements"
                 tabIndex={-1}
-                className="bg-surface/30 border-border focus-visible:ring-accent focus-visible:ring-offset-base mb-6 rounded-lg border p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                className="bg-surface/30 mb-6 rounded-lg border border-border p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
               >
-                <h2 className="text-accent mb-4 text-xl font-semibold">Achievements</h2>
+                <h2 className="mb-4 text-xl font-semibold text-accent">Achievements</h2>
                 <GameAchievements gameId={game.id} platformId={activePlatformId} />
               </div>
 
@@ -1211,7 +1207,7 @@ export function GameDetail() {
               <div
                 id="sessions"
                 tabIndex={-1}
-                className="bg-surface/30 border-border focus-visible:ring-accent focus-visible:ring-offset-base mb-6 rounded-lg border p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                className="bg-surface/30 mb-6 rounded-lg border border-border p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
               >
                 <SessionsHistory gameId={game.id} platformId={activePlatformId} />
               </div>
@@ -1220,7 +1216,7 @@ export function GameDetail() {
               <div
                 id="stats"
                 tabIndex={-1}
-                className="bg-surface/30 border-border focus-visible:ring-accent focus-visible:ring-offset-base mb-6 rounded-lg border p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                className="bg-surface/30 mb-6 rounded-lg border border-border p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
               >
                 <ProgressHistory gameId={game.id} platformId={activePlatformId} />
               </div>

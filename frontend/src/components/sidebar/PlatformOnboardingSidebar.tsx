@@ -15,20 +15,20 @@ export function PlatformOnboardingSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="border-surface space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         <div className="flex justify-center">
           <div
-            className="bg-surface/50 border-surface text-accent flex h-10 w-10 items-center justify-center rounded-lg border text-sm"
+            className="bg-surface/50 flex h-10 w-10 items-center justify-center rounded-lg border border-surface text-sm text-accent"
             title="Platforms Selected"
           >
             {selectedCount}
           </div>
         </div>
 
-        <div className="border-surface flex justify-center border-t pt-2">
+        <div className="flex justify-center border-t border-surface pt-2">
           <Link
             to="/platforms"
-            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,13 +42,13 @@ export function PlatformOnboardingSidebar({
           </Link>
         </div>
 
-        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
+        <div className="flex flex-col items-center gap-1 border-t border-surface pt-2">
           <Button
             type="button"
             onClick={onAddCustomPlatform}
             variant="ghost"
             size="icon"
-            className="text-accent hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-accent transition-all hover:bg-surface hover:text-text-primary"
             title="Add Custom Platform"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ export function PlatformOnboardingSidebar({
           </Button>
           <Link
             to="/import"
-            className="text-accent hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-accent transition-all hover:bg-surface hover:text-text-primary"
             title="Go to Import"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,12 +81,12 @@ export function PlatformOnboardingSidebar({
 
   return (
     <div className="space-y-6">
-      <div className="bg-surface/40 border-surface rounded-lg border p-4">
-        <h3 className="text-text-primary mb-1 text-sm font-semibold">Platform Setup</h3>
-        <p className="text-text-secondary text-xs">
+      <div className="bg-surface/40 rounded-lg border border-surface p-4">
+        <h3 className="mb-1 text-sm font-semibold text-text-primary">Platform Setup</h3>
+        <p className="text-xs text-text-secondary">
           Choose the platforms you use before importing games.
         </p>
-        <div className="text-accent mt-3 text-sm">{selectedCount} selected</div>
+        <div className="mt-3 text-sm text-accent">{selectedCount} selected</div>
       </div>
 
       <Link
@@ -125,20 +125,20 @@ export function PlatformOnboardingSidebar({
       </Button>
 
       <div>
-        <h3 className="text-text-secondary mb-3 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Steps
         </h3>
-        <div className="text-text-secondary space-y-3 text-sm">
+        <div className="space-y-3 text-sm text-text-secondary">
           <div className="bg-surface/50 rounded-lg p-3">
-            <p className="text-text-muted mb-1 font-medium">1. Pick platforms</p>
+            <p className="mb-1 font-medium text-text-muted">1. Pick platforms</p>
             <p className="text-xs">Select the stores or systems you use.</p>
           </div>
           <div className="bg-surface/50 rounded-lg p-3">
-            <p className="text-text-muted mb-1 font-medium">2. Save selection</p>
+            <p className="mb-1 font-medium text-text-muted">2. Save selection</p>
             <p className="text-xs">You can add more platforms later.</p>
           </div>
           <div className="bg-surface/50 rounded-lg p-3">
-            <p className="text-text-muted mb-1 font-medium">3. Import games</p>
+            <p className="mb-1 font-medium text-text-muted">3. Import games</p>
             <p className="text-xs">Head to import and bring in your library.</p>
           </div>
         </div>

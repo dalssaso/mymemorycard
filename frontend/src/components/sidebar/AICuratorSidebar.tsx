@@ -24,11 +24,11 @@ export function AICuratorSidebar() {
 
   if (isCollapsed) {
     return (
-      <div className="border-surface space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         <div className="flex justify-center">
           <Link
             to="/settings"
-            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             title="AI Settings"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ export function AICuratorSidebar() {
       {/* AI Settings Link */}
       <Link
         to="/settings"
-        className="hover:bg-accent/80 bg-accent text-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-base text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -78,9 +78,9 @@ export function AICuratorSidebar() {
       {/* Current Configuration */}
       {settingsData?.activeProvider && (
         <div>
-          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
             <svg
-              className="text-accent h-4 w-4"
+              className="h-4 w-4 text-accent"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -94,23 +94,23 @@ export function AICuratorSidebar() {
             </svg>
             Active Configuration
           </h3>
-          <div className="bg-surface space-y-2 rounded-lg p-3">
+          <div className="space-y-2 rounded-lg bg-surface p-3">
             <div>
-              <p className="text-text-muted text-xs">Provider</p>
-              <p className="text-text-primary text-sm font-medium capitalize">
+              <p className="text-xs text-text-muted">Provider</p>
+              <p className="text-sm font-medium capitalize text-text-primary">
                 {settingsData.activeProvider.provider}
               </p>
             </div>
             <div>
-              <p className="text-text-muted text-xs">Text Model</p>
-              <p className="text-text-primary truncate text-sm font-medium">
+              <p className="text-xs text-text-muted">Text Model</p>
+              <p className="truncate text-sm font-medium text-text-primary">
                 {settingsData.activeProvider.model}
               </p>
             </div>
             {settingsData.activeProvider.image_model && (
               <div>
-                <p className="text-text-muted text-xs">Image Model</p>
-                <p className="text-text-primary truncate text-sm font-medium">
+                <p className="text-xs text-text-muted">Image Model</p>
+                <p className="truncate text-sm font-medium text-text-primary">
                   {settingsData.activeProvider.image_model}
                 </p>
               </div>
@@ -122,9 +122,9 @@ export function AICuratorSidebar() {
       {/* Recent Activity */}
       {activityData && activityData.logs.length > 0 && (
         <div>
-          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
             <svg
-              className="text-status-finished h-4 w-4"
+              className="h-4 w-4 text-status-finished"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -140,14 +140,14 @@ export function AICuratorSidebar() {
           </h3>
           <div className="space-y-2">
             {activityData.logs.slice(0, 5).map((log) => (
-              <div key={log.id} className="bg-surface rounded-lg p-2">
+              <div key={log.id} className="rounded-lg bg-surface p-2">
                 <div className="mb-1 flex items-start justify-between gap-2">
-                  <span className="text-text-primary flex-1 text-xs font-medium">
+                  <span className="flex-1 text-xs font-medium text-text-primary">
                     {log.actionType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </span>
                   {log.success ? (
                     <svg
-                      className="text-status-finished h-3 w-3 flex-shrink-0"
+                      className="h-3 w-3 flex-shrink-0 text-status-finished"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -159,7 +159,7 @@ export function AICuratorSidebar() {
                     </svg>
                   ) : (
                     <svg
-                      className="text-status-dropped h-3 w-3 flex-shrink-0"
+                      className="h-3 w-3 flex-shrink-0 text-status-dropped"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -171,7 +171,7 @@ export function AICuratorSidebar() {
                     </svg>
                   )}
                 </div>
-                <div className="text-text-muted flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs text-text-muted">
                   {log.estimatedCostUsd !== null && <span>${log.estimatedCostUsd.toFixed(4)}</span>}
                   {log.durationMs !== null && <span>{(log.durationMs / 1000).toFixed(1)}s</span>}
                 </div>
@@ -184,9 +184,9 @@ export function AICuratorSidebar() {
       {/* Usage Stats */}
       {activityData && activityData.logs.length > 0 && (
         <div>
-          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
             <svg
-              className="text-accent h-4 w-4"
+              className="h-4 w-4 text-accent"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -201,18 +201,18 @@ export function AICuratorSidebar() {
             Usage Stats
           </h3>
           <div className="space-y-2">
-            <div className="bg-surface rounded-lg p-2">
+            <div className="rounded-lg bg-surface p-2">
               <div className="flex items-center justify-between">
-                <span className="text-text-secondary text-xs">Total Requests</span>
-                <span className="text-text-primary text-sm font-semibold">
+                <span className="text-xs text-text-secondary">Total Requests</span>
+                <span className="text-sm font-semibold text-text-primary">
                   {activityData.logs.length}
                 </span>
               </div>
             </div>
-            <div className="bg-surface rounded-lg p-2">
+            <div className="rounded-lg bg-surface p-2">
               <div className="flex items-center justify-between">
-                <span className="text-text-secondary text-xs">Success Rate</span>
-                <span className="text-text-primary text-sm font-semibold">
+                <span className="text-xs text-text-secondary">Success Rate</span>
+                <span className="text-sm font-semibold text-text-primary">
                   {Math.round(
                     (activityData.logs.filter((log) => log.success).length /
                       activityData.logs.length) *
@@ -222,10 +222,10 @@ export function AICuratorSidebar() {
                 </span>
               </div>
             </div>
-            <div className="bg-surface rounded-lg p-2">
+            <div className="rounded-lg bg-surface p-2">
               <div className="flex items-center justify-between">
-                <span className="text-text-secondary text-xs">Total Cost</span>
-                <span className="text-text-primary text-sm font-semibold">
+                <span className="text-xs text-text-secondary">Total Cost</span>
+                <span className="text-sm font-semibold text-text-primary">
                   $
                   {activityData.logs
                     .reduce((sum, log) => sum + (log.estimatedCostUsd || 0), 0)
@@ -239,9 +239,9 @@ export function AICuratorSidebar() {
 
       {/* Help Section */}
       <div>
-        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -255,7 +255,7 @@ export function AICuratorSidebar() {
           </svg>
           About
         </h3>
-        <div className="text-text-secondary space-y-2 text-xs">
+        <div className="space-y-2 text-xs text-text-secondary">
           <p>
             The AI Curator uses your configured AI provider to analyze your game library and provide
             personalized suggestions.

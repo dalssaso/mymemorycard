@@ -39,17 +39,17 @@ export function Login(): JSX.Element {
   });
 
   return (
-    <div className="bg-base flex min-h-screen items-center justify-center px-4">
-      <Card className="bg-surface/60 border-border w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-base px-4">
+      <Card className="bg-surface/60 w-full max-w-sm border-border">
         <CardHeader>
-          <h1 className="text-accent text-center text-2xl font-semibold">MyMemoryCard</h1>
-          <p className="text-text-muted text-center text-sm">Welcome back</p>
+          <h1 className="text-center text-2xl font-semibold text-accent">MyMemoryCard</h1>
+          <p className="text-center text-sm text-text-muted">Welcome back</p>
         </CardHeader>
         <CardContent>
           <FormProvider {...form}>
             <form onSubmit={handleSubmit} className="space-y-4">
               {form.formState.errors.root?.message ? (
-                <div className="border-status-dropped/30 bg-status-dropped/10 text-status-dropped rounded-md border px-3 py-2 text-sm">
+                <div className="border-status-dropped/30 bg-status-dropped/10 rounded-md border px-3 py-2 text-sm text-status-dropped">
                   {form.formState.errors.root.message}
                 </div>
               ) : null}
@@ -60,7 +60,7 @@ export function Login(): JSX.Element {
               </Button>
             </form>
           </FormProvider>
-          <p className="text-text-muted mt-4 text-center text-sm">
+          <p className="mt-4 text-center text-sm text-text-muted">
             Don&apos;t have an account?{" "}
             <Link to="/register" className="text-accent hover:text-accent">
               Register

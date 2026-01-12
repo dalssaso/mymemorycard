@@ -38,13 +38,13 @@ export function PlatformDetailSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="border-surface space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
             className={[
-              "text-text-secondary hover:bg-surface rounded-lg p-2",
-              "hover:text-text-primary transition-all",
+              "rounded-lg p-2 text-text-secondary hover:bg-surface",
+              "transition-all hover:text-text-primary",
             ].join(" ")}
             title="Back to Platforms"
           >
@@ -54,12 +54,12 @@ export function PlatformDetailSidebar({
           </Link>
         </div>
 
-        <div className="border-surface flex justify-center border-t pt-2">
+        <div className="flex justify-center border-t border-surface pt-2">
           <Link
             to="/platforms"
             className={[
-              "text-text-secondary hover:bg-surface rounded-lg p-2",
-              "hover:text-text-primary transition-all",
+              "rounded-lg p-2 text-text-secondary hover:bg-surface",
+              "transition-all hover:text-text-primary",
             ].join(" ")}
             title="Manage Platforms"
           >
@@ -74,7 +74,7 @@ export function PlatformDetailSidebar({
           </Link>
         </div>
 
-        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
+        <div className="flex flex-col items-center gap-1 border-t border-surface pt-2">
           {SECTIONS.map((section) => (
             <Button
               key={section.id}
@@ -82,8 +82,8 @@ export function PlatformDetailSidebar({
               variant="ghost"
               size="icon"
               className={[
-                "text-text-secondary hover:bg-surface rounded-lg p-2",
-                "hover:text-text-primary transition-all",
+                "rounded-lg p-2 text-text-secondary hover:bg-surface",
+                "transition-all hover:text-text-primary",
               ].join(" ")}
               title={section.label}
             >
@@ -108,8 +108,8 @@ export function PlatformDetailSidebar({
         <Link
           to="/platforms"
           className={[
-            "border-elevated bg-surface flex items-center gap-2 border px-3 py-2",
-            "text-text-muted hover:border-elevated hover:text-text-primary rounded-lg",
+            "flex items-center gap-2 border border-elevated bg-surface px-3 py-2",
+            "rounded-lg text-text-muted hover:border-elevated hover:text-text-primary",
             "text-sm transition-colors",
           ].join(" ")}
         >
@@ -132,7 +132,7 @@ export function PlatformDetailSidebar({
       </div>
       <Link
         to="/platforms"
-        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors hover:bg-elevated"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -148,12 +148,12 @@ export function PlatformDetailSidebar({
       <div>
         <h3
           className={[
-            "text-text-secondary text-xs font-semibold uppercase tracking-wider",
+            "text-xs font-semibold uppercase tracking-wider text-text-secondary",
             "mb-3 flex items-center gap-2",
           ].join(" ")}
         >
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -164,18 +164,20 @@ export function PlatformDetailSidebar({
         </h3>
         <div className="space-y-2">
           <div className="bg-surface/50 rounded-lg p-3">
-            <div className="text-text-secondary mb-1 text-xs">Name</div>
-            <div className="text-text-primary truncate text-sm font-medium" title={platformName}>
+            <div className="mb-1 text-xs text-text-secondary">Name</div>
+            <div className="truncate text-sm font-medium text-text-primary" title={platformName}>
               {platformName}
             </div>
           </div>
           <div className="bg-surface/50 rounded-lg p-3">
-            <div className="text-text-secondary mb-1 text-xs">Type</div>
-            <div className="text-text-primary text-sm font-medium">{platformType || "platform"}</div>
+            <div className="mb-1 text-xs text-text-secondary">Type</div>
+            <div className="text-sm font-medium text-text-primary">
+              {platformType || "platform"}
+            </div>
           </div>
           <div className="bg-surface/50 rounded-lg p-3">
-            <div className="text-text-secondary mb-1 text-xs">Username</div>
-            <div className="text-text-primary truncate text-sm font-medium">
+            <div className="mb-1 text-xs text-text-secondary">Username</div>
+            <div className="truncate text-sm font-medium text-text-primary">
               {username || "Not set"}
             </div>
           </div>
@@ -185,12 +187,12 @@ export function PlatformDetailSidebar({
       <div>
         <h3
           className={[
-            "text-text-secondary text-xs font-semibold uppercase tracking-wider",
+            "text-xs font-semibold uppercase tracking-wider text-text-secondary",
             "mb-3 flex items-center gap-2",
           ].join(" ")}
         >
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -211,8 +213,8 @@ export function PlatformDetailSidebar({
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
               className={[
-                "text-text-secondary w-full rounded-lg px-3 py-2 text-left text-sm",
-                "hover:bg-surface hover:text-text-primary flex items-center gap-2 transition-all",
+                "w-full rounded-lg px-3 py-2 text-left text-sm text-text-secondary",
+                "flex items-center gap-2 transition-all hover:bg-surface hover:text-text-primary",
               ].join(" ")}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

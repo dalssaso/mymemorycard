@@ -36,12 +36,12 @@ export function FranchiseDetailSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="border-surface space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         {/* Back to Franchises */}
         <div className="flex justify-center">
           <Link
             to="/franchises"
-            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             title="Back to Franchises"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,10 +55,10 @@ export function FranchiseDetailSidebar({
           </Link>
         </div>
 
-        <div className="border-surface flex justify-center border-t pt-2">
+        <div className="flex justify-center border-t border-surface pt-2">
           <Link
             to="/platforms"
-            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,14 +73,14 @@ export function FranchiseDetailSidebar({
         </div>
 
         {/* Jump to Section Icons */}
-        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
+        <div className="flex flex-col items-center gap-1 border-t border-surface pt-2">
           {SECTIONS.map((section) => (
             <Button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
               size="icon"
-              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
               title={section.label}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@ export function FranchiseDetailSidebar({
       <div>
         <Link
           to="/franchises"
-          className="border-elevated bg-surface text-text-muted hover:border-elevated hover:text-text-primary flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+          className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors hover:border-elevated hover:text-text-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +124,7 @@ export function FranchiseDetailSidebar({
       </div>
       <Link
         to="/platforms"
-        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors hover:bg-elevated"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -138,9 +138,9 @@ export function FranchiseDetailSidebar({
       </Link>
 
       <div>
-        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -156,36 +156,36 @@ export function FranchiseDetailSidebar({
         </h3>
         <div className="space-y-2">
           <div className="bg-surface/50 rounded-lg p-3">
-            <div className="text-text-secondary mb-1 text-xs">Series</div>
-            <div className="text-text-primary truncate text-sm font-medium" title={seriesName}>
+            <div className="mb-1 text-xs text-text-secondary">Series</div>
+            <div className="truncate text-sm font-medium text-text-primary" title={seriesName}>
               {seriesName}
             </div>
           </div>
           <div className="bg-surface/50 rounded-lg p-3">
-            <div className="text-text-secondary mb-1 text-xs">Owned</div>
-            <div className="text-text-primary text-sm font-medium">
+            <div className="mb-1 text-xs text-text-secondary">Owned</div>
+            <div className="text-sm font-medium text-text-primary">
               {ownedCount} {ownedCount === 1 ? "game" : "games"}
             </div>
           </div>
           {missingCount > 0 && (
             <div className="bg-surface/50 rounded-lg p-3">
-              <div className="text-text-secondary mb-1 text-xs">Missing</div>
-              <div className="text-text-primary text-sm font-medium">
+              <div className="mb-1 text-xs text-text-secondary">Missing</div>
+              <div className="text-sm font-medium text-text-primary">
                 {missingCount} {missingCount === 1 ? "game" : "games"}
               </div>
             </div>
           )}
           <div className="bg-surface/50 rounded-lg p-3">
-            <div className="text-text-secondary mb-1 text-xs">Completion</div>
-            <div className="text-text-primary text-sm font-medium">{completionPercentage}%</div>
+            <div className="mb-1 text-xs text-text-secondary">Completion</div>
+            <div className="text-sm font-medium text-text-primary">{completionPercentage}%</div>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -205,7 +205,7 @@ export function FranchiseDetailSidebar({
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
-              className="text-text-secondary hover:bg-surface hover:text-text-primary flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
+              className="flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

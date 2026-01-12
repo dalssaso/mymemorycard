@@ -48,8 +48,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       key: "status",
       label: "Status",
       value: STATUS_LABELS[filters.status] || filters.status,
-      colorClass:
-        STATUS_COLORS[filters.status] || "bg-accent/20 border-accent/40 text-accent",
+      colorClass: STATUS_COLORS[filters.status] || "bg-accent/20 border-accent/40 text-accent",
     });
   }
 
@@ -116,7 +115,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-text-secondary text-xs font-medium">Active filters:</span>
+      <span className="text-xs font-medium text-text-secondary">Active filters:</span>
       {pills.map((pill, index) => (
         <div
           key={`${pill.key}-${pill.itemValue || pill.value}-${index}`}
@@ -147,7 +146,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
         <Button
           onClick={onClearAll}
           variant="link"
-          className="text-text-secondary hover:text-text-primary h-auto p-0 text-xs underline transition-colors"
+          className="h-auto p-0 text-xs text-text-secondary underline transition-colors hover:text-text-primary"
         >
           Clear all
         </Button>

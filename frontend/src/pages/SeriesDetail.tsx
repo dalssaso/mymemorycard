@@ -55,18 +55,18 @@ export function SeriesDetail() {
         <div className="mb-8">
           <Link
             to="/collections"
-            className="mb-4 hidden transition-colors text-accent hover:text-accent md:inline-block"
+            className="mb-4 hidden text-accent transition-colors hover:text-accent md:inline-block"
           >
             Back to Collections
           </Link>
           <div className="mb-2 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-text-primary text-4xl font-bold">{seriesName} Series</h1>
+            <h1 className="text-4xl font-bold text-text-primary">{seriesName} Series</h1>
           </div>
-          <p className="text-accent text-sm">
+          <p className="text-sm text-accent">
             {games.length} {games.length === 1 ? "game" : "games"}
           </p>
         </div>
@@ -74,13 +74,13 @@ export function SeriesDetail() {
         {/* Games Grid */}
         {games.length === 0 ? (
           <Card>
-            <p className="text-text-secondary py-8 text-center">No games found in this series.</p>
+            <p className="py-8 text-center text-text-secondary">No games found in this series.</p>
           </Card>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
             {games.map((game) => (
               <Link key={game.id} to="/library/$id" params={{ id: game.id }} className="group">
-                <div className="bg-surface relative mb-2 aspect-[3/4] overflow-hidden rounded-lg">
+                <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-surface">
                   {game.cover_art_url ? (
                     <img
                       src={game.cover_art_url}
@@ -88,12 +88,12 @@ export function SeriesDetail() {
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="text-text-muted flex h-full w-full items-center justify-center">
+                    <div className="flex h-full w-full items-center justify-center text-text-muted">
                       No Cover
                     </div>
                   )}
                   {game.is_favorite && (
-                    <div className="text-status-finished absolute right-2 top-2">
+                    <div className="absolute right-2 top-2 text-status-finished">
                       <svg
                         className="h-5 w-5"
                         viewBox="0 0 24 24"
@@ -111,11 +111,11 @@ export function SeriesDetail() {
                     </div>
                   )}
                 </div>
-                <p className="text-text-muted group-hover:text-text-primary mb-1 truncate text-sm">
+                <p className="mb-1 truncate text-sm text-text-muted group-hover:text-text-primary">
                   {game.name}
                 </p>
                 {game.release_date && (
-                  <p className="text-text-muted text-xs">
+                  <p className="text-xs text-text-muted">
                     {new Date(game.release_date).getFullYear()}
                   </p>
                 )}

@@ -81,7 +81,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 ? "achievements"
                 : "stats"
           }
-          className="bg-surface/50 hover:bg-surface focus-visible:ring-accent focus-visible:ring-offset-base group flex gap-2 rounded-lg px-2 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="bg-surface/50 group flex gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
         >
           <div
             className={`flex h-7 w-7 items-center justify-center rounded-lg ${
@@ -142,17 +142,15 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-text-primary group-hover:text-accent truncate text-xs font-medium leading-4 transition-colors">
+                <p className="truncate text-xs font-medium leading-4 text-text-primary transition-colors group-hover:text-accent">
                   {item.game_name}
                 </p>
-                <p className="text-text-secondary text-[11px] leading-4">
+                <p className="text-[11px] leading-4 text-text-secondary">
                   {item.type === "session" ? (
                     item.duration_minutes ? (
                       <>
                         Played for{" "}
-                        <span className="text-accent">
-                          {formatDuration(item.duration_minutes)}
-                        </span>
+                        <span className="text-accent">{formatDuration(item.duration_minutes)}</span>
                       </>
                     ) : (
                       <span className="text-text-muted">Session logged</span>
@@ -160,7 +158,7 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   ) : item.type === "achievement" ? (
                     <>
                       Unlocked{" "}
-                      <span className="border-accent/40 bg-accent/20 text-accent inline-flex items-center rounded border px-1.5 py-0.5 font-medium">
+                      <span className="border-accent/40 bg-accent/20 inline-flex items-center rounded border px-1.5 py-0.5 font-medium text-accent">
                         {item.achievement_name}
                       </span>
                       {item.rarity_percent !== null && item.rarity_percent !== undefined && (
@@ -180,14 +178,14 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   ) : (
                     <>
                       {formatCompletionTypeLabel(item.completion_type)} progress updated to{" "}
-                      <span className="border-status-finished/40 bg-status-finished/20 text-status-finished inline-flex items-center rounded border px-1.5 py-0.5 font-medium">
+                      <span className="border-status-finished/40 bg-status-finished/20 inline-flex items-center rounded border px-1.5 py-0.5 font-medium text-status-finished">
                         {item.percentage}%
                       </span>
                     </>
                   )}
                 </p>
               </div>
-              <span className="text-text-muted whitespace-nowrap text-[10px]">
+              <span className="whitespace-nowrap text-[10px] text-text-muted">
                 {formatRelativeTime(new Date(item.timestamp))}
               </span>
             </div>
@@ -271,10 +269,10 @@ export function ActivityFeed({
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="flex animate-pulse gap-3">
-            <div className="bg-elevated h-10 w-10 rounded-lg" />
+            <div className="h-10 w-10 rounded-lg bg-elevated" />
             <div className="flex-1 space-y-2">
-              <div className="bg-elevated h-4 w-3/4 rounded" />
-              <div className="bg-elevated h-3 w-1/2 rounded" />
+              <div className="h-4 w-3/4 rounded bg-elevated" />
+              <div className="h-3 w-1/2 rounded bg-elevated" />
             </div>
           </div>
         ))}
@@ -284,7 +282,7 @@ export function ActivityFeed({
 
   if (feed.length === 0) {
     return (
-      <div className="text-text-muted py-8 text-center">
+      <div className="py-8 text-center text-text-muted">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -316,7 +314,7 @@ export function ActivityFeed({
         <div className="mt-3">
           <Link
             to={showMoreHref}
-            className="bg-surface text-text-primary hover:bg-elevated inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors hover:bg-elevated"
           >
             Show more activity
           </Link>

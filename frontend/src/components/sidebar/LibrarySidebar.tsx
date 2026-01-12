@@ -52,11 +52,11 @@ export function LibrarySidebar({
 
   if (isCollapsed) {
     return (
-      <div className="border-surface space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ export function LibrarySidebar({
         </div>
 
         {/* Favorites Toggle */}
-        <div className="border-surface flex justify-center border-t pt-2">
+        <div className="flex justify-center border-t border-surface pt-2">
           <Button
             variant="ghost"
             size="icon"
@@ -145,7 +145,7 @@ export function LibrarySidebar({
 
         {/* Clear Filters */}
         {hasActiveFilters && (
-          <div className="border-surface flex justify-center border-t pt-2">
+          <div className="flex justify-center border-t border-surface pt-2">
             <Button
               variant="ghost"
               size="icon"
@@ -173,7 +173,7 @@ export function LibrarySidebar({
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-accent/80 bg-accent text-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-base text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -182,7 +182,7 @@ export function LibrarySidebar({
       </Link>
       <Link
         to="/platforms"
-        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-elevated"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -196,9 +196,9 @@ export function LibrarySidebar({
       </Link>
 
       <div>
-        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -261,9 +261,9 @@ export function LibrarySidebar({
       </div>
 
       <div>
-        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-accent h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -424,9 +424,9 @@ export function LibrarySidebar({
       </FilterSection>
 
       <div>
-        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-status-dropped h-4 w-4"
+            className="h-4 w-4 text-status-dropped"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -440,13 +440,13 @@ export function LibrarySidebar({
           </svg>
           Filters
         </h3>
-        <div className="hover:bg-surface flex items-center gap-2 rounded-lg px-3 py-2 transition-colors">
+        <div className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-surface">
           <Checkbox
             id="filters-favorites"
             checked={filters.favorites}
             onCheckedChange={(checked) => setFilter("favorites", checked === true)}
           />
-          <label htmlFor="filters-favorites" className="text-text-muted cursor-pointer text-sm">
+          <label htmlFor="filters-favorites" className="cursor-pointer text-sm text-text-muted">
             Favorites Only
           </label>
         </div>
@@ -456,7 +456,7 @@ export function LibrarySidebar({
         <Button
           variant="outline"
           onClick={onClearFilters}
-          className="border-elevated bg-surface text-text-secondary hover:border-elevated hover:text-text-primary w-full"
+          className="w-full border-elevated bg-surface text-text-secondary hover:border-elevated hover:text-text-primary"
         >
           Clear All Filters
         </Button>
