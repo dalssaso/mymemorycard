@@ -468,7 +468,7 @@ export function Settings() {
                   readOnly={currentForm.api_key === undefined && currentForm.api_key_masked != null}
                 />
                 {errors.api_key && (
-                  <TextDisplay variant="secondary" size="xs" className="mt-1 text-status-dropped">
+                  <TextDisplay variant="muted" size="xs" className="mt-1 text-status-dropped">
                     {errors.api_key.message}
                   </TextDisplay>
                 )}
