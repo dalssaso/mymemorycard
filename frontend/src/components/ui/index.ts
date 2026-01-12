@@ -110,4 +110,7 @@ export {
   CommandShortcut,
 } from "./command";
 
-export { ThemeToggle } from "./ThemeToggle";
+export { ThemeToggle } from "./ThemeToggle"
+
+export { SectionCard } from "./section-card"
+export type { SectionCardProps } from "./section-card"
