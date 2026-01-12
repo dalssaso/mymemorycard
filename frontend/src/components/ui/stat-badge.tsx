@@ -11,7 +11,7 @@ export interface StatBadgeProps {
 const variantStyles = {
   default: "bg-surface text-text-secondary border-border",
   success: "bg-status-finished/20 text-status-finished border-status-finished",
-  warning: "bg-status-dropped/20 text-status-dropped border-status-dropped",
+  warning: "bg-status-playing/20 text-status-playing border-status-playing",
   danger: "bg-status-dropped/20 text-status-dropped border-status-dropped",
 } as const;
 

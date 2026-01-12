@@ -1,16 +1,18 @@
-import React, { type ElementType } from "react";
+import React, { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-
-export type TextDisplayProps<T extends ElementType = "div"> = React.ComponentPropsWithoutRef<T> & {
-  as?: T;
-  variant?: "primary" | "secondary" | "muted";
-  size?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
-  weight?: "regular" | "medium" | "semibold" | "bold";
-};
 
 type Variant = "primary" | "secondary" | "muted";
 type Size = "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
 type Weight = "regular" | "medium" | "semibold" | "bold";
+
+export type TextDisplayProps = {
+  as?: React.ElementType;
+  variant?: Variant;
+  size?: Size;
+  weight?: Weight;
+  children?: ReactNode;
+  className?: string;
+} & Record<string, unknown>;
 
 const variantStyles = {
   primary: "text-text-primary",
@@ -35,7 +37,7 @@ const weightStyles = {
   bold: "font-bold",
 } as const;
 
-export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps<ElementType>>(
+export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps>(
   (
     {
       variant = "primary",
@@ -45,22 +47,26 @@ export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps<Elemen
       children,
       className,
       ...props
-    }: TextDisplayProps<ElementType>,
+    },
     ref
-  ) => {
-    const Component = component as React.ElementType;
-    const v = variant as Variant;
-    const s = size as Size;
-    const w = weight as Weight;
+  ): React.ReactElement | null => {
+    const element = component as React.ElementType;
+    const classNameStr = typeof className === "string" ? className : "";
+    const childrenTyped = children as ReactNode;
 
-    return (
-      <Component
-        ref={ref}
-        className={cn(variantStyles[v], sizeStyles[s], weightStyles[w], className)}
-        {...props}
-      >
-        {children}
-      </Component>
+    return React.createElement(
+      element,
+      {
+        ref,
+        className: cn(
+          variantStyles[variant as Variant],
+          sizeStyles[size as Size],
+          weightStyles[weight as Weight],
+          classNameStr
+        ),
+        ...(props as Record<string, unknown>),
+      },
+      childrenTyped
     );
   }
 );
