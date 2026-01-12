@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { BackButton, PageLayout } from "@/components/layout";
 import { CollectionsSidebar } from "@/components/sidebar";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -404,9 +405,14 @@ export function Collections() {
                     </>
                   );
 
-                  const cardClassName = selectionMode
-                    ? `rounded-xl border border-border bg-surface/40 cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? "bg-accent/20 border-accent" : "hover:border-border"}`
-                    : "rounded-xl border border-border bg-surface/40 hover:border-accent transition-all cursor-pointer group relative p-0 sm:p-3";
+                  const cardClassName = cn(
+                    "bg-surface/40 group relative cursor-pointer rounded-xl border border-border p-0 transition-all duration-standard sm:p-3",
+                    selectionMode
+                      ? isSelected
+                        ? "bg-accent/20 border-accent"
+                        : "hover:border-border"
+                      : "hover:border-accent"
+                  );
 
                   return selectionMode ? (
                     <div

@@ -20,7 +20,7 @@ import { franchisesAPI, type OwnedGame, type MissingGame } from "@/lib/api";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 
 const STATUS_COLORS: Record<string, string> = {
-  backlog: "bg-text-muted",
+  backlog: "bg-status-backlog",
   playing: "bg-status-playing",
   finished: "bg-status-finished",
   completed: "bg-accent",
@@ -330,7 +330,7 @@ export function FranchiseDetail() {
                       variant="secondary"
                       size="sm"
                       onClick={handleSelectAll}
-                      className="bg-elevated text-text-primary hover:bg-text-muted"
+                      className="bg-elevated text-text-primary hover:bg-surface"
                     >
                       {selectedGames.size === missing_games.length ? "Deselect All" : "Select All"}
                     </Button>
@@ -338,7 +338,7 @@ export function FranchiseDetail() {
                       variant="secondary"
                       size="sm"
                       onClick={handleExitSelectionMode}
-                      className="bg-elevated text-text-primary hover:bg-text-muted"
+                      className="bg-elevated text-text-primary hover:bg-surface"
                     >
                       Cancel
                     </Button>
