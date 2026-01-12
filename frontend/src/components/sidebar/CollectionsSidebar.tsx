@@ -53,11 +53,11 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
+      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/import"
-            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
             title="Import Games"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,10 +70,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             </svg>
           </Link>
         </div>
-        <div className="flex justify-center border-t border-ctp-surface0 pt-2">
+        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
           <Link
             to="/platforms"
-            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,12 +86,12 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             </svg>
           </Link>
         </div>
-        <div className="flex flex-col items-center gap-2 border-t border-ctp-surface0 pt-2">
+        <div className="border-ctp-surface0 flex flex-col items-center gap-2 border-t pt-2">
           <div
             className="flex flex-col items-center gap-1"
             title={`Collections: ${animatedCollections}`}
           >
-            <div className="rounded-lg p-2 text-ctp-teal">
+            <div className="text-ctp-teal rounded-lg p-2">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -101,13 +101,13 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                 />
               </svg>
             </div>
-            <span className="text-xs text-ctp-overlay1">{animatedCollections}</span>
+            <span className="text-ctp-overlay1 text-xs">{animatedCollections}</span>
           </div>
           <div
             className="flex flex-col items-center gap-1"
             title={`Franchises: ${animatedFranchises}`}
           >
-            <div className="rounded-lg p-2 text-ctp-mauve">
+            <div className="text-ctp-mauve rounded-lg p-2">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -117,16 +117,16 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                 />
               </svg>
             </div>
-            <span className="text-xs text-ctp-overlay1">{animatedFranchises}</span>
+            <span className="text-ctp-overlay1 text-xs">{animatedFranchises}</span>
           </div>
         </div>
         {onCreateCollection && (
-          <div className="flex flex-col items-center gap-1 border-t border-ctp-surface0 pt-2">
+          <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
             <Button
               onClick={onCreateCollection}
               variant="ghost"
               size="icon"
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
               title="Create Collection"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             </Button>
             <Link
               to="/franchises"
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
               title="View Franchises"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,7 +163,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-ctp-mauve/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-ctp-mauve px-3 py-2 text-sm font-medium text-ctp-base transition-colors"
+        className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -172,7 +172,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
       </Link>
       <Link
         to="/platforms"
-        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-ctp-surface0 px-3 py-2 text-sm font-medium text-ctp-text transition-colors hover:bg-ctp-surface1"
+        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -187,9 +187,9 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
 
       {/* Quick Stats */}
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-teal"
+            className="text-ctp-teal h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -204,10 +204,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
           Quick Stats
         </h3>
         <div className="space-y-2">
-          <div className="flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors hover:bg-ctp-surface0">
+          <div className="hover:bg-ctp-surface0 flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors">
             <div className="flex items-center gap-2">
               <svg
-                className="h-4 w-4 text-ctp-teal"
+                className="text-ctp-teal h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -221,15 +221,15 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
               </svg>
               <span className="text-ctp-subtext0">Collections</span>
             </div>
-            <span className="min-w-[2rem] text-right font-medium text-ctp-teal">
+            <span className="text-ctp-teal min-w-[2rem] text-right font-medium">
               {animatedCollections}
             </span>
           </div>
 
-          <div className="flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors hover:bg-ctp-surface0">
+          <div className="hover:bg-ctp-surface0 flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors">
             <div className="flex items-center gap-2">
               <svg
-                className="h-4 w-4 text-ctp-mauve"
+                className="text-ctp-mauve h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -243,7 +243,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
               </svg>
               <span className="text-ctp-subtext0">Franchises</span>
             </div>
-            <span className="min-w-[2rem] text-right font-medium text-ctp-mauve">
+            <span className="text-ctp-mauve min-w-[2rem] text-right font-medium">
               {animatedFranchises}
             </span>
           </div>
@@ -253,9 +253,9 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
       {/* Quick Actions */}
       {onCreateCollection && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="h-4 w-4 text-ctp-green"
+              className="text-ctp-green h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -272,7 +272,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
           <Button
             onClick={onCreateCollection}
             variant="ghost"
-            className="flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -286,7 +286,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
           </Button>
           <Link
             to="/franchises"
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -304,9 +304,9 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
       {/* Recent Collections */}
       {collections.length > 0 && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="h-4 w-4 text-ctp-teal"
+              className="text-ctp-teal h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -326,11 +326,11 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                 key={collection.id}
                 to="/collections/$id"
                 params={{ id: collection.id }}
-                className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-ctp-surface0"
+                className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
               >
                 <div className="bg-ctp-teal/20 flex h-8 w-8 items-center justify-center rounded">
                   <svg
-                    className="h-4 w-4 text-ctp-teal"
+                    className="text-ctp-teal h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -344,17 +344,17 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
+                  <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
                     {collection.name}
                   </p>
-                  <p className="text-xs text-ctp-overlay1">
+                  <p className="text-ctp-overlay1 text-xs">
                     {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
               </Link>
             ))}
             {collections.length > 5 && (
-              <p className="px-2 py-1 text-xs text-ctp-overlay1">
+              <p className="text-ctp-overlay1 px-2 py-1 text-xs">
                 +{collections.length - 5} more collections
               </p>
             )}
@@ -365,9 +365,9 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
       {/* Franchises Preview */}
       {franchises.length > 0 && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="h-4 w-4 text-ctp-mauve"
+              className="text-ctp-mauve h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -387,7 +387,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                 key={franchise.series_name}
                 to="/franchises/$seriesName"
                 params={{ seriesName: franchise.series_name }}
-                className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-ctp-surface0"
+                className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
               >
                 {franchise.cover_art_url ? (
                   <img
@@ -398,7 +398,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                 ) : (
                   <div className="bg-ctp-mauve/20 flex h-10 w-8 items-center justify-center rounded">
                     <svg
-                      className="h-4 w-4 text-ctp-mauve"
+                      className="text-ctp-mauve h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -413,10 +413,10 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-ctp-subtext1 group-hover:text-ctp-text">
+                  <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
                     {franchise.series_name}
                   </p>
-                  <p className="text-xs text-ctp-overlay1">
+                  <p className="text-ctp-overlay1 text-xs">
                     {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
@@ -425,7 +425,7 @@ export function CollectionsSidebar({ onCreateCollection }: CollectionsSidebarPro
             {franchises.length > 5 && (
               <Link
                 to="/franchises"
-                className="hover:text-ctp-mauve/80 block px-2 py-1 text-xs text-ctp-mauve transition-colors"
+                className="hover:text-ctp-mauve/80 text-ctp-mauve block px-2 py-1 text-xs transition-colors"
               >
                 View all {franchises.length} franchises
               </Link>

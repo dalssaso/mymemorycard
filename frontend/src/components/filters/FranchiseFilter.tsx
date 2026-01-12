@@ -20,16 +20,16 @@ export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: Fran
   };
 
   if (isLoading) {
-    return <div className="text-sm text-ctp-subtext1">Loading franchises...</div>;
+    return <div className="text-ctp-subtext1 text-sm">Loading franchises...</div>;
   }
 
   if (error) {
     console.error("Franchises error:", error);
-    return <div className="text-sm text-ctp-red">Error loading franchises</div>;
+    return <div className="text-ctp-red text-sm">Error loading franchises</div>;
   }
 
   if (franchises.length === 0) {
-    return <div className="text-sm text-ctp-subtext1">No franchises found</div>;
+    return <div className="text-ctp-subtext1 text-sm">No franchises found</div>;
   }
 
   return (
@@ -44,11 +44,11 @@ export function FranchiseFilter({ selectedFranchises, onFranchisesChange }: Fran
             className={`flex h-auto w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-all ${
               isSelected
                 ? "bg-ctp-teal/20 border-ctp-teal text-ctp-teal"
-                : "border-transparent text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text border-transparent"
             }`}
           >
             <span className="truncate">{franchise.series_name}</span>
-            <span className="flex-shrink-0 text-xs text-ctp-subtext1">{franchise.game_count}</span>
+            <span className="text-ctp-subtext1 flex-shrink-0 text-xs">{franchise.game_count}</span>
           </Button>
         );
       })}

@@ -200,11 +200,11 @@ export function Platforms() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+                className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
               />
-              <h1 className="text-4xl font-bold text-ctp-text">Platforms</h1>
+              <h1 className="text-ctp-text text-4xl font-bold">Platforms</h1>
             </div>
-            <p className="mt-1 text-ctp-subtext0">
+            <p className="text-ctp-subtext0 mt-1">
               Keep your platform list current for accurate imports.
             </p>
           </div>
@@ -220,7 +220,7 @@ export function Platforms() {
 
         {userPlatforms.length === 0 ? (
           <Card className="mb-8 p-6">
-            <p className="py-8 text-center text-ctp-subtext0">
+            <p className="text-ctp-subtext0 py-8 text-center">
               No platforms saved yet. Add your first platform to get started.
             </p>
           </Card>
@@ -236,7 +236,7 @@ export function Platforms() {
                 <Link to="/platforms/$id" params={{ id: platform.id }}>
                   <div
                     className={[
-                      "aspect-square overflow-hidden rounded-lg bg-ctp-surface0",
+                      "bg-ctp-surface0 aspect-square overflow-hidden rounded-lg",
                       "relative mb-2",
                     ].join(" ")}
                   >
@@ -253,8 +253,8 @@ export function Platforms() {
                       ].join(" ")}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="truncate font-medium text-ctp-text">{platform.display_name}</p>
-                      <p className="truncate text-sm text-ctp-teal">
+                      <p className="text-ctp-text truncate font-medium">{platform.display_name}</p>
+                      <p className="text-ctp-teal truncate text-sm">
                         {platform.username || "No username set"}
                       </p>
                     </div>
@@ -279,8 +279,8 @@ export function Platforms() {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-ctp-text">Add Platforms</h2>
-            <span className="text-sm text-ctp-subtext0">{selectedPlatformIds.length} selected</span>
+            <h2 className="text-ctp-text text-lg font-semibold">Add Platforms</h2>
+            <span className="text-ctp-subtext0 text-sm">{selectedPlatformIds.length} selected</span>
           </div>
 
           {isLoadingPlatforms ? (
@@ -292,7 +292,7 @@ export function Platforms() {
                   variant={platformTypeFilter === "all" ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setPlatformTypeFilter("all")}
-                  className="rounded-full border border-ctp-surface1 px-3"
+                  className="border-ctp-surface1 rounded-full border px-3"
                 >
                   All
                 </Button>
@@ -309,7 +309,7 @@ export function Platforms() {
                     variant={platformTypeFilter === option.value ? "secondary" : "ghost"}
                     size="sm"
                     onClick={() => setPlatformTypeFilter(option.value)}
-                    className="rounded-full border border-ctp-surface1 px-3"
+                    className="border-ctp-surface1 rounded-full border px-3"
                   >
                     {option.label}
                   </Button>
@@ -329,7 +329,7 @@ export function Platforms() {
 
                 return (
                   <div key={group.type}>
-                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ctp-subtext0">
+                    <div className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-sm font-semibold">
                       <PlatformTypeIcon type={group.type} size="sm" showLabel={false} />
                       <span>{group.label}</span>
                     </div>
@@ -352,10 +352,10 @@ export function Platforms() {
                           >
                             <div className="w-full">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="font-medium text-ctp-text">
+                                <div className="text-ctp-text font-medium">
                                   {platform.display_name}
                                 </div>
-                                {isLocked && <span className="text-xs text-ctp-teal">Saved</span>}
+                                {isLocked && <span className="text-ctp-teal text-xs">Saved</span>}
                               </div>
                               <PlatformTypeIcon
                                 type={platform.platform_type}

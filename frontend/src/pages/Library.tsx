@@ -42,6 +42,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
@@ -297,8 +298,8 @@ export function Library() {
                 className="h-12 w-8 rounded object-cover"
               />
             ) : (
-              <div className="flex h-12 w-8 items-center justify-center rounded bg-ctp-surface0">
-                <span className="text-xs text-ctp-overlay1">No image</span>
+              <div className="bg-ctp-surface0 flex h-12 w-8 items-center justify-center rounded">
+                <span className="text-ctp-overlay1 text-xs">No image</span>
               </div>
             )}
             <Link
@@ -375,9 +376,9 @@ export function Library() {
           <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
             />
-            <h1 className="text-4xl font-bold text-ctp-text">Library</h1>
+            <h1 className="text-ctp-text text-4xl font-bold">Library</h1>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -394,7 +395,7 @@ export function Library() {
       <PageLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="max-w-md p-6">
-            <h2 className="mb-4 text-2xl font-bold text-ctp-red">Error</h2>
+            <h2 className="text-ctp-red mb-4 text-2xl font-bold">Error</h2>
             <p className="text-ctp-subtext0">Failed to load your library. Please try again.</p>
           </Card>
         </div>
@@ -429,17 +430,17 @@ export function Library() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
             />
-            <h1 className="text-4xl font-bold text-ctp-mauve">Library</h1>
+            <h1 className="text-ctp-mauve text-4xl font-bold">Library</h1>
           </div>
 
           {/* Export Buttons */}
           <div className="flex gap-2">
-            <Button variant="outline-teal" onClick={() => handleExport("json")}>
+            <Button variant="outline" onClick={() => handleExport("json")}>
               Export JSON
             </Button>
-            <Button variant="outline-green" onClick={() => handleExport("csv")}>
+            <Button variant="secondary" onClick={() => handleExport("csv")}>
               Export CSV
             </Button>
           </div>
@@ -462,7 +463,7 @@ export function Library() {
               <Button
                 variant="outline"
                 onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className="bg-ctp-surface0/50 border-ctp-surface1 text-sm text-ctp-subtext1 hover:border-ctp-mauve"
+                className="bg-ctp-surface0/50 border-ctp-surface1 text-ctp-subtext1 hover:border-ctp-mauve text-sm"
                 aria-expanded={showColumnSettings}
                 aria-controls="column-settings"
               >
@@ -490,13 +491,13 @@ export function Library() {
               {showColumnSettings && (
                 <div
                   id="column-settings"
-                  className="absolute left-0 top-full z-10 mt-2 min-w-[200px] rounded-lg border border-ctp-surface1 bg-ctp-mantle p-3 shadow-lg"
+                  className="border-ctp-surface1 bg-ctp-mantle absolute left-0 top-full z-10 mt-2 min-w-[200px] rounded-lg border p-3 shadow-lg"
                 >
                   <div className="flex flex-col gap-2">
                     {table.getAllLeafColumns().map((column) => (
                       <label
                         key={column.id}
-                        className="flex cursor-pointer items-center gap-2 text-sm hover:text-ctp-text"
+                        className="hover:text-ctp-text flex cursor-pointer items-center gap-2 text-sm"
                       >
                         <Checkbox
                           checked={column.getIsVisible()}
@@ -528,7 +529,7 @@ export function Library() {
         {/* Results count, page size, and selection toggle */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="text-sm text-ctp-subtext0">
+            <span className="text-ctp-subtext0 text-sm">
               {(() => {
                 const { pageIndex, pageSize } = table.getState().pagination;
                 const start = pageIndex * pageSize + 1;
@@ -569,7 +570,7 @@ export function Library() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="pageSize" className="whitespace-nowrap text-sm text-ctp-subtext0">
+            <label htmlFor="pageSize" className="text-ctp-subtext0 whitespace-nowrap text-sm">
               Items per page:
             </label>
             <Select
@@ -582,7 +583,7 @@ export function Library() {
               <SelectContent>
                 {PAGE_SIZE_OPTIONS.map((size) => (
                   <SelectItem key={size} value={String(size)}>
-                    {size}
+                    <SelectItemText>{size}</SelectItemText>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -592,16 +593,16 @@ export function Library() {
 
         {/* Selection Mode Bar */}
         {selectionMode && (
-          <div className="bg-ctp-surface0/50 mb-4 flex items-center justify-between rounded-lg border border-ctp-surface1 p-4">
+          <div className="bg-ctp-surface0/50 border-ctp-surface1 mb-4 flex items-center justify-between rounded-lg border p-4">
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-ctp-text">
+              <span className="text-ctp-text text-sm font-medium">
                 {selectedGameIds.length > 0
                   ? `${selectedGameIds.length} game(s) selected`
                   : "Select games to manage"}
               </span>
               {filteredGames.length > 0 && (
                 <Button
-                  variant="ghost-text"
+                  variant="ghost"
                   size="lg"
                   onClick={() => table.toggleAllRowsSelected(!allFilteredSelected)}
                   className="px-2 text-sm"
@@ -611,7 +612,7 @@ export function Library() {
               )}
               {selectedGameIds.length > 0 && (
                 <Button
-                  variant="ghost-text"
+                  variant="ghost"
                   size="lg"
                   onClick={() => setRowSelection({})}
                   className="px-2 text-sm"
@@ -629,16 +630,16 @@ export function Library() {
                     onOpenChange={setShowCollectionDropdown}
                   >
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline-teal" size="lg">
+                      <Button variant="outline" size="lg">
                         Add to Collection
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="min-w-[200px] border-ctp-surface1 bg-ctp-mantle"
+                      className="border-ctp-surface1 bg-ctp-mantle min-w-[200px]"
                     >
                       {collections.length === 0 ? (
-                        <div className="px-2 py-1 text-sm text-ctp-subtext0">
+                        <div className="text-ctp-subtext0 px-2 py-1 text-sm">
                           No collections yet
                         </div>
                       ) : (
@@ -662,7 +663,7 @@ export function Library() {
 
                   {/* Delete */}
                   <Button
-                    variant="outline-red"
+                    variant="destructive"
                     size="lg"
                     onClick={() => setShowDeleteConfirm(true)}
                   >
@@ -683,7 +684,7 @@ export function Library() {
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-bold text-ctp-text">
+              <AlertDialogTitle className="text-ctp-text text-xl font-bold">
                 Delete Games
               </AlertDialogTitle>
               <AlertDialogDescription className="text-ctp-subtext0">
@@ -710,16 +711,16 @@ export function Library() {
             <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
               <div>
                 <h2 className="mb-4 text-2xl font-bold">No Games Yet</h2>
-                <p className="mb-6 text-ctp-subtext0">
+                <p className="text-ctp-subtext0 mb-6">
                   Start building your library by importing games from your platforms.
                 </p>
                 <Button asChild>
                   <Link to="/import">Import Games</Link>
                 </Button>
               </div>
-              <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface1 p-4">
-                <h3 className="text-sm font-semibold text-ctp-text">Next steps</h3>
-                <div className="mt-2 space-y-2 text-sm text-ctp-subtext0">
+              <div className="bg-ctp-surface0/40 border-ctp-surface1 rounded-lg border p-4">
+                <h3 className="text-ctp-text text-sm font-semibold">Next steps</h3>
+                <div className="text-ctp-subtext0 mt-2 space-y-2 text-sm">
                   <p>Connect platforms so imports stay accurate.</p>
                   <p>Use filters to highlight favorites and backlog.</p>
                   <p>Create collections to group by theme.</p>
@@ -745,7 +746,7 @@ export function Library() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className={`bg-ctp-surface0/40 relative cursor-pointer rounded-xl border border-ctp-surface1 p-0 transition-all sm:p-5 ${
+                      className={`bg-ctp-surface0/40 border-ctp-surface1 relative cursor-pointer rounded-xl border p-0 transition-all sm:p-5 ${
                         isSelected
                           ? "bg-ctp-mauve/20 border-ctp-mauve"
                           : "hover:border-ctp-surface2"
@@ -760,25 +761,25 @@ export function Library() {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-ctp-surface0">
-                            <span className="text-sm text-ctp-overlay1">No image</span>
+                          <div className="bg-ctp-surface0 flex h-full w-full items-center justify-center">
+                            <span className="text-ctp-overlay1 text-sm">No image</span>
                           </div>
                         )}
                         <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="line-clamp-2 text-sm font-bold text-ctp-text">
+                          <h3 className="text-ctp-text line-clamp-2 text-sm font-bold">
                             {row.original.name}
                           </h3>
                         </div>
                         {isSelected && (
-                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
+                          <div className="bg-ctp-mauve absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="h-4 w-4 text-ctp-text"
+                              className="text-ctp-text h-4 w-4"
                             >
                               <path
                                 strokeLinecap="round"
@@ -799,8 +800,8 @@ export function Library() {
                             className="h-32 w-24 rounded object-cover"
                           />
                         ) : (
-                          <div className="flex h-32 w-24 items-center justify-center rounded bg-ctp-surface0">
-                            <span className="text-xs text-ctp-overlay1">No image</span>
+                          <div className="bg-ctp-surface0 flex h-32 w-24 items-center justify-center rounded">
+                            <span className="text-ctp-overlay1 text-xs">No image</span>
                           </div>
                         )}
                         <div className="flex-1">
@@ -811,27 +812,27 @@ export function Library() {
                               size="sm"
                               maxDisplay={5}
                             />
-                            <Badge className="border border-ctp-surface2 text-ctp-subtext0">
+                            <Badge className="border-ctp-surface2 text-ctp-subtext0 border">
                               {row.original.status.charAt(0).toUpperCase() +
                                 row.original.status.slice(1)}
                             </Badge>
                           </div>
                           {row.original.metacritic_score && (
-                            <div className="flex items-center gap-1 text-sm text-ctp-subtext0">
+                            <div className="text-ctp-subtext0 flex items-center gap-1 text-sm">
                               <span className="text-ctp-yellow">★</span>
                               <span>{row.original.metacritic_score}</span>
                             </div>
                           )}
                         </div>
                         {isSelected && (
-                          <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
+                          <div className="bg-ctp-mauve absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="h-4 w-4 text-ctp-text"
+                              className="text-ctp-text h-4 w-4"
                             >
                               <path
                                 strokeLinecap="round"
@@ -878,7 +879,7 @@ export function Library() {
                 <table className="w-full">
                   <thead>
                     {table.getHeaderGroups().map((headerGroup) => (
-                      <tr key={headerGroup.id} className="border-b border-ctp-surface1">
+                      <tr key={headerGroup.id} className="border-ctp-surface1 border-b">
                         {selectionMode && (
                           <th className="w-12 p-4">
                             <Checkbox
@@ -891,7 +892,7 @@ export function Library() {
                         {headerGroup.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="p-4 text-left font-medium text-ctp-subtext0"
+                            className="text-ctp-subtext0 p-4 text-left font-medium"
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                           </th>
@@ -903,7 +904,7 @@ export function Library() {
                     {table.getRowModel().rows.map((row) => (
                       <tr
                         key={row.id}
-                        className={`border-b border-ctp-surface0 transition-colors hover:bg-ctp-surface1 ${selectionMode && row.getIsSelected() ? "bg-ctp-mauve/10" : ""}`}
+                        className={`border-ctp-surface0 hover:bg-ctp-surface1 border-b transition-colors ${selectionMode && row.getIsSelected() ? "bg-ctp-mauve/10" : ""}`}
                       >
                         {selectionMode && (
                           <td className="w-12 p-4">

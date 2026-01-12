@@ -1,3 +1,5 @@
+@import './styles/fonts.css';
+@import './styles/tokens.css';
 @import './styles/theme.css';
 
 @tailwind base;
@@ -6,7 +8,7 @@
 
 @layer base {
   * {
-    @apply border-ctp-surface2;
+    @apply border-border;
   }
 
   :root {
@@ -14,10 +16,13 @@
   }
 
   body {
-    @apply bg-ctp-base text-ctp-text antialiased;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-family);
+    background-color: var(--color-base);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-body);
+    @apply antialiased;
     scrollbar-width: thin;
-    scrollbar-color: var(--ctp-surface2) transparent;
+    scrollbar-color: var(--color-border) transparent;
   }
 
   body::-webkit-scrollbar {
@@ -30,14 +35,14 @@
   }
 
   body::-webkit-scrollbar-thumb {
-    background-color: var(--ctp-surface2);
+    background-color: var(--color-border);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   body::-webkit-scrollbar-thumb:hover {
-    background-color: var(--ctp-overlay1);
+    background-color: var(--color-text-muted);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -179,10 +184,10 @@
   .progress-percentage-input {
     @apply appearance-none;
     -moz-appearance: textfield;
-    background-color: color-mix(in srgb, var(--ctp-crust) 70%, transparent);
-    color: var(--ctp-text);
-    border-color: var(--ctp-surface1);
-    caret-color: var(--ctp-mauve);
+    background-color: color-mix(in srgb, var(--color-base) 70%, transparent);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+    caret-color: var(--color-accent);
     color-scheme: light dark;
   }
 
@@ -195,8 +200,8 @@
   .progress-percentage-input:-webkit-autofill,
   .progress-percentage-input:-webkit-autofill:hover,
   .progress-percentage-input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--ctp-text);
-    box-shadow: 0 0 0px 1000px color-mix(in srgb, var(--ctp-crust) 80%, transparent) inset;
+    -webkit-text-fill-color: var(--color-text-primary);
+    box-shadow: 0 0 0px 1000px color-mix(in srgb, var(--color-base) 80%, transparent) inset;
     transition: background-color 9999s ease-in-out 0s;
   }
 
@@ -207,7 +212,7 @@
 
   .scrollbar-custom {
     scrollbar-width: thin;
-    scrollbar-color: var(--ctp-surface2) transparent;
+    scrollbar-color: var(--color-border) transparent;
   }
 
   .scrollbar-custom::-webkit-scrollbar {
@@ -220,14 +225,14 @@
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb {
-    background-color: var(--ctp-surface2);
+    background-color: var(--color-border);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    background-color: var(--ctp-overlay1);
+    background-color: var(--color-text-muted);
   }
 
   .scroll-fade-y {
@@ -284,13 +289,3 @@
   }
 }
 
-
-
-@layer base {
-  * {
-    @apply border-ctp-surface2;
-  }
-  body {
-    @apply bg-ctp-base text-ctp-text;
-  }
-}
