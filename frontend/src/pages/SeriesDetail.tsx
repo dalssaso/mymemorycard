@@ -3,6 +3,7 @@ import { useParams, Link } from "@tanstack/react-router";
 import { BackButton, PageLayout } from "@/components/layout";
 import { Card } from "@/components/ui";
 import { collectionsAPI } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface Game {
   id: string;
@@ -85,7 +86,9 @@ export function SeriesDetail() {
                     <img
                       src={game.cover_art_url}
                       alt={game.name}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      className={cn(
+                        "h-full w-full object-cover transition-transform duration-standard group-hover:scale-105"
+                      )}
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-text-muted">
