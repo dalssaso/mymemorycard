@@ -19,7 +19,7 @@ const quickStatStyles = {
     backgroundColor: "color-mix(in srgb, var(--status-finished) 35%, transparent)",
   },
   favorites: {
-    backgroundColor: "color-mix(in srgb, var(--status-dropped) 35%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--accent) 35%, transparent)",
   },
 };
 
@@ -58,23 +58,24 @@ export function Sidebar({
         onClick={toggleSidebar}
         variant="ghost"
         size="icon"
-        className={`fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-elevated bg-surface transition-all duration-300 hover:border-elevated hover:bg-elevated md:flex ${
+        className={`fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-elevated bg-surface transition-all duration-standard hover:border-elevated hover:bg-elevated md:flex ${
           isCollapsed ? "left-[52px]" : "left-[228px]"
         }`}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <svg
-          className={`h-3 w-3 text-text-secondary transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`}
+          className={`h-3 w-3 text-text-secondary transition-transform duration-standard ${isCollapsed ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </Button>
 
       <aside
-        className={`fixed bottom-0 left-0 top-0 hidden border-r border-surface bg-base transition-all duration-300 md:block ${
+        className={`fixed bottom-0 left-0 top-0 hidden border-r border-surface bg-base transition-all duration-standard md:block ${
           isCollapsed ? "w-16" : "w-60"
         }`}
       >
@@ -379,7 +380,7 @@ export function Sidebar({
                       >
                         <div className="flex items-center gap-2">
                           <svg
-                            className="h-4 w-4 text-status-dropped"
+                            className="h-4 w-4 text-accent"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
