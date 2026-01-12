@@ -28,7 +28,7 @@ export function AICuratorSidebar() {
         <div className="flex justify-center">
           <Link
             to="/settings"
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="AI Settings"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ export function AICuratorSidebar() {
       {/* AI Settings Link */}
       <Link
         to="/settings"
-        className="hover:bg-accent/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-base text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-text-primary transition-colors duration-standard"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

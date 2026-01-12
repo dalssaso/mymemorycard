@@ -1,5 +1,6 @@
 import { useSidebar } from "@/contexts/SidebarContext";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 interface PlatformsSidebarProps {
   platformCount: number;
@@ -26,7 +27,7 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
             onClick={onAddCustomPlatform}
             variant="ghost"
             size="icon"
-            className="rounded-lg p-2 text-accent transition-all hover:bg-surface hover:text-text-primary"
+            className="rounded-lg p-2 text-accent transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="Add Custom Platform"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,11 +58,11 @@ export function PlatformsSidebar({ platformCount, onAddCustomPlatform }: Platfor
         type="button"
         onClick={onAddCustomPlatform}
         variant="ghost"
-        className={[
+        className={cn(
           "flex w-full items-center justify-center gap-2 px-4 py-2.5",
-          "bg-accent/20 hover:bg-accent/30 text-accent",
-          "rounded-lg font-medium transition-colors",
-        ].join(" ")}
+          "rounded-lg font-medium transition-colors duration-standard",
+          "bg-accent/20 hover:bg-accent/30 text-accent"
+        )}
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

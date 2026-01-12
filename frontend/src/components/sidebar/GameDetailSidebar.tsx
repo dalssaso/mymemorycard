@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 interface GameDetailSidebarProps {
   gameId: string;
@@ -75,7 +76,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
         <div className="flex justify-center">
           <Link
             to="/library"
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="Back to Library"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,11 +116,12 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               disabled={isUpdating}
               variant="ghost"
               size="icon"
-              className={`rounded-lg p-2 transition-all disabled:opacity-50 ${
+              className={cn(
+                "rounded-lg p-2 transition-all duration-standard disabled:opacity-50",
                 status === option.value
                   ? "bg-accent/20 text-accent ring-2 ring-accent"
                   : "text-text-secondary hover:bg-surface hover:text-text-primary"
-              }`}
+              )}
               title={option.label}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +167,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       <div>
         <Link
           to="/library"
-          className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors hover:border-elevated hover:text-text-primary"
+          className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors duration-standard hover:border-accent hover:text-text-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

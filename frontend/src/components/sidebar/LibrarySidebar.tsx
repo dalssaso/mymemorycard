@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { StatusButton, Button, Checkbox, ScrollFade } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { STATUS_ORDER } from "@/lib/constants/status";
 import {
   FilterSection,
@@ -56,7 +57,7 @@ export function LibrarySidebar({
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,11 +77,12 @@ export function LibrarySidebar({
             variant="ghost"
             size="icon"
             onClick={() => setViewMode("grid")}
-            className={
+            className={cn(
+              "transition-colors duration-standard",
               viewMode === "grid"
-                ? "hover:bg-accent/90 bg-accent text-base hover:text-base"
+                ? "hover:bg-accent/90 bg-accent text-text-primary"
                 : "text-text-secondary hover:bg-surface hover:text-text-primary"
-            }
+            )}
             title="Grid View"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,11 +98,12 @@ export function LibrarySidebar({
             variant="ghost"
             size="icon"
             onClick={() => setViewMode("table")}
-            className={
+            className={cn(
+              "transition-colors duration-standard",
               viewMode === "table"
-                ? "hover:bg-accent/90 bg-accent text-base hover:text-base"
+                ? "hover:bg-accent/90 bg-accent text-text-primary"
                 : "text-text-secondary hover:bg-surface hover:text-text-primary"
-            }
+            )}
             title="Table View"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,11 +123,12 @@ export function LibrarySidebar({
             variant="ghost"
             size="icon"
             onClick={() => setFilter("favorites", !filters.favorites)}
-            className={
+            className={cn(
+              "transition-colors duration-standard",
               filters.favorites
-                ? "bg-status-dropped/20 hover:bg-status-dropped/30 text-status-dropped hover:text-status-dropped"
+                ? "bg-status-dropped/20 hover:bg-status-dropped/30 text-status-dropped"
                 : "text-text-secondary hover:bg-surface hover:text-text-primary"
-            }
+            )}
             title={filters.favorites ? "Showing Favorites Only" : "Show Favorites Only"}
           >
             <svg

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 interface Platform {
   id: string;
@@ -50,11 +51,12 @@ export function ImportSidebar({
               disabled={isImporting}
               variant="ghost"
               size="icon"
-              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-all disabled:opacity-50 ${
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-all duration-standard disabled:opacity-50",
                 selectedPlatform === platform.id
                   ? "bg-accent/20 text-accent ring-2 ring-accent"
                   : "text-text-secondary hover:bg-surface hover:text-text-primary"
-              }`}
+              )}
               title={platform.display_name}
             >
               {platform.display_name.trim().charAt(0).toUpperCase() || "?"}
@@ -69,7 +71,7 @@ export function ImportSidebar({
     <div className="space-y-6">
       <Link
         to="/platforms"
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors hover:bg-elevated"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors duration-standard hover:bg-elevated"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -106,11 +108,12 @@ export function ImportSidebar({
               onClick={() => onPlatformSelect(platform.id)}
               disabled={isImporting}
               variant="ghost"
-              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50 ${
+              className={cn(
+                "h-auto w-full rounded-lg px-3 py-2 text-left text-sm transition-all duration-standard disabled:opacity-50",
                 selectedPlatform === platform.id
                   ? "bg-accent/20 border-accent/30 border text-accent"
                   : "text-text-secondary hover:bg-surface hover:text-text-primary"
-              }`}
+              )}
             >
               {platform.display_name}
             </Button>

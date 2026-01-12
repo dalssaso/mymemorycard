@@ -86,7 +86,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
         <div className="flex justify-center">
           <Link
             to="/import"
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="Import Games"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-accent/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-base text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-text-primary transition-colors duration-standard"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
