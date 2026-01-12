@@ -5,14 +5,17 @@ type Variant = "primary" | "secondary" | "muted";
 type Size = "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
 type Weight = "regular" | "medium" | "semibold" | "bold";
 
-export type TextDisplayProps = {
-  as?: React.ElementType;
+export type TextDisplayProps<T extends React.ElementType = "div"> = {
+  as?: T;
   variant?: Variant;
   size?: Size;
   weight?: Weight;
   children?: ReactNode;
   className?: string;
-} & Record<string, unknown>;
+} & Omit<
+  React.ComponentPropsWithoutRef<T>,
+  "as" | "variant" | "size" | "weight" | "children" | "className"
+>;
 
 const variantStyles = {
   primary: "text-text-primary",
@@ -37,7 +40,17 @@ const weightStyles = {
   bold: "font-bold",
 } as const;
 
-export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps>(
+interface TextDisplayComponent extends React.ForwardRefExoticComponent<
+  TextDisplayProps & React.RefAttributes<HTMLElement>
+> {
+  <T extends React.ElementType = "div">(
+    props: TextDisplayProps<T> & React.RefAttributes<HTMLElement>,
+    ref?: React.ForwardedRef<HTMLElement>
+  ): React.ReactElement | null;
+}
+
+// eslint-disable-next-line react/display-name
+const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps>(
   (
     {
       variant = "primary",
@@ -52,26 +65,23 @@ export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps>(
   ): React.ReactElement | null => {
     const element = component as React.ElementType;
 
-    const variantValue = (variant ?? "primary") as Variant;
-    const sizeValue = (size ?? "base") as Size;
-    const weightValue = (weight ?? "regular") as Weight;
-    const classNameStr = typeof className === "string" ? className : "";
-
     return React.createElement(
       element,
       {
         ref,
         className: cn(
-          variantStyles[variantValue],
-          sizeStyles[sizeValue],
-          weightStyles[weightValue],
-          classNameStr
+          variantStyles[variant as Variant],
+          sizeStyles[size as Size],
+          weightStyles[weight as Weight],
+          className
         ),
         ...(props as Record<string, unknown>),
       },
       children as ReactNode
     );
   }
-);
+) as unknown as TextDisplayComponent;
 
-TextDisplay.displayName = "TextDisplay";
+TextDisplayImpl.displayName = "TextDisplay";
+
+export const TextDisplay = TextDisplayImpl;
