@@ -12,6 +12,7 @@ import {
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 export function Navbar(): JSX.Element {
   const { user, logout } = useAuth();
@@ -33,9 +34,10 @@ export function Navbar(): JSX.Element {
 
   return (
     <nav
-      className={`fixed left-0 top-0 z-50 h-16 w-full border-b border-surface bg-base transition-all duration-300 ${
+      className={cn(
+        "fixed left-0 top-0 z-50 h-16 w-full border-b border-surface bg-base transition-all duration-smooth",
         isCollapsed ? "md:ml-16 md:w-[calc(100%-4rem)]" : "md:ml-60 md:w-[calc(100%-15rem)]"
-      }`}
+      )}
     >
       <div className="mx-auto flex h-full w-full max-w-[1560px] items-center gap-2 px-3 sm:gap-3 sm:px-6">
         <div className="flex min-w-0 flex-shrink items-center gap-2 sm:gap-4">
@@ -52,11 +54,12 @@ export function Navbar(): JSX.Element {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`whitespace-nowrap rounded-lg px-2 py-1.5 text-xs transition-colors md:text-sm lg:px-3 lg:py-2 ${
+                  className={cn(
+                    "whitespace-nowrap rounded-lg px-2 py-1.5 text-xs transition-colors duration-standard md:text-sm lg:px-3 lg:py-2",
                     isActive
                       ? "bg-accent/10 text-accent"
                       : "text-text-muted hover:bg-surface hover:text-text-primary"
-                  }`}
+                  )}
                 >
                   {link.label}
                 </Link>
