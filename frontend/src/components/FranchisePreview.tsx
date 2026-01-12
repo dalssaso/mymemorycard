@@ -49,11 +49,11 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
                 src={game.cover_art_url}
                 alt={game.name}
                 title={game.name}
-                className="h-16 w-12 rounded object-cover transition-all group-hover:ring-2 group-hover:ring-accent"
+                className="h-16 w-12 rounded object-cover transition-all duration-standard group-hover:ring-2 group-hover:ring-accent"
               />
             ) : (
               <div
-                className="flex h-16 w-12 items-center justify-center rounded bg-elevated text-xs text-text-muted transition-all group-hover:ring-2 group-hover:ring-accent"
+                className="flex h-16 w-12 items-center justify-center rounded bg-elevated text-xs text-text-muted transition-all duration-standard group-hover:ring-2 group-hover:ring-accent"
                 title={game.name}
               >
                 ?
