@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { gamesAPI } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { PlaySessionTracker } from "@/components/PlaySessionTracker";
 import { ProgressHistory } from "@/components/ProgressHistory";
 
@@ -78,11 +79,12 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
               onClick={() => handleFieldChange("difficulty_rating", rating)}
               aria-pressed={fields.difficulty_rating === rating}
               variant="ghost"
-              className={`h-auto flex-1 rounded py-2 text-sm transition-all ${
+              className={cn(
+                "h-auto flex-1 rounded py-2 text-sm transition-all duration-standard",
                 fields.difficulty_rating === rating
-                  ? "shadow-status-dropped/50 bg-status-dropped text-text-primary shadow-lg transition-colors duration-standard"
+                  ? "shadow-status-dropped/50 bg-status-dropped text-text-primary shadow-lg"
                   : "bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary"
-              }`}
+              )}
             >
               {rating}
             </Button>
