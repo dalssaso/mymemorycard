@@ -1,13 +1,12 @@
 import type { ElementType, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export interface TextDisplayProps {
+export interface TextDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "primary" | "secondary" | "muted";
   size?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
   weight?: "regular" | "medium" | "semibold" | "bold";
   as?: ElementType;
   children: ReactNode;
-  className?: string;
 }
 
 const variantStyles = {
@@ -40,12 +39,14 @@ export function TextDisplay({
   as: component = "p",
   children,
   className,
+  ...props
 }: TextDisplayProps): JSX.Element {
   const Component = component;
 
   return (
     <Component
       className={cn(variantStyles[variant], sizeStyles[size], weightStyles[weight], className)}
+      {...props}
     >
       {children}
     </Component>
