@@ -81,14 +81,14 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 ? "achievements"
                 : "stats"
           }
-          className="bg-surface/50 group flex gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+          className="bg-surface/50 group flex gap-2 rounded-lg px-2 py-1.5 transition-all duration-standard hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
         >
           <div
             className={`flex h-7 w-7 items-center justify-center rounded-lg ${
               item.type === "session"
                 ? "bg-accent/20 text-accent"
                 : item.type === "achievement"
-                  ? "bg-yellow-400/20 text-yellow-400"
+                  ? "bg-achievement/20 text-achievement"
                   : "bg-status-finished/20 text-status-finished"
             }`}
           >
