@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, ScrollFade } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { sessionsAPI } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface PlaySession {
   id: string;
@@ -202,11 +203,12 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
         <Button
           variant={isManualMode ? "default" : "secondary"}
           onClick={() => setIsManualMode(!isManualMode)}
-          className={`w-full sm:w-auto ${
+          className={cn(
+            "w-full sm:w-auto",
             isManualMode
-              ? "hover:bg-accent/80 bg-accent text-base"
+              ? "hover:bg-accent/80 bg-accent text-text-primary"
               : "bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary"
-          }`}
+          )}
         >
           + Add Manual
         </Button>
@@ -268,7 +270,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
             <Button
               onClick={() => addManualSessionMutation.mutate()}
               disabled={addManualSessionMutation.isPending || !manualDuration}
-              className="hover:bg-accent/80 flex-1 bg-accent text-base font-semibold"
+              className="hover:bg-accent/80 flex-1 bg-accent font-semibold text-text-primary"
             >
               {addManualSessionMutation.isPending ? "Adding..." : "Add Session"}
             </Button>
@@ -333,7 +335,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
             <Button
               onClick={handleEditSave}
               disabled={updateSessionMutation.isPending || !editStartedAt || !editEndedAt}
-              className="hover:bg-accent/80 flex-1 bg-accent text-base font-semibold"
+              className="hover:bg-accent/80 flex-1 bg-accent font-semibold text-text-primary"
             >
               {updateSessionMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
