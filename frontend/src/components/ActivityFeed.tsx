@@ -314,7 +314,7 @@ export function ActivityFeed({
         <div className="mt-3">
           <Link
             to={showMoreHref}
-            className="inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors hover:bg-elevated"
+            className="inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors duration-standard hover:bg-elevated"
           >
             Show more activity
           </Link>
