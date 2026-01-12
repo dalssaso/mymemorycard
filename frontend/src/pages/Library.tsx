@@ -902,7 +902,7 @@ export function Library() {
                     {table.getRowModel().rows.map((row) => (
                       <tr
                         key={row.id}
-                        className={`border-b border-base transition-colors hover:bg-surface ${selectionMode && row.getIsSelected() ? "bg-accent/10" : ""}`}
+                        className={`border-b border-border transition-colors hover:bg-surface ${selectionMode && row.getIsSelected() ? "bg-accent/10" : ""}`}
                       >
                         {selectionMode && (
                           <td className="w-12 p-4">
