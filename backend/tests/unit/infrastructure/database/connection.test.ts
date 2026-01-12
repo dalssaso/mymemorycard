@@ -6,7 +6,7 @@ import { makeTestConfig } from "../../helpers/make-test-config";
 
 describe("DatabaseConnection", () => {
   it("should create database connection with db instance", () => {
-    const logger = new Logger("test");
+    const logger = new Logger().child("test");
     const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
     expect(dbConnection.db).toBeDefined();
   });
@@ -17,7 +17,7 @@ describe("DatabaseConnection", () => {
         url: "postgresql://user:pass@localhost/db",
       },
     });
-    const logger = new Logger("test");
+    const logger = new Logger().child("test");
     const dbConnection = new DatabaseConnection(customConfig, logger);
 
     expect(dbConnection.db).toBeDefined();
@@ -34,7 +34,7 @@ describe("DatabaseConnection", () => {
         },
       },
     });
-    const logger = new Logger("test");
+    const logger = new Logger().child("test");
     const dbConnection = new DatabaseConnection(configWithPool, logger);
 
     expect(dbConnection.db).toBeDefined();
@@ -46,7 +46,7 @@ describe("DatabaseConnection", () => {
         url: "postgresql://test",
       },
     });
-    const logger = new Logger("test");
+    const logger = new Logger().child("test");
     const dbConnection = new DatabaseConnection(configNoPool, logger);
 
     expect(dbConnection.db).toBeDefined();
@@ -54,7 +54,7 @@ describe("DatabaseConnection", () => {
 
   describe("healthCheck()", () => {
     it("should return a boolean promise", async () => {
-      const logger = new Logger("test");
+      const logger = new Logger().child("test");
       const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.healthCheck();
@@ -67,7 +67,7 @@ describe("DatabaseConnection", () => {
     it.skipIf(!process.env.CI || !process.env.DATABASE_URL)(
       "should return true when database is healthy",
       async () => {
-        const logger = new Logger("test");
+        const logger = new Logger().child("test");
         const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
         let result = false;
@@ -91,7 +91,7 @@ describe("DatabaseConnection", () => {
           url: "postgresql://invalid:invalid@nonexistent:5555/nonexistent",
         },
       });
-      const logger = new Logger("test");
+      const logger = new Logger().child("test");
       const dbConnection = new DatabaseConnection(badConfig, logger);
 
       const result = await dbConnection.healthCheck();
@@ -104,7 +104,7 @@ describe("DatabaseConnection", () => {
 
   describe("close()", () => {
     it("should return a void promise", async () => {
-      const logger = new Logger("test");
+      const logger = new Logger().child("test");
       const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       const result = dbConnection.close();
@@ -115,7 +115,7 @@ describe("DatabaseConnection", () => {
     });
 
     it("should not throw errors during close", async () => {
-      const logger = new Logger("test");
+      const logger = new Logger().child("test");
       const dbConnection = new DatabaseConnection(makeTestConfig(), logger);
 
       // Should resolve successfully

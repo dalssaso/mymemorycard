@@ -4,20 +4,20 @@ import { Logger } from "@/infrastructure/logging/logger";
 
 describe("Logger", () => {
   it("should create logger with context", () => {
-    const logger = new Logger("TestService");
+    const logger = new Logger().child("TestService");
 
     expect(logger).toBeInstanceOf(Logger);
   });
 
   it("should create child logger", () => {
-    const logger = new Logger("ParentService");
+    const logger = new Logger().child("ParentService");
     const childLogger = logger.child("ChildService");
 
     expect(childLogger).toBeInstanceOf(Logger);
   });
 
   it("should have log methods", () => {
-    const logger = new Logger("TestService");
+    const logger = new Logger().child("TestService");
 
     expect(typeof logger.debug).toBe("function");
     expect(typeof logger.info).toBe("function");
