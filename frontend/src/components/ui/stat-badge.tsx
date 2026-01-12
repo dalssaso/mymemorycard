@@ -2,18 +2,17 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface StatBadgeProps {
-  variant?: "success" | "warning" | "error" | "info" | "neutral";
+  variant?: "default" | "success" | "warning" | "danger";
   size?: "sm" | "md" | "lg";
   children: ReactNode;
   className?: string;
 }
 
 const variantStyles = {
+  default: "bg-surface text-text-secondary border-border",
   success: "bg-status-finished/20 text-status-finished border-status-finished",
-  warning: "bg-status-playing/20 text-status-playing border-status-playing",
-  error: "bg-status-dropped/20 text-status-dropped border-status-dropped",
-  info: "bg-accent/20 text-accent border-accent",
-  neutral: "bg-surface text-text-secondary border-border",
+  warning: "bg-status-dropped/20 text-status-dropped border-status-dropped",
+  danger: "bg-status-dropped/20 text-status-dropped border-status-dropped",
 } as const;
 
 const sizeStyles = {
@@ -23,7 +22,7 @@ const sizeStyles = {
 } as const;
 
 export function StatBadge({
-  variant = "neutral",
+  variant = "default",
   size = "md",
   children,
   className,
