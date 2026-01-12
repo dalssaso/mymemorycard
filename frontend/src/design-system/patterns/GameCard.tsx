@@ -3,8 +3,8 @@ import { useState, type CSSProperties } from "react";
 import { gamesAPI } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button } from "@/components/ui";
-import { AddToCollection } from "./AddToCollection";
-import { PlatformIcons } from "./PlatformIcon";
+import { AddToCollection } from "@/components/AddToCollection";
+import { PlatformIcons } from "@/components/PlatformIcon";
 
 interface GameCardProps {
   id: string;
@@ -27,30 +27,30 @@ interface GameCardProps {
 
 const STATUS_STYLES: Record<string, CSSProperties> = {
   backlog: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-text-muted) 35%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-text-muted) 55%, transparent)",
   },
   playing: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-teal) 65%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-status-playing) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-status-playing) 65%, transparent)",
   },
   finished: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-green) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-green) 65%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-status-finished) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-status-finished) 65%, transparent)",
   },
   dropped: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-red) 35%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-red) 55%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-status-dropped) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-status-dropped) 55%, transparent)",
   },
   completed: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-green) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-green) 65%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-status-finished) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-status-finished) 65%, transparent)",
   },
 };
 
 const FRANCHISE_STYLE: CSSProperties = {
-  backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 45%, transparent)",
-  borderColor: "color-mix(in srgb, var(--ctp-mauve) 65%, transparent)",
+  backgroundColor: "color-mix(in srgb, var(--color-accent) 45%, transparent)",
+  borderColor: "color-mix(in srgb, var(--color-accent) 65%, transparent)",
 };
 
 export function GameCard({
@@ -64,7 +64,7 @@ export function GameCard({
   total_minutes: totalMinutes,
   is_favorite: isFavoriteProp,
   series_name: seriesName,
-}: GameCardProps) {
+}: GameCardProps): JSX.Element {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   const queryClient = useQueryClient();
@@ -85,7 +85,7 @@ export function GameCard({
     },
   });
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = (e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
     toggleFavoriteMutation.mutate(!isFavorite);
@@ -95,23 +95,23 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="bg-ctp-surface0/40 border-ctp-surface1 hover:border-ctp-mauve group relative cursor-pointer rounded-xl border p-0 transition-all sm:p-5"
+      className="bg-surface/40 group relative cursor-pointer rounded-xl border border-border p-0 transition-all hover:border-accent sm:p-5"
     >
       {/* Mobile: Poster-only layout with overlay */}
       <div className="relative aspect-[3/4] overflow-hidden rounded-lg sm:hidden">
         {coverArtUrl ? (
           <img src={coverArtUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <div className="bg-ctp-surface0 flex h-full w-full items-center justify-center">
-            <span className="text-ctp-overlay1 text-sm">No image</span>
+          <div className="flex h-full w-full items-center justify-center bg-base">
+            <span className="text-sm text-text-secondary">No image</span>
           </div>
         )}
-        <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
-        <div className="bg-ctp-base/60 absolute bottom-0 left-0 right-0 p-3">
+        <div className="from-base/70 via-base/20 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
+        <div className="bg-base/60 absolute bottom-0 left-0 right-0 p-3">
           <div className="mb-1 flex gap-1">
             <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
           </div>
-          <h3 className="text-ctp-text group-hover:text-ctp-mauve line-clamp-2 text-sm font-bold transition-colors">
+          <h3 className="line-clamp-2 text-sm font-bold transition-colors group-hover:text-accent">
             {name}
           </h3>
         </div>
@@ -119,7 +119,7 @@ export function GameCard({
           onClick={handleFavoriteClick}
           variant="ghost"
           size="icon"
-          className="text-ctp-red absolute right-2 top-2 z-10 transition-transform hover:scale-110"
+          className="absolute right-2 top-2 z-10 text-status-dropped transition-transform hover:scale-110"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
@@ -144,15 +144,15 @@ export function GameCard({
           {coverArtUrl ? (
             <img src={coverArtUrl} alt={name} className="h-32 w-24 rounded object-cover" />
           ) : (
-            <div className="bg-ctp-surface0 flex h-32 w-24 items-center justify-center rounded">
-              <span className="text-ctp-overlay1 text-xs">No image</span>
+            <div className="flex h-32 w-24 items-center justify-center rounded bg-base">
+              <span className="text-xs text-text-secondary">No image</span>
             </div>
           )}
           <Button
             onClick={handleFavoriteClick}
             variant="ghost"
             size="icon"
-            className="text-ctp-red absolute -right-2 -top-2 z-10 transition-transform hover:scale-110"
+            className="absolute -right-2 -top-2 z-10 text-status-dropped transition-transform hover:scale-110"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <svg
@@ -172,14 +172,14 @@ export function GameCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="group-hover:text-ctp-mauve mb-2 break-words text-lg font-bold transition-colors">
+          <h3 className="mb-2 break-words text-lg font-bold transition-colors group-hover:text-accent">
             {name}
           </h3>
 
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
             <Badge
-              className="text-ctp-text border"
+              className="border text-text-primary"
               style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -190,10 +190,13 @@ export function GameCard({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  navigate({ to: "/franchises/$seriesName", params: { seriesName } });
+                  navigate({
+                    to: "/franchises/$seriesName",
+                    params: { seriesName },
+                  });
                 }}
                 variant="ghost"
-                className="text-ctp-text inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium transition-colors hover:opacity-90"
+                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-text-primary transition-colors hover:opacity-90"
                 style={FRANCHISE_STYLE}
               >
                 {seriesName}
@@ -201,24 +204,24 @@ export function GameCard({
             )}
           </div>
 
-          <div className="text-ctp-subtext0 flex flex-wrap items-center gap-4 text-sm">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
             {metacriticScore && (
               <div className="flex items-center gap-1">
-                <span className="text-ctp-yellow">Metacritic:</span>
+                <span className="text-status-playing">Metacritic:</span>
                 <span>{metacriticScore}</span>
               </div>
             )}
 
             {userRating && (
               <div className="flex items-center gap-1">
-                <span className="text-ctp-teal">Your rating:</span>
+                <span className="text-accent">Your rating:</span>
                 <span>{userRating}/10</span>
               </div>
             )}
 
             {totalMinutes > 0 && (
               <div className="flex items-center gap-1">
-                <span className="text-ctp-overlay0">Time:</span>
+                <span className="text-text-muted">Time:</span>
                 <span>
                   {hours > 0 && `${hours}h `}
                   {minutes}m
@@ -235,3 +238,5 @@ export function GameCard({
     </Link>
   );
 }
+
+export type { GameCardProps };

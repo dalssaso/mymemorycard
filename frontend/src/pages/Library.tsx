@@ -15,7 +15,7 @@ import {
   type RowSelectionState,
 } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { GameCard } from "@/components/GameCard";
+import { GameCard } from "@/design-system/patterns";
 import { BackButton, PageLayout } from "@/components/layout";
 import { LibrarySidebar } from "@/components/sidebar";
 import { PlatformIcons } from "@/components/PlatformIcon";
