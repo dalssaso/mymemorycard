@@ -1,17 +1,19 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useGlobalSearch } from "@/components/GlobalSearch";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 export function MobileNav(): JSX.Element {
   const { openSearch } = useGlobalSearch();
   const locationHref = useRouterState({ select: (state) => state.location.href });
 
-  const getNavLinkClass = (isActive: boolean) =>
-    `flex flex-col items-center justify-center rounded-lg transition-colors ${
+  const getNavLinkClass = (isActive: boolean): string =>
+    cn(
+      "flex flex-col items-center justify-center rounded-lg transition-colors duration-standard",
       isActive
-        ? "text-accent bg-accent/10"
-        : "text-text-secondary hover:text-text-primary hover:bg-surface"
-    }`;
+        ? "bg-accent/10 text-accent"
+        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+    );
 
   return (
     <nav className="supports-[backdrop-filter]:bg-base/90 fixed bottom-0 left-0 right-0 z-50 h-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] border-t border-surface bg-base pb-[env(safe-area-inset-bottom)] supports-[backdrop-filter]:backdrop-blur md:hidden">
