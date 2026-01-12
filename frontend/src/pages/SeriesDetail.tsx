@@ -55,14 +55,14 @@ export function SeriesDetail() {
         <div className="mb-8">
           <Link
             to="/collections"
-            className="mb-4 hidden text-accent transition-colors hover:text-accent md:inline-block"
+            className="mb-4 hidden text-accent transition-colors duration-standard hover:text-accent md:inline-block"
           >
             Back to Collections
           </Link>
           <div className="mb-2 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
             <h1 className="text-4xl font-bold text-text-primary">{seriesName} Series</h1>
           </div>
