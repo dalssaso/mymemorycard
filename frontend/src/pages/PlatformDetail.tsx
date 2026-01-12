@@ -224,7 +224,7 @@ export function PlatformDetail() {
           <div className="flex items-center gap-4">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-colors duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
             <PlatformIconBadge
               platform={{
