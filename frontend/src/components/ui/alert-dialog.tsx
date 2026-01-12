@@ -19,7 +19,7 @@ const AlertDialogOverlay = React.forwardRef<
   ({ className, ...props }, ref): JSX.Element => (
     <AlertDialogPrimitive.Overlay
       className={cn(
-        "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "fixed inset-0 z-[60] bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className
       )}
       {...props}
@@ -36,7 +36,7 @@ const AlertDialogContent = React.forwardRef<
   ({ className, ...props }, ref): JSX.Element => (
     <AlertDialogPortal>
       <AlertDialogOverlay />
-      {/* z-[70] (vs Dialog's z-50) ensures AlertDialogs appear above regular dialogs for critical confirmations */}
+      {/* Z-index stack: Dialog (z-50) < AlertDialog overlay (z-60) < AlertDialog content (z-70) */}
       <AlertDialogPrimitive.Content
         ref={ref}
         className={cn(
