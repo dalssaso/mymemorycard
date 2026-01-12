@@ -151,7 +151,7 @@ export function RawgIdCorrection({ gameId, currentRawgId, gameName }: RawgIdCorr
             <Button
               onClick={handleSubmit}
               disabled={updateMutation.isPending || !rawgInput}
-              className="hover:bg-accent/80 flex-1 bg-accent text-base"
+              className="hover:bg-accent/80 flex-1 bg-accent"
             >
               {updateMutation.isPending ? "Updating..." : "Update Metadata"}
             </Button>
