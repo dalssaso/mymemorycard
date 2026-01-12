@@ -193,7 +193,7 @@ export function Sidebar({
                       title="Favorites"
                     >
                       <svg
-                        className="h-5 w-5 text-status-dropped"
+                        className="h-5 w-5 text-accent"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                       >
