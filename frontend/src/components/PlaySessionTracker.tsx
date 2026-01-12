@@ -297,7 +297,7 @@ export function PlaySessionTracker({
                 setManualDuration("");
                 setSessionNotes("");
               }}
-              className="flex-1 bg-elevated text-text-primary hover:bg-elevated"
+              className="flex-1 bg-elevated text-text-primary transition-colors duration-standard hover:bg-surface hover:opacity-90"
             >
               Cancel
             </Button>

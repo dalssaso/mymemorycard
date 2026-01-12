@@ -138,7 +138,7 @@ export function CustomPlatformModal({
                   className={`flex h-auto items-center gap-2 rounded-lg px-3 py-2 text-sm ${
                     platformType === type.value
                       ? "bg-accent/10 hover:bg-accent/20 border-accent text-accent"
-                      : "border-elevated text-text-secondary hover:border-elevated"
+                      : "border-elevated text-text-secondary transition-colors duration-standard hover:bg-surface"
                   }`}
                 >
                   <PlatformTypeIcon type={type.value} size="sm" />
@@ -186,7 +186,7 @@ export function CustomPlatformModal({
                 href="https://simpleicons.org"
                 target="_blank"
                 rel="noreferrer"
-                className="text-accent hover:text-accent"
+                className="text-accent transition-none hover:underline"
               >
                 Simple Icons
               </a>{" "}

@@ -68,7 +68,7 @@ export function FranchisePreview({ seriesName, currentGameId }: FranchisePreview
         <Link
           to="/franchises/$seriesName"
           params={{ seriesName }}
-          className="text-xs text-accent transition-colors hover:text-accent"
+          className="text-xs text-accent transition-none hover:underline"
         >
           View franchise
         </Link>
