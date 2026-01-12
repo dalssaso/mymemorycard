@@ -305,7 +305,7 @@ export function Library() {
             <Link
               to="/library/$id"
               params={{ id: info.row.original.id }}
-              className="text-accent hover:text-accent"
+              className="text-accent transition-colors duration-quick hover:bg-elevated"
             >
               {info.getValue()}
             </Link>
@@ -693,7 +693,7 @@ export function Library() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="border-border bg-elevated text-text-primary hover:bg-elevated">
+              <AlertDialogCancel className="hover:bg-elevated-hover border-border bg-elevated text-text-primary transition-colors duration-quick">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
