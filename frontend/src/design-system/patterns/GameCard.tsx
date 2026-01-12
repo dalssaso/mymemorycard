@@ -95,7 +95,7 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="bg-surface/40 group relative cursor-pointer rounded-xl border border-border p-0 transition-all hover:border-accent sm:p-5"
+      className="bg-surface/40 group relative cursor-pointer rounded-xl border border-border p-0 transition-all duration-standard hover:border-accent sm:p-5"
     >
       {/* Mobile: Poster-only layout with overlay */}
       <div className="relative aspect-[3/4] overflow-hidden rounded-lg sm:hidden">
@@ -111,7 +111,7 @@ export function GameCard({
           <div className="mb-1 flex gap-1">
             <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
           </div>
-          <h3 className="line-clamp-2 text-sm font-bold transition-colors group-hover:text-accent">
+          <h3 className="line-clamp-2 text-sm font-bold transition-colors duration-standard group-hover:text-accent">
             {name}
           </h3>
         </div>
@@ -119,7 +119,7 @@ export function GameCard({
           onClick={handleFavoriteClick}
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-2 z-10 text-status-dropped transition-transform hover:scale-110"
+          className="absolute right-2 top-2 z-10 text-status-dropped transition-transform duration-standard hover:scale-110"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
@@ -152,7 +152,7 @@ export function GameCard({
             onClick={handleFavoriteClick}
             variant="ghost"
             size="icon"
-            className="absolute -right-2 -top-2 z-10 text-status-dropped transition-transform hover:scale-110"
+            className="absolute -right-2 -top-2 z-10 text-status-dropped transition-transform duration-standard hover:scale-110"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <svg
@@ -196,7 +196,7 @@ export function GameCard({
                   });
                 }}
                 variant="ghost"
-                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-text-primary transition-colors hover:opacity-90"
+                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-text-primary transition-colors duration-standard hover:opacity-90"
                 style={FRANCHISE_STYLE}
               >
                 {seriesName}
