@@ -53,7 +53,7 @@ export function Activity() {
         <div className="mb-6 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
           />
           <div>
             <h1 className="text-3xl font-bold text-text-primary">Activity</h1>
@@ -83,7 +83,10 @@ export function Activity() {
                 Start tracking sessions, achievements, or completion updates
               </p>
               <div className="mt-4">
-                <Link to="/library" className="text-sm text-accent hover:text-accent">
+                <Link
+                  to="/library"
+                  className="hover:text-accent/80 text-sm text-accent transition-colors duration-standard"
+                >
                   Go to library
                 </Link>
               </div>
