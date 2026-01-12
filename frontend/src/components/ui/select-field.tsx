@@ -45,7 +45,7 @@ export function SelectField({
           <SelectPrimitive.Item
             key={option.value}
             value={option.value}
-            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none transition-colors duration-quick ease-out data-[highlighted]:bg-accent/20 data-[highlighted]:text-text-primary data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            className="data-[highlighted]:bg-accent/20 relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none transition-colors duration-quick ease-out data-[disabled]:pointer-events-none data-[highlighted]:text-text-primary data-[disabled]:opacity-50"
           >
             <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
               <SelectPrimitive.ItemIndicator>
