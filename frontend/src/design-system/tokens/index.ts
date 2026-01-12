@@ -7,6 +7,7 @@ export {
   lineHeight,
   type FontSizeToken,
   type FontWeightToken,
+  type LineHeightToken,
 } from "./typography";
 export {
   duration,
