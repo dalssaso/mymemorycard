@@ -18,6 +18,7 @@ import { FranchisePreview } from "@/components/FranchisePreview";
 import { RawgIdCorrection } from "@/components/RawgIdCorrection";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 import { STATUS_CONFIGS } from "@/lib/constants/status";
+import { cn } from "@/lib/utils";
 
 interface GameDetails {
   id: string;
@@ -1111,11 +1112,12 @@ export function GameDetail() {
                         })
                       }
                       disabled={toggleFavoriteMutation.isPending}
-                      className={`h-auto w-full py-3 font-semibold ${
+                      className={cn(
+                        "h-auto w-full border-2 py-3 font-semibold",
                         activePlatform.is_favorite
-                          ? "bg-status-dropped/20 hover:bg-status-dropped/30 border-2 border-status-dropped text-status-dropped hover:text-status-dropped"
-                          : "border-2 border-border bg-surface text-text-secondary hover:border-status-dropped hover:bg-elevated hover:text-status-dropped"
-                      }`}
+                          ? "bg-status-favorites/20 hover:bg-status-favorites/30 border-status-favorites text-status-favorites"
+                          : "border-border bg-surface text-text-secondary hover:border-status-favorites hover:bg-elevated hover:text-status-favorites"
+                      )}
                     >
                       <span className="inline-flex items-center justify-center gap-2">
                         <svg
