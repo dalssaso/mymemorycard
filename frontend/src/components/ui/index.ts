@@ -16,6 +16,9 @@ export type { BadgeProps } from "./Badge";
 
 export { ClickableBadge } from "./ClickableBadge";
 
+export { StatBadge } from "./stat-badge";
+export type { StatBadgeProps } from "./stat-badge";
+
 export {
   Skeleton,
   GameCardSkeleton,
