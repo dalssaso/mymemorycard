@@ -1,13 +1,16 @@
-import type { ElementType, ReactNode } from "react";
+import React, { type ElementType } from "react";
 import { cn } from "@/lib/utils";
 
-export interface TextDisplayProps extends React.HTMLAttributes<HTMLElement> {
+export type TextDisplayProps<T extends ElementType = "div"> = React.ComponentPropsWithoutRef<T> & {
+  as?: T;
   variant?: "primary" | "secondary" | "muted";
   size?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
   weight?: "regular" | "medium" | "semibold" | "bold";
-  as?: ElementType;
-  children: ReactNode;
-}
+};
+
+type Variant = "primary" | "secondary" | "muted";
+type Size = "xs" | "sm" | "base" | "lg" | "xl" | "2xl";
+type Weight = "regular" | "medium" | "semibold" | "bold";
 
 const variantStyles = {
   primary: "text-text-primary",
@@ -32,23 +35,34 @@ const weightStyles = {
   bold: "font-bold",
 } as const;
 
-export function TextDisplay({
-  variant = "primary",
-  size = "base",
-  weight = "regular",
-  as: component = "p",
-  children,
-  className,
-  ...props
-}: TextDisplayProps): JSX.Element {
-  const Component = component;
+export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps<ElementType>>(
+  (
+    {
+      variant = "primary",
+      size = "base",
+      weight = "regular",
+      as: component = "div",
+      children,
+      className,
+      ...props
+    }: TextDisplayProps<ElementType>,
+    ref
+  ) => {
+    const Component = component as React.ElementType;
+    const v = variant as Variant;
+    const s = size as Size;
+    const w = weight as Weight;
 
-  return (
-    <Component
-      className={cn(variantStyles[variant], sizeStyles[size], weightStyles[weight], className)}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
-}
+    return (
+      <Component
+        ref={ref}
+        className={cn(variantStyles[v], sizeStyles[s], weightStyles[w], className)}
+        {...props}
+      >
+        {children}
+      </Component>
+    );
+  }
+);
+
+TextDisplay.displayName = "TextDisplay";
