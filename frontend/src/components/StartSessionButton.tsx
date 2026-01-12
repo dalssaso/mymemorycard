@@ -126,7 +126,7 @@ export function StartSessionButton({
           onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
           disabled={endSessionMutation.isPending}
           variant="ghost"
-          className="hover:bg-status-dropped/80 h-auto w-full rounded-lg bg-status-dropped py-2 text-sm font-semibold text-text-primary transition-colors duration-standard hover:text-accent disabled:opacity-50"
+          className="hover:bg-status-dropped/90 h-auto w-full rounded-lg bg-status-dropped py-2 text-sm font-semibold text-text-primary transition-colors duration-standard disabled:opacity-50"
         >
           {endSessionMutation.isPending ? "Stopping..." : "Stop Session"}
         </Button>
