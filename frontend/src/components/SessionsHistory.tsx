@@ -383,7 +383,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                 </div>
                 <div
                   className={`flex w-full touch-pan-y items-center justify-between rounded-lg bg-surface p-3 transition-transform ${
-                    isDragging ? "" : "duration-200 ease-out"
+                    isDragging ? "" : "duration-standard ease-out"
                   }`}
                   style={{ transform: `translateX(${translateX}px)` }}
                   onPointerDown={handlePointerDown(session.id)}

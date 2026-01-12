@@ -110,7 +110,7 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
         </div>
         <div className="mt-2 h-1.5 w-full rounded-full bg-base">
           <div
-            className="h-1.5 rounded-full transition-all duration-200"
+            className="h-1.5 rounded-full transition-all duration-standard"
             style={{
               width: `${hasDlcs ? fullProgress : mainProgress}%`,
               backgroundColor: hasDlcs ? TYPE_COLORS.full : TYPE_COLORS.main,
