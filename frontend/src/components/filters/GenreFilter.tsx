@@ -36,7 +36,7 @@ export function GenreFilter({ selectedGenres, onGenresChange }: GenreFilterProps
             key={genre.name}
             onClick={() => toggleGenre(genre.name)}
             variant="ghost"
-            className={`flex h-auto w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-all ${
+            className={`flex h-auto w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-all duration-standard ${
               isSelected
                 ? "bg-accent/20 border-accent text-accent"
                 : "border-transparent text-text-secondary hover:bg-surface hover:text-text-primary"

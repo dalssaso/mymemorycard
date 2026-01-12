@@ -146,7 +146,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
         <Button
           onClick={onClearAll}
           variant="link"
-          className="h-auto p-0 text-xs text-text-secondary underline transition-colors hover:text-text-primary"
+          className="h-auto p-0 text-xs text-text-secondary underline transition-colors duration-standard hover:text-text-primary"
         >
           Clear all
         </Button>
