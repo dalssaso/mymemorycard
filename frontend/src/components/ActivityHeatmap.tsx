@@ -154,23 +154,23 @@ export function ActivityHeatmap({ type = "activity" }: ActivityHeatmapProps) {
   const levelColors = {
     activity: [
       "var(--elevated)",
-      "var(--accent)",
-      "var(--accent)",
-      "var(--accent)",
+      "color-mix(in srgb, var(--accent) 25%, transparent)",
+      "color-mix(in srgb, var(--accent) 50%, transparent)",
+      "color-mix(in srgb, var(--accent) 75%, transparent)",
       "var(--accent)",
     ],
     completion: [
       "var(--elevated)",
-      "var(--accent)",
-      "var(--accent)",
-      "var(--accent)",
+      "color-mix(in srgb, var(--status-finished) 25%, transparent)",
+      "color-mix(in srgb, var(--status-finished) 50%, transparent)",
+      "color-mix(in srgb, var(--status-finished) 75%, transparent)",
       "var(--status-finished)",
     ],
     achievement: [
       "var(--elevated)",
-      "var(--accent)",
-      "var(--accent)",
-      "var(--accent)",
+      "color-mix(in srgb, var(--status-dropped) 25%, transparent)",
+      "color-mix(in srgb, var(--status-dropped) 50%, transparent)",
+      "color-mix(in srgb, var(--status-dropped) 75%, transparent)",
       "var(--status-dropped)",
     ],
   };
