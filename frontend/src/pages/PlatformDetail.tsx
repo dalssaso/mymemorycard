@@ -280,7 +280,7 @@ export function PlatformDetail() {
                       });
                       setIsEditingProfile(true);
                     }}
-                    className="h-auto px-0 text-sm text-accent hover:bg-transparent hover:text-accent"
+                    className="hover:text-accent/80 h-auto px-0 text-sm text-accent transition-colors duration-standard hover:bg-transparent"
                   >
                     Edit
                   </Button>
