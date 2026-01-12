@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { gamesAPI } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button } from "@/components/ui";
 import { AddToCollection } from "@/components/AddToCollection";
 import { PlatformIcons } from "@/components/PlatformIcon";
+import { getStatusConfig } from "@/lib/constants/status";
+import { cn } from "@/lib/utils";
 
 interface GameCardProps {
   id: string;
@@ -24,34 +26,6 @@ interface GameCardProps {
   is_favorite: boolean;
   series_name?: string | null;
 }
-
-const STATUS_STYLES: Record<string, CSSProperties> = {
-  backlog: {
-    backgroundColor: "color-mix(in srgb, var(--color-text-muted) 35%, transparent)",
-    borderColor: "color-mix(in srgb, var(--color-text-muted) 55%, transparent)",
-  },
-  playing: {
-    backgroundColor: "color-mix(in srgb, var(--color-status-playing) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--color-status-playing) 65%, transparent)",
-  },
-  finished: {
-    backgroundColor: "color-mix(in srgb, var(--color-status-finished) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--color-status-finished) 65%, transparent)",
-  },
-  dropped: {
-    backgroundColor: "color-mix(in srgb, var(--color-status-dropped) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--color-status-dropped) 55%, transparent)",
-  },
-  completed: {
-    backgroundColor: "color-mix(in srgb, var(--color-status-finished) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--color-status-finished) 65%, transparent)",
-  },
-};
-
-const FRANCHISE_STYLE: CSSProperties = {
-  backgroundColor: "color-mix(in srgb, var(--color-accent) 45%, transparent)",
-  borderColor: "color-mix(in srgb, var(--color-accent) 65%, transparent)",
-};
 
 export function GameCard({
   id,
@@ -178,12 +152,14 @@ export function GameCard({
 
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
-            <Badge
-              className="border text-text-primary"
-              style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Badge>
+            {(() => {
+              const statusConfig = getStatusConfig(status);
+              return (
+                <Badge className="border text-text-primary" style={statusConfig?.activeStyle}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Badge>
+              );
+            })()}
             {seriesName && (
               <Button
                 type="button"
@@ -195,9 +171,11 @@ export function GameCard({
                     params: { seriesName },
                   });
                 }}
-                variant="ghost"
-                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-text-primary transition-colors duration-standard hover:opacity-90"
-                style={FRANCHISE_STYLE}
+                className={cn(
+                  "inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium",
+                  "bg-elevated text-text-secondary",
+                  "hover:bg-elevated-hover transition-colors duration-standard hover:text-text-primary"
+                )}
               >
                 {seriesName}
               </Button>
