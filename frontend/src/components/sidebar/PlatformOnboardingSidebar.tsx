@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PlatformOnboardingSidebarProps {
@@ -91,11 +92,11 @@ export function PlatformOnboardingSidebar({
 
       <Link
         to="/platforms"
-        className={[
+        className={cn(
           "flex w-full items-center justify-center gap-2 px-4 py-2.5",
           "bg-surface text-text-primary hover:bg-elevated",
-          "rounded-lg font-medium transition-colors",
-        ].join(" ")}
+          "rounded-lg font-medium transition-colors duration-standard"
+        )}
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -112,11 +113,11 @@ export function PlatformOnboardingSidebar({
         type="button"
         onClick={onAddCustomPlatform}
         variant="ghost"
-        className={[
+        className={cn(
           "flex w-full items-center justify-center gap-2 px-4 py-2.5",
           "bg-accent/20 hover:bg-accent/30 text-accent",
-          "rounded-lg font-medium transition-colors",
-        ].join(" ")}
+          "rounded-lg font-medium transition-colors duration-standard"
+        )}
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -146,11 +147,11 @@ export function PlatformOnboardingSidebar({
 
       <Link
         to="/import"
-        className={[
+        className={cn(
           "flex w-full items-center justify-center gap-2 px-4 py-2.5",
           "hover:bg-accent/80 bg-accent text-base",
-          "rounded-lg font-medium transition-colors",
-        ].join(" ")}
+          "rounded-lg font-medium transition-colors duration-standard"
+        )}
       >
         Go to Import
       </Link>
