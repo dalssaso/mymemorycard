@@ -18,13 +18,14 @@ import {
 import { useToast } from "@/components/ui/Toast";
 import { franchisesAPI, type OwnedGame, type MissingGame } from "@/lib/api";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
+import { cn } from "@/lib/utils";
 
 const STATUS_COLORS = {
-  backlog: "status-backlog",
-  playing: "status-playing",
-  finished: "status-finished",
-  completed: "status-completed",
-  dropped: "status-dropped",
+  backlog: "bg-status-backlog",
+  playing: "bg-status-playing",
+  finished: "bg-status-finished",
+  completed: "bg-status-completed",
+  dropped: "bg-status-dropped",
 } as const;
 
 export function FranchiseDetail(): JSX.Element {
@@ -249,14 +250,14 @@ export function FranchiseDetail(): JSX.Element {
         <div className="mb-8">
           <Link
             to="/franchises"
-            className="mb-4 hidden text-accent transition-colors md:inline-block"
+            className="mb-4 hidden text-accent transition-colors duration-standard md:inline-block"
           >
             Back to Franchises
           </Link>
           <div className="mb-2 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
             <h1 className="text-4xl font-bold text-text-primary">{series_name}</h1>
           </div>
@@ -294,7 +295,7 @@ export function FranchiseDetail(): JSX.Element {
                       </div>
                     )}
                     <div
-                      className={`absolute right-2 top-2 h-3 w-3 rounded-full bg-${STATUS_COLORS[game.status as keyof typeof STATUS_COLORS] || "text-muted"}`}
+                      className={`absolute right-2 top-2 h-3 w-3 rounded-full ${STATUS_COLORS[game.status as keyof typeof STATUS_COLORS] || "bg-status-backlog"}`}
                       title={game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     />
                   </div>
@@ -374,11 +375,12 @@ export function FranchiseDetail(): JSX.Element {
                     tabIndex={0}
                   >
                     <div
-                      className={`relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-surface transition-colors ${
+                      className={cn(
+                        "relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-surface transition-colors duration-standard",
                         isSelected
                           ? "bg-accent/20 border-accent"
                           : "border-dashed border-border hover:border-accent"
-                      }`}
+                      )}
                     >
                       {game.background_image ? (
                         <img
@@ -415,7 +417,7 @@ export function FranchiseDetail(): JSX.Element {
                           </div>
                         )
                       ) : (
-                        <div className="bg-base/50 absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                        <div className="bg-base/50 absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-standard group-hover:opacity-100">
                           <span className="text-sm font-medium text-text-primary">
                             + Add to Library
                           </span>
