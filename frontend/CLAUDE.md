@@ -237,7 +237,6 @@ export type { GameAddition, AdditionType } from "./additions"
 - `stats.ts` - Achievement stats, activity feed, heatmap
 - `preferences.ts` - User preferences
 - `import.ts` - Game import operations
-- `ai.ts` - AI curator endpoints
 - `ownership.ts` - Game ownership/edition data
 - `display-edition.ts` - Display edition management
 - `completion-logs.ts` - Completion tracking
@@ -301,8 +300,6 @@ export function useGames(filters: LibraryFilters): UseQueryResult<GamesResponse>
 - `useAchievementStats` - Achievement statistics
 - `useActivityFeed` - Activity feed data
 - `useGenreStats` - Genre statistics
-- `useAIModels` - AI model list
-- `useAISettings` - AI configuration
 - `usePreferences` - General preferences
 - `useSearchData` - Global search (see Search section)
 
