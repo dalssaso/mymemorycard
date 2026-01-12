@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
-import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { Check } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface SelectFieldOption {
   value: string;
@@ -42,23 +47,14 @@ export function SelectField({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectPrimitive.Item
-            key={option.value}
-            value={option.value}
-            className="data-[highlighted]:bg-accent/20 relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none transition-colors duration-quick ease-out data-[disabled]:pointer-events-none data-[highlighted]:text-text-primary data-[disabled]:opacity-50"
-          >
-            <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-              <SelectPrimitive.ItemIndicator>
-                <Check className="h-4 w-4" />
-              </SelectPrimitive.ItemIndicator>
-            </span>
+          <SelectItem key={option.value} value={option.value}>
             <div className="flex flex-col gap-0.5">
-              <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
+              <SelectItemText>{option.label}</SelectItemText>
               {option.metadata && (
                 <span className="text-xs text-text-muted">{option.metadata}</span>
               )}
             </div>
-          </SelectPrimitive.Item>
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>

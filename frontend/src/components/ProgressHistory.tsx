@@ -9,6 +9,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
@@ -647,7 +648,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 <SelectContent>
                   {RANGE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      <SelectItemText>{option.label}</SelectItemText>
                     </SelectItem>
                   ))}
                 </SelectContent>

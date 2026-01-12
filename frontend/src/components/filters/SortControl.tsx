@@ -1,4 +1,11 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 
 interface SortControlProps {
   currentSort: string;
@@ -37,7 +44,7 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps): JS
         <SelectContent>
           {SORT_OPTIONS.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              <SelectItemText>{option.label}</SelectItemText>
             </SelectItem>
           ))}
         </SelectContent>

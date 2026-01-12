@@ -42,6 +42,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui";
@@ -582,7 +583,7 @@ export function Library() {
               <SelectContent>
                 {PAGE_SIZE_OPTIONS.map((size) => (
                   <SelectItem key={size} value={String(size)}>
-                    {size}
+                    <SelectItemText>{size}</SelectItemText>
                   </SelectItem>
                 ))}
               </SelectContent>
