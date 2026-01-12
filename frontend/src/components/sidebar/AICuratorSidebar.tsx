@@ -24,11 +24,11 @@ export function AICuratorSidebar() {
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
+      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/settings"
-            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
             title="AI Settings"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ export function AICuratorSidebar() {
       {/* AI Settings Link */}
       <Link
         to="/settings"
-        className="hover:bg-ctp-mauve/80 flex w-full items-center justify-center gap-1.5 rounded-lg bg-ctp-mauve px-3 py-2 text-sm font-medium text-ctp-base transition-colors"
+        className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -78,9 +78,9 @@ export function AICuratorSidebar() {
       {/* Current Configuration */}
       {settingsData?.activeProvider && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="h-4 w-4 text-ctp-blue"
+              className="text-ctp-blue h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -94,23 +94,23 @@ export function AICuratorSidebar() {
             </svg>
             Active Configuration
           </h3>
-          <div className="space-y-2 rounded-lg bg-ctp-surface0 p-3">
+          <div className="bg-ctp-surface0 space-y-2 rounded-lg p-3">
             <div>
-              <p className="text-xs text-ctp-overlay1">Provider</p>
-              <p className="text-sm font-medium capitalize text-ctp-text">
+              <p className="text-ctp-overlay1 text-xs">Provider</p>
+              <p className="text-ctp-text text-sm font-medium capitalize">
                 {settingsData.activeProvider.provider}
               </p>
             </div>
             <div>
-              <p className="text-xs text-ctp-overlay1">Text Model</p>
-              <p className="truncate text-sm font-medium text-ctp-text">
+              <p className="text-ctp-overlay1 text-xs">Text Model</p>
+              <p className="text-ctp-text truncate text-sm font-medium">
                 {settingsData.activeProvider.model}
               </p>
             </div>
             {settingsData.activeProvider.image_model && (
               <div>
-                <p className="text-xs text-ctp-overlay1">Image Model</p>
-                <p className="truncate text-sm font-medium text-ctp-text">
+                <p className="text-ctp-overlay1 text-xs">Image Model</p>
+                <p className="text-ctp-text truncate text-sm font-medium">
                   {settingsData.activeProvider.image_model}
                 </p>
               </div>
@@ -122,9 +122,9 @@ export function AICuratorSidebar() {
       {/* Recent Activity */}
       {activityData && activityData.logs.length > 0 && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="h-4 w-4 text-ctp-green"
+              className="text-ctp-green h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -140,14 +140,14 @@ export function AICuratorSidebar() {
           </h3>
           <div className="space-y-2">
             {activityData.logs.slice(0, 5).map((log) => (
-              <div key={log.id} className="rounded-lg bg-ctp-surface0 p-2">
+              <div key={log.id} className="bg-ctp-surface0 rounded-lg p-2">
                 <div className="mb-1 flex items-start justify-between gap-2">
-                  <span className="flex-1 text-xs font-medium text-ctp-text">
+                  <span className="text-ctp-text flex-1 text-xs font-medium">
                     {log.actionType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </span>
                   {log.success ? (
                     <svg
-                      className="h-3 w-3 flex-shrink-0 text-ctp-green"
+                      className="text-ctp-green h-3 w-3 flex-shrink-0"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -159,7 +159,7 @@ export function AICuratorSidebar() {
                     </svg>
                   ) : (
                     <svg
-                      className="h-3 w-3 flex-shrink-0 text-ctp-red"
+                      className="text-ctp-red h-3 w-3 flex-shrink-0"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -171,7 +171,7 @@ export function AICuratorSidebar() {
                     </svg>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-ctp-overlay1">
+                <div className="text-ctp-overlay1 flex items-center gap-2 text-xs">
                   {log.estimatedCostUsd !== null && <span>${log.estimatedCostUsd.toFixed(4)}</span>}
                   {log.durationMs !== null && <span>{(log.durationMs / 1000).toFixed(1)}s</span>}
                 </div>
@@ -184,9 +184,9 @@ export function AICuratorSidebar() {
       {/* Usage Stats */}
       {activityData && activityData.logs.length > 0 && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="h-4 w-4 text-ctp-yellow"
+              className="text-ctp-yellow h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -201,18 +201,18 @@ export function AICuratorSidebar() {
             Usage Stats
           </h3>
           <div className="space-y-2">
-            <div className="rounded-lg bg-ctp-surface0 p-2">
+            <div className="bg-ctp-surface0 rounded-lg p-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-ctp-subtext0">Total Requests</span>
-                <span className="text-sm font-semibold text-ctp-text">
+                <span className="text-ctp-subtext0 text-xs">Total Requests</span>
+                <span className="text-ctp-text text-sm font-semibold">
                   {activityData.logs.length}
                 </span>
               </div>
             </div>
-            <div className="rounded-lg bg-ctp-surface0 p-2">
+            <div className="bg-ctp-surface0 rounded-lg p-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-ctp-subtext0">Success Rate</span>
-                <span className="text-sm font-semibold text-ctp-text">
+                <span className="text-ctp-subtext0 text-xs">Success Rate</span>
+                <span className="text-ctp-text text-sm font-semibold">
                   {Math.round(
                     (activityData.logs.filter((log) => log.success).length /
                       activityData.logs.length) *
@@ -222,10 +222,10 @@ export function AICuratorSidebar() {
                 </span>
               </div>
             </div>
-            <div className="rounded-lg bg-ctp-surface0 p-2">
+            <div className="bg-ctp-surface0 rounded-lg p-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-ctp-subtext0">Total Cost</span>
-                <span className="text-sm font-semibold text-ctp-text">
+                <span className="text-ctp-subtext0 text-xs">Total Cost</span>
+                <span className="text-ctp-text text-sm font-semibold">
                   $
                   {activityData.logs
                     .reduce((sum, log) => sum + (log.estimatedCostUsd || 0), 0)
@@ -239,9 +239,9 @@ export function AICuratorSidebar() {
 
       {/* Help Section */}
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-teal"
+            className="text-ctp-teal h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -255,7 +255,7 @@ export function AICuratorSidebar() {
           </svg>
           About
         </h3>
-        <div className="space-y-2 text-xs text-ctp-subtext0">
+        <div className="text-ctp-subtext0 space-y-2 text-xs">
           <p>
             The AI Curator uses your configured AI provider to analyze your game library and provide
             personalized suggestions.

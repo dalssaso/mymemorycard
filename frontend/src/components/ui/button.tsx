@@ -5,39 +5,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ctp-mauve disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors duration-standard ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-ctp-mauve text-ctp-base shadow hover:bg-ctp-lavender hover:text-ctp-base",
-        destructive: "bg-ctp-red text-ctp-base shadow-sm hover:bg-ctp-maroon hover:text-ctp-text",
+        default: "bg-accent text-text-primary shadow-sm hover:bg-accent-hover",
+        destructive: "hover:bg-status-dropped/90 bg-status-dropped text-text-primary shadow-sm",
         outline:
-          "border border-ctp-surface1 bg-ctp-base shadow-sm hover:border-ctp-surface2 hover:bg-ctp-surface0 hover:text-ctp-text",
-        secondary: "bg-ctp-teal text-ctp-base shadow-sm hover:bg-ctp-sapphire hover:text-ctp-base",
-        ghost: "hover:bg-ctp-surface0 hover:text-ctp-text",
-        link: "text-ctp-mauve underline-offset-4 hover:text-ctp-lavender hover:underline",
-        // New specialized variants for colored action buttons
-        "outline-teal":
-          "border-ctp-teal/40 bg-ctp-teal/15 border text-ctp-teal shadow-sm hover:border-ctp-teal hover:bg-ctp-teal hover:text-ctp-base",
-        "outline-green":
-          "border-ctp-green/40 bg-ctp-green/15 border text-ctp-green shadow-sm hover:border-ctp-green hover:bg-ctp-green hover:text-ctp-base",
-        "outline-red":
-          "border-ctp-red/40 bg-ctp-red/15 border text-ctp-red shadow-sm hover:border-ctp-red hover:bg-ctp-red hover:text-ctp-base",
-        "outline-mauve":
-          "border-ctp-mauve/40 bg-ctp-mauve/15 border text-ctp-mauve shadow-sm hover:border-ctp-mauve hover:bg-ctp-mauve hover:text-ctp-base",
-        // Text-only hover variant (no background change)
-        "ghost-text": "text-ctp-subtext0 hover:text-ctp-text",
-        // Backwards-compatible aliases
-        primary: "bg-ctp-mauve text-ctp-base shadow hover:bg-ctp-lavender hover:text-ctp-base",
-        danger: "bg-ctp-red text-ctp-base shadow-sm hover:bg-ctp-maroon hover:text-ctp-text",
+          "border border-border bg-transparent text-text-primary hover:bg-surface hover:text-text-primary",
+        secondary: "bg-surface text-text-primary shadow-sm hover:bg-elevated",
+        ghost: "text-text-secondary hover:bg-surface hover:text-text-primary",
+        link: "text-accent underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2",
+        default: "h-10 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
-        // Backwards-compatible alias
-        md: "h-9 px-4 py-2",
+        lg: "h-12 rounded-md px-6 text-base",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {

@@ -63,8 +63,8 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
   if (isLoading) {
     return (
       <div className="bg-ctp-surface0/50 animate-pulse rounded-lg p-3">
-        <div className="mb-2 h-4 w-1/2 rounded bg-ctp-surface1" />
-        <div className="h-6 w-1/3 rounded bg-ctp-surface1" />
+        <div className="bg-ctp-surface1 mb-2 h-4 w-1/2 rounded" />
+        <div className="bg-ctp-surface1 h-6 w-1/3 rounded" />
       </div>
     );
   }
@@ -82,10 +82,10 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
   const hasDlcs = summary.hasDlcs;
 
   return (
-    <div className="bg-ctp-surface0/50 rounded-lg border border-ctp-surface1 p-3">
+    <div className="bg-ctp-surface0/50 border-ctp-surface1 rounded-lg border p-3">
       <Link to="." hash="stats" className="group block transition-opacity hover:opacity-80">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs text-ctp-subtext0 group-hover:text-ctp-subtext1">
+          <span className="text-ctp-subtext0 group-hover:text-ctp-subtext1 text-xs">
             {hasDlcs ? "Full Progress" : "Main Progress"}
           </span>
           <svg
@@ -94,7 +94,7 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="h-3.5 w-3.5 text-ctp-overlay1 group-hover:text-ctp-teal"
+            className="text-ctp-overlay1 group-hover:text-ctp-teal h-3.5 w-3.5"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
           </svg>
@@ -106,9 +106,9 @@ export function ProgressDisplay({ gameId, platformId }: ProgressDisplayProps) {
           >
             {hasDlcs ? fullProgress : mainProgress}
           </span>
-          <span className="text-sm text-ctp-subtext0">%</span>
+          <span className="text-ctp-subtext0 text-sm">%</span>
         </div>
-        <div className="mt-2 h-1.5 w-full rounded-full bg-ctp-mantle">
+        <div className="bg-ctp-mantle mt-2 h-1.5 w-full rounded-full">
           <div
             className="h-1.5 rounded-full transition-all duration-200"
             style={{

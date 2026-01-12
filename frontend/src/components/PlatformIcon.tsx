@@ -121,7 +121,7 @@ export function PlatformIconBadge({
         )}
       </div>
       {showLabel && (
-        <span className="text-sm text-ctp-subtext1">{platform.displayName || "Unknown"}</span>
+        <span className="text-ctp-subtext1 text-sm">{platform.displayName || "Unknown"}</span>
       )}
     </div>
   );
@@ -171,7 +171,7 @@ export function PlatformIcons({ platforms, size = "md", maxDisplay = 5 }: Platfo
         }
       })}
       {remainingCount > 0 && (
-        <span className="ml-1 text-xs text-ctp-subtext0">+{remainingCount}</span>
+        <span className="text-ctp-subtext0 ml-1 text-xs">+{remainingCount}</span>
       )}
     </div>
   );

@@ -58,15 +58,15 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
     <div className="space-y-8">
       <PlaySessionTracker gameId={gameId} platformId={platformId} />
 
-      <div className="border-t border-ctp-surface1" />
+      <div className="border-ctp-surface1 border-t" />
 
       <ProgressHistory gameId={gameId} platformId={platformId} />
 
-      <div className="border-t border-ctp-surface1" />
+      <div className="border-ctp-surface1 border-t" />
 
       <div>
         <span
-          className="mb-2 block text-sm font-medium text-ctp-subtext0"
+          className="text-ctp-subtext0 mb-2 block text-sm font-medium"
           id="difficulty-rating-label"
         >
           Difficulty Rating (1-10)
@@ -92,7 +92,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
           <Button
             onClick={() => handleFieldChange("difficulty_rating", null)}
             variant="link"
-            className="mt-2 h-auto p-0 text-sm text-ctp-overlay1 hover:text-ctp-subtext1"
+            className="text-ctp-overlay1 hover:text-ctp-subtext1 mt-2 h-auto p-0 text-sm"
           >
             Clear rating
           </Button>

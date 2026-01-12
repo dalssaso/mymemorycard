@@ -28,7 +28,7 @@ export function ClickableBadge({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       variant="ghost"
-      className={`inline-flex h-auto cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ctp-mauve focus-visible:ring-offset-2 active:scale-95 ${className}`}
+      className={`inline-flex h-auto cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-standard ease-out hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 active:scale-95 ${className}`}
       style={{
         backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`,
         borderWidth: "1px",

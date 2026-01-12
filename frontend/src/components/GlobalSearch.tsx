@@ -110,7 +110,7 @@ export function GlobalSearch(): JSX.Element {
         }
       }}
     >
-      <DialogContent className="h-[100dvh] w-[100vw] max-w-none overflow-hidden border border-ctp-surface1 bg-ctp-mantle p-0 text-ctp-text shadow-xl sm:h-auto sm:w-full sm:max-w-2xl sm:rounded-lg">
+      <DialogContent className="border-ctp-surface1 bg-ctp-mantle text-ctp-text h-[100dvh] w-[100vw] max-w-none overflow-hidden border p-0 shadow-xl sm:h-auto sm:w-full sm:max-w-2xl sm:rounded-lg">
         <DialogTitle className="sr-only">Global search</DialogTitle>
         <DialogDescription className="sr-only">
           Search games, collections, platforms, and more.
@@ -134,12 +134,12 @@ export function GlobalSearch(): JSX.Element {
                     className="flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-ctp-text">{item.name}</p>
+                      <p className="text-ctp-text truncate text-sm font-medium">{item.name}</p>
                       {item.subtitle ? (
-                        <p className="truncate text-xs text-ctp-subtext1">{item.subtitle}</p>
+                        <p className="text-ctp-subtext1 truncate text-xs">{item.subtitle}</p>
                       ) : null}
                     </div>
-                    <span className="text-xs uppercase text-ctp-subtext1">{item.type}</span>
+                    <span className="text-ctp-subtext1 text-xs uppercase">{item.type}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>

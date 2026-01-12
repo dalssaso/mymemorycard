@@ -231,11 +231,11 @@ export function Collections() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+                className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
               />
-              <h1 className="text-3xl font-bold text-ctp-text sm:text-4xl">Collections</h1>
+              <h1 className="text-ctp-text text-3xl font-bold sm:text-4xl">Collections</h1>
             </div>
-            <p className="mt-1 text-ctp-subtext0">Organize your games into custom collections</p>
+            <p className="text-ctp-subtext0 mt-1">Organize your games into custom collections</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)} className="w-full sm:w-auto">
             Create Collection
@@ -247,15 +247,15 @@ export function Collections() {
             <Card className="px-6 py-10" padded={true}>
               <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
                 <div>
-                  <h2 className="mb-3 text-2xl font-bold text-ctp-text">No Collections Yet</h2>
-                  <p className="mb-6 text-ctp-subtext0">
+                  <h2 className="text-ctp-text mb-3 text-2xl font-bold">No Collections Yet</h2>
+                  <p className="text-ctp-subtext0 mb-6">
                     Group your games by theme, mood, or completion goals.
                   </p>
                   <Button onClick={() => setShowCreateModal(true)}>Create Collection</Button>
                 </div>
-                <div className="bg-ctp-surface0/40 rounded-lg border border-ctp-surface1 p-4">
-                  <h3 className="text-sm font-semibold text-ctp-text">Ideas to try</h3>
-                  <div className="mt-2 space-y-2 text-sm text-ctp-subtext0">
+                <div className="bg-ctp-surface0/40 border-ctp-surface1 rounded-lg border p-4">
+                  <h3 className="text-ctp-text text-sm font-semibold">Ideas to try</h3>
+                  <div className="text-ctp-subtext0 mt-2 space-y-2 text-sm">
                     <p>Story-driven RPGs</p>
                     <p>Short backlog wins</p>
                     <p>Co-op with friends</p>
@@ -266,7 +266,7 @@ export function Collections() {
           ) : (
             <>
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm text-ctp-subtext0">
+                <span className="text-ctp-subtext0 text-sm">
                   {collections.length} {collections.length === 1 ? "collection" : "collections"}
                 </span>
                 {!selectionMode && collections.length > 0 && (
@@ -296,16 +296,16 @@ export function Collections() {
               </div>
 
               {selectionMode && (
-                <div className="bg-ctp-surface0/50 mb-4 flex flex-col gap-3 rounded-lg border border-ctp-surface1 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="bg-ctp-surface0/50 border-ctp-surface1 mb-4 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm font-medium text-ctp-text">
+                    <span className="text-ctp-text text-sm font-medium">
                       {selectedCollectionIds.length > 0
                         ? `${selectedCollectionIds.length} collection(s) selected`
                         : "Select collections to manage"}
                     </span>
                     {collections.length > 0 && (
                       <Button
-                        variant="ghost-text"
+                        variant="ghost"
                         size="sm"
                         onClick={() =>
                           setSelectedCollectionIds(
@@ -319,7 +319,7 @@ export function Collections() {
                     )}
                     {selectedCollectionIds.length > 0 && (
                       <Button
-                        variant="ghost-text"
+                        variant="ghost"
                         size="sm"
                         onClick={() => setSelectedCollectionIds([])}
                         className="h-auto px-2 text-sm"
@@ -331,7 +331,7 @@ export function Collections() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     {selectedCollectionIds.length > 0 && (
                       <Button
-                        variant="outline-red"
+                        variant="destructive"
                         size="sm"
                         onClick={() => setShowDeleteConfirm(true)}
                       >
@@ -342,7 +342,7 @@ export function Collections() {
                       variant="secondary"
                       size="sm"
                       onClick={handleExitSelectionMode}
-                      className="h-auto bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2"
+                      className="bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2 h-auto"
                     >
                       Done
                     </Button>
@@ -355,7 +355,7 @@ export function Collections() {
                   const isSelected = selectedCollectionIds.includes(collection.id);
                   const cardContent = (
                     <>
-                      <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-ctp-surface0">
+                      <div className="bg-ctp-surface0 relative mb-2 aspect-[3/4] overflow-hidden rounded-lg">
                         {collection.cover_filename ? (
                           <img
                             src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}
@@ -369,20 +369,20 @@ export function Collections() {
                             className="h-full w-full object-cover transition-transform group-hover:scale-105"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-ctp-overlay1">
+                          <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
                             <span className="text-sm">No Cover</span>
                           </div>
                         )}
                         <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                         {selectionMode && isSelected && (
-                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ctp-mauve">
+                          <div className="bg-ctp-mauve absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="h-4 w-4 text-ctp-text"
+                              className="text-ctp-text h-4 w-4"
                             >
                               <path
                                 strokeLinecap="round"
@@ -394,10 +394,10 @@ export function Collections() {
                         )}
                       </div>
                       <div className="flex flex-col gap-1 px-2 pb-2 sm:px-0 sm:pb-0">
-                        <p className="truncate font-medium text-ctp-text transition-colors group-hover:text-ctp-mauve">
+                        <p className="text-ctp-text group-hover:text-ctp-mauve truncate font-medium transition-colors">
                           {collection.name}
                         </p>
-                        <p className="text-sm text-ctp-mauve">
+                        <p className="text-ctp-mauve text-sm">
                           {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                         </p>
                       </div>
@@ -443,7 +443,7 @@ export function Collections() {
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-bold text-ctp-text">
+              <AlertDialogTitle className="text-ctp-text text-xl font-bold">
                 Delete Collections
               </AlertDialogTitle>
               <AlertDialogDescription className="text-ctp-subtext0">
@@ -476,9 +476,9 @@ export function Collections() {
             }
           }}
         >
-          <DialogContent className="max-w-md border-ctp-surface1 bg-ctp-mantle">
+          <DialogContent className="border-ctp-surface1 bg-ctp-mantle max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-ctp-text">
+              <DialogTitle className="text-ctp-text text-2xl font-bold">
                 Create Collection
               </DialogTitle>
               <DialogDescription className="text-ctp-subtext0">
@@ -487,7 +487,7 @@ export function Collections() {
             </DialogHeader>
             <div className="space-y-4">
               {/* AI Toggle */}
-              <div className="flex items-center gap-3 rounded-lg bg-ctp-surface0 p-3">
+              <div className="bg-ctp-surface0 flex items-center gap-3 rounded-lg p-3">
                 <Checkbox
                   id="use-ai"
                   checked={useAI}
@@ -500,7 +500,7 @@ export function Collections() {
                     }
                   }}
                 />
-                <label htmlFor="use-ai" className="flex-1 cursor-pointer text-sm text-ctp-text">
+                <label htmlFor="use-ai" className="text-ctp-text flex-1 cursor-pointer text-sm">
                   Use AI to create collection
                 </label>
               </div>
@@ -509,7 +509,7 @@ export function Collections() {
               {useAI && !aiSuggestion && (
                 <div className="bg-ctp-mauve/10 border-ctp-mauve/20 rounded-lg border p-3">
                   <label
-                    className="mb-2 block text-sm font-medium text-ctp-text"
+                    className="text-ctp-text mb-2 block text-sm font-medium"
                     htmlFor="collection-theme"
                   >
                     Collection Theme
@@ -520,7 +520,7 @@ export function Collections() {
                     value={aiTheme}
                     onChange={(e) => setAiTheme(e.target.value)}
                     placeholder="e.g., Cozy games for rainy days"
-                    className="mb-3 bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                    className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve mb-3"
                   />
                   <Button
                     onClick={handleGenerateAISuggestion}
@@ -536,9 +536,9 @@ export function Collections() {
               {aiSuggestion && (
                 <div className="bg-ctp-green/10 border-ctp-green/20 rounded-lg border p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-ctp-green">AI Suggestion</span>
+                    <span className="text-ctp-green text-sm font-medium">AI Suggestion</span>
                     <Button
-                      variant="ghost-text"
+                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         setAiSuggestion(null);
@@ -550,13 +550,13 @@ export function Collections() {
                       Clear
                     </Button>
                   </div>
-                  <p className="mb-1 text-xs text-ctp-overlay1">
+                  <p className="text-ctp-overlay1 mb-1 text-xs">
                     {aiSuggestion.gameIds.length} games will be added:{" "}
                     {aiSuggestion.gameNames.slice(0, 3).join(", ")}
                     {aiSuggestion.gameNames.length > 3 &&
                       ` +${aiSuggestion.gameNames.length - 3} more`}
                   </p>
-                  <p className="text-xs italic text-ctp-overlay2">{aiSuggestion.reasoning}</p>
+                  <p className="text-ctp-overlay2 text-xs italic">{aiSuggestion.reasoning}</p>
                 </div>
               )}
 
@@ -566,7 +566,7 @@ export function Collections() {
                   {/* Name field */}
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                      className="text-ctp-subtext0 mb-2 block text-sm font-medium"
                       htmlFor="collection-name"
                     >
                       Name {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
@@ -584,7 +584,7 @@ export function Collections() {
                   {/* Description field */}
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                      className="text-ctp-subtext0 mb-2 block text-sm font-medium"
                       htmlFor="collection-description"
                     >
                       Description (optional){" "}
@@ -595,19 +595,19 @@ export function Collections() {
                       value={newCollectionDescription}
                       onChange={(e) => setNewCollectionDescription(e.target.value)}
                       placeholder="Describe your collection..."
-                      className="min-h-24 bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve min-h-24"
                     />
                   </div>
 
                   {/* Cover Image upload */}
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-subtext0"
+                      className="text-ctp-subtext0 mb-2 block text-sm font-medium"
                       htmlFor="collection-cover"
                     >
                       Cover Image (optional)
                     </label>
-                    <p className="mb-2 text-xs text-ctp-overlay1">
+                    <p className="text-ctp-overlay1 mb-2 text-xs">
                       Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
                     </p>
                     <Input
@@ -636,7 +636,7 @@ export function Collections() {
                           className="mx-auto max-h-48 rounded-lg"
                         />
                         <Button
-                          variant="ghost-text"
+                          variant="ghost"
                           size="sm"
                           onClick={() => {
                             setNewCollectionCoverFile(null);
@@ -662,7 +662,7 @@ export function Collections() {
                         />
                         <label
                           htmlFor="generate-cover"
-                          className="cursor-pointer text-sm text-ctp-subtext0"
+                          className="text-ctp-subtext0 cursor-pointer text-sm"
                         >
                           Generate AI cover (~$0.04)
                         </label>
@@ -694,27 +694,27 @@ export function Collections() {
         <AlertDialog open={showAICostConfirm} onOpenChange={setShowAICostConfirm}>
           <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-bold text-ctp-text">
+              <AlertDialogTitle className="text-ctp-text text-xl font-bold">
                 Confirm AI Generation
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-sm text-ctp-subtext0">
+              <AlertDialogDescription className="text-ctp-subtext0 text-sm">
                 This will generate an AI-powered collection suggestion for theme: &quot;{aiTheme}
                 &quot;
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="flex items-baseline gap-2">
-              <span className="text-sm text-ctp-subtext0">Estimated cost:</span>
-              <span className="text-lg font-semibold text-ctp-mauve">
+              <span className="text-ctp-subtext0 text-sm">Estimated cost:</span>
+              <span className="text-ctp-mauve text-lg font-semibold">
                 ${estimatedAICost.toFixed(4)}
               </span>
             </div>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="flex-1 border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2">
+              <AlertDialogCancel className="border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2 flex-1">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmAIGeneration}
-                className="hover:bg-ctp-mauve/90 flex-1 bg-ctp-mauve text-ctp-base"
+                className="hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base flex-1"
               >
                 Continue
               </AlertDialogAction>

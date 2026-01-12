@@ -1,4 +1,11 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 
 interface SortControlProps {
   currentSort: string;
@@ -24,7 +31,7 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps): JS
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort-select" className="whitespace-nowrap text-sm text-ctp-subtext0">
+      <label htmlFor="sort-select" className="text-ctp-subtext0 whitespace-nowrap text-sm">
         Sort by:
       </label>
       <Select
@@ -37,7 +44,7 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps): JS
         <SelectContent>
           {SORT_OPTIONS.map((option) => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              <SelectItemText>{option.label}</SelectItemText>
             </SelectItem>
           ))}
         </SelectContent>

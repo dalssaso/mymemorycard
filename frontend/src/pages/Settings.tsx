@@ -233,16 +233,16 @@ export function Settings() {
           <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
             />
-            <h1 className="text-4xl font-bold text-ctp-text">Settings</h1>
+            <h1 className="text-ctp-text text-4xl font-bold">Settings</h1>
           </div>
           <Card className="p-6">
             <div className="animate-pulse space-y-6">
-              <div className="h-8 w-1/3 rounded bg-ctp-surface1"></div>
-              <div className="h-12 rounded bg-ctp-surface1"></div>
-              <div className="h-8 w-1/3 rounded bg-ctp-surface1"></div>
-              <div className="h-12 rounded bg-ctp-surface1"></div>
+              <div className="bg-ctp-surface1 h-8 w-1/3 rounded"></div>
+              <div className="bg-ctp-surface1 h-12 rounded"></div>
+              <div className="bg-ctp-surface1 h-8 w-1/3 rounded"></div>
+              <div className="bg-ctp-surface1 h-12 rounded"></div>
             </div>
           </Card>
         </div>
@@ -256,15 +256,15 @@ export function Settings() {
         <div className="mb-8 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text md:hidden"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
           />
-          <h1 className="text-4xl font-bold text-ctp-text">Settings</h1>
+          <h1 className="text-ctp-text text-4xl font-bold">Settings</h1>
         </div>
 
         <Card className="space-y-8 p-6">
           <div>
-            <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">Library View</h2>
-            <p className="mb-4 text-sm text-ctp-subtext0">
+            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">Library View</h2>
+            <p className="text-ctp-subtext0 mb-4 text-sm">
               Choose how your game library is displayed by default.
             </p>
             <div className="flex gap-3">
@@ -294,7 +294,7 @@ export function Settings() {
                     />
                   </svg>
                   <span className="font-medium">Grid View</span>
-                  <span className="text-xs text-ctp-overlay1">Game covers in a grid</span>
+                  <span className="text-ctp-overlay1 text-xs">Game covers in a grid</span>
                 </div>
               </Button>
               <Button
@@ -323,15 +323,15 @@ export function Settings() {
                     />
                   </svg>
                   <span className="font-medium">Table View</span>
-                  <span className="text-xs text-ctp-overlay1">Sortable list format</span>
+                  <span className="text-ctp-overlay1 text-xs">Sortable list format</span>
                 </div>
               </Button>
             </div>
           </div>
 
-          <div className="border-t border-ctp-surface0 pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">Items Per Page</h2>
-            <p className="mb-4 text-sm text-ctp-subtext0">
+          <div className="border-ctp-surface0 border-t pt-8">
+            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">Items Per Page</h2>
+            <p className="text-ctp-subtext0 mb-4 text-sm">
               Number of games to show per page in your library.
             </p>
             <div className="flex gap-2">
@@ -353,9 +353,9 @@ export function Settings() {
             </div>
           </div>
 
-          <div className="border-t border-ctp-surface0 pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">Theme</h2>
-            <p className="mb-4 text-sm text-ctp-subtext0">
+          <div className="border-ctp-surface0 border-t pt-8">
+            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">Theme</h2>
+            <p className="text-ctp-subtext0 mb-4 text-sm">
               Appearance settings for the application.
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -373,27 +373,27 @@ export function Settings() {
                   }`}
                 >
                   <div className="font-medium">{option.label}</div>
-                  <div className="text-xs text-ctp-overlay1">{option.description}</div>
+                  <div className="text-ctp-overlay1 text-xs">{option.description}</div>
                 </Button>
               ))}
             </div>
           </div>
 
-          <div className="border-t border-ctp-surface0 pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-ctp-mauve">AI Curator Settings</h2>
-            <p className="mb-4 text-sm text-ctp-subtext0">
+          <div className="border-ctp-surface0 border-t pt-8">
+            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">AI Curator Settings</h2>
+            <p className="text-ctp-subtext0 mb-4 text-sm">
               Configure AI-powered features for collection suggestions and recommendations.
             </p>
 
             <div className="mb-6">
-              <p className="mb-3 block text-sm font-medium text-ctp-text">AI Provider</p>
-              <div className="border-ctp-mauve/50 bg-ctp-mauve/20 rounded-lg border-2 px-4 py-3 text-sm text-ctp-mauve">
+              <p className="text-ctp-text mb-3 block text-sm font-medium">AI Provider</p>
+              <div className="border-ctp-mauve/50 bg-ctp-mauve/20 text-ctp-mauve rounded-lg border-2 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-ctp-green"></span>
+                  <span className="bg-ctp-green h-2 w-2 rounded-full"></span>
                   OpenAI
                 </div>
               </div>
-              <p className="mt-2 text-xs text-ctp-overlay1">
+              <p className="text-ctp-overlay1 mt-2 text-xs">
                 <a
                   href="https://github.com/dalssaso/mymemorycard/blob/main/docs/ai-curator-settings/openai.md"
                   target="_blank"
@@ -407,15 +407,15 @@ export function Settings() {
 
             <form
               onSubmit={handleAiSettingsSubmit}
-              className="space-y-6 border-t border-ctp-surface0 pt-6"
+              className="border-ctp-surface0 space-y-6 border-t pt-6"
             >
               <div>
-                <h3 className="text-lg font-medium text-ctp-text">OpenAI Configuration</h3>
+                <h3 className="text-ctp-text text-lg font-medium">OpenAI Configuration</h3>
               </div>
 
               <div>
                 <label
-                  className="mb-2 block text-sm font-medium text-ctp-text"
+                  className="text-ctp-text mb-2 block text-sm font-medium"
                   htmlFor="provider-api-key"
                 >
                   API Key
@@ -449,9 +449,9 @@ export function Settings() {
                   readOnly={currentForm.api_key === undefined && currentForm.api_key_masked != null}
                 />
                 {errors.api_key && (
-                  <p className="mt-1 text-xs text-ctp-red">{errors.api_key.message}</p>
+                  <p className="text-ctp-red mt-1 text-xs">{errors.api_key.message}</p>
                 )}
-                <p className="mt-1 text-xs text-ctp-overlay1">
+                <p className="text-ctp-overlay1 mt-1 text-xs">
                   {currentForm.api_key_masked && currentForm.api_key === undefined
                     ? "API key configured. Click the field to replace it."
                     : "Your API key is encrypted before being stored."}
@@ -462,7 +462,7 @@ export function Settings() {
                 <>
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-text"
+                      className="text-ctp-text mb-2 block text-sm font-medium"
                       htmlFor="model-select"
                     >
                       Model
@@ -499,7 +499,7 @@ export function Settings() {
                         className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
                       />
                     )}
-                    <p className="mt-1 text-xs text-ctp-overlay1">
+                    <p className="text-ctp-overlay1 mt-1 text-xs">
                       {modelsLoading
                         ? "Loading available models from OpenAI..."
                         : modelsData && modelsData.textModels.length > 0
@@ -510,7 +510,7 @@ export function Settings() {
 
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-text"
+                      className="text-ctp-text mb-2 block text-sm font-medium"
                       htmlFor="image-model-select"
                     >
                       Image Model
@@ -533,7 +533,7 @@ export function Settings() {
                           placeholder="Select an image model"
                           className="w-full"
                         />
-                        <p className="mt-1 text-xs text-ctp-overlay1">
+                        <p className="text-ctp-overlay1 mt-1 text-xs">
                           Select from available OpenAI image models
                         </p>
                       </>
@@ -551,7 +551,7 @@ export function Settings() {
                           disabled={modelsLoading}
                           className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
                         />
-                        <p className="mt-1 text-xs text-ctp-overlay1">
+                        <p className="text-ctp-overlay1 mt-1 text-xs">
                           {modelsLoading
                             ? "Loading available models from OpenAI..."
                             : "Save your API key first, then reload to see available models. DALL-E 3 is recommended."}
@@ -567,7 +567,7 @@ export function Settings() {
                   type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   variant="link"
-                  className="flex h-auto items-center gap-1 p-0 text-sm text-ctp-blue hover:underline"
+                  className="text-ctp-blue flex h-auto items-center gap-1 p-0 text-sm hover:underline"
                 >
                   {showAdvanced ? "Hide" : "Show"} Advanced Options
                   <svg
@@ -587,10 +587,10 @@ export function Settings() {
               </div>
 
               {showAdvanced && (
-                <div className="space-y-4 border-l-2 border-ctp-surface1 pl-4">
+                <div className="border-ctp-surface1 space-y-4 border-l-2 pl-4">
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-text"
+                      className="text-ctp-text mb-2 block text-sm font-medium"
                       htmlFor="provider-base-url"
                     >
                       Base URL (Optional)
@@ -605,9 +605,9 @@ export function Settings() {
                       className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                     />
                     {errors.base_url && (
-                      <p className="mt-1 text-xs text-ctp-red">{errors.base_url.message}</p>
+                      <p className="text-ctp-red mt-1 text-xs">{errors.base_url.message}</p>
                     )}
-                    <p className="mt-1 text-xs text-ctp-overlay1">
+                    <p className="text-ctp-overlay1 mt-1 text-xs">
                       Default: https://api.openai.com/v1. Use custom URL for Azure OpenAI or
                       proxies.
                     </p>
@@ -615,7 +615,7 @@ export function Settings() {
 
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-text"
+                      className="text-ctp-text mb-2 block text-sm font-medium"
                       htmlFor="temperature"
                     >
                       Temperature: {temperatureValue}
@@ -633,14 +633,14 @@ export function Settings() {
                       }
                       className="w-full"
                     />
-                    <p className="mt-1 text-xs text-ctp-overlay1">
+                    <p className="text-ctp-overlay1 mt-1 text-xs">
                       Lower = more focused, Higher = more creative
                     </p>
                   </div>
 
                   <div>
                     <label
-                      className="mb-2 block text-sm font-medium text-ctp-text"
+                      className="text-ctp-text mb-2 block text-sm font-medium"
                       htmlFor="max-tokens"
                     >
                       Max Tokens
@@ -658,9 +658,9 @@ export function Settings() {
                       className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
                     />
                     {errors.max_tokens && (
-                      <p className="mt-1 text-xs text-ctp-red">{errors.max_tokens.message}</p>
+                      <p className="text-ctp-red mt-1 text-xs">{errors.max_tokens.message}</p>
                     )}
-                    <p className="mt-1 text-xs text-ctp-overlay1">
+                    <p className="text-ctp-overlay1 mt-1 text-xs">
                       Maximum response length. Reasoning models (GPT-5 Nano, Mini) require 12000+
                       tokens
                     </p>
@@ -672,7 +672,7 @@ export function Settings() {
                 type="submit"
                 disabled={updateAiMutation.isPending}
                 variant="ghost"
-                className="hover:bg-ctp-mauve/90 h-auto rounded-lg bg-ctp-mauve px-6 py-2 text-ctp-base transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base h-auto rounded-lg px-6 py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {updateAiMutation.isPending ? "Saving..." : "Save OpenAI Settings"}
               </Button>

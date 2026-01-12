@@ -1,3 +1,4 @@
 **/drizzle/meta/**
 **/CHANGELOG.md
 **/CLAUDE*
+frontend/src/routeTree.gen.ts

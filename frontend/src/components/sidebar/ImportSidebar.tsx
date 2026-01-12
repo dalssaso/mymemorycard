@@ -25,11 +25,11 @@ export function ImportSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="space-y-3 border-t border-ctp-surface0 pt-3">
+      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="rounded-lg p-2 text-ctp-subtext0 transition-all hover:bg-ctp-surface0 hover:text-ctp-text"
+            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,7 +42,7 @@ export function ImportSidebar({
             </svg>
           </Link>
         </div>
-        <div className="flex flex-col items-center gap-1 border-t border-ctp-surface0 pt-2">
+        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
           {platforms.map((platform) => (
             <Button
               key={platform.id}
@@ -52,7 +52,7 @@ export function ImportSidebar({
               size="icon"
               className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
-                  ? "bg-ctp-mauve/20 text-ctp-mauve ring-2 ring-ctp-mauve"
+                  ? "bg-ctp-mauve/20 text-ctp-mauve ring-ctp-mauve ring-2"
                   : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
               title={platform.display_name}
@@ -69,7 +69,7 @@ export function ImportSidebar({
     <div className="space-y-6">
       <Link
         to="/platforms"
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-ctp-surface0 px-4 py-2.5 font-medium text-ctp-text transition-colors hover:bg-ctp-surface1"
+        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -83,9 +83,9 @@ export function ImportSidebar({
       </Link>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-mauve"
+            className="text-ctp-mauve h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -108,7 +108,7 @@ export function ImportSidebar({
               variant="ghost"
               className={`h-auto w-full rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50 ${
                 selectedPlatform === platform.id
-                  ? "bg-ctp-mauve/20 border-ctp-mauve/30 border text-ctp-mauve"
+                  ? "bg-ctp-mauve/20 border-ctp-mauve/30 text-ctp-mauve border"
                   : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
               }`}
             >
@@ -119,9 +119,9 @@ export function ImportSidebar({
       </div>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-teal"
+            className="text-ctp-teal h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -135,19 +135,19 @@ export function ImportSidebar({
           </svg>
           Import Tips
         </h3>
-        <div className="space-y-3 text-sm text-ctp-subtext0">
+        <div className="text-ctp-subtext0 space-y-3 text-sm">
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="mb-1 font-medium text-ctp-subtext1">One game per line</p>
+            <p className="text-ctp-subtext1 mb-1 font-medium">One game per line</p>
             <p className="text-xs">Enter each game name on its own line for best results.</p>
           </div>
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="mb-1 font-medium text-ctp-subtext1">Use official names</p>
+            <p className="text-ctp-subtext1 mb-1 font-medium">Use official names</p>
             <p className="text-xs">
               &quot;The Witcher 3: Wild Hunt&quot; works better than &quot;Witcher 3&quot;.
             </p>
           </div>
           <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="mb-1 font-medium text-ctp-subtext1">Review matches</p>
+            <p className="text-ctp-subtext1 mb-1 font-medium">Review matches</p>
             <p className="text-xs">
               If a game isn&apos;t matched exactly, you&apos;ll be able to pick from candidates.
             </p>
@@ -156,9 +156,9 @@ export function ImportSidebar({
       </div>
 
       <div>
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ctp-subtext0">
+        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="h-4 w-4 text-ctp-green"
+            className="text-ctp-green h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -174,12 +174,12 @@ export function ImportSidebar({
         </h3>
         <div className="bg-ctp-surface0/50 rounded-lg p-3">
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-ctp-mauve text-ctp-base">
+            <div className="bg-ctp-mauve text-ctp-base flex h-6 w-6 items-center justify-center rounded">
               <span className="text-xs font-bold">R</span>
             </div>
-            <span className="text-sm text-ctp-subtext1">RAWG.io</span>
+            <span className="text-ctp-subtext1 text-sm">RAWG.io</span>
           </div>
-          <p className="text-xs text-ctp-overlay1">
+          <p className="text-ctp-overlay1 text-xs">
             Games are enriched with metadata from RAWG including cover art, descriptions, ratings,
             and release dates.
           </p>

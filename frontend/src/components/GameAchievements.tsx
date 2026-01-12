@@ -147,7 +147,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
   }
 
   if (error) {
-    return <div className="py-4 text-ctp-red">Failed to load achievements</div>;
+    return <div className="text-ctp-red py-4">Failed to load achievements</div>;
   }
 
   const achievements = data?.achievements || [];
@@ -251,19 +251,19 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-ctp-subtext0">Progress</div>
-          <div className="text-2xl font-bold text-ctp-text">
+          <div className="text-ctp-subtext0 text-sm">Progress</div>
+          <div className="text-ctp-text text-2xl font-bold">
             {completedCount} / {totalCount}
           </div>
         </div>
         <div className="w-32">
-          <div className="h-3 w-full rounded-full bg-ctp-surface1">
+          <div className="bg-ctp-surface1 h-3 w-full rounded-full">
             <div
-              className="h-3 rounded-full bg-ctp-green transition-all"
+              className="bg-ctp-green h-3 rounded-full transition-all"
               style={{ width: `${completionPercent}%` }}
             />
           </div>
-          <div className="mt-1 text-right text-sm text-ctp-subtext0">{completionPercent}%</div>
+          <div className="text-ctp-subtext0 mt-1 text-right text-sm">{completionPercent}%</div>
         </div>
       </div>
 
@@ -291,13 +291,13 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
       <div className="bg-ctp-surface0/60 border-ctp-surface1/60 rounded-lg border p-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="text-sm font-semibold text-ctp-text">User Added Achievements</div>
-            <div className="text-xs text-ctp-overlay1">
+            <div className="text-ctp-text text-sm font-semibold">User Added Achievements</div>
+            <div className="text-ctp-overlay1 text-xs">
               Add custom achievements for this platform and manage them in bulk.
             </div>
           </div>
           {manualAchievements.length > 0 && (
-            <div className="text-xs text-ctp-subtext0">
+            <div className="text-ctp-subtext0 text-xs">
               {manualAchievements.length} user added achievement
               {manualAchievements.length === 1 ? "" : "s"}
             </div>
@@ -306,7 +306,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
         <div className="mt-3 grid gap-2 md:grid-cols-2">
           <div className="w-full">
             <Label
-              className="mb-2 block text-sm font-medium text-ctp-subtext0"
+              className="text-ctp-subtext0 mb-2 block text-sm font-medium"
               htmlFor="manual-achievement-name"
             >
               Achievement name
@@ -320,14 +320,14 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
           </div>
           <div className="w-full">
             <label
-              className="mb-2 block text-sm font-medium text-ctp-subtext0"
+              className="text-ctp-subtext0 mb-2 block text-sm font-medium"
               htmlFor="manual-achievement-description"
             >
               Description (optional)
             </label>
             <Textarea
               id="manual-achievement-description"
-              className="min-h-[42px] bg-ctp-mantle text-ctp-text placeholder:text-ctp-overlay1 focus-visible:ring-ctp-mauve"
+              className="bg-ctp-mantle text-ctp-text placeholder:text-ctp-overlay1 focus-visible:ring-ctp-mauve min-h-[42px]"
               placeholder="Add a short description"
               value={manualDescription}
               onChange={(event) => setManualDescription(event.target.value)}
@@ -368,7 +368,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
           )}
         </div>
         {filteredManualAchievements.length === 0 ? (
-          <div className="py-4 text-ctp-subtext0">{manualEmptyMessage}</div>
+          <div className="text-ctp-subtext0 py-4">{manualEmptyMessage}</div>
         ) : (
           <div className="mt-3 space-y-2">
             {filteredManualAchievements.map((ach) => {
@@ -388,7 +388,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   className="relative overflow-hidden rounded-lg"
                 >
                   <div
-                    className={`absolute inset-y-0 right-0 flex w-[72px] items-center justify-center bg-ctp-red transition-opacity md:hidden ${
+                    className={`bg-ctp-red absolute inset-y-0 right-0 flex w-[72px] items-center justify-center transition-opacity md:hidden ${
                       showSwipeAction ? "opacity-100" : "pointer-events-none opacity-0"
                     }`}
                   >
@@ -400,7 +400,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       }}
                       disabled={bulkDeleteManualMutation.isPending}
                       variant="ghost"
-                      className="h-auto p-0 text-sm font-semibold text-ctp-base disabled:opacity-60"
+                      className="text-ctp-base h-auto p-0 text-sm font-semibold disabled:opacity-60"
                       aria-label="Delete achievement"
                     >
                       Delete
@@ -410,7 +410,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     className={`flex w-full cursor-pointer touch-pan-y items-center gap-3 rounded-lg p-3 transition-transform ${
                       ach.completed
                         ? "bg-ctp-green/10 border-ctp-green/30 border"
-                        : "bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2"
+                        : "bg-ctp-surface0/50 border-ctp-surface1 hover:border-ctp-surface2 border"
                     } ${isDragging ? "" : "duration-200 ease-out"}`}
                     style={{ transform: `translateX(${translateX}px)` }}
                     onClick={() => handleManualAchievementClick(ach)}
@@ -435,7 +435,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     />
 
                     <div
-                      className={`bg-ctp-yellow/20 flex h-12 w-12 items-center justify-center rounded text-ctp-yellow ${
+                      className={`bg-ctp-yellow/20 text-ctp-yellow flex h-12 w-12 items-center justify-center rounded ${
                         ach.completed ? "" : "opacity-60"
                       }`}
                     >
@@ -464,10 +464,10 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                         {ach.name}
                       </div>
                       {ach.description && (
-                        <div className="truncate text-sm text-ctp-subtext0">{ach.description}</div>
+                        <div className="text-ctp-subtext0 truncate text-sm">{ach.description}</div>
                       )}
                       {ach.completed_at && (
-                        <div className="mt-1 text-xs text-ctp-overlay1">
+                        <div className="text-ctp-overlay1 mt-1 text-xs">
                           Completed {new Date(ach.completed_at).toLocaleDateString()}
                         </div>
                       )}
@@ -477,7 +477,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
                         ach.completed
                           ? "border-ctp-green bg-ctp-green text-ctp-base"
-                          : "border-ctp-surface2 text-transparent hover:border-ctp-overlay1"
+                          : "border-ctp-surface2 hover:border-ctp-overlay1 text-transparent"
                       }`}
                     >
                       <svg
@@ -504,15 +504,15 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
 
       <div className="bg-ctp-surface0/60 border-ctp-surface1/60 rounded-lg border p-3">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold text-ctp-text">Game Achievements</div>
+          <div className="text-ctp-text text-sm font-semibold">Game Achievements</div>
           {rawgAchievements.length > 0 && (
-            <div className="text-xs text-ctp-subtext0">
+            <div className="text-ctp-subtext0 text-xs">
               {rawgAchievements.length} game achievement{rawgAchievements.length === 1 ? "" : "s"}
             </div>
           )}
         </div>
         {filteredRawgAchievements.length === 0 ? (
-          <div className="py-4 text-ctp-subtext0">{rawgEmptyMessage}</div>
+          <div className="text-ctp-subtext0 py-4">{rawgEmptyMessage}</div>
         ) : (
           <ScrollFade axis="y" className="mt-3 max-h-96 space-y-2 overflow-y-auto">
             {filteredRawgAchievements.map((ach) => (
@@ -523,7 +523,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                 className={`flex h-auto w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-all ${
                   ach.completed
                     ? "bg-ctp-green/10 border-ctp-green/30 border"
-                    : "bg-ctp-surface0/50 border border-ctp-surface1 hover:border-ctp-surface2"
+                    : "bg-ctp-surface0/50 border-ctp-surface1 hover:border-ctp-surface2 border"
                 }`}
                 onClick={() =>
                   toggleMutation.mutate({
@@ -540,11 +540,11 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   />
                 ) : (
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded bg-ctp-surface1 ${
+                    className={`bg-ctp-surface1 flex h-12 w-12 items-center justify-center rounded ${
                       ach.completed ? "" : "opacity-50"
                     }`}
                   >
-                    <span className="text-xl text-ctp-overlay1">?</span>
+                    <span className="text-ctp-overlay1 text-xl">?</span>
                   </div>
                 )}
 
@@ -555,7 +555,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     {ach.name}
                   </div>
                   {ach.description && (
-                    <div className="truncate text-sm text-ctp-subtext0">{ach.description}</div>
+                    <div className="text-ctp-subtext0 truncate text-sm">{ach.description}</div>
                   )}
                   <div className="mt-1 flex items-center gap-2">
                     {ach.rarity_percent !== null && (
@@ -572,7 +572,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       </span>
                     )}
                     {ach.completed_at && (
-                      <span className="text-xs text-ctp-overlay1">
+                      <span className="text-ctp-overlay1 text-xs">
                         Completed {new Date(ach.completed_at).toLocaleDateString()}
                       </span>
                     )}
@@ -583,7 +583,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
                     ach.completed
                       ? "border-ctp-green bg-ctp-green text-ctp-base"
-                      : "border-ctp-surface2 text-transparent hover:border-ctp-overlay1"
+                      : "border-ctp-surface2 hover:border-ctp-overlay1 text-transparent"
                   }`}
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

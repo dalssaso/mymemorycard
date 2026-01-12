@@ -59,7 +59,7 @@ export function StatusButton({
       style={isActive ? config.activeStyle : config.bgStyle}
       className={cn(
         "flex h-auto w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm",
-        isActive && "border border-ctp-surface1 bg-ctp-surface0",
+        isActive && "border border-border bg-surface",
         className
       )}
     >
@@ -73,10 +73,12 @@ export function StatusButton({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={config.icon} />
         </svg>
-        <span className="text-ctp-subtext0">{config.label}</span>
+        <span className="text-text-secondary">{config.label}</span>
       </div>
       {count !== undefined && (
-        <span className="min-w-[2rem] text-right font-semibold text-ctp-text">{animatedCount}</span>
+        <span className="min-w-[2rem] text-right font-semibold text-text-primary">
+          {animatedCount}
+        </span>
       )}
     </Button>
   );

@@ -118,15 +118,15 @@ export function StartSessionButton({
   if (isActiveForThisGame) {
     return (
       <div className="bg-ctp-teal/10 border-ctp-teal/30 rounded-lg border p-3">
-        <div className="mb-1 text-xs text-ctp-teal">Session in progress</div>
-        <div className="mb-2 font-mono text-xl text-ctp-text">
+        <div className="text-ctp-teal mb-1 text-xs">Session in progress</div>
+        <div className="text-ctp-text mb-2 font-mono text-xl">
           {formatElapsedTime(elapsedSeconds)}
         </div>
         <Button
           onClick={() => activeSession && endSessionMutation.mutate(activeSession.id)}
           disabled={endSessionMutation.isPending}
           variant="ghost"
-          className="hover:bg-ctp-red/80 h-auto w-full rounded-lg bg-ctp-red py-2 text-sm font-semibold text-ctp-base transition-colors disabled:opacity-50"
+          className="hover:bg-ctp-red/80 bg-ctp-red text-ctp-base h-auto w-full rounded-lg py-2 text-sm font-semibold transition-colors disabled:opacity-50"
         >
           {endSessionMutation.isPending ? "Stopping..." : "Stop Session"}
         </Button>
@@ -147,7 +147,7 @@ export function StartSessionButton({
       onClick={() => startSessionMutation.mutate()}
       disabled={startSessionMutation.isPending}
       variant="ghost"
-      className="hover:bg-ctp-green/80 flex h-auto w-full items-center justify-center gap-2 rounded-lg bg-ctp-green py-2.5 text-sm font-semibold text-ctp-base transition-colors disabled:opacity-50"
+      className="hover:bg-ctp-green/80 bg-ctp-green text-ctp-base flex h-auto w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

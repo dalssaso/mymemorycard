@@ -95,15 +95,15 @@ export function GameCard({
     <Link
       to="/library/$id"
       params={{ id }}
-      className="bg-ctp-surface0/40 group relative cursor-pointer rounded-xl border border-ctp-surface1 p-0 transition-all hover:border-ctp-mauve sm:p-5"
+      className="bg-ctp-surface0/40 border-ctp-surface1 hover:border-ctp-mauve group relative cursor-pointer rounded-xl border p-0 transition-all sm:p-5"
     >
       {/* Mobile: Poster-only layout with overlay */}
       <div className="relative aspect-[3/4] overflow-hidden rounded-lg sm:hidden">
         {coverArtUrl ? (
           <img src={coverArtUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-ctp-surface0">
-            <span className="text-sm text-ctp-overlay1">No image</span>
+          <div className="bg-ctp-surface0 flex h-full w-full items-center justify-center">
+            <span className="text-ctp-overlay1 text-sm">No image</span>
           </div>
         )}
         <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
@@ -111,7 +111,7 @@ export function GameCard({
           <div className="mb-1 flex gap-1">
             <PlatformIcons platforms={platforms} size="xs" maxDisplay={5} />
           </div>
-          <h3 className="line-clamp-2 text-sm font-bold text-ctp-text transition-colors group-hover:text-ctp-mauve">
+          <h3 className="text-ctp-text group-hover:text-ctp-mauve line-clamp-2 text-sm font-bold transition-colors">
             {name}
           </h3>
         </div>
@@ -119,7 +119,7 @@ export function GameCard({
           onClick={handleFavoriteClick}
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-2 z-10 text-ctp-red transition-transform hover:scale-110"
+          className="text-ctp-red absolute right-2 top-2 z-10 transition-transform hover:scale-110"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
@@ -144,15 +144,15 @@ export function GameCard({
           {coverArtUrl ? (
             <img src={coverArtUrl} alt={name} className="h-32 w-24 rounded object-cover" />
           ) : (
-            <div className="flex h-32 w-24 items-center justify-center rounded bg-ctp-surface0">
-              <span className="text-xs text-ctp-overlay1">No image</span>
+            <div className="bg-ctp-surface0 flex h-32 w-24 items-center justify-center rounded">
+              <span className="text-ctp-overlay1 text-xs">No image</span>
             </div>
           )}
           <Button
             onClick={handleFavoriteClick}
             variant="ghost"
             size="icon"
-            className="absolute -right-2 -top-2 z-10 text-ctp-red transition-transform hover:scale-110"
+            className="text-ctp-red absolute -right-2 -top-2 z-10 transition-transform hover:scale-110"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <svg
@@ -172,14 +172,14 @@ export function GameCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="mb-2 break-words text-lg font-bold transition-colors group-hover:text-ctp-mauve">
+          <h3 className="group-hover:text-ctp-mauve mb-2 break-words text-lg font-bold transition-colors">
             {name}
           </h3>
 
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
             <Badge
-              className="border text-ctp-text"
+              className="text-ctp-text border"
               style={STATUS_STYLES[status as keyof typeof STATUS_STYLES]}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -193,7 +193,7 @@ export function GameCard({
                   navigate({ to: "/franchises/$seriesName", params: { seriesName } });
                 }}
                 variant="ghost"
-                className="inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium text-ctp-text transition-colors hover:opacity-90"
+                className="text-ctp-text inline-flex h-auto items-center rounded border px-2 py-1 text-xs font-medium transition-colors hover:opacity-90"
                 style={FRANCHISE_STYLE}
               >
                 {seriesName}
@@ -201,7 +201,7 @@ export function GameCard({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-sm text-ctp-subtext0">
+          <div className="text-ctp-subtext0 flex flex-wrap items-center gap-4 text-sm">
             {metacriticScore && (
               <div className="flex items-center gap-1">
                 <span className="text-ctp-yellow">Metacritic:</span>

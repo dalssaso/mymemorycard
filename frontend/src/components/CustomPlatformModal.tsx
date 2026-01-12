@@ -90,9 +90,9 @@ export function CustomPlatformModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto border-ctp-surface0 bg-ctp-mantle">
+      <DialogContent className="border-ctp-surface0 bg-ctp-mantle max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-ctp-text">
+          <DialogTitle className="text-ctp-text text-xl font-semibold">
             Add Custom Platform
           </DialogTitle>
           <DialogDescription>
@@ -101,7 +101,7 @@ export function CustomPlatformModal({
         </DialogHeader>
 
         {error && (
-          <div className="bg-ctp-red/20 rounded border border-ctp-red px-3 py-2 text-ctp-red">
+          <div className="bg-ctp-red/20 border-ctp-red text-ctp-red rounded border px-3 py-2">
             {error}
           </div>
         )}
@@ -110,7 +110,7 @@ export function CustomPlatformModal({
           {/* Display Name */}
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-ctp-subtext0"
+              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
               htmlFor="custom-platform-name"
             >
               Display Name <span className="text-ctp-red">*</span>
@@ -125,7 +125,7 @@ export function CustomPlatformModal({
 
           {/* Platform Type */}
           <div>
-            <p className="mb-1 block text-xs font-medium text-ctp-subtext0">
+            <p className="text-ctp-subtext0 mb-1 block text-xs font-medium">
               Platform Type <span className="text-ctp-red">*</span>
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -151,7 +151,7 @@ export function CustomPlatformModal({
           {/* Website URL */}
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-ctp-subtext0"
+              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
               htmlFor="custom-platform-website"
             >
               Website URL
@@ -168,7 +168,7 @@ export function CustomPlatformModal({
           {/* Icon URL */}
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-ctp-subtext0"
+              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
               htmlFor="custom-platform-icon"
             >
               Icon URL (SVG only)
@@ -180,7 +180,7 @@ export function CustomPlatformModal({
               type="url"
               placeholder="https://cdn.simpleicons.org/steam/ffffff"
             />
-            <p className="mt-1 text-xs text-ctp-overlay1">
+            <p className="text-ctp-overlay1 mt-1 text-xs">
               Provide an SVG icon URL from{" "}
               <a
                 href="https://simpleicons.org"
@@ -197,7 +197,7 @@ export function CustomPlatformModal({
           {/* Color */}
           <div>
             <label
-              className="mb-1 block text-xs font-medium text-ctp-subtext0"
+              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
               htmlFor="custom-platform-color"
             >
               Brand Color
@@ -220,15 +220,15 @@ export function CustomPlatformModal({
                 aria-label="Pick brand color"
               />
             </div>
-            <p className="mt-1 text-xs text-ctp-overlay1">
+            <p className="text-ctp-overlay1 mt-1 text-xs">
               Use the platform&apos;s official brand color for consistency.
             </p>
           </div>
 
           {/* Live Preview */}
           {displayName && (
-            <div className="bg-ctp-surface0/50 rounded-lg border border-ctp-surface1 p-4">
-              <p className="mb-2 block text-xs font-medium text-ctp-subtext0">Preview</p>
+            <div className="bg-ctp-surface0/50 border-ctp-surface1 rounded-lg border p-4">
+              <p className="text-ctp-subtext0 mb-2 block text-xs font-medium">Preview</p>
               <div className="flex items-center justify-center py-4">
                 <PlatformIconBadge
                   platform={{

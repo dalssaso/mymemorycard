@@ -149,7 +149,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
   if (isLoading) {
     return (
       <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
-        <h2 className="mb-3 text-2xl font-bold text-ctp-yellow">Achievements</h2>
+        <h2 className="text-ctp-yellow mb-3 text-2xl font-bold">Achievements</h2>
         <div className="animate-pulse space-y-4">
           <div className="bg-ctp-surface1/50 h-24 rounded-lg" />
           <div className="bg-ctp-surface1/50 h-32 rounded-lg" />
@@ -161,11 +161,11 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
   if (!data || data.summary.totalAchievements === 0) {
     return (
       <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
-        <h2 className="mb-3 text-2xl font-bold text-ctp-yellow">Achievements</h2>
+        <h2 className="text-ctp-yellow mb-3 text-2xl font-bold">Achievements</h2>
         {isSyncing ? (
-          <div className="py-8 text-center text-ctp-subtext0">Syncing achievement data...</div>
+          <div className="text-ctp-subtext0 py-8 text-center">Syncing achievement data...</div>
         ) : (
-          <div className="py-8 text-center text-ctp-subtext0">
+          <div className="text-ctp-subtext0 py-8 text-center">
             No achievement data yet. Add games with achievements to see your stats.
           </div>
         )}
@@ -175,41 +175,41 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
   return (
     <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
-      <h2 className="mb-3 text-2xl font-bold text-ctp-yellow">Achievements</h2>
+      <h2 className="text-ctp-yellow mb-3 text-2xl font-bold">Achievements</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-2.5">
         <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-2xl font-bold text-ctp-text">{animatedOverallPercentage}%</div>
-          <div className="text-xs text-ctp-subtext0">Overall Completion</div>
-          <div className="mt-2 h-2 w-full rounded-full bg-ctp-surface1">
+          <div className="text-ctp-text text-2xl font-bold">{animatedOverallPercentage}%</div>
+          <div className="text-ctp-subtext0 text-xs">Overall Completion</div>
+          <div className="bg-ctp-surface1 mt-2 h-2 w-full rounded-full">
             <div
-              className="h-2 rounded-full bg-ctp-yellow transition-all"
+              className="bg-ctp-yellow h-2 rounded-full transition-all"
               style={{ width: `${animatedOverallPercentage}%` }}
             />
           </div>
         </div>
 
         <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-2xl font-bold text-ctp-green">{animatedPerfectGames}</div>
-          <div className="text-xs text-ctp-subtext0">Perfect Games</div>
-          <div className="mt-1 text-xs text-ctp-overlay1">
+          <div className="text-ctp-green text-2xl font-bold">{animatedPerfectGames}</div>
+          <div className="text-ctp-subtext0 text-xs">Perfect Games</div>
+          <div className="text-ctp-overlay1 mt-1 text-xs">
             of {animatedGamesWithAchievements} with achievements
           </div>
         </div>
 
         <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-2xl font-bold text-ctp-teal">{animatedCompletedAchievements}</div>
-          <div className="text-xs text-ctp-subtext0">Unlocked</div>
+          <div className="text-ctp-teal text-2xl font-bold">{animatedCompletedAchievements}</div>
+          <div className="text-ctp-subtext0 text-xs">Unlocked</div>
         </div>
 
         <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-2xl font-bold text-ctp-subtext1">{animatedTotalAchievements}</div>
-          <div className="text-xs text-ctp-subtext0">Total Available</div>
+          <div className="text-ctp-subtext1 text-2xl font-bold">{animatedTotalAchievements}</div>
+          <div className="text-ctp-subtext0 text-xs">Total Available</div>
         </div>
       </div>
 
       <div className="mb-4">
-        <h3 className="mb-2 text-sm font-semibold text-ctp-subtext1">Rarity Breakdown</h3>
+        <h3 className="text-ctp-subtext1 mb-2 text-sm font-semibold">Rarity Breakdown</h3>
         <div className="space-y-1.5">
           {(Object.keys(RARITY_CONFIG) as Array<keyof typeof RARITY_CONFIG>).map((key) => {
             const config = RARITY_CONFIG[key];
@@ -219,13 +219,13 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
             return (
               <div key={key} className="flex items-center gap-2">
                 <div className={`w-20 text-sm ${config.color}`}>{config.label}</div>
-                <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-ctp-surface1">
+                <div className="bg-ctp-surface1 relative h-2.5 flex-1 overflow-hidden rounded-full">
                   <div
                     className={`${config.bgColor} h-full rounded-full transition-all`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <div className="w-12 text-right text-sm text-ctp-subtext0">{count}</div>
+                <div className="text-ctp-subtext0 w-12 text-right text-sm">{count}</div>
               </div>
             );
           })}
@@ -234,7 +234,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
       {rarestUnlocked.length > 0 && (
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-ctp-subtext1">Rarest Unlocked</h3>
+          <h3 className="text-ctp-subtext1 mb-2 text-sm font-semibold">Rarest Unlocked</h3>
           <div className="space-y-2">
             {rarestUnlocked.slice(0, 3).map((item, index) => (
               <div
@@ -244,13 +244,13 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
                 {item.coverArtUrl ? (
                   <img src={item.coverArtUrl} alt="" className="h-10 w-10 rounded object-cover" />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded bg-ctp-surface1">
-                    <span className="text-lg text-ctp-overlay1">?</span>
+                  <div className="bg-ctp-surface1 flex h-10 w-10 items-center justify-center rounded">
+                    <span className="text-ctp-overlay1 text-lg">?</span>
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm text-ctp-text">{item.achievementName}</div>
-                  <div className="truncate text-xs text-ctp-overlay1">{item.gameName}</div>
+                  <div className="text-ctp-text truncate text-sm">{item.achievementName}</div>
+                  <div className="text-ctp-overlay1 truncate text-xs">{item.gameName}</div>
                 </div>
                 <div
                   className={`rounded px-2 py-1 text-xs ${

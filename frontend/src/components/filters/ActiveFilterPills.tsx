@@ -116,7 +116,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs font-medium text-ctp-subtext0">Active filters:</span>
+      <span className="text-ctp-subtext0 text-xs font-medium">Active filters:</span>
       {pills.map((pill, index) => (
         <div
           key={`${pill.key}-${pill.itemValue || pill.value}-${index}`}
@@ -147,7 +147,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
         <Button
           onClick={onClearAll}
           variant="link"
-          className="h-auto p-0 text-xs text-ctp-subtext0 underline transition-colors hover:text-ctp-text"
+          className="text-ctp-subtext0 hover:text-ctp-text h-auto p-0 text-xs underline transition-colors"
         >
           Clear all
         </Button>
