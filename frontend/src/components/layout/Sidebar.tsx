@@ -59,9 +59,10 @@ export function Sidebar({
         onClick={toggleSidebar}
         variant="ghost"
         size="icon"
-        className={`fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-elevated bg-surface transition-all duration-standard hover:border-elevated hover:bg-elevated md:flex ${
+        className={cn(
+          "fixed top-[4.5rem] z-20 hidden h-6 w-6 items-center justify-center rounded-full border border-elevated bg-surface transition-all duration-standard hover:border-elevated hover:bg-elevated md:flex",
           isCollapsed ? "left-[52px]" : "left-[228px]"
-        }`}
+        )}
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <svg
@@ -76,9 +77,10 @@ export function Sidebar({
       </Button>
 
       <aside
-        className={`fixed bottom-0 left-0 top-0 hidden border-r border-surface bg-base transition-all duration-standard md:block ${
+        className={cn(
+          "fixed bottom-0 left-0 top-0 hidden border-r border-surface bg-base transition-all duration-standard md:block",
           isCollapsed ? "w-16" : "w-60"
-        }`}
+        )}
       >
         <ScrollFade axis="y" className="h-full overflow-y-auto">
           {/* Collapsed View - Icons Only */}
