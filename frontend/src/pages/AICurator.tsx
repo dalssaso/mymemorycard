@@ -1010,12 +1010,12 @@ export function AICurator() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="flex-1 border-border bg-elevated text-text-primary hover:bg-elevated">
+              <AlertDialogCancel className="flex-1 border-border bg-elevated text-text-primary hover:bg-surface">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmAction}
-                className="hover:bg-accent/90 flex-1 bg-accent text-base"
+                className="hover:bg-accent/90 flex-1 bg-accent text-text-primary"
               >
                 Continue
               </AlertDialogAction>
