@@ -51,22 +51,25 @@ export const TextDisplay = React.forwardRef<HTMLElement, TextDisplayProps>(
     ref
   ): React.ReactElement | null => {
     const element = component as React.ElementType;
+
+    const variantValue = (variant ?? "primary") as Variant;
+    const sizeValue = (size ?? "base") as Size;
+    const weightValue = (weight ?? "regular") as Weight;
     const classNameStr = typeof className === "string" ? className : "";
-    const childrenTyped = children as ReactNode;
 
     return React.createElement(
       element,
       {
         ref,
         className: cn(
-          variantStyles[variant as Variant],
-          sizeStyles[size as Size],
-          weightStyles[weight as Weight],
+          variantStyles[variantValue],
+          sizeStyles[sizeValue],
+          weightStyles[weightValue],
           classNameStr
         ),
         ...(props as Record<string, unknown>),
       },
-      childrenTyped
+      children as ReactNode
     );
   }
 );
