@@ -93,7 +93,7 @@ export function GameCard({
           onClick={handleFavoriteClick}
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-2 z-10 text-status-dropped transition-transform duration-standard hover:scale-110"
+          className="absolute right-2 top-2 z-10 text-status-favorites transition-transform duration-standard hover:scale-110"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
@@ -126,7 +126,7 @@ export function GameCard({
             onClick={handleFavoriteClick}
             variant="ghost"
             size="icon"
-            className="absolute -right-2 -top-2 z-10 text-status-dropped transition-transform duration-standard hover:scale-110"
+            className="absolute -right-2 -top-2 z-10 text-status-favorites transition-transform duration-standard hover:scale-110"
             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <svg
