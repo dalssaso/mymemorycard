@@ -6,26 +6,27 @@ import { Card } from "@/components/ui";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 
 const RARITY_CONFIG = {
-  legendary: {
-    label: "Legendary",
-    color: "text-accent",
-    bgColor: "bg-accent/20",
-    threshold: "< 5%",
-  },
-  rare: { label: "Rare", color: "text-accent", bgColor: "bg-accent/20", threshold: "5-15%" },
-  uncommon: {
-    label: "Uncommon",
-    color: "text-accent",
-    bgColor: "bg-accent/20",
-    threshold: "15-35%",
-  },
   common: {
+    bgClass: "bg-rarity-common",
+    textClass: "text-rarity-common",
     label: "Common",
-    color: "text-text-secondary",
-    bgColor: "bg-elevated/40",
-    threshold: "> 35%",
   },
-};
+  uncommon: {
+    bgClass: "bg-rarity-uncommon",
+    textClass: "text-rarity-uncommon",
+    label: "Uncommon",
+  },
+  rare: {
+    bgClass: "bg-rarity-rare",
+    textClass: "text-rarity-rare",
+    label: "Rare",
+  },
+  legendary: {
+    bgClass: "bg-rarity-legendary",
+    textClass: "text-rarity-legendary",
+    label: "Legendary",
+  },
+} as const;
 
 interface AchievementWidgetGame {
   id: string;
@@ -218,10 +219,10 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
             return (
               <div key={key} className="flex items-center gap-2">
-                <div className={`w-20 text-sm ${config.color}`}>{config.label}</div>
+                <div className={`w-20 text-sm ${config.textClass}`}>{config.label}</div>
                 <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-elevated">
                   <div
-                    className={`${config.bgColor} h-full rounded-full transition-all`}
+                    className={`${config.bgClass} h-full rounded-full transition-all`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
