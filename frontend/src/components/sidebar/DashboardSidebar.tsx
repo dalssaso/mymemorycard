@@ -82,11 +82,11 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
 
   if (isCollapsed) {
     return (
-      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
+      <div className="border-surface space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/import"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Import Games"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,10 +100,10 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
           </Link>
         </div>
 
-        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
+        <div className="border-surface flex justify-center border-t pt-2">
           <Link
             to="/platforms"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +117,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
           </Link>
         </div>
 
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
           {STATUS_ORDER.map((statusId) => (
             <StatusButton
               key={statusId}
@@ -140,7 +140,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 bg-accent text-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -149,7 +149,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       </Link>
       <Link
         to="/platforms"
-        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -164,7 +164,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
 
       {/* Quick Stats - Clickable */}
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 text-xs font-semibold uppercase tracking-wider">
           Quick Stats
         </h3>
         <div className="space-y-2">
@@ -190,9 +190,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       {/* Completion Progress */}
       {stats.total > 0 && (
         <div>
-          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="text-ctp-green h-4 w-4"
+              className="text-status-finished h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -209,14 +209,14 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
           <div className="space-y-3">
             <div>
               <div className="mb-1 flex items-center justify-between text-sm">
-                <span className="text-ctp-subtext0">Completion Rate</span>
-                <span className="text-ctp-green font-medium">
+                <span className="text-text-secondary">Completion Rate</span>
+                <span className="text-status-finished font-medium">
                   {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%
                 </span>
               </div>
-              <div className="bg-ctp-surface1 h-2 w-full rounded-full">
+              <div className="bg-elevated h-2 w-full rounded-full">
                 <div
-                  className="bg-ctp-green h-2 rounded-full transition-all"
+                  className="bg-status-finished h-2 rounded-full transition-all"
                   style={{
                     width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%`,
                   }}
@@ -225,14 +225,14 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between text-sm">
-                <span className="text-ctp-subtext0">Drop Rate</span>
-                <span className="text-ctp-red font-medium">
+                <span className="text-text-secondary">Drop Rate</span>
+                <span className="text-status-dropped font-medium">
                   {stats.total > 0 ? Math.round((stats.dropped / stats.total) * 100) : 0}%
                 </span>
               </div>
-              <div className="bg-ctp-surface1 h-2 w-full rounded-full">
+              <div className="bg-elevated h-2 w-full rounded-full">
                 <div
-                  className="bg-ctp-red h-2 rounded-full transition-all"
+                  className="bg-status-dropped h-2 rounded-full transition-all"
                   style={{
                     width: `${stats.total > 0 ? (stats.dropped / stats.total) * 100 : 0}%`,
                   }}
@@ -246,9 +246,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       {/* Franchises */}
       {franchises.length > 0 && (
         <div>
-          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="text-ctp-mauve h-4 w-4"
+              className="text-accent h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -268,7 +268,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 key={franchise.series_name}
                 to="/franchises/$seriesName"
                 params={{ seriesName: franchise.series_name }}
-                className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
+                className="hover:bg-surface group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
               >
                 {franchise.cover_art_url ? (
                   <img
@@ -277,9 +277,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                     className="h-10 w-8 rounded object-cover"
                   />
                 ) : (
-                  <div className="bg-ctp-mauve/20 flex h-10 w-8 items-center justify-center rounded">
+                  <div className="bg-accent/20 flex h-10 w-8 items-center justify-center rounded">
                     <svg
-                      className="text-ctp-mauve h-4 w-4"
+                      className="text-accent h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -294,10 +294,10 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
+                  <p className="text-text-muted group-hover:text-text-primary truncate text-sm">
                     {franchise.series_name}
                   </p>
-                  <p className="text-ctp-overlay1 text-xs">
+                  <p className="text-text-muted text-xs">
                     {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
@@ -306,7 +306,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             {franchises.length > 5 && (
               <Link
                 to="/franchises"
-                className="hover:text-ctp-mauve/80 text-ctp-mauve block px-2 py-1 text-xs transition-colors"
+                className="hover:text-accent/80 text-accent block px-2 py-1 text-xs transition-colors"
               >
                 View all {franchises.length} franchises
               </Link>
@@ -318,9 +318,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       {/* Collections */}
       {collections.length > 0 && (
         <div>
-          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="text-ctp-teal h-4 w-4"
+              className="text-accent h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -340,11 +340,11 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 key={collection.id}
                 to="/collections/$id"
                 params={{ id: collection.id }}
-                className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
+                className="hover:bg-surface group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
               >
-                <div className="bg-ctp-teal/20 flex h-8 w-8 items-center justify-center rounded">
+                <div className="bg-accent/20 flex h-8 w-8 items-center justify-center rounded">
                   <svg
-                    className="text-ctp-teal h-4 w-4"
+                    className="text-accent h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -358,10 +358,10 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
+                  <p className="text-text-muted group-hover:text-text-primary truncate text-sm">
                     {collection.name}
                   </p>
-                  <p className="text-ctp-overlay1 text-xs">
+                  <p className="text-text-muted text-xs">
                     {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
@@ -370,7 +370,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
             {collections.length > 5 && (
               <Link
                 to="/collections"
-                className="hover:text-ctp-teal/80 text-ctp-teal block px-2 py-1 text-xs transition-colors"
+                className="hover:text-accent/80 text-accent block px-2 py-1 text-xs transition-colors"
               >
                 View all {collections.length} collections
               </Link>
@@ -382,9 +382,9 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
       {/* Recently Played */}
       {recentlyPlayed.length > 0 && (
         <div>
-          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="text-ctp-green h-4 w-4"
+              className="text-status-finished h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -404,7 +404,7 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                 key={game.id}
                 to="/library/$id"
                 params={{ id: game.id }}
-                className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg p-2 transition-colors"
+                className="hover:bg-surface group flex items-center gap-3 rounded-lg p-2 transition-colors"
               >
                 {game.cover_art_url ? (
                   <img
@@ -413,15 +413,15 @@ export function DashboardSidebar({ games }: DashboardSidebarProps) {
                     className="h-14 w-10 rounded object-cover"
                   />
                 ) : (
-                  <div className="bg-ctp-surface1 flex h-14 w-10 items-center justify-center rounded">
-                    <span className="text-ctp-overlay1 text-xs">?</span>
+                  <div className="bg-elevated flex h-14 w-10 items-center justify-center rounded">
+                    <span className="text-text-muted text-xs">?</span>
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
+                  <p className="text-text-muted group-hover:text-text-primary truncate text-sm">
                     {game.name}
                   </p>
-                  <p className="text-ctp-overlay1 text-xs">
+                  <p className="text-text-muted text-xs">
                     {new Date(game.last_played!).toLocaleDateString()}
                   </p>
                 </div>

@@ -86,15 +86,15 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
             e.preventDefault();
             e.stopPropagation();
           }}
-          className="border-ctp-mauve/30 bg-ctp-mauve/20 hover:bg-ctp-mauve/30 text-ctp-mauve"
+          className="border-accent/30 bg-accent/20 hover:bg-accent/30 text-accent"
         >
           Add to Collection
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="border-ctp-surface1 bg-ctp-surface0 w-64">
+      <DropdownMenuContent align="end" className="border-elevated bg-surface w-64">
         <ScrollFade axis="y" className="max-h-64 overflow-y-auto">
           {collections.length === 0 ? (
-            <div className="text-ctp-subtext0 px-4 py-3 text-center text-sm">
+            <div className="text-text-secondary px-4 py-3 text-center text-sm">
               No collections yet. Create one first!
             </div>
           ) : (
@@ -106,7 +106,7 @@ export function AddToCollection({ gameId, onClose }: AddToCollectionProps) {
                 className="flex flex-col items-start gap-0.5"
               >
                 <span className="font-medium">{collection.name}</span>
-                <span className="text-ctp-overlay1 text-xs">{collection.game_count} games</span>
+                <span className="text-text-muted text-xs">{collection.game_count} games</span>
               </DropdownMenuItem>
             ))
           )}

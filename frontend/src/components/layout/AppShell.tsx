@@ -20,7 +20,7 @@ function AppShellContent({ children }: AppShellProps): JSX.Element {
   const { sidebar, customCollapsed, showBackButton } = useLayout();
 
   return (
-    <div className="bg-ctp-base text-ctp-text min-h-screen">
+    <div className="bg-base text-text-primary min-h-screen">
       <GlobalSearch />
       <Navbar />
       <Sidebar customCollapsed={customCollapsed} showBackButton={showBackButton}>

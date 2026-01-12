@@ -70,12 +70,12 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
 
   if (isCollapsed) {
     return (
-      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
+      <div className="border-surface space-y-3 border-t pt-3">
         {/* Back to Library */}
         <div className="flex justify-center">
           <Link
             to="/library"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Back to Library"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,10 +89,10 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
           </Link>
         </div>
 
-        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
+        <div className="border-surface flex justify-center border-t pt-2">
           <Link
             to="/platforms"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
         </div>
 
         {/* Quick Status Icons */}
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
           {STATUS_OPTIONS.map((option) => (
             <Button
               key={option.value}
@@ -117,8 +117,8 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               size="icon"
               className={`rounded-lg p-2 transition-all disabled:opacity-50 ${
                 status === option.value
-                  ? "bg-ctp-mauve/20 text-ctp-mauve ring-ctp-mauve ring-2"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                  ? "bg-accent/20 text-accent ring-accent ring-2"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
               }`}
               title={option.label}
             >
@@ -135,14 +135,14 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
         </div>
 
         {/* Jump to Section Icons */}
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
           {SECTIONS.map((section) => (
             <Button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
               size="icon"
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
               title={section.label}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +165,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       <div>
         <Link
           to="/library"
-          className="border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1 hover:border-ctp-surface2 hover:text-ctp-text flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+          className="border-elevated bg-surface text-text-muted hover:border-elevated hover:text-text-primary flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +186,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       </div>
       <Link
         to="/platforms"
-        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
+        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -200,9 +200,9 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       </Link>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-teal h-4 w-4"
+            className="text-accent h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -225,8 +225,8 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               variant="ghost"
               className={`flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50 ${
                 status === option.value
-                  ? "bg-ctp-mauve/20 border-ctp-mauve/30 text-ctp-mauve border"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                  ? "bg-accent/20 border-accent/30 text-accent border"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
               }`}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,9 +244,9 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       </div>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-mauve h-4 w-4"
+            className="text-accent h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -266,7 +266,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
+              className="text-text-secondary hover:bg-surface hover:text-text-primary flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

@@ -58,15 +58,15 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
     <div className="space-y-8">
       <PlaySessionTracker gameId={gameId} platformId={platformId} />
 
-      <div className="border-ctp-surface1 border-t" />
+      <div className="border-elevated border-t" />
 
       <ProgressHistory gameId={gameId} platformId={platformId} />
 
-      <div className="border-ctp-surface1 border-t" />
+      <div className="border-elevated border-t" />
 
       <div>
         <span
-          className="text-ctp-subtext0 mb-2 block text-sm font-medium"
+          className="text-text-secondary mb-2 block text-sm font-medium"
           id="difficulty-rating-label"
         >
           Difficulty Rating (1-10)
@@ -80,8 +80,8 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
               variant="ghost"
               className={`h-auto flex-1 rounded py-2 text-sm transition-all ${
                 fields.difficulty_rating === rating
-                  ? "shadow-ctp-red/50 bg-ctp-red text-ctp-base shadow-lg"
-                  : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
+                  ? "shadow-status-dropped/50 bg-status-dropped text-base shadow-lg"
+                  : "bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary"
               }`}
             >
               {rating}
@@ -92,7 +92,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
           <Button
             onClick={() => handleFieldChange("difficulty_rating", null)}
             variant="link"
-            className="text-ctp-overlay1 hover:text-ctp-subtext1 mt-2 h-auto p-0 text-sm"
+            className="text-text-muted hover:text-text-muted mt-2 h-auto p-0 text-sm"
           >
             Clear rating
           </Button>

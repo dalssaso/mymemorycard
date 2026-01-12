@@ -113,7 +113,7 @@ export function PlatformIconBadge({
         ) : (
           <span
             className={`font-semibold ${
-              isLightBackground ? "text-ctp-crust" : "text-ctp-base dark:text-ctp-text"
+              isLightBackground ? "text-base" : "text-base dark:text-text-primary"
             }`}
           >
             {initial}
@@ -121,7 +121,7 @@ export function PlatformIconBadge({
         )}
       </div>
       {showLabel && (
-        <span className="text-ctp-subtext1 text-sm">{platform.displayName || "Unknown"}</span>
+        <span className="text-text-muted text-sm">{platform.displayName || "Unknown"}</span>
       )}
     </div>
   );
@@ -171,7 +171,7 @@ export function PlatformIcons({ platforms, size = "md", maxDisplay = 5 }: Platfo
         }
       })}
       {remainingCount > 0 && (
-        <span className="text-ctp-subtext0 ml-1 text-xs">+{remainingCount}</span>
+        <span className="text-text-secondary ml-1 text-xs">+{remainingCount}</span>
       )}
     </div>
   );

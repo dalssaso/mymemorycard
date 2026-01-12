@@ -52,11 +52,11 @@ export function LibrarySidebar({
 
   if (isCollapsed) {
     return (
-      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
+      <div className="border-surface space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,8 +78,8 @@ export function LibrarySidebar({
             onClick={() => setViewMode("grid")}
             className={
               viewMode === "grid"
-                ? "hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base hover:text-ctp-base"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                ? "hover:bg-accent/90 bg-accent text-base hover:text-base"
+                : "text-text-secondary hover:bg-surface hover:text-text-primary"
             }
             title="Grid View"
           >
@@ -98,8 +98,8 @@ export function LibrarySidebar({
             onClick={() => setViewMode("table")}
             className={
               viewMode === "table"
-                ? "hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base hover:text-ctp-base"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                ? "hover:bg-accent/90 bg-accent text-base hover:text-base"
+                : "text-text-secondary hover:bg-surface hover:text-text-primary"
             }
             title="Table View"
           >
@@ -115,15 +115,15 @@ export function LibrarySidebar({
         </div>
 
         {/* Favorites Toggle */}
-        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
+        <div className="border-surface flex justify-center border-t pt-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setFilter("favorites", !filters.favorites)}
             className={
               filters.favorites
-                ? "bg-ctp-red/20 hover:bg-ctp-red/30 text-ctp-red hover:text-ctp-red"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                ? "bg-status-dropped/20 hover:bg-status-dropped/30 text-status-dropped hover:text-status-dropped"
+                : "text-text-secondary hover:bg-surface hover:text-text-primary"
             }
             title={filters.favorites ? "Showing Favorites Only" : "Show Favorites Only"}
           >
@@ -145,12 +145,12 @@ export function LibrarySidebar({
 
         {/* Clear Filters */}
         {hasActiveFilters && (
-          <div className="border-ctp-surface0 flex justify-center border-t pt-2">
+          <div className="border-surface flex justify-center border-t pt-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={onClearFilters}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+              className="text-text-secondary hover:bg-surface hover:text-text-primary"
               title="Clear All Filters"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@ export function LibrarySidebar({
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 bg-accent text-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -182,7 +182,7 @@ export function LibrarySidebar({
       </Link>
       <Link
         to="/platforms"
-        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -196,9 +196,9 @@ export function LibrarySidebar({
       </Link>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-mauve h-4 w-4"
+            className="text-accent h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -224,8 +224,8 @@ export function LibrarySidebar({
             onClick={() => setViewMode("grid")}
             className={`flex-1 ${
               viewMode === "grid"
-                ? "hover:bg-ctp-mauve/90 border-ctp-mauve bg-ctp-mauve text-ctp-base hover:text-ctp-base"
-                : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:text-ctp-text"
+                ? "hover:bg-accent/90 border-accent bg-accent text-base hover:text-base"
+                : "border-elevated bg-surface text-text-secondary hover:text-text-primary"
             }`}
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,8 +243,8 @@ export function LibrarySidebar({
             onClick={() => setViewMode("table")}
             className={`flex-1 ${
               viewMode === "table"
-                ? "hover:bg-ctp-mauve/90 border-ctp-mauve bg-ctp-mauve text-ctp-base hover:text-ctp-base"
-                : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:text-ctp-text"
+                ? "hover:bg-accent/90 border-accent bg-accent text-base hover:text-base"
+                : "border-elevated bg-surface text-text-secondary hover:text-text-primary"
             }`}
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,9 +261,9 @@ export function LibrarySidebar({
       </div>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-teal h-4 w-4"
+            className="text-accent h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -317,7 +317,7 @@ export function LibrarySidebar({
             />
           </svg>
         }
-        iconColor="text-ctp-green"
+        iconColor="text-status-finished"
         defaultOpen={false}
         storageKey="platform"
         onClear={() => setFilter("platform", "")}
@@ -329,8 +329,8 @@ export function LibrarySidebar({
             onClick={() => setFilter("platform", "")}
             className={`w-full justify-start ${
               filters.platform === ""
-                ? "bg-ctp-mauve/20 hover:bg-ctp-mauve/30 text-ctp-mauve hover:text-ctp-mauve"
-                : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                ? "bg-accent/20 hover:bg-accent/30 text-accent hover:text-accent"
+                : "text-text-secondary hover:bg-surface hover:text-text-primary"
             }`}
           >
             All Platforms
@@ -342,8 +342,8 @@ export function LibrarySidebar({
               onClick={() => setFilter("platform", platform)}
               className={`w-full justify-start truncate ${
                 filters.platform === platform
-                  ? "bg-ctp-mauve/20 hover:bg-ctp-mauve/30 text-ctp-mauve hover:text-ctp-mauve"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                  ? "bg-accent/20 hover:bg-accent/30 text-accent hover:text-accent"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
               }`}
               title={platform}
             >
@@ -365,7 +365,7 @@ export function LibrarySidebar({
             />
           </svg>
         }
-        iconColor="text-ctp-peach"
+        iconColor="text-accent"
         defaultOpen={false}
         storageKey="genres"
         onClear={() => setFilter("genre", [])}
@@ -386,7 +386,7 @@ export function LibrarySidebar({
             />
           </svg>
         }
-        iconColor="text-ctp-sapphire"
+        iconColor="text-accent"
         defaultOpen={false}
         storageKey="collections"
         onClear={() => setFilter("collection", [])}
@@ -411,7 +411,7 @@ export function LibrarySidebar({
             />
           </svg>
         }
-        iconColor="text-ctp-lavender"
+        iconColor="text-accent"
         defaultOpen={false}
         storageKey="franchises"
         onClear={() => setFilter("franchise", [])}
@@ -424,9 +424,9 @@ export function LibrarySidebar({
       </FilterSection>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-red h-4 w-4"
+            className="text-status-dropped h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -440,13 +440,13 @@ export function LibrarySidebar({
           </svg>
           Filters
         </h3>
-        <div className="hover:bg-ctp-surface0 flex items-center gap-2 rounded-lg px-3 py-2 transition-colors">
+        <div className="hover:bg-surface flex items-center gap-2 rounded-lg px-3 py-2 transition-colors">
           <Checkbox
             id="filters-favorites"
             checked={filters.favorites}
             onCheckedChange={(checked) => setFilter("favorites", checked === true)}
           />
-          <label htmlFor="filters-favorites" className="text-ctp-subtext1 cursor-pointer text-sm">
+          <label htmlFor="filters-favorites" className="text-text-muted cursor-pointer text-sm">
             Favorites Only
           </label>
         </div>
@@ -456,7 +456,7 @@ export function LibrarySidebar({
         <Button
           variant="outline"
           onClick={onClearFilters}
-          className="border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text w-full"
+          className="border-elevated bg-surface text-text-secondary hover:border-elevated hover:text-text-primary w-full"
         >
           Clear All Filters
         </Button>

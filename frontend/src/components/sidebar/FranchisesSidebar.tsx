@@ -54,11 +54,11 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
 
   if (isCollapsed) {
     return (
-      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
+      <div className="border-surface space-y-3 border-t pt-3">
         <div className="flex justify-center">
           <Link
             to="/import"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Import Games"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,10 +71,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             </svg>
           </Link>
         </div>
-        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
+        <div className="border-surface flex justify-center border-t pt-2">
           <Link
             to="/platforms"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="Manage Platforms"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,12 +87,12 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             </svg>
           </Link>
         </div>
-        <div className="border-ctp-surface0 flex flex-col items-center gap-2 border-t pt-2">
+        <div className="border-surface flex flex-col items-center gap-2 border-t pt-2">
           <div
             className="flex flex-col items-center gap-1"
             title={`Franchises: ${animatedFranchises}`}
           >
-            <div className="text-ctp-mauve rounded-lg p-2">
+            <div className="text-accent rounded-lg p-2">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -102,13 +102,13 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                 />
               </svg>
             </div>
-            <span className="text-ctp-overlay1 text-xs">{animatedFranchises}</span>
+            <span className="text-text-muted text-xs">{animatedFranchises}</span>
           </div>
           <div
             className="flex flex-col items-center gap-1"
             title={`Collections: ${animatedCollections}`}
           >
-            <div className="text-ctp-teal rounded-lg p-2">
+            <div className="text-accent rounded-lg p-2">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -118,17 +118,17 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                 />
               </svg>
             </div>
-            <span className="text-ctp-overlay1 text-xs">{animatedCollections}</span>
+            <span className="text-text-muted text-xs">{animatedCollections}</span>
           </div>
         </div>
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="border-surface flex flex-col items-center gap-1 border-t pt-2">
           {onSync && (
             <Button
               onClick={onSync}
               disabled={isSyncing}
               variant="ghost"
               size="icon"
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all disabled:opacity-50"
+              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all disabled:opacity-50"
               title={isSyncing ? "Syncing Franchises" : "Sync Franchises"}
             >
               <svg
@@ -148,7 +148,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
           )}
           <Link
             to="/collections"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all"
             title="View Collections"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
       {/* Import Games Button */}
       <Link
         to="/import"
-        className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="hover:bg-accent/80 bg-accent text-base flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -179,7 +179,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
       </Link>
       <Link
         to="/platforms"
-        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+        className="bg-surface text-text-primary hover:bg-elevated flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -194,9 +194,9 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
 
       {/* Quick Stats */}
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-mauve h-4 w-4"
+            className="text-accent h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -211,10 +211,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
           Quick Stats
         </h3>
         <div className="space-y-2">
-          <div className="hover:bg-ctp-surface0 flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors">
+          <div className="hover:bg-surface flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors">
             <div className="flex items-center gap-2">
               <svg
-                className="text-ctp-mauve h-4 w-4"
+                className="text-accent h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -226,17 +226,17 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                   d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                 />
               </svg>
-              <span className="text-ctp-subtext0">Franchises</span>
+              <span className="text-text-secondary">Franchises</span>
             </div>
-            <span className="text-ctp-mauve min-w-[2rem] text-right font-medium">
+            <span className="text-accent min-w-[2rem] text-right font-medium">
               {animatedFranchises}
             </span>
           </div>
 
-          <div className="hover:bg-ctp-surface0 flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors">
+          <div className="hover:bg-surface flex items-center justify-between rounded px-2 py-1.5 text-sm transition-colors">
             <div className="flex items-center gap-2">
               <svg
-                className="text-ctp-teal h-4 w-4"
+                className="text-accent h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -248,9 +248,9 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                 />
               </svg>
-              <span className="text-ctp-subtext0">Collections</span>
+              <span className="text-text-secondary">Collections</span>
             </div>
-            <span className="text-ctp-teal min-w-[2rem] text-right font-medium">
+            <span className="text-accent min-w-[2rem] text-right font-medium">
               {animatedCollections}
             </span>
           </div>
@@ -259,9 +259,9 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
           <svg
-            className="text-ctp-green h-4 w-4"
+            className="text-status-finished h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -280,7 +280,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             onClick={onSync}
             disabled={isSyncing}
             variant="ghost"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50"
+            className="text-text-secondary hover:bg-surface hover:text-text-primary flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50"
           >
             <svg
               className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
@@ -300,7 +300,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
         )}
         <Link
           to="/collections"
-          className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
+          className="text-text-secondary hover:bg-surface hover:text-text-primary flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -317,9 +317,9 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
       {/* Top Franchises */}
       {franchises.length > 0 && (
         <div>
-          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="text-ctp-mauve h-4 w-4"
+              className="text-accent h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -343,7 +343,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                   key={franchise.series_name}
                   to="/franchises/$seriesName"
                   params={{ seriesName: franchise.series_name }}
-                  className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
+                  className="hover:bg-surface group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
                 >
                   {franchise.cover_art_url ? (
                     <img
@@ -352,9 +352,9 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                       className="h-10 w-8 rounded object-cover"
                     />
                   ) : (
-                    <div className="bg-ctp-mauve/20 flex h-10 w-8 items-center justify-center rounded">
+                    <div className="bg-accent/20 flex h-10 w-8 items-center justify-center rounded">
                       <svg
-                        className="text-ctp-mauve h-4 w-4"
+                        className="text-accent h-4 w-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -369,10 +369,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
+                    <p className="text-text-muted group-hover:text-text-primary truncate text-sm">
                       {franchise.series_name}
                     </p>
-                    <p className="text-ctp-overlay1 text-xs">
+                    <p className="text-text-muted text-xs">
                       {franchise.game_count} {franchise.game_count === 1 ? "game" : "games"}
                     </p>
                   </div>
@@ -385,9 +385,9 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
       {/* Collections */}
       {collections.length > 0 && (
         <div>
-          <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+          <h3 className="text-text-secondary mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
             <svg
-              className="text-ctp-teal h-4 w-4"
+              className="text-accent h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -407,11 +407,11 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                 key={collection.id}
                 to="/collections/$id"
                 params={{ id: collection.id }}
-                className="hover:bg-ctp-surface0 group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
+                className="hover:bg-surface group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors"
               >
-                <div className="bg-ctp-teal/20 flex h-8 w-8 items-center justify-center rounded">
+                <div className="bg-accent/20 flex h-8 w-8 items-center justify-center rounded">
                   <svg
-                    className="text-ctp-teal h-4 w-4"
+                    className="text-accent h-4 w-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -425,10 +425,10 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-ctp-subtext1 group-hover:text-ctp-text truncate text-sm">
+                  <p className="text-text-muted group-hover:text-text-primary truncate text-sm">
                     {collection.name}
                   </p>
-                  <p className="text-ctp-overlay1 text-xs">
+                  <p className="text-text-muted text-xs">
                     {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                   </p>
                 </div>
@@ -437,7 +437,7 @@ export function FranchisesSidebar({ onSync, isSyncing }: FranchisesSidebarProps)
             {collections.length > 5 && (
               <Link
                 to="/collections"
-                className="hover:text-ctp-teal/80 text-ctp-teal block px-2 py-1 text-xs transition-colors"
+                className="hover:text-accent/80 text-accent block px-2 py-1 text-xs transition-colors"
               >
                 View all {collections.length} collections
               </Link>

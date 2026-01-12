@@ -90,9 +90,9 @@ export function CustomPlatformModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="border-ctp-surface0 bg-ctp-mantle max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="border-surface bg-base max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-ctp-text text-xl font-semibold">
+          <DialogTitle className="text-text-primary text-xl font-semibold">
             Add Custom Platform
           </DialogTitle>
           <DialogDescription>
@@ -101,7 +101,7 @@ export function CustomPlatformModal({
         </DialogHeader>
 
         {error && (
-          <div className="bg-ctp-red/20 border-ctp-red text-ctp-red rounded border px-3 py-2">
+          <div className="bg-status-dropped/20 border-status-dropped text-status-dropped rounded border px-3 py-2">
             {error}
           </div>
         )}
@@ -110,10 +110,10 @@ export function CustomPlatformModal({
           {/* Display Name */}
           <div>
             <label
-              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
+              className="text-text-secondary mb-1 block text-xs font-medium"
               htmlFor="custom-platform-name"
             >
-              Display Name <span className="text-ctp-red">*</span>
+              Display Name <span className="text-status-dropped">*</span>
             </label>
             <Input
               id="custom-platform-name"
@@ -125,8 +125,8 @@ export function CustomPlatformModal({
 
           {/* Platform Type */}
           <div>
-            <p className="text-ctp-subtext0 mb-1 block text-xs font-medium">
-              Platform Type <span className="text-ctp-red">*</span>
+            <p className="text-text-secondary mb-1 block text-xs font-medium">
+              Platform Type <span className="text-status-dropped">*</span>
             </p>
             <div className="grid grid-cols-2 gap-2">
               {PLATFORM_TYPES.map((type) => (
@@ -137,8 +137,8 @@ export function CustomPlatformModal({
                   onClick={() => setPlatformType(type.value)}
                   className={`flex h-auto items-center gap-2 rounded-lg px-3 py-2 text-sm ${
                     platformType === type.value
-                      ? "bg-ctp-teal/10 hover:bg-ctp-teal/20 border-ctp-teal text-ctp-teal"
-                      : "border-ctp-surface1 text-ctp-subtext0 hover:border-ctp-surface2"
+                      ? "bg-accent/10 hover:bg-accent/20 border-accent text-accent"
+                      : "border-elevated text-text-secondary hover:border-elevated"
                   }`}
                 >
                   <PlatformTypeIcon type={type.value} size="sm" />
@@ -151,7 +151,7 @@ export function CustomPlatformModal({
           {/* Website URL */}
           <div>
             <label
-              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
+              className="text-text-secondary mb-1 block text-xs font-medium"
               htmlFor="custom-platform-website"
             >
               Website URL
@@ -168,7 +168,7 @@ export function CustomPlatformModal({
           {/* Icon URL */}
           <div>
             <label
-              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
+              className="text-text-secondary mb-1 block text-xs font-medium"
               htmlFor="custom-platform-icon"
             >
               Icon URL (SVG only)
@@ -180,13 +180,13 @@ export function CustomPlatformModal({
               type="url"
               placeholder="https://cdn.simpleicons.org/steam/ffffff"
             />
-            <p className="text-ctp-overlay1 mt-1 text-xs">
+            <p className="text-text-muted mt-1 text-xs">
               Provide an SVG icon URL from{" "}
               <a
                 href="https://simpleicons.org"
                 target="_blank"
                 rel="noreferrer"
-                className="text-ctp-teal hover:text-ctp-mauve"
+                className="text-accent hover:text-accent"
               >
                 Simple Icons
               </a>{" "}
@@ -197,7 +197,7 @@ export function CustomPlatformModal({
           {/* Color */}
           <div>
             <label
-              className="text-ctp-subtext0 mb-1 block text-xs font-medium"
+              className="text-text-secondary mb-1 block text-xs font-medium"
               htmlFor="custom-platform-color"
             >
               Brand Color
@@ -220,15 +220,15 @@ export function CustomPlatformModal({
                 aria-label="Pick brand color"
               />
             </div>
-            <p className="text-ctp-overlay1 mt-1 text-xs">
+            <p className="text-text-muted mt-1 text-xs">
               Use the platform&apos;s official brand color for consistency.
             </p>
           </div>
 
           {/* Live Preview */}
           {displayName && (
-            <div className="bg-ctp-surface0/50 border-ctp-surface1 rounded-lg border p-4">
-              <p className="text-ctp-subtext0 mb-2 block text-xs font-medium">Preview</p>
+            <div className="bg-surface/50 border-elevated rounded-lg border p-4">
+              <p className="text-text-secondary mb-2 block text-xs font-medium">Preview</p>
               <div className="flex items-center justify-center py-4">
                 <PlatformIconBadge
                   platform={{

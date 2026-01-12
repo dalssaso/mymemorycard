@@ -8,21 +8,21 @@ import { useAnimatedNumber } from "@/hooks/use-animated-number";
 const RARITY_CONFIG = {
   legendary: {
     label: "Legendary",
-    color: "text-ctp-yellow",
-    bgColor: "bg-ctp-yellow/20",
+    color: "text-accent",
+    bgColor: "bg-accent/20",
     threshold: "< 5%",
   },
-  rare: { label: "Rare", color: "text-ctp-mauve", bgColor: "bg-ctp-mauve/20", threshold: "5-15%" },
+  rare: { label: "Rare", color: "text-accent", bgColor: "bg-accent/20", threshold: "5-15%" },
   uncommon: {
     label: "Uncommon",
-    color: "text-ctp-teal",
-    bgColor: "bg-ctp-teal/20",
+    color: "text-accent",
+    bgColor: "bg-accent/20",
     threshold: "15-35%",
   },
   common: {
     label: "Common",
-    color: "text-ctp-subtext0",
-    bgColor: "bg-ctp-surface1/40",
+    color: "text-text-secondary",
+    bgColor: "bg-elevated/40",
     threshold: "> 35%",
   },
 };
@@ -148,11 +148,11 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
   if (isLoading) {
     return (
-      <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
-        <h2 className="text-ctp-yellow mb-3 text-2xl font-bold">Achievements</h2>
+      <Card className="bg-accent/5 border-accent/20" padded={true}>
+        <h2 className="text-accent mb-3 text-2xl font-bold">Achievements</h2>
         <div className="animate-pulse space-y-4">
-          <div className="bg-ctp-surface1/50 h-24 rounded-lg" />
-          <div className="bg-ctp-surface1/50 h-32 rounded-lg" />
+          <div className="bg-elevated/50 h-24 rounded-lg" />
+          <div className="bg-elevated/50 h-32 rounded-lg" />
         </div>
       </Card>
     );
@@ -160,12 +160,12 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
   if (!data || data.summary.totalAchievements === 0) {
     return (
-      <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
-        <h2 className="text-ctp-yellow mb-3 text-2xl font-bold">Achievements</h2>
+      <Card className="bg-accent/5 border-accent/20" padded={true}>
+        <h2 className="text-accent mb-3 text-2xl font-bold">Achievements</h2>
         {isSyncing ? (
-          <div className="text-ctp-subtext0 py-8 text-center">Syncing achievement data...</div>
+          <div className="text-text-secondary py-8 text-center">Syncing achievement data...</div>
         ) : (
-          <div className="text-ctp-subtext0 py-8 text-center">
+          <div className="text-text-secondary py-8 text-center">
             No achievement data yet. Add games with achievements to see your stats.
           </div>
         )}
@@ -174,42 +174,42 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
   }
 
   return (
-    <Card className="bg-ctp-yellow/5 border-ctp-yellow/20" padded={true}>
-      <h2 className="text-ctp-yellow mb-3 text-2xl font-bold">Achievements</h2>
+    <Card className="bg-accent/5 border-accent/20" padded={true}>
+      <h2 className="text-accent mb-3 text-2xl font-bold">Achievements</h2>
 
       <div className="mb-4 grid grid-cols-2 gap-2.5">
-        <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-ctp-text text-2xl font-bold">{animatedOverallPercentage}%</div>
-          <div className="text-ctp-subtext0 text-xs">Overall Completion</div>
-          <div className="bg-ctp-surface1 mt-2 h-2 w-full rounded-full">
+        <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 text-center shadow-sm">
+          <div className="text-text-primary text-2xl font-bold">{animatedOverallPercentage}%</div>
+          <div className="text-text-secondary text-xs">Overall Completion</div>
+          <div className="bg-elevated mt-2 h-2 w-full rounded-full">
             <div
-              className="bg-ctp-yellow h-2 rounded-full transition-all"
+              className="bg-accent h-2 rounded-full transition-all"
               style={{ width: `${animatedOverallPercentage}%` }}
             />
           </div>
         </div>
 
-        <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-ctp-green text-2xl font-bold">{animatedPerfectGames}</div>
-          <div className="text-ctp-subtext0 text-xs">Perfect Games</div>
-          <div className="text-ctp-overlay1 mt-1 text-xs">
+        <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 text-center shadow-sm">
+          <div className="text-status-finished text-2xl font-bold">{animatedPerfectGames}</div>
+          <div className="text-text-secondary text-xs">Perfect Games</div>
+          <div className="text-text-muted mt-1 text-xs">
             of {animatedGamesWithAchievements} with achievements
           </div>
         </div>
 
-        <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-ctp-teal text-2xl font-bold">{animatedCompletedAchievements}</div>
-          <div className="text-ctp-subtext0 text-xs">Unlocked</div>
+        <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 text-center shadow-sm">
+          <div className="text-accent text-2xl font-bold">{animatedCompletedAchievements}</div>
+          <div className="text-text-secondary text-xs">Unlocked</div>
         </div>
 
-        <div className="bg-ctp-surface0/60 border-ctp-surface1/50 rounded-lg border p-3 text-center shadow-sm">
-          <div className="text-ctp-subtext1 text-2xl font-bold">{animatedTotalAchievements}</div>
-          <div className="text-ctp-subtext0 text-xs">Total Available</div>
+        <div className="bg-surface/60 border-elevated/50 rounded-lg border p-3 text-center shadow-sm">
+          <div className="text-text-muted text-2xl font-bold">{animatedTotalAchievements}</div>
+          <div className="text-text-secondary text-xs">Total Available</div>
         </div>
       </div>
 
       <div className="mb-4">
-        <h3 className="text-ctp-subtext1 mb-2 text-sm font-semibold">Rarity Breakdown</h3>
+        <h3 className="text-text-muted mb-2 text-sm font-semibold">Rarity Breakdown</h3>
         <div className="space-y-1.5">
           {(Object.keys(RARITY_CONFIG) as Array<keyof typeof RARITY_CONFIG>).map((key) => {
             const config = RARITY_CONFIG[key];
@@ -219,13 +219,13 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
             return (
               <div key={key} className="flex items-center gap-2">
                 <div className={`w-20 text-sm ${config.color}`}>{config.label}</div>
-                <div className="bg-ctp-surface1 relative h-2.5 flex-1 overflow-hidden rounded-full">
+                <div className="bg-elevated relative h-2.5 flex-1 overflow-hidden rounded-full">
                   <div
                     className={`${config.bgColor} h-full rounded-full transition-all`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <div className="text-ctp-subtext0 w-12 text-right text-sm">{count}</div>
+                <div className="text-text-secondary w-12 text-right text-sm">{count}</div>
               </div>
             );
           })}
@@ -234,31 +234,31 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
       {rarestUnlocked.length > 0 && (
         <div>
-          <h3 className="text-ctp-subtext1 mb-2 text-sm font-semibold">Rarest Unlocked</h3>
+          <h3 className="text-text-muted mb-2 text-sm font-semibold">Rarest Unlocked</h3>
           <div className="space-y-2">
             {rarestUnlocked.slice(0, 3).map((item, index) => (
               <div
                 key={index}
-                className="bg-ctp-surface0/50 flex items-center gap-3 rounded-lg p-2"
+                className="bg-surface/50 flex items-center gap-3 rounded-lg p-2"
               >
                 {item.coverArtUrl ? (
                   <img src={item.coverArtUrl} alt="" className="h-10 w-10 rounded object-cover" />
                 ) : (
-                  <div className="bg-ctp-surface1 flex h-10 w-10 items-center justify-center rounded">
-                    <span className="text-ctp-overlay1 text-lg">?</span>
+                  <div className="bg-elevated flex h-10 w-10 items-center justify-center rounded">
+                    <span className="text-text-muted text-lg">?</span>
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="text-ctp-text truncate text-sm">{item.achievementName}</div>
-                  <div className="text-ctp-overlay1 truncate text-xs">{item.gameName}</div>
+                  <div className="text-text-primary truncate text-sm">{item.achievementName}</div>
+                  <div className="text-text-muted truncate text-xs">{item.gameName}</div>
                 </div>
                 <div
                   className={`rounded px-2 py-1 text-xs ${
                     (item.rarity ?? 100) < 5
-                      ? "bg-ctp-yellow/20 text-ctp-yellow"
+                      ? "bg-accent/20 text-accent"
                       : (item.rarity ?? 100) < 15
-                        ? "bg-ctp-mauve/20 text-ctp-mauve"
-                        : "bg-ctp-teal/20 text-ctp-teal"
+                        ? "bg-accent/20 text-accent"
+                        : "bg-accent/20 text-accent"
                   }`}
                 >
                   {item.rarity?.toFixed(1)}%
