@@ -684,6 +684,16 @@ if (!(await hasUserPlatforms(queryClient))) {
 6. Use shadcn/ui components (never raw HTML buttons/inputs)
 7. Use explicit return types on functions (including hooks)
 
+### Transition Duration Standards
+
+When adding transitions to components:
+
+- **Form controls** (inputs, checkboxes, selects, textareas): `duration-quick` (100ms)
+- **Interactive elements** (buttons, tabs, dropdowns, alerts, dialogs): `duration-standard` (200ms)
+- **Page transitions**: `duration-smooth` (350ms) or `duration-page` (400ms)
+
+**Never use numeric durations** like `duration-150`. Always use semantic tokens.
+
 ## Reference Files
 
 When implementing UI features:
