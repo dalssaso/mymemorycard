@@ -411,7 +411,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                       ach.completed
                         ? "bg-status-finished/10 border-status-finished/30 border"
                         : "bg-surface/50 border border-elevated hover:border-elevated"
-                    } ${isDragging ? "" : "duration-standard ease-out"}`}
+                    } ${isDragging ? "" : "duration-quick ease-out"}`}
                     style={{ transform: `translateX(${translateX}px)` }}
                     onClick={() => handleManualAchievementClick(ach)}
                     onKeyDown={(event) => {
