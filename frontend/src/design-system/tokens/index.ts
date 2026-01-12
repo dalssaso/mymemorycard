@@ -17,4 +17,5 @@ export {
   spring,
   type DurationToken,
   type EasingToken,
+  type SpringToken,
 } from "./motion";
