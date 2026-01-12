@@ -184,7 +184,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
           <div className="text-xs text-text-secondary">Overall Completion</div>
           <div className="mt-2 h-2 w-full rounded-full bg-elevated">
             <div
-              className="h-2 rounded-full bg-accent transition-all"
+              className="h-2 rounded-full bg-accent transition-all duration-standard"
               style={{ width: `${animatedOverallPercentage}%` }}
             />
           </div>
@@ -222,7 +222,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
                 <div className={`w-20 text-sm ${config.textClass}`}>{config.label}</div>
                 <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-elevated">
                   <div
-                    className={`${config.bgClass} h-full rounded-full transition-all`}
+                    className={`${config.bgClass} h-full rounded-full transition-all duration-standard`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
