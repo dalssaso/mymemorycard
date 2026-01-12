@@ -113,7 +113,7 @@ export function PlatformIconBadge({
         ) : (
           <span
             className={`font-semibold ${
-              isLightBackground ? "text-base" : "text-base dark:text-text-primary"
+              isLightBackground ? "text-text-muted" : "text-text-primary"
             }`}
           >
             {initial}

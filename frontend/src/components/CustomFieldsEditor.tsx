@@ -80,7 +80,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
               variant="ghost"
               className={`h-auto flex-1 rounded py-2 text-sm transition-all ${
                 fields.difficulty_rating === rating
-                  ? "shadow-status-dropped/50 bg-status-dropped text-base shadow-lg"
+                  ? "shadow-status-dropped/50 bg-status-dropped text-text-primary shadow-lg transition-colors duration-standard"
                   : "bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary"
               }`}
             >

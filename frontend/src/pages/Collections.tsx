@@ -457,7 +457,7 @@ export function Collections() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => bulkDeleteCollectionsMutation.mutate(selectedCollectionIds)}
-                className="hover:bg-status-dropped/90 bg-status-dropped text-base"
+                className="hover:bg-status-dropped/90 bg-status-dropped text-text-primary"
               >
                 {bulkDeleteCollectionsMutation.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
@@ -715,7 +715,7 @@ export function Collections() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmAIGeneration}
-                className="hover:bg-accent/90 flex-1 bg-accent text-base"
+                className="hover:bg-accent/90 flex-1 bg-accent text-text-primary"
               >
                 Continue
               </AlertDialogAction>
