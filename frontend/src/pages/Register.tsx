@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { useAuth } from "@/contexts/AuthContext";
 import { normalizeAuthError } from "@/lib/auth-errors";
+import { cn } from "@/lib/utils";
 
 const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
@@ -65,7 +66,7 @@ export function Register(): JSX.Element {
         </CardHeader>
         <CardContent>
           <FormProvider {...form}>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className={cn("space-y-4")}>
               {form.formState.errors.root?.message ? (
                 <div className="border-status-dropped/30 bg-status-dropped/10 rounded-md border px-3 py-2 text-sm text-status-dropped">
                   {form.formState.errors.root.message}
