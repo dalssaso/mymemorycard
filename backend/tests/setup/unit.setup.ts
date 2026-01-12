@@ -82,11 +82,7 @@ const mockUserRepository: IUserRepository = {
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
-  create: async (
-    username: string,
-    email: string,
-    passwordHash: string
-  ): Promise<User> => ({
+  create: async (username: string, email: string, passwordHash: string): Promise<User> => ({
     id: "new-user-id",
     username,
     email,
