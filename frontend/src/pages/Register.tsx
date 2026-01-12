@@ -66,7 +66,7 @@ export function Register(): JSX.Element {
         </CardHeader>
         <CardContent>
           <FormProvider {...form}>
-            <form onSubmit={handleSubmit} className={cn("space-y-4")}>
+            <form onSubmit={handleSubmit} className="space-y-4">
               {form.formState.errors.root?.message ? (
                 <div className="border-status-dropped/30 bg-status-dropped/10 rounded-md border px-3 py-2 text-sm text-status-dropped">
                   {form.formState.errors.root.message}
@@ -90,7 +90,10 @@ export function Register(): JSX.Element {
                 <FormField name="confirmPassword" label="Confirm password" type="password" />
                 {confirmPassword.length > 0 ? (
                   <p
-                    className={`text-xs ${passwordsMatch ? "text-status-finished" : "text-status-dropped"}`}
+                    className={cn(
+                      "text-xs",
+                      passwordsMatch ? "text-status-finished" : "text-status-dropped"
+                    )}
                   >
                     {passwordsMatch ? "Passwords match" : "Passwords do not match"}
                   </p>
