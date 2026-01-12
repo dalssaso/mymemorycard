@@ -788,4 +788,3 @@ router.get("/api/collection-covers/:filename", async (req, params) => {
     return new Response("Internal server error", { status: 500 });
   }
 });
-

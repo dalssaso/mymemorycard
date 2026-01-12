@@ -660,4 +660,3 @@ export const userPreferences = pgTable(
     check("items_per_page_check", sql`items_per_page IN (10, 25, 50, 100)`),
   ]
 );
-
