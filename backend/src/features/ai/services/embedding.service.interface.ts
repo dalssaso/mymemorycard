@@ -35,7 +35,8 @@ export interface IEmbeddingService {
    */
   findSimilarGames(userId: string, gameId: string, limit: number): Promise<string[]>;
   /**
-   * Finds collections similar to a given collection using semantic similarity.
+   * Finds collections similar to a given collection using semantic similarity, excluding the
+   * source collection from results.
    *
    * @param userId - ID of the user who owns the AI settings
    * @param collectionId - ID of the collection to find similar collections for

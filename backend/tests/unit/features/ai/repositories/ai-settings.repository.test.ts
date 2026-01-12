@@ -6,7 +6,9 @@ import {
   mockSelectResult,
   mockInsertResult,
 } from "@/tests/helpers/drizzle.mocks";
+import { createMockLogger } from "@/tests/helpers/repository.mocks";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
+import type { Logger } from "@/infrastructure/logging/logger";
 import type { UserAiSettings } from "@/features/ai/types";
 
 // Mock the encryption module
@@ -19,10 +21,12 @@ mock.module("@/lib/encryption", () => ({
 describe("AiSettingsRepository", () => {
   let repository: AiSettingsRepository;
   let mockDb: DrizzleDB;
+  let mockLogger: Logger;
 
   beforeEach(() => {
     mockDb = createMockDrizzleDB();
-    repository = new AiSettingsRepository(mockDb);
+    mockLogger = createMockLogger();
+    repository = new AiSettingsRepository(mockDb, mockLogger);
     mockDecrypt.mockClear();
   });
 

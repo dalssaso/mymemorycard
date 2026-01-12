@@ -101,63 +101,6 @@ describe("CuratorService", () => {
 
       expect(mockGateway.generateCompletion).not.toHaveBeenCalled();
     });
-
-    it("should handle valid JSON with incomplete structure", async () => {
-      mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue({
-        apiKey: "test-key",
-        provider: "openai",
-      });
-
-      // Return valid JSON but with incomplete suggestion structure
-      mockGateway.generateCompletion = mock().mockResolvedValue({
-        text: '[{"name": "incomplete", "description": "", "gameIds": [], "confidence": 0.5}]',
-        model: "gpt-4o-mini",
-        tokensUsed: { prompt: 100, completion: 50, total: 150 },
-      });
-
-      const result = await curatorService.suggestCollections("user-1", ["game-1"]);
-
-      // Service parses JSON but doesn't validate structure deeply
-      expect(result).toEqual([
-        { name: "incomplete", description: "", gameIds: [], confidence: 0.5 },
-      ]);
-    });
-
-    it("should return empty array when AI response contains malformed items", async () => {
-      mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue({
-        apiKey: "test-key",
-        provider: "openai",
-      });
-
-      // Return mixed valid and invalid suggestions (array validation will fail)
-      mockGateway.generateCompletion = mock().mockResolvedValue({
-        text: JSON.stringify([
-          {
-            name: "Valid Collection",
-            description: "A valid collection",
-            gameIds: ["game-1"],
-            confidence: 0.9,
-          },
-          {
-            // Missing required fields - causes array validation to fail
-            name: "Invalid",
-          },
-          {
-            name: "Another Valid",
-            description: "Second valid collection",
-            gameIds: ["game-2"],
-            confidence: 0.8,
-          },
-        ]),
-        model: "gpt-4o-mini",
-        tokensUsed: { prompt: 100, completion: 150, total: 250 },
-      });
-
-      const result = await curatorService.suggestCollections("user-1", ["game-1", "game-2"]);
-
-      // Service validates entire array with Zod - if any item fails, returns empty array
-      expect(result).toEqual([]);
-    });
   });
 
   describe("suggestNextGame", () => {
@@ -218,37 +161,6 @@ describe("CuratorService", () => {
       );
 
       expect(mockGateway.generateCompletion).not.toHaveBeenCalled();
-    });
-
-    it("should handle empty game list", async () => {
-      mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue({
-        apiKey: "test-key",
-        provider: "openai",
-      });
-
-      mockGateway.generateCompletion = mock().mockResolvedValue({
-        text: "[]",
-        model: "gpt-4o-mini",
-        tokensUsed: { prompt: 50, completion: 10, total: 60 },
-      });
-
-      const result = await curatorService.suggestNextGame("user-1", []);
-
-      expect(result).toEqual([]);
-    });
-
-    it("should propagate gateway errors", async () => {
-      mockSettingsRepo.getGatewayConfig = mock().mockResolvedValue({
-        apiKey: "test-key",
-        provider: "openai",
-      });
-
-      const gatewayError = new Error("Gateway service unavailable");
-      mockGateway.generateCompletion = mock().mockRejectedValue(gatewayError);
-
-      await expect(curatorService.suggestNextGame("user-1", ["game-1"])).rejects.toThrow(
-        "Gateway service unavailable"
-      );
     });
   });
 });

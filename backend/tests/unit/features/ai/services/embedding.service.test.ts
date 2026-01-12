@@ -225,7 +225,9 @@ describe("EmbeddingService", () => {
       const result = await embeddingService.findSimilarCollections("user-1", "collection-1", 2);
 
       expect(mockEmbeddingRepo.findByCollectionId).toHaveBeenCalledWith("collection-1");
-      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 2);
+      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 2, [
+        "collection-1",
+      ]);
       expect(result).toEqual(["collection-2", "collection-3"]);
     });
 
@@ -271,7 +273,9 @@ describe("EmbeddingService", () => {
 
       await embeddingService.findSimilarCollections("user-1", "collection-1", 200);
 
-      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 100);
+      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 100, [
+        "collection-1",
+      ]);
     });
 
     it("should clamp limit to minimum of 1", async () => {
@@ -288,7 +292,9 @@ describe("EmbeddingService", () => {
 
       await embeddingService.findSimilarCollections("user-1", "collection-1", -5);
 
-      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 1);
+      expect(mockEmbeddingRepo.findSimilarCollections).toHaveBeenCalledWith([0.7, 0.8, 0.9], 1, [
+        "collection-1",
+      ]);
     });
   });
 });

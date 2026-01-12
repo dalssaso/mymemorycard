@@ -75,7 +75,7 @@ export class CuratorService implements ICuratorService {
         this.logger.error("Failed to validate collection suggestions from AI response", {
           userId,
           error: validation.error.message,
-          responseText: result.text,
+          responseText: this.truncateText(result.text),
         });
         return [];
       }
@@ -85,11 +85,19 @@ export class CuratorService implements ICuratorService {
       this.logger.error("Failed to parse collection suggestions", {
         userId,
         gameIds,
-        responseText: result.text,
+        responseText: this.truncateText(result.text),
         error: error instanceof Error ? error.message : String(error),
       });
       return [];
     }
+  }
+
+  private truncateText(text: string, maxLength = 200): string {
+    if (text.length <= maxLength) {
+      return text;
+    }
+
+    return `${text.slice(0, maxLength)}...`;
   }
 
   /**
@@ -127,7 +135,7 @@ export class CuratorService implements ICuratorService {
         this.logger.error("Failed to validate next game suggestions from AI response", {
           userId,
           error: validation.error.message,
-          responseText: result.text,
+          responseText: this.truncateText(result.text),
         });
         return [];
       }
@@ -138,7 +146,7 @@ export class CuratorService implements ICuratorService {
         userId,
         recentGameIds,
         prompt: NEXT_GAME_PROMPT,
-        responseText: result.text,
+        responseText: this.truncateText(result.text),
         error: error instanceof Error ? error.message : String(error),
       });
       return [];

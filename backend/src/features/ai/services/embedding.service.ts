@@ -101,8 +101,8 @@ export class EmbeddingService implements IEmbeddingService {
    * Finds collections similar to a given collection using semantic similarity.
    *
    * Retrieves the embedding for the specified collection and performs a vector similarity
-   * search to find other collections with similar embeddings. The limit is clamped between
-   * 1-100 for performance and safety.
+   * search to find other collections with similar embeddings, excluding the source
+   * collection. The limit is clamped between 1-100 for performance and safety.
    *
    * @param _userId - ID of the user (reserved for future authorization checks)
    * @param collectionId - ID of the collection to find similar collections for
@@ -123,6 +123,6 @@ export class EmbeddingService implements IEmbeddingService {
     }
 
     const embedding = record.embedding;
-    return this.embeddingRepo.findSimilarCollections(embedding, clampedLimit);
+    return this.embeddingRepo.findSimilarCollections(embedding, clampedLimit, [collectionId]);
   }
 }

@@ -21,6 +21,7 @@ describe("AiController", () => {
   let mockEmbeddingService: MockEmbeddingService;
   let mockCuratorService: MockCuratorService;
   let mockImageService: MockImageService;
+  let mockLogger: Logger;
   const validGameId = "550e8400-e29b-41d4-a716-446655440000";
   const testToken = "token_test-user-id";
 
@@ -71,7 +72,7 @@ describe("AiController", () => {
     ]);
     mockImageService = createMockImageService();
 
-    const mockLogger = createMockLogger();
+    mockLogger = createMockLogger();
     controller = new AiController(
       mockEmbeddingService,
       mockCuratorService,

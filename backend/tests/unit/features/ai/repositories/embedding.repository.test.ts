@@ -250,6 +250,19 @@ describe("EmbeddingRepository", () => {
       expect(result).toEqual(["collection-1", "collection-2"]);
     });
 
+    it("should find similar collections with exclusions", async () => {
+      createMockSelectChain(mockDb, [
+        { collectionId: "collection-1" },
+        { collectionId: "collection-2" },
+      ]);
+
+      const result = await repository.findSimilarCollections(createMockEmbedding(), 2, [
+        "collection-1",
+      ]);
+
+      expect(result).toEqual(["collection-2"]);
+    });
+
     it("should return empty array when no similar collections found", async () => {
       createMockSelectChain(mockDb, []);
 

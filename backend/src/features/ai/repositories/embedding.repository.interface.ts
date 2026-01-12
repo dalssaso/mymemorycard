@@ -62,7 +62,12 @@ export interface IEmbeddingRepository {
    *
    * @param embedding - The query embedding vector (1536 dimensions)
    * @param limit - Maximum number of similar collections to return
+   * @param excludeIds - Optional array of collection IDs to exclude from results
    * @returns Array of collection IDs ordered by similarity (most similar first)
    */
-  findSimilarCollections(embedding: number[], limit: number): Promise<string[]>;
+  findSimilarCollections(
+    embedding: number[],
+    limit: number,
+    excludeIds?: string[]
+  ): Promise<string[]>;
 }

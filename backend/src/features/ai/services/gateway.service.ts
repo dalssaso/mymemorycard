@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createXai } from "@ai-sdk/xai";
-import { embed, generateText, streamText } from "ai";
+import { embed, generateImage, generateText, streamText } from "ai";
 
 import type { IGatewayService } from "./gateway.service.interface";
 import type { EmbeddingResult, CompletionResult, ImageResult, GatewayConfig } from "../types";
@@ -17,7 +17,7 @@ export class GatewayService implements IGatewayService {
    * Generates embeddings for text using Vercel AI Gateway.
    *
    * Always uses OpenAI provider regardless of config, as xAI does not support embeddings.
-   * Uses the text-embedding-ada-002 model for consistent vector dimensions.
+   * Uses the text-embedding-3-small model for consistent vector dimensions.
    *
    * @param text - The text to generate embeddings for
    * @param config - Gateway configuration including API key and provider
@@ -60,21 +60,29 @@ export class GatewayService implements IGatewayService {
     const provider = this.createProvider(config);
     const model = provider(AI_MODELS.TEXT);
 
-    const { text, usage } = await generateText({
-      model,
-      system: systemPrompt,
-      prompt,
-    });
+    try {
+      const { text, usage } = await generateText({
+        model,
+        system: systemPrompt,
+        prompt,
+        timeout: 300_000,
+      });
 
-    return {
-      text,
-      model: AI_MODELS.TEXT,
-      tokensUsed: {
-        prompt: usage?.inputTokens ?? 0,
-        completion: usage?.outputTokens ?? 0,
-        total: (usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0),
-      },
-    };
+      return {
+        text,
+        model: AI_MODELS.TEXT,
+        tokensUsed: {
+          prompt: usage?.inputTokens ?? 0,
+          completion: usage?.outputTokens ?? 0,
+          total: (usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0),
+        },
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(String(error));
+    }
   }
 
   /**
@@ -131,8 +139,7 @@ export class GatewayService implements IGatewayService {
    * Generates image using xAI via Vercel AI Gateway.
    *
    * Always uses xAI provider regardless of config, as it's the only provider
-   * that supports image generation in the current setup. Uses the grok-2-vision-1212
-   * model.
+   * that supports image generation in the current setup. Uses the grok-2-image model.
    *
    * @param prompt - The image generation prompt
    * @param config - Gateway configuration including API key and provider
@@ -141,16 +148,23 @@ export class GatewayService implements IGatewayService {
   async generateImage(prompt: string, config: GatewayConfig): Promise<ImageResult> {
     // Force xAI for image generation
     const xaiConfig: GatewayConfig = { ...config, provider: "xai" };
-    const provider = this.createProvider(xaiConfig);
+    const provider = this.createProvider(xaiConfig) as ReturnType<typeof createXai>;
 
     // Use xAI's image generation
-    const { text } = await generateText({
-      model: provider(AI_MODELS.IMAGE),
+    const result = await generateImage({
+      model: provider.image(AI_MODELS.IMAGE),
       prompt: `Generate an image: ${prompt}`,
     });
 
+    const files = (result as { files?: Array<{ url?: string }> }).files;
+    const imageUrl = files?.[0]?.url;
+
+    if (!imageUrl) {
+      throw new Error("Image generation returned no files");
+    }
+
     return {
-      url: text, // xAI returns image URL
+      url: imageUrl,
       model: AI_MODELS.IMAGE,
     };
   }

@@ -1,5 +1,6 @@
 import { injectable, inject } from "tsyringe";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
+import type { Context, TypedResponse } from "hono";
 import { z } from "zod";
 import type { IAiController, AiControllerVariables } from "./ai.controller.interface";
 import type { IEmbeddingService } from "../services/embedding.service.interface";
@@ -34,6 +35,38 @@ export class AiController implements IAiController {
   ) {
     this.router = new OpenAPIHono<{ Variables: AiControllerVariables }>();
     this.registerRoutes();
+  }
+
+  private handleError(
+    c: Context,
+    error: unknown,
+    operation: string,
+    metadata: Record<string, unknown> = {}
+  ): TypedResponse<{ error: string }, 400 | 500 | 503, "json"> {
+    const userId = c.get("user")?.id;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const logMetadata = {
+      userId,
+      ...metadata,
+      error: errorMessage,
+    };
+
+    if (error instanceof ConfigurationError) {
+      this.logger.error(`AI configuration error in ${operation}`, logMetadata);
+      return c.json({ error: error.message }, 503);
+    }
+
+    if (error instanceof ValidationError) {
+      return c.json({ error: error.message }, 400);
+    }
+
+    this.logger.error(`Error in ${operation}`, logMetadata);
+    return c.json(
+      {
+        error: "Internal server error",
+      },
+      500
+    );
   }
 
   private registerRoutes(): void {
@@ -99,43 +132,18 @@ export class AiController implements IAiController {
     });
 
     this.router.openapi(generateGameEmbeddingRoute, async (c) => {
+      let body: z.infer<typeof GenerateGameEmbeddingRequestSchema> | undefined;
+
       try {
-        const body = c.req.valid("json");
+        body = c.req.valid("json");
         const user = c.get("user")!;
         await this.embeddingService.generateGameEmbedding(user.id, body.gameId, body.text);
 
         return c.json({ success: true }, 201);
       } catch (error) {
-        if (error instanceof ConfigurationError) {
-          this.logger.error("AI configuration error in generateGameEmbedding", {
-            userId: c.get("user")?.id,
-            gameId: c.req.valid("json")?.gameId,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 503);
-        }
-
-        if (error instanceof ValidationError) {
-          this.logger.error("Validation error in generateGameEmbedding", {
-            userId: c.get("user")?.id,
-            gameId: c.req.valid("json")?.gameId,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 400);
-        }
-
-        this.logger.error("Error in generateGameEmbedding", {
-          userId: c.get("user")?.id,
-          gameId: c.req.valid("json")?.gameId,
-          error: error instanceof Error ? error.message : String(error),
+        return this.handleError(c, error, "generateGameEmbedding", {
+          gameId: body?.gameId,
         });
-
-        return c.json(
-          {
-            error: error instanceof Error ? error.message : "Internal server error",
-          },
-          500
-        );
       }
     });
 
@@ -199,8 +207,10 @@ export class AiController implements IAiController {
     });
 
     this.router.openapi(generateCollectionEmbeddingRoute, async (c) => {
+      let body: z.infer<typeof GenerateCollectionEmbeddingRequestSchema> | undefined;
+
       try {
-        const body = c.req.valid("json");
+        body = c.req.valid("json");
         const user = c.get("user")!;
         await this.embeddingService.generateCollectionEmbedding(
           user.id,
@@ -210,36 +220,9 @@ export class AiController implements IAiController {
 
         return c.json({ success: true }, 201);
       } catch (error) {
-        if (error instanceof ConfigurationError) {
-          this.logger.error("AI configuration error in generateCollectionEmbedding", {
-            userId: c.get("user")?.id,
-            collectionId: c.req.valid("json")?.collectionId,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 503);
-        }
-
-        if (error instanceof ValidationError) {
-          this.logger.error("Validation error in generateCollectionEmbedding", {
-            userId: c.get("user")?.id,
-            collectionId: c.req.valid("json")?.collectionId,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 400);
-        }
-
-        this.logger.error("Error in generateCollectionEmbedding", {
-          userId: c.get("user")?.id,
-          collectionId: c.req.valid("json")?.collectionId,
-          error: error instanceof Error ? error.message : String(error),
+        return this.handleError(c, error, "generateCollectionEmbedding", {
+          collectionId: body?.collectionId,
         });
-
-        return c.json(
-          {
-            error: error instanceof Error ? error.message : "Internal server error",
-          },
-          500
-        );
       }
     });
 
@@ -303,43 +286,18 @@ export class AiController implements IAiController {
     });
 
     this.router.openapi(suggestCollectionsRoute, async (c) => {
+      let body: z.infer<typeof SuggestCollectionsRequestSchema> | undefined;
+
       try {
-        const body = c.req.valid("json");
+        body = c.req.valid("json");
         const user = c.get("user")!;
         const suggestions = await this.curatorService.suggestCollections(user.id, body.gameIds);
 
         return c.json(suggestions, 200);
       } catch (error) {
-        if (error instanceof ConfigurationError) {
-          this.logger.error("AI configuration error in suggestCollections", {
-            userId: c.get("user")?.id,
-            gameIdsCount: c.req.valid("json")?.gameIds?.length,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 503);
-        }
-
-        if (error instanceof ValidationError) {
-          this.logger.error("Validation error in suggestCollections", {
-            userId: c.get("user")?.id,
-            gameIdsCount: c.req.valid("json")?.gameIds?.length,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 400);
-        }
-
-        this.logger.error("Error in suggestCollections", {
-          userId: c.get("user")?.id,
-          gameIdsCount: c.req.valid("json")?.gameIds?.length,
-          error: error instanceof Error ? error.message : String(error),
+        return this.handleError(c, error, "suggestCollections", {
+          gameIdsCount: body?.gameIds?.length,
         });
-
-        return c.json(
-          {
-            error: error instanceof Error ? error.message : "Internal server error",
-          },
-          500
-        );
       }
     });
 
@@ -403,43 +361,18 @@ export class AiController implements IAiController {
     });
 
     this.router.openapi(suggestNextGameRoute, async (c) => {
+      let body: z.infer<typeof SuggestNextGameRequestSchema> | undefined;
+
       try {
-        const body = c.req.valid("json");
+        body = c.req.valid("json");
         const user = c.get("user")!;
         const suggestions = await this.curatorService.suggestNextGame(user.id, body.recentGameIds);
 
         return c.json(suggestions, 200);
       } catch (error) {
-        if (error instanceof ConfigurationError) {
-          this.logger.error("AI configuration error in suggestNextGame", {
-            userId: c.get("user")?.id,
-            recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 503);
-        }
-
-        if (error instanceof ValidationError) {
-          this.logger.error("Validation error in suggestNextGame", {
-            userId: c.get("user")?.id,
-            recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 400);
-        }
-
-        this.logger.error("Error in suggestNextGame", {
-          userId: c.get("user")?.id,
-          recentGameIdsCount: c.req.valid("json")?.recentGameIds?.length,
-          error: error instanceof Error ? error.message : String(error),
+        return this.handleError(c, error, "suggestNextGame", {
+          recentGameIdsCount: body?.recentGameIds?.length,
         });
-
-        return c.json(
-          {
-            error: error instanceof Error ? error.message : "Internal server error",
-          },
-          500
-        );
       }
     });
 
@@ -503,8 +436,10 @@ export class AiController implements IAiController {
     });
 
     this.router.openapi(generateCoverRoute, async (c) => {
+      let body: z.infer<typeof GenerateCoverRequestSchema> | undefined;
+
       try {
-        const body = c.req.valid("json");
+        body = c.req.valid("json");
         const user = c.get("user")!;
         const result = await this.imageService.generateCollectionCover(
           user.id,
@@ -514,39 +449,10 @@ export class AiController implements IAiController {
 
         return c.json(result, 201);
       } catch (error) {
-        if (error instanceof ConfigurationError) {
-          this.logger.error("AI configuration error in generateCollectionCover", {
-            userId: c.get("user")?.id,
-            collectionName: c.req.valid("json")?.collectionName,
-            gameNamesCount: c.req.valid("json")?.gameNames?.length,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 503);
-        }
-
-        if (error instanceof ValidationError) {
-          this.logger.error("Validation error in generateCollectionCover", {
-            userId: c.get("user")?.id,
-            collectionName: c.req.valid("json")?.collectionName,
-            gameNamesCount: c.req.valid("json")?.gameNames?.length,
-            error: error.message,
-          });
-          return c.json({ error: error.message }, 400);
-        }
-
-        this.logger.error("Error in generateCollectionCover", {
-          userId: c.get("user")?.id,
-          collectionName: c.req.valid("json")?.collectionName,
-          gameNamesCount: c.req.valid("json")?.gameNames?.length,
-          error: error instanceof Error ? error.message : String(error),
+        return this.handleError(c, error, "generateCollectionCover", {
+          collectionName: body?.collectionName,
+          gameNamesCount: body?.gameNames?.length,
         });
-
-        return c.json(
-          {
-            error: error instanceof Error ? error.message : "Internal server error",
-          },
-          500
-        );
       }
     });
   }

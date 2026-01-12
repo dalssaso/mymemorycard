@@ -1,6 +1,7 @@
 import { injectable, inject } from "tsyringe";
 import { eq } from "drizzle-orm";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
+import type { Logger } from "@/infrastructure/logging/logger";
 import { userAiSettings } from "@/db/schema";
 import { decrypt } from "@/lib/encryption";
 import type { IAiSettingsRepository } from "./ai-settings.repository.interface";
@@ -9,7 +10,10 @@ import { AI_MODELS } from "../types";
 
 @injectable()
 export class AiSettingsRepository implements IAiSettingsRepository {
-  constructor(@inject("Database") private db: DrizzleDB) {}
+  constructor(
+    @inject("Database") private db: DrizzleDB,
+    @inject("Logger") private logger: Logger
+  ) {}
 
   /**
    * Find AI settings for a user by their ID
@@ -115,7 +119,10 @@ export class AiSettingsRepository implements IAiSettingsRepository {
     } catch (error) {
       // Treat decrypt failure as "not configured" - likely rotated secret or corrupt key
       // Log the error for debugging but don't expose details to caller
-      console.error(`Failed to decrypt API key for user ${userId}:`, error);
+      this.logger.error("Failed to decrypt gateway API key", {
+        userId,
+        error,
+      });
       return null;
     }
   }

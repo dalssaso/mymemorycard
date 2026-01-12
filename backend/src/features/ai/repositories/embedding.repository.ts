@@ -103,14 +103,26 @@ export class EmbeddingRepository implements IEmbeddingRepository {
     return results.map((r) => r.gameId);
   }
 
-  async findSimilarCollections(embedding: number[], limit: number): Promise<string[]> {
+  async findSimilarCollections(
+    embedding: number[],
+    limit: number,
+    excludeIds: string[] = []
+  ): Promise<string[]> {
     this.validateEmbedding(embedding);
 
-    const results = await this.db
+    let query = this.db
       .select({ collectionId: collectionEmbeddings.collectionId })
       .from(collectionEmbeddings)
       .orderBy(sql`embedding <=> ${JSON.stringify(embedding)}::vector`)
       .limit(limit);
+
+    if (excludeIds.length > 0) {
+      query = query.where(
+        notInArray(collectionEmbeddings.collectionId, excludeIds)
+      ) as typeof query;
+    }
+
+    const results = await query;
 
     return results.map((r) => r.collectionId);
   }
