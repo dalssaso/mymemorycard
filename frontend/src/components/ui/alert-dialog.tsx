@@ -36,6 +36,7 @@ const AlertDialogContent = React.forwardRef<
   ({ className, ...props }, ref): JSX.Element => (
     <AlertDialogPortal>
       <AlertDialogOverlay />
+      {/* z-[70] (vs Dialog's z-50) ensures AlertDialogs appear above regular dialogs for critical confirmations */}
       <AlertDialogPrimitive.Content
         ref={ref}
         className={cn(
