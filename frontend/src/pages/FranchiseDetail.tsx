@@ -422,7 +422,7 @@ export function FranchiseDetail() {
                         </div>
                       )}
                     </div>
-                    <p className="mb-1 truncate text-sm text-text-secondary group-hover:text-text-muted">
+                    <p className="mb-1 truncate text-sm text-text-secondary group-hover:text-text-primary">
                       {game.name}
                     </p>
                     {game.released && (
