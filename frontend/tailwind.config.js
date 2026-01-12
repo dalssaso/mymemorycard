@@ -33,6 +33,7 @@ export default {
           completed: "var(--color-status-completed)",
           dropped: "var(--color-status-dropped)",
           backlog: "var(--color-status-backlog)",
+          favorites: "var(--color-status-favorites)",
         },
 
         // shadcn compatibility

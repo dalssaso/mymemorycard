@@ -27,6 +27,7 @@
   --color-status-completed: #eab308;
   --color-status-dropped: #ef4444;
   --color-status-backlog: #6b6b70;
+  --color-status-favorites: #ec4899;
 
   /* Chart colors */
   --color-chart-1: 217 91% 60%;

@@ -19,15 +19,15 @@ import { useToast } from "@/components/ui/Toast";
 import { franchisesAPI, type OwnedGame, type MissingGame } from "@/lib/api";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
 
-const STATUS_COLORS: Record<string, string> = {
-  backlog: "bg-status-backlog",
-  playing: "bg-status-playing",
-  finished: "bg-status-finished",
-  completed: "bg-accent",
-  dropped: "bg-status-dropped",
-};
+const STATUS_COLORS = {
+  backlog: "status-backlog",
+  playing: "status-playing",
+  finished: "status-finished",
+  completed: "status-completed",
+  dropped: "status-dropped",
+} as const;
 
-export function FranchiseDetail() {
+export function FranchiseDetail(): JSX.Element {
   const { seriesName } = useParams({ from: "/franchises/$seriesName" });
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -249,7 +249,7 @@ export function FranchiseDetail() {
         <div className="mb-8">
           <Link
             to="/franchises"
-            className="mb-4 hidden text-accent transition-colors hover:text-accent md:inline-block"
+            className="mb-4 hidden text-accent transition-colors md:inline-block"
           >
             Back to Franchises
           </Link>
@@ -294,7 +294,7 @@ export function FranchiseDetail() {
                       </div>
                     )}
                     <div
-                      className={`absolute right-2 top-2 h-3 w-3 rounded-full ${STATUS_COLORS[game.status] || "bg-text-muted"}`}
+                      className={`absolute right-2 top-2 h-3 w-3 rounded-full bg-${STATUS_COLORS[game.status as keyof typeof STATUS_COLORS] || "text-muted"}`}
                       title={game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     />
                   </div>
