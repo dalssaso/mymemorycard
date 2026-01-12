@@ -50,13 +50,13 @@ interface TextDisplayComponent extends React.ForwardRefExoticComponent<
 }
 
 // eslint-disable-next-line react/display-name
-const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps>(
+const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps<React.ElementType>>(
   (
     {
       variant = "primary",
       size = "base",
       weight = "regular",
-      as: component = "div",
+      as: component = "div" as React.ElementType,
       children,
       className,
       ...props
