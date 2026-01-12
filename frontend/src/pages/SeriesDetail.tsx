@@ -3,7 +3,6 @@ import { useParams, Link } from "@tanstack/react-router";
 import { BackButton, PageLayout } from "@/components/layout";
 import { Card } from "@/components/ui";
 import { collectionsAPI } from "@/lib/api";
-import { cn } from "@/lib/utils";
 
 interface Game {
   id: string;
@@ -41,7 +40,7 @@ export function SeriesDetail() {
     return (
       <PageLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="text-status-dropped">Series not found</div>
+          <div className="text-text-secondary">Series not found</div>
         </div>
       </PageLayout>
     );
@@ -56,7 +55,7 @@ export function SeriesDetail() {
         <div className="mb-8">
           <Link
             to="/collections"
-            className="mb-4 hidden text-accent transition-colors duration-standard hover:text-accent md:inline-block"
+            className="mb-4 hidden text-accent transition-colors duration-standard hover:underline md:inline-block"
           >
             Back to Collections
           </Link>
@@ -86,9 +85,7 @@ export function SeriesDetail() {
                     <img
                       src={game.cover_art_url}
                       alt={game.name}
-                      className={cn(
-                        "h-full w-full object-cover transition-transform duration-standard group-hover:scale-105"
-                      )}
+                      className="h-full w-full object-cover transition-transform duration-standard group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-text-muted">
