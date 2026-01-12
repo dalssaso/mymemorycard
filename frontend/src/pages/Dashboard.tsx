@@ -57,20 +57,20 @@ const GENRE_COLORS = [
 const lastDashboardRefreshHref: { current: string | null } = { current: null };
 const counterCardStyles = {
   total: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-mauve) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-mauve) 65%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-accent) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-accent) 65%, transparent)",
   },
   playing: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-teal) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-teal) 65%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-status-playing) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-status-playing) 65%, transparent)",
   },
   completed: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-green) 45%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-green) 65%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-status-finished) 45%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-status-finished) 65%, transparent)",
   },
   backlog: {
-    backgroundColor: "color-mix(in srgb, var(--ctp-subtext1) 35%, transparent)",
-    borderColor: "color-mix(in srgb, var(--ctp-subtext1) 55%, transparent)",
+    backgroundColor: "color-mix(in srgb, var(--color-text-muted) 35%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-text-muted) 55%, transparent)",
   },
 };
 
@@ -243,10 +243,10 @@ export function Dashboard() {
     const color = data?.color || "#a1a1aa";
 
     return (
-      <div className="border-ctp-surface1 bg-ctp-mantle rounded-lg border px-3 py-2 text-sm">
+      <div className="border-border bg-elevated rounded-lg border px-3 py-2 text-sm">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-          <span className="text-ctp-subtext1">
+          <span className="text-text-muted">
             {name}: {value}
           </span>
         </div>
@@ -261,14 +261,14 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+              className="text-text-secondary hover:bg-surface hover:text-text-primary rounded-lg p-2 transition-all md:hidden"
             />
-            <h1 className="text-ctp-text text-4xl font-bold">Dashboard</h1>
+            <h1 className="text-text-primary text-4xl font-bold">Dashboard</h1>
           </div>
           <div className="hidden gap-3 sm:flex">
             <Link
               to="/platforms"
-              className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex items-center gap-2 rounded-lg px-4 py-2 transition-colors"
+              className="bg-surface text-text-primary hover:bg-elevated flex items-center gap-2 rounded-lg px-4 py-2 transition-colors"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -282,7 +282,7 @@ export function Dashboard() {
             </Link>
             <Link
               to="/import"
-              className="hover:bg-ctp-mauve/80 bg-ctp-mauve text-ctp-base flex items-center gap-2 rounded-lg px-4 py-2 transition-colors"
+              className="hover:bg-accent/80 bg-accent text-base flex items-center gap-2 rounded-lg px-4 py-2 transition-colors"
             >
               <span className="material-symbols-outlined text-xl">download</span>
               Import Games
@@ -325,8 +325,8 @@ export function Dashboard() {
             style={counterCardStyles.total}
             onClick={() => navigateToLibrary({})}
           >
-            <h3 className="text-ctp-subtext0 mb-2 text-sm">Total Games</h3>
-            <p className="text-ctp-text text-3xl font-bold">{animatedTotalGames}</p>
+            <h3 className="text-text-secondary mb-2 text-sm">Total Games</h3>
+            <p className="text-text-primary text-3xl font-bold">{animatedTotalGames}</p>
           </Card>
 
           <Card
@@ -335,8 +335,8 @@ export function Dashboard() {
             style={counterCardStyles.playing}
             onClick={() => navigateToLibrary({ status: "playing" })}
           >
-            <h3 className="text-ctp-subtext0 mb-2 text-sm">Currently Playing</h3>
-            <p className="text-ctp-text text-3xl font-bold">{animatedInProgressGames}</p>
+            <h3 className="text-text-secondary mb-2 text-sm">Currently Playing</h3>
+            <p className="text-text-primary text-3xl font-bold">{animatedInProgressGames}</p>
           </Card>
 
           <Card
@@ -345,8 +345,8 @@ export function Dashboard() {
             style={counterCardStyles.completed}
             onClick={() => navigateToLibrary({ status: "completed" })}
           >
-            <h3 className="text-ctp-subtext0 mb-2 text-sm">Completed</h3>
-            <p className="text-ctp-text text-3xl font-bold">{animatedCompletedGames}</p>
+            <h3 className="text-text-secondary mb-2 text-sm">Completed</h3>
+            <p className="text-text-primary text-3xl font-bold">{animatedCompletedGames}</p>
           </Card>
 
           <Card
@@ -355,15 +355,15 @@ export function Dashboard() {
             style={counterCardStyles.backlog}
             onClick={() => navigateToLibrary({ status: "backlog" })}
           >
-            <h3 className="text-ctp-subtext0 mb-2 text-sm">Backlog</h3>
-            <p className="text-ctp-text text-3xl font-bold">{animatedBacklogGames}</p>
+            <h3 className="text-text-secondary mb-2 text-sm">Backlog</h3>
+            <p className="text-text-primary text-3xl font-bold">{animatedBacklogGames}</p>
           </Card>
         </div>
 
         {/* Currently Playing Carousel */}
         {currentlyPlayingRecent.length > 0 && (
-          <Card className="bg-ctp-teal/5 border-ctp-teal/20 mb-8" padded={true}>
-            <h2 className="text-ctp-teal mb-4 text-2xl font-bold">Currently Playing</h2>
+          <Card className="bg-accent/5 border-accent/20 mb-8" padded={true}>
+            <h2 className="text-accent mb-4 text-2xl font-bold">Currently Playing</h2>
             <div className="relative">
               <ScrollFade axis="x" className="flex gap-4 overflow-x-auto pb-4">
                 {currentlyPlayingRecent.map((game) => (
@@ -373,7 +373,7 @@ export function Dashboard() {
                     params={{ id: game.id }}
                     className="group flex-shrink-0"
                   >
-                    <div className="bg-ctp-surface0 relative aspect-[3/4] w-32 overflow-hidden rounded-lg">
+                    <div className="bg-surface relative aspect-[3/4] w-32 overflow-hidden rounded-lg">
                       {game.cover_art_url ? (
                         <img
                           src={game.cover_art_url}
@@ -381,17 +381,17 @@ export function Dashboard() {
                           className="h-full w-full object-cover transition-transform group-hover:scale-105"
                         />
                       ) : (
-                        <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
+                        <div className="text-text-muted flex h-full w-full items-center justify-center">
                           No Cover
                         </div>
                       )}
-                      <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:via-transparent" />
+                      <div className="from-base/70 via-base/20 dark:from-base/80 absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:via-transparent" />
                     </div>
-                    <p className="text-ctp-subtext1 group-hover:text-ctp-text mt-2 w-32 truncate text-sm">
+                    <p className="text-text-muted group-hover:text-text-primary mt-2 w-32 truncate text-sm">
                       {game.name}
                     </p>
                     {game.last_played && (
-                      <p className="text-ctp-overlay1 text-xs">
+                      <p className="text-text-muted text-xs">
                         {new Date(game.last_played).toLocaleDateString()}
                       </p>
                     )}
@@ -407,8 +407,8 @@ export function Dashboard() {
           <div className="lg:col-span-2">
             <Card padded={true}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-ctp-mauve text-2xl font-bold">Your Activity</h2>
-                <div className="bg-ctp-surface0 flex gap-1 rounded-lg p-1">
+                <h2 className="text-accent text-2xl font-bold">Your Activity</h2>
+                <div className="bg-surface flex gap-1 rounded-lg p-1">
                   <Button
                     onClick={() => setHeatmapType("activity")}
                     variant={heatmapType === "activity" ? "secondary" : "ghost"}
@@ -437,7 +437,7 @@ export function Dashboard() {
           </div>
           <div>
             <Card className="lg:flex lg:h-[366px] lg:flex-col" padded={true}>
-              <h2 className="text-ctp-mauve mb-4 text-xl font-bold">Recent Activity</h2>
+              <h2 className="text-accent mb-4 text-xl font-bold">Recent Activity</h2>
               <ActivityFeed
                 desktopLimit={12}
                 mobileLimit={5}
@@ -459,7 +459,7 @@ export function Dashboard() {
           <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Status Distribution */}
             <Card padded={true}>
-              <h2 className="text-ctp-mauve mb-4 text-2xl font-bold">Status Distribution</h2>
+              <h2 className="text-accent mb-4 text-2xl font-bold">Status Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -507,7 +507,7 @@ export function Dashboard() {
 
             {/* Platform Distribution */}
             <Card padded={true}>
-              <h2 className="text-ctp-mauve mb-4 text-2xl font-bold">Platform Distribution</h2>
+              <h2 className="text-accent mb-4 text-2xl font-bold">Platform Distribution</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -553,7 +553,7 @@ export function Dashboard() {
             {/* Genre Distribution */}
             {genreChartData.length > 0 && (
               <Card padded={true}>
-                <h2 className="text-ctp-mauve mb-4 text-2xl font-bold">Top Genres</h2>
+                <h2 className="text-accent mb-4 text-2xl font-bold">Top Genres</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={genreChartData}
@@ -597,12 +597,12 @@ export function Dashboard() {
 
         {/* Favorites Section */}
         {favoriteGames.length > 0 && (
-          <Card className="bg-ctp-red/10 border-ctp-red/30 mb-6" padded={true}>
-            <h2 className="text-ctp-red mb-4 text-2xl font-bold">
+          <Card className="bg-status-finished/10 border-status-finished/30 mb-6" padded={true}>
+            <h2 className="text-status-finished mb-4 text-2xl font-bold">
               <Button
                 type="button"
                 variant="ghost"
-                className="hover:text-ctp-red h-auto p-0 transition-colors"
+                className="hover:text-status-finished h-auto p-0 transition-colors"
                 onClick={() => navigateToLibrary({ favorites: true })}
               >
                 Favorites
@@ -616,7 +616,7 @@ export function Dashboard() {
                   params={{ id: game.id }}
                   className="group relative"
                 >
-                  <div className="bg-ctp-surface0 relative aspect-[3/4] overflow-hidden rounded-lg">
+                  <div className="bg-surface relative aspect-[3/4] overflow-hidden rounded-lg">
                     {game.cover_art_url ? (
                       <img
                         src={game.cover_art_url}
@@ -624,11 +624,11 @@ export function Dashboard() {
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (
-                      <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
+                      <div className="text-text-muted flex h-full w-full items-center justify-center">
                         No Cover
                       </div>
                     )}
-                    <div className="text-ctp-red absolute right-2 top-2">
+                    <div className="text-status-finished absolute right-2 top-2">
                       <svg
                         className="h-5 w-5"
                         viewBox="0 0 24 24"
@@ -645,7 +645,7 @@ export function Dashboard() {
                       </svg>
                     </div>
                   </div>
-                  <p className="text-ctp-subtext1 group-hover:text-ctp-text mt-2 truncate text-sm">
+                  <p className="text-text-muted group-hover:text-text-primary mt-2 truncate text-sm">
                     {game.name}
                   </p>
                 </Link>
