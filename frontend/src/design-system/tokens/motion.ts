@@ -40,3 +40,4 @@ export const spring = {
 
 export type DurationToken = keyof typeof duration;
 export type EasingToken = keyof typeof easing;
+export type SpringToken = keyof typeof spring;
