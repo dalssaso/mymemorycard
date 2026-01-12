@@ -375,7 +375,7 @@ export function SessionsHistory({ gameId, platformId, onSessionChange }: Session
                       setSwipedSessionId(null);
                     }}
                     disabled={deleteSessionMutation.isPending || !session.ended_at}
-                    className="text-base text-sm font-semibold hover:bg-transparent disabled:opacity-60"
+                    className="text-sm font-semibold hover:bg-transparent disabled:opacity-60"
                     aria-label={
                       session.ended_at ? "Delete session" : "Cannot delete active session"
                     }
