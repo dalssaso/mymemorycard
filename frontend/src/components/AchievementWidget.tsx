@@ -249,15 +249,7 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
                   <div className="truncate text-sm text-text-primary">{item.achievementName}</div>
                   <div className="truncate text-xs text-text-muted">{item.gameName}</div>
                 </div>
-                <div
-                  className={`rounded px-2 py-1 text-xs ${
-                    (item.rarity ?? 100) < 5
-                      ? "bg-accent/20 text-accent"
-                      : (item.rarity ?? 100) < 15
-                        ? "bg-accent/20 text-accent"
-                        : "bg-accent/20 text-accent"
-                  }`}
-                >
+                <div className="rounded bg-accent/20 px-2 py-1 text-xs text-accent">
                   {item.rarity?.toFixed(1)}%
                 </div>
               </div>
