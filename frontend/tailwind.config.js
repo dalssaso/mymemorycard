@@ -36,6 +36,14 @@ export default {
           favorites: "var(--color-status-favorites)",
         },
 
+        // Rarity colors
+        rarity: {
+          common: "var(--color-rarity-common)",
+          uncommon: "var(--color-rarity-uncommon)",
+          rare: "var(--color-rarity-rare)",
+          legendary: "var(--color-rarity-legendary)",
+        },
+
         // shadcn compatibility
         border: "var(--border)",
         input: "var(--input)",
