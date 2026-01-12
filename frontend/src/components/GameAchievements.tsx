@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Checkbox, Input, Label, ScrollFade, Textarea } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { completionLogsAPI, gamesAPI } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface Achievement {
   achievement_id: string;
@@ -259,7 +260,7 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
         <div className="w-32">
           <div className="h-3 w-full rounded-full bg-elevated">
             <div
-              className="h-3 rounded-full bg-status-finished transition-all"
+              className="h-3 rounded-full bg-status-finished transition-all duration-standard"
               style={{ width: `${completionPercent}%` }}
             />
           </div>
@@ -273,11 +274,12 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
             key={f}
             onClick={() => setFilter(f)}
             variant="ghost"
-            className={`h-auto rounded-lg px-3 py-1 text-sm transition-all ${
+            className={cn(
+              "h-auto rounded-lg px-3 py-1 text-sm transition-all duration-standard",
               filter === f
-                ? "bg-accent text-base"
+                ? "bg-accent text-text-primary"
                 : "bg-surface text-text-secondary hover:bg-elevated"
-            }`}
+            )}
           >
             {f === "all"
               ? `All (${totalCount})`
@@ -476,11 +478,12 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                     </div>
 
                     <div
-                      className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-standard",
                         ach.completed
-                          ? "border-status-finished bg-status-finished text-base"
+                          ? "border-status-finished bg-status-finished text-text-primary"
                           : "border-elevated text-transparent hover:border-text-muted"
-                      }`}
+                      )}
                     >
                       <svg
                         className="h-4 w-4"
@@ -562,13 +565,14 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                   <div className="mt-1 flex items-center gap-2">
                     {ach.rarity_percent !== null && (
                       <span
-                        className={`rounded px-2 py-0.5 text-xs ${
+                        className={cn(
+                          "rounded px-2 py-0.5 text-xs",
                           ach.rarity_percent < 10
                             ? "bg-accent/20 text-accent"
                             : ach.rarity_percent < 25
                               ? "bg-accent/20 text-accent"
                               : "bg-elevated text-text-secondary"
-                        }`}
+                        )}
                       >
                         {ach.rarity_percent.toFixed(1)}% of players
                       </span>
@@ -582,11 +586,12 @@ export function GameAchievements({ gameId, platformId }: GameAchievementsProps) 
                 </div>
 
                 <div
-                  className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-standard",
                     ach.completed
-                      ? "border-status-finished bg-status-finished text-base"
+                      ? "border-status-finished bg-status-finished text-text-primary"
                       : "border-elevated text-transparent hover:border-text-muted"
-                  }`}
+                  )}
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
