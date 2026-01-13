@@ -25,12 +25,3 @@ export type {
 export { collectionsAPI } from "./collections";
 export { franchisesAPI } from "./franchises";
 export type { FranchiseSummary, OwnedGame, MissingGame, FranchiseDetail } from "./franchises";
-export { aiAPI } from "./ai";
-export type {
-  AiProviderConfig,
-  CollectionSuggestion,
-  NextGameSuggestion,
-  AiActivityLog,
-  ModelCapability,
-  ModelsResponse,
-} from "./ai";

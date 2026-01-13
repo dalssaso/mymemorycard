@@ -27,7 +27,6 @@ export function Navbar(): JSX.Element {
       { to: "/library", label: "Library" },
       { to: "/collections", label: "Collections" },
       { to: "/franchises", label: "Franchises" },
-      { to: "/ai-curator", label: "AI Curator" },
     ],
     []
   );

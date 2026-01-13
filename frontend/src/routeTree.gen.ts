@@ -18,7 +18,6 @@ import { Route as ImportRouteImport } from './routes/import'
 import { Route as FranchisesRouteImport } from './routes/franchises'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CollectionsRouteImport } from './routes/collections'
-import { Route as AiCuratorRouteImport } from './routes/ai-curator'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as NotFoundRouteImport } from './routes/_not-found'
 import { Route as PlatformsIndexRouteImport } from './routes/platforms.index'
@@ -75,11 +74,6 @@ const DashboardRoute = DashboardRouteImport.update({
 const CollectionsRoute = CollectionsRouteImport.update({
   id: '/collections',
   path: '/collections',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AiCuratorRoute = AiCuratorRouteImport.update({
-  id: '/ai-curator',
-  path: '/ai-curator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActivityRoute = ActivityRouteImport.update({
@@ -145,7 +139,6 @@ const CollectionsSeriesSeriesNameRoute =
 
 export interface FileRoutesByFullPath {
   '/activity': typeof ActivityRoute
-  '/ai-curator': typeof AiCuratorRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/franchises': typeof FranchisesRouteWithChildren
@@ -168,7 +161,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/activity': typeof ActivityRoute
-  '/ai-curator': typeof AiCuratorRoute
   '/dashboard': typeof DashboardRoute
   '/import': typeof ImportRoute
   '/login': typeof LoginRoute
@@ -189,7 +181,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_not-found': typeof NotFoundRoute
   '/activity': typeof ActivityRoute
-  '/ai-curator': typeof AiCuratorRoute
   '/collections': typeof CollectionsRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/franchises': typeof FranchisesRouteWithChildren
@@ -214,7 +205,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/activity'
-    | '/ai-curator'
     | '/collections'
     | '/dashboard'
     | '/franchises'
@@ -237,7 +227,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/activity'
-    | '/ai-curator'
     | '/dashboard'
     | '/import'
     | '/login'
@@ -257,7 +246,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_not-found'
     | '/activity'
-    | '/ai-curator'
     | '/collections'
     | '/dashboard'
     | '/franchises'
@@ -282,7 +270,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   NotFoundRoute: typeof NotFoundRoute
   ActivityRoute: typeof ActivityRoute
-  AiCuratorRoute: typeof AiCuratorRoute
   CollectionsRoute: typeof CollectionsRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   FranchisesRoute: typeof FranchisesRouteWithChildren
@@ -357,13 +344,6 @@ declare module '@tanstack/react-router' {
       path: '/collections'
       fullPath: '/collections'
       preLoaderRoute: typeof CollectionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ai-curator': {
-      id: '/ai-curator'
-      path: '/ai-curator'
-      fullPath: '/ai-curator'
-      preLoaderRoute: typeof AiCuratorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/activity': {
@@ -515,7 +495,6 @@ const PlatformsRouteWithChildren = PlatformsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   NotFoundRoute: NotFoundRoute,
   ActivityRoute: ActivityRoute,
-  AiCuratorRoute: AiCuratorRoute,
   CollectionsRoute: CollectionsRouteWithChildren,
   DashboardRoute: DashboardRoute,
   FranchisesRoute: FranchisesRouteWithChildren,
