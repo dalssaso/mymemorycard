@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 interface GameDetailSidebarProps {
   gameId: string;
@@ -70,12 +71,12 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
 
   if (isCollapsed) {
     return (
-      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         {/* Back to Library */}
         <div className="flex justify-center">
           <Link
             to="/library"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary"
             title="Back to Library"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,10 +90,10 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
           </Link>
         </div>
 
-        <div className="border-ctp-surface0 flex justify-center border-t pt-2">
+        <div className="flex justify-center border-t border-surface pt-2">
           <Link
             to="/platforms"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +108,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
         </div>
 
         {/* Quick Status Icons */}
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="flex flex-col items-center gap-1 border-t border-surface pt-2">
           {STATUS_OPTIONS.map((option) => (
             <Button
               key={option.value}
@@ -115,11 +116,12 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               disabled={isUpdating}
               variant="ghost"
               size="icon"
-              className={`rounded-lg p-2 transition-all disabled:opacity-50 ${
+              className={cn(
+                "rounded-lg p-2 transition-all duration-standard disabled:opacity-50",
                 status === option.value
-                  ? "bg-ctp-mauve/20 text-ctp-mauve ring-ctp-mauve ring-2"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
-              }`}
+                  ? "bg-accent/20 text-accent ring-2 ring-accent"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
+              )}
               title={option.label}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,14 +137,14 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
         </div>
 
         {/* Jump to Section Icons */}
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="flex flex-col items-center gap-1 border-t border-surface pt-2">
           {SECTIONS.map((section) => (
             <Button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
               size="icon"
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
               title={section.label}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +167,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       <div>
         <Link
           to="/library"
-          className="border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1 hover:border-ctp-surface2 hover:text-ctp-text flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+          className="flex items-center gap-2 rounded-lg border border-elevated bg-surface px-3 py-2 text-sm text-text-muted transition-colors duration-standard hover:border-accent hover:text-text-primary"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +188,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       </div>
       <Link
         to="/platforms"
-        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors hover:bg-elevated"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -200,9 +202,9 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       </Link>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-ctp-teal h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -225,8 +227,8 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               variant="ghost"
               className={`flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50 ${
                 status === option.value
-                  ? "bg-ctp-mauve/20 border-ctp-mauve/30 text-ctp-mauve border"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                  ? "bg-accent/20 border-accent/30 border text-accent"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
               }`}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,9 +246,9 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
       </div>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-ctp-mauve h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -266,7 +268,7 @@ export function GameDetailSidebar({ status, onStatusChange, isUpdating }: GameDe
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               variant="ghost"
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all"
+              className="flex h-auto w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-surface hover:text-text-primary"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

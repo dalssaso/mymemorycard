@@ -92,10 +92,10 @@ npx shadcn@latest add dialog
 1. **Use shadcn components** for UI primitives (Button, Input, Dialog, etc.)
 2. **Import from `@/components/ui`** (never use raw `<button>` or `<input>`)
 3. **Extend shadcn variants** in component file when needed
-4. **Catppuccin theming** via CSS variables
+4. **Use semantic design tokens** for styling
 
 ```tsx
-// Good - use shadcn Button
+// Good - use shadcn Button with semantic tokens
 import { Button } from "@/components/ui/Button"
 <Button variant="secondary" size="sm">Click</Button>
 
@@ -474,6 +474,44 @@ const statusColor = colors.status.playing // "var(--color-status-playing)"
 **Migration from Catppuccin classes:**
 
 Previous code used `ctp-*` class prefixes (e.g., `ctp-mauve`, `ctp-teal`). These have been replaced with semantic tokens. If you see `ctp-*` classes in the codebase, they should be updated to use semantic token equivalents.
+
+### Component-Based Styling
+
+**Prefer components over inline classes:**
+
+```tsx
+// Good - use semantic components
+<SectionCard variant="surface">
+  <TextDisplay variant="primary">Title</TextDisplay>
+</SectionCard>
+
+// Avoid - inline Tailwind classes
+<div className="bg-surface border-border rounded-lg p-4">
+  <p className="text-text-primary">Title</p>
+</div>
+```
+
+**Available pattern components:**
+- `StatBadge` - Status indicators with semantic variants
+- `SectionCard` - Surface hierarchy cards
+- `TextDisplay` - Text hierarchy with consistent styling
+
+**Available semantic tokens:**
+- **Colors** (`design-system/tokens/colors.ts`)
+  - Surface hierarchy: `bg-base`, `bg-surface`, `bg-elevated`
+  - Text hierarchy: `text-text-primary`, `text-text-secondary`, `text-text-muted`
+  - Status: `text-status-playing`, `text-status-finished`, `text-status-completed`, `text-status-dropped`, `text-status-backlog`
+  - Accent: `text-accent`, `bg-accent`
+  - Border: `border-border`
+
+- **Motion** (`design-system/tokens/motion.ts`)
+  - Duration: `duration-instant`, `duration-quick`, `duration-standard`, `duration-smooth`, `duration-page`
+  - Easing: `ease-out`, `ease-in`, `ease-spring`
+
+- **Typography** (`design-system/tokens/typography.ts`)
+  - Font: Manrope variable font
+  - Weights: `font-normal`, `font-medium`, `font-semibold`, `font-bold`
+  - Sizes: `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`
 
 ### Utilities
 

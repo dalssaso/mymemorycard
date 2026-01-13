@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { BackButton, PageLayout } from "@/components/layout";
 import { CollectionsSidebar } from "@/components/sidebar";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -231,11 +232,11 @@ export function Collections() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+                className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
               />
-              <h1 className="text-ctp-text text-3xl font-bold sm:text-4xl">Collections</h1>
+              <h1 className="text-3xl font-bold text-text-primary sm:text-4xl">Collections</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">Organize your games into custom collections</p>
+            <p className="mt-1 text-text-secondary">Organize your games into custom collections</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)} className="w-full sm:w-auto">
             Create Collection
@@ -247,15 +248,15 @@ export function Collections() {
             <Card className="px-6 py-10" padded={true}>
               <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
                 <div>
-                  <h2 className="text-ctp-text mb-3 text-2xl font-bold">No Collections Yet</h2>
-                  <p className="text-ctp-subtext0 mb-6">
+                  <h2 className="mb-3 text-2xl font-bold text-text-primary">No Collections Yet</h2>
+                  <p className="mb-6 text-text-secondary">
                     Group your games by theme, mood, or completion goals.
                   </p>
                   <Button onClick={() => setShowCreateModal(true)}>Create Collection</Button>
                 </div>
-                <div className="bg-ctp-surface0/40 border-ctp-surface1 rounded-lg border p-4">
-                  <h3 className="text-ctp-text text-sm font-semibold">Ideas to try</h3>
-                  <div className="text-ctp-subtext0 mt-2 space-y-2 text-sm">
+                <div className="bg-surface/40 rounded-lg border border-border p-4">
+                  <h3 className="text-sm font-semibold text-text-primary">Ideas to try</h3>
+                  <div className="mt-2 space-y-2 text-sm text-text-secondary">
                     <p>Story-driven RPGs</p>
                     <p>Short backlog wins</p>
                     <p>Co-op with friends</p>
@@ -266,7 +267,7 @@ export function Collections() {
           ) : (
             <>
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-ctp-subtext0 text-sm">
+                <span className="text-sm text-text-secondary">
                   {collections.length} {collections.length === 1 ? "collection" : "collections"}
                 </span>
                 {!selectionMode && collections.length > 0 && (
@@ -296,9 +297,9 @@ export function Collections() {
               </div>
 
               {selectionMode && (
-                <div className="bg-ctp-surface0/50 border-ctp-surface1 mb-4 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="bg-surface/50 mb-4 flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-ctp-text text-sm font-medium">
+                    <span className="text-sm font-medium text-text-primary">
                       {selectedCollectionIds.length > 0
                         ? `${selectedCollectionIds.length} collection(s) selected`
                         : "Select collections to manage"}
@@ -342,7 +343,7 @@ export function Collections() {
                       variant="secondary"
                       size="sm"
                       onClick={handleExitSelectionMode}
-                      className="bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2 h-auto"
+                      className="h-auto bg-elevated text-text-primary hover:bg-elevated"
                     >
                       Done
                     </Button>
@@ -355,7 +356,7 @@ export function Collections() {
                   const isSelected = selectedCollectionIds.includes(collection.id);
                   const cardContent = (
                     <>
-                      <div className="bg-ctp-surface0 relative mb-2 aspect-[3/4] overflow-hidden rounded-lg">
+                      <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-surface">
                         {collection.cover_filename ? (
                           <img
                             src={`/api/collection-covers/${collection.cover_filename}?v=${coverKey}`}
@@ -369,20 +370,20 @@ export function Collections() {
                             className="h-full w-full object-cover transition-transform group-hover:scale-105"
                           />
                         ) : (
-                          <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
+                          <div className="flex h-full w-full items-center justify-center text-text-muted">
                             <span className="text-sm">No Cover</span>
                           </div>
                         )}
-                        <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
+                        <div className="from-base/70 via-base/20 dark:from-base/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                         {selectionMode && isSelected && (
-                          <div className="bg-ctp-mauve absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="text-ctp-text h-4 w-4"
+                              className="h-4 w-4 text-text-primary"
                             >
                               <path
                                 strokeLinecap="round"
@@ -394,19 +395,24 @@ export function Collections() {
                         )}
                       </div>
                       <div className="flex flex-col gap-1 px-2 pb-2 sm:px-0 sm:pb-0">
-                        <p className="text-ctp-text group-hover:text-ctp-mauve truncate font-medium transition-colors">
+                        <p className="truncate font-medium text-text-primary transition-colors group-hover:text-accent">
                           {collection.name}
                         </p>
-                        <p className="text-ctp-mauve text-sm">
+                        <p className="text-sm text-accent">
                           {collection.game_count} {collection.game_count === 1 ? "game" : "games"}
                         </p>
                       </div>
                     </>
                   );
 
-                  const cardClassName = selectionMode
-                    ? `rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 cursor-pointer transition-all group relative p-0 sm:p-3 ${isSelected ? "bg-ctp-mauve/20 border-ctp-mauve" : "hover:border-ctp-surface2"}`
-                    : "rounded-xl border border-ctp-surface1 bg-ctp-surface0/40 hover:border-ctp-mauve transition-all cursor-pointer group relative p-0 sm:p-3";
+                  const cardClassName = cn(
+                    "bg-surface/40 group relative cursor-pointer rounded-xl border border-border p-0 transition-all duration-standard sm:p-3",
+                    selectionMode
+                      ? isSelected
+                        ? "bg-accent/20 border-accent"
+                        : "hover:border-border"
+                      : "hover:border-accent"
+                  );
 
                   return selectionMode ? (
                     <div
@@ -441,23 +447,23 @@ export function Collections() {
         </div>
 
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
+          <AlertDialogContent className="border-border bg-elevated">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-ctp-text text-xl font-bold">
+              <AlertDialogTitle className="text-xl font-bold text-text-primary">
                 Delete Collections
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-ctp-subtext0">
+              <AlertDialogDescription className="text-text-secondary">
                 Are you sure you want to delete {selectedCollectionIds.length} collection(s)? This
                 action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2">
+              <AlertDialogCancel className="border-border bg-elevated text-text-primary hover:bg-elevated">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => bulkDeleteCollectionsMutation.mutate(selectedCollectionIds)}
-                className="hover:bg-ctp-red/90 bg-ctp-red text-ctp-base"
+                className="hover:bg-status-dropped/90 bg-status-dropped text-text-primary"
               >
                 {bulkDeleteCollectionsMutation.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
@@ -476,18 +482,18 @@ export function Collections() {
             }
           }}
         >
-          <DialogContent className="border-ctp-surface1 bg-ctp-mantle max-w-md">
+          <DialogContent className="max-w-md border-border bg-elevated">
             <DialogHeader>
-              <DialogTitle className="text-ctp-text text-2xl font-bold">
+              <DialogTitle className="text-2xl font-bold text-text-primary">
                 Create Collection
               </DialogTitle>
-              <DialogDescription className="text-ctp-subtext0">
+              <DialogDescription className="text-text-secondary">
                 Organize your games into a custom collection.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               {/* AI Toggle */}
-              <div className="bg-ctp-surface0 flex items-center gap-3 rounded-lg p-3">
+              <div className="flex items-center gap-3 rounded-lg bg-surface p-3">
                 <Checkbox
                   id="use-ai"
                   checked={useAI}
@@ -500,16 +506,16 @@ export function Collections() {
                     }
                   }}
                 />
-                <label htmlFor="use-ai" className="text-ctp-text flex-1 cursor-pointer text-sm">
+                <label htmlFor="use-ai" className="flex-1 cursor-pointer text-sm text-text-primary">
                   Use AI to create collection
                 </label>
               </div>
 
               {/* AI Theme Input (shown when AI is enabled and no suggestion yet) */}
               {useAI && !aiSuggestion && (
-                <div className="bg-ctp-mauve/10 border-ctp-mauve/20 rounded-lg border p-3">
+                <div className="bg-accent/10 border-accent/20 rounded-lg border p-3">
                   <label
-                    className="text-ctp-text mb-2 block text-sm font-medium"
+                    className="mb-2 block text-sm font-medium text-text-primary"
                     htmlFor="collection-theme"
                   >
                     Collection Theme
@@ -520,7 +526,7 @@ export function Collections() {
                     value={aiTheme}
                     onChange={(e) => setAiTheme(e.target.value)}
                     placeholder="e.g., Cozy games for rainy days"
-                    className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve mb-3"
+                    className="mb-3 bg-surface text-text-primary focus-visible:ring-accent"
                   />
                   <Button
                     onClick={handleGenerateAISuggestion}
@@ -534,9 +540,9 @@ export function Collections() {
 
               {/* AI Suggestion Preview */}
               {aiSuggestion && (
-                <div className="bg-ctp-green/10 border-ctp-green/20 rounded-lg border p-3">
+                <div className="bg-status-finished/10 border-status-finished/20 rounded-lg border p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-ctp-green text-sm font-medium">AI Suggestion</span>
+                    <span className="text-sm font-medium text-status-finished">AI Suggestion</span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -550,13 +556,13 @@ export function Collections() {
                       Clear
                     </Button>
                   </div>
-                  <p className="text-ctp-overlay1 mb-1 text-xs">
+                  <p className="mb-1 text-xs text-text-muted">
                     {aiSuggestion.gameIds.length} games will be added:{" "}
                     {aiSuggestion.gameNames.slice(0, 3).join(", ")}
                     {aiSuggestion.gameNames.length > 3 &&
                       ` +${aiSuggestion.gameNames.length - 3} more`}
                   </p>
-                  <p className="text-ctp-overlay2 text-xs italic">{aiSuggestion.reasoning}</p>
+                  <p className="text-xs italic text-text-muted">{aiSuggestion.reasoning}</p>
                 </div>
               )}
 
@@ -566,10 +572,11 @@ export function Collections() {
                   {/* Name field */}
                   <div>
                     <label
-                      className="text-ctp-subtext0 mb-2 block text-sm font-medium"
+                      className="mb-2 block text-sm font-medium text-text-secondary"
                       htmlFor="collection-name"
                     >
-                      Name {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
+                      Name{" "}
+                      {aiSuggestion && <span className="text-status-finished">(AI suggested)</span>}
                     </label>
                     <Input
                       id="collection-name"
@@ -577,37 +584,37 @@ export function Collections() {
                       value={newCollectionName}
                       onChange={(e) => setNewCollectionName(e.target.value)}
                       placeholder="e.g., Couch Co-op Games"
-                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                      className="bg-surface text-text-primary focus-visible:ring-accent"
                     />
                   </div>
 
                   {/* Description field */}
                   <div>
                     <label
-                      className="text-ctp-subtext0 mb-2 block text-sm font-medium"
+                      className="mb-2 block text-sm font-medium text-text-secondary"
                       htmlFor="collection-description"
                     >
                       Description (optional){" "}
-                      {aiSuggestion && <span className="text-ctp-green">(AI suggested)</span>}
+                      {aiSuggestion && <span className="text-status-finished">(AI suggested)</span>}
                     </label>
                     <Textarea
                       id="collection-description"
                       value={newCollectionDescription}
                       onChange={(e) => setNewCollectionDescription(e.target.value)}
                       placeholder="Describe your collection..."
-                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve min-h-24"
+                      className="min-h-24 bg-surface text-text-primary focus-visible:ring-accent"
                     />
                   </div>
 
                   {/* Cover Image upload */}
                   <div>
                     <label
-                      className="text-ctp-subtext0 mb-2 block text-sm font-medium"
+                      className="mb-2 block text-sm font-medium text-text-secondary"
                       htmlFor="collection-cover"
                     >
                       Cover Image (optional)
                     </label>
-                    <p className="text-ctp-overlay1 mb-2 text-xs">
+                    <p className="mb-2 text-xs text-text-muted">
                       Recommended: 600x900px or similar aspect ratio (3:4). Max 5MB.
                     </p>
                     <Input
@@ -626,7 +633,7 @@ export function Collections() {
                           setCoverPreviewUrl(URL.createObjectURL(file));
                         }
                       }}
-                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                      className="bg-surface text-text-primary focus-visible:ring-accent"
                     />
                     {coverPreviewUrl && (
                       <div className="mt-2">
@@ -662,7 +669,7 @@ export function Collections() {
                         />
                         <label
                           htmlFor="generate-cover"
-                          className="text-ctp-subtext0 cursor-pointer text-sm"
+                          className="cursor-pointer text-sm text-text-secondary"
                         >
                           Generate AI cover (~$0.04)
                         </label>
@@ -692,29 +699,29 @@ export function Collections() {
 
         {/* AI Cost Confirmation Modal */}
         <AlertDialog open={showAICostConfirm} onOpenChange={setShowAICostConfirm}>
-          <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
+          <AlertDialogContent className="border-border bg-elevated">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-ctp-text text-xl font-bold">
+              <AlertDialogTitle className="text-xl font-bold text-text-primary">
                 Confirm AI Generation
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-ctp-subtext0 text-sm">
+              <AlertDialogDescription className="text-sm text-text-secondary">
                 This will generate an AI-powered collection suggestion for theme: &quot;{aiTheme}
                 &quot;
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="flex items-baseline gap-2">
-              <span className="text-ctp-subtext0 text-sm">Estimated cost:</span>
-              <span className="text-ctp-mauve text-lg font-semibold">
+              <span className="text-sm text-text-secondary">Estimated cost:</span>
+              <span className="text-lg font-semibold text-accent">
                 ${estimatedAICost.toFixed(4)}
               </span>
             </div>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2 flex-1">
+              <AlertDialogCancel className="flex-1 border-border bg-elevated text-text-primary hover:bg-elevated">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmAIGeneration}
-                className="hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base flex-1"
+                className="hover:bg-accent/90 flex-1 bg-accent text-text-primary"
               >
                 Continue
               </AlertDialogAction>

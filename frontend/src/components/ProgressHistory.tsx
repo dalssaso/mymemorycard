@@ -374,9 +374,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
 
   return (
     <div className="space-y-4">
-      <h3 className="text-ctp-text text-lg font-semibold">Progress Over Time</h3>
+      <h3 className="text-lg font-semibold text-text-primary">Progress Over Time</h3>
 
-      <div className="bg-ctp-surface0/50 flex gap-1 rounded-lg p-1">
+      <div className="bg-surface/50 flex gap-1 rounded-lg p-1">
         {visibleTabs.map((tab) => (
           <Button
             key={tab}
@@ -384,8 +384,8 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
             onClick={() => handleTabChange(tab)}
             className={`h-auto flex-1 rounded-md px-2 py-1.5 text-xs font-medium ${
               activeTab === tab
-                ? "text-ctp-text shadow-sm"
-                : "hover:bg-ctp-surface1/50 text-ctp-subtext0 hover:text-ctp-text"
+                ? "text-text-primary shadow-sm"
+                : "hover:bg-elevated/50 text-text-secondary hover:text-text-primary"
             }`}
             style={
               activeTab === tab
@@ -403,7 +403,9 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
 
       {activeTab === "dlc" && additions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-ctp-subtext0 text-xs">Select DLC (only owned DLCs affect progress)</p>
+          <p className="text-xs text-text-secondary">
+            Select DLC (only owned DLCs affect progress)
+          </p>
           <ScrollFade axis="y" className="max-h-60 space-y-2 overflow-y-auto">
             {additions.map((dlc) => {
               const dlcSummary = summary.dlcs.find((d) => d.dlcId === dlc.id);
@@ -422,18 +424,18 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                     selectedDlcId === dlc.id
                       ? "border-purple-500 bg-purple-500/10"
                       : isOwned
-                        ? "bg-ctp-surface0/50 border-ctp-surface1 hover:border-ctp-surface2"
-                        : "bg-ctp-mantle/30 border-ctp-surface0 opacity-60 hover:opacity-80"
+                        ? "bg-surface/50 border-elevated hover:border-elevated"
+                        : "bg-base/30 border-surface opacity-60 hover:opacity-80"
                   }`}
                 >
                   <div className="w-full">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 truncate">
-                        <span className="text-ctp-text truncate text-sm font-medium">
+                        <span className="truncate text-sm font-medium text-text-primary">
                           {dlc.name}
                         </span>
                         {!isOwned && (
-                          <span className="bg-ctp-surface0 text-ctp-overlay1 rounded px-1.5 py-0.5 text-[10px]">
+                          <span className="rounded bg-surface px-1.5 py-0.5 text-[10px] text-text-muted">
                             Not Owned
                           </span>
                         )}
@@ -442,14 +444,14 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                         {pct}%
                       </span>
                     </div>
-                    <div className="bg-ctp-surface1 mt-1 h-1.5 w-full rounded-full">
+                    <div className="mt-1 h-1.5 w-full rounded-full bg-elevated">
                       <div
                         className="h-1.5 rounded-full transition-all"
                         style={{ width: `${pct}%`, backgroundColor: TAB_COLORS.dlc }}
                       />
                     </div>
                     {dlc.released && (
-                      <span className="text-ctp-overlay1 mt-1 block text-[10px]">
+                      <span className="mt-1 block text-[10px] text-text-muted">
                         Released: {new Date(dlc.released).toLocaleDateString()}
                       </span>
                     )}
@@ -462,34 +464,34 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {activeTab === "dlc" && additions.length === 0 && (
-        <div className="bg-ctp-surface0/50 text-ctp-subtext0 rounded-lg p-4 text-sm">
+        <div className="bg-surface/50 rounded-lg p-4 text-sm text-text-secondary">
           No DLCs found for this game.
         </div>
       )}
 
       {(activeTab === "full" || activeTab === "completionist") && (
-        <div className="bg-ctp-surface0/50 space-y-3 rounded-lg p-4">
+        <div className="bg-surface/50 space-y-3 rounded-lg p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-ctp-subtext0 text-sm">
+            <span className="text-sm text-text-secondary">
               {activeTab === "full" ? "Full Game Progress" : "Completionist Progress"}
             </span>
             <span className="text-2xl font-bold" style={{ color: activeColor }}>
               {currentPercentage}%
             </span>
           </div>
-          <div className="bg-ctp-surface1 h-2 w-full rounded-full">
+          <div className="h-2 w-full rounded-full bg-elevated">
             <div
               className="h-2 rounded-full transition-all"
               style={{ width: `${currentPercentage}%`, backgroundColor: activeColor }}
             />
           </div>
-          <p className="text-ctp-overlay1 text-xs">
+          <p className="text-xs text-text-muted">
             {activeTab === "full"
               ? "Auto-calculated from Main + all DLCs completion"
               : "Auto-calculated from Full game + Achievements completion"}
           </p>
           {activeTab === "completionist" && (
-            <div className="text-ctp-subtext0 mt-2 flex flex-wrap gap-4 text-xs">
+            <div className="mt-2 flex flex-wrap gap-4 text-xs text-text-secondary">
               <span>Full: {summary.full}%</span>
               <span>Achievements: {summary.achievementPercentage}%</span>
             </div>
@@ -498,16 +500,16 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {canEdit && (
-        <div className="bg-ctp-mantle/70 border-ctp-surface0 space-y-4 rounded-xl border p-4">
+        <div className="bg-base/70 space-y-4 rounded-xl border border-surface p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <h4 className="text-ctp-text text-sm font-semibold">
+              <h4 className="text-sm font-semibold text-text-primary">
                 {activeTab === "main"
                   ? "Main Story"
                   : additions.find((d) => d.id === selectedDlcId)?.name || "DLC"}{" "}
                 Progress
               </h4>
-              <p className="text-ctp-overlay1 text-xs">
+              <p className="text-xs text-text-muted">
                 {activeTab === "main" ? "Main story completion" : "DLC/Expansion content"}
               </p>
             </div>
@@ -526,14 +528,14 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                   handlePercentageBlur();
                 }}
                 aria-label="Progress percentage"
-                className="progress-percentage-input bg-ctp-crust/70 border-ctp-surface1 focus:border-ctp-mauve w-16 text-center text-2xl font-bold sm:w-20"
+                className="progress-percentage-input bg-base/70 w-16 border-elevated text-center text-2xl font-bold focus:border-accent sm:w-20"
               />
-              <span className="text-ctp-subtext0 text-sm">%</span>
+              <span className="text-sm text-text-secondary">%</span>
             </div>
           </div>
 
           <div className="relative h-3">
-            <div className="bg-ctp-surface0 absolute inset-0 rounded-full" />
+            <div className="absolute inset-0 rounded-full bg-surface" />
             <div
               className="absolute inset-0 rounded-full transition-all duration-200"
               style={{ width: `${displayValue}%`, backgroundColor: activeColor }}
@@ -558,10 +560,10 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                 size="sm"
                 type="button"
                 onClick={() => handleSliderChange(value)}
-                className={`bg-ctp-mantle/80 h-auto rounded-full border px-3 py-1.5 text-xs font-medium ${
+                className={`bg-base/80 h-auto rounded-full border px-3 py-1.5 text-xs font-medium ${
                   displayValue === value
                     ? "bg-opacity-20"
-                    : "border-ctp-surface1/80 text-ctp-subtext0 hover:text-ctp-text"
+                    : "border-elevated/80 text-text-secondary hover:text-text-primary"
                 }`}
                 style={
                   displayValue === value
@@ -579,19 +581,19 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
           </div>
 
           {displayValue === 100 && (
-            <div className="bg-ctp-surface0/50 text-ctp-subtext0 rounded-lg px-3 py-2 text-xs">
+            <div className="bg-surface/50 rounded-lg px-3 py-2 text-xs text-text-secondary">
               Logging Completionist will update the Full and Completionist progress automatically
             </div>
           )}
 
           {hasChanged && (
-            <div className="border-ctp-surface0/80 mt-1 space-y-3 border-t pt-3">
+            <div className="border-surface/80 mt-1 space-y-3 border-t pt-3">
               <Input
                 type="text"
                 placeholder="Add a note about this update (optional)"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="bg-ctp-crust/80 border-ctp-surface1 focus:border-ctp-mauve focus:ring-ctp-mauve text-sm focus:ring-1"
+                className="bg-base/80 border-elevated text-sm focus:border-accent focus:ring-1 focus:ring-accent"
               />
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
                 <Button
@@ -601,7 +603,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                     setSliderValue(null);
                     setNotes("");
                   }}
-                  className="bg-ctp-mantle/60 hover:bg-ctp-surface0/80 border-ctp-surface1 text-ctp-subtext1 w-full text-sm sm:w-auto"
+                  className="bg-base/60 hover:bg-surface/80 w-full border-elevated text-sm text-text-muted sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -621,19 +623,19 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {(chartData.length > 0 || logs.length > 0) && (
-        <div className="bg-ctp-mantle/60 border-ctp-surface0/80 rounded-xl border p-4">
+        <div className="bg-base/60 border-surface/80 rounded-xl border p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h4 className="text-ctp-subtext0 text-xs font-semibold uppercase tracking-wide">
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
                 {getTabLabel(activeTab)} Trend
               </h4>
               {rangeLogs[0] && (
-                <span className="text-ctp-overlay1 text-xs">
+                <span className="text-xs text-text-muted">
                   Last: {new Date(rangeLogs[0].logged_at).toLocaleDateString()}
                 </span>
               )}
             </div>
-            <div className="text-ctp-subtext0 text-xs">
+            <div className="text-xs text-text-secondary">
               <span className="sr-only">Select range</span>
               <Select
                 value={selectedRange}
@@ -641,7 +643,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               >
                 <SelectTrigger
                   aria-label="Select range"
-                  className="border-ctp-surface1 bg-ctp-mantle text-ctp-text focus:ring-ctp-mauve h-7 w-[110px] text-xs"
+                  className="h-7 w-[110px] border-elevated bg-base text-xs text-text-primary focus:ring-accent"
                 >
                   <SelectValue placeholder="Range" />
                 </SelectTrigger>
@@ -690,7 +692,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="bg-ctp-surface0/50 text-ctp-subtext0 rounded-lg p-3 text-xs">
+            <div className="bg-surface/50 rounded-lg p-3 text-xs text-text-secondary">
               No progress logged in this range yet.
             </div>
           )}
@@ -698,11 +700,11 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
       )}
 
       {logs.length > 0 && (
-        <div className="bg-ctp-mantle/40 border-ctp-surface0/60 rounded-xl border p-3">
+        <div className="bg-base/40 border-surface/60 rounded-xl border p-3">
           <Button
             variant="ghost"
             onClick={() => setShowHistory(!showHistory)}
-            className="text-ctp-subtext0 hover:text-ctp-text flex h-auto w-full items-center justify-between p-0 text-xs hover:bg-transparent"
+            className="flex h-auto w-full items-center justify-between p-0 text-xs text-text-secondary hover:bg-transparent hover:text-text-primary"
           >
             <span className="flex items-center gap-2">
               <svg
@@ -717,7 +719,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               </svg>
               History ({logs.length} {logs.length === 1 ? "entry" : "entries"})
             </span>
-            <span className="text-ctp-overlay1 text-xs">{showHistory ? "Hide" : "View"}</span>
+            <span className="text-xs text-text-muted">{showHistory ? "Hide" : "View"}</span>
           </Button>
 
           {showHistory && (
@@ -725,14 +727,14 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
               {logs.map((log) => (
                 <div
                   key={log.id}
-                  className="bg-ctp-mantle/70 flex items-start justify-between rounded-lg p-2.5"
+                  className="bg-base/70 flex items-start justify-between rounded-lg p-2.5"
                 >
                   <div className="flex-1">
                     <div className="flex items-baseline gap-2">
                       <span className="text-sm font-medium" style={{ color: activeColor }}>
                         {log.percentage}%
                       </span>
-                      <span className="text-ctp-overlay1 text-xs">
+                      <span className="text-xs text-text-muted">
                         {new Date(log.logged_at).toLocaleDateString(undefined, {
                           month: "short",
                           day: "numeric",
@@ -743,7 +745,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                       </span>
                     </div>
                     {log.notes && (
-                      <p className="text-ctp-subtext0 mt-1 line-clamp-2 text-xs">{log.notes}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-text-secondary">{log.notes}</p>
                     )}
                   </div>
                   {canEdit && (
@@ -752,7 +754,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
                       size="icon"
                       onClick={() => deleteLogMutation.mutate(log.id)}
                       disabled={deleteLogMutation.isPending}
-                      className="text-ctp-overlay1 hover:text-ctp-red h-7 w-7 p-1.5 hover:bg-transparent"
+                      className="h-7 w-7 p-1.5 text-text-muted hover:bg-transparent hover:text-status-dropped"
                       title="Delete log entry"
                     >
                       <svg
@@ -778,7 +780,7 @@ export function ProgressHistory({ gameId, platformId, onProgressChange }: Progre
         </div>
       )}
 
-      {isLoading && <div className="text-ctp-subtext0 text-sm">Loading progress history...</div>}
+      {isLoading && <div className="text-sm text-text-secondary">Loading progress history...</div>}
     </div>
   );
 }

@@ -8,501 +8,509 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as SettingsRouteImport } from "./routes/settings";
-import { Route as RegisterRouteImport } from "./routes/register";
-import { Route as PlatformsRouteImport } from "./routes/platforms";
-import { Route as LoginRouteImport } from "./routes/login";
-import { Route as LibraryRouteImport } from "./routes/library";
-import { Route as ImportRouteImport } from "./routes/import";
-import { Route as FranchisesRouteImport } from "./routes/franchises";
-import { Route as DashboardRouteImport } from "./routes/dashboard";
-import { Route as CollectionsRouteImport } from "./routes/collections";
-import { Route as AiCuratorRouteImport } from "./routes/ai-curator";
-import { Route as ActivityRouteImport } from "./routes/activity";
-import { Route as NotFoundRouteImport } from "./routes/_not-found";
-import { Route as PlatformsIndexRouteImport } from "./routes/platforms.index";
-import { Route as LibraryIndexRouteImport } from "./routes/library.index";
-import { Route as FranchisesIndexRouteImport } from "./routes/franchises.index";
-import { Route as CollectionsIndexRouteImport } from "./routes/collections.index";
-import { Route as PlatformsOnboardingRouteImport } from "./routes/platforms.onboarding";
-import { Route as PlatformsIdRouteImport } from "./routes/platforms.$id";
-import { Route as LibraryIdRouteImport } from "./routes/library.$id";
-import { Route as FranchisesSeriesNameRouteImport } from "./routes/franchises.$seriesName";
-import { Route as CollectionsIdRouteImport } from "./routes/collections.$id";
-import { Route as CollectionsSeriesSeriesNameRouteImport } from "./routes/collections.series.$seriesName";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as PlatformsRouteImport } from './routes/platforms'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as ImportRouteImport } from './routes/import'
+import { Route as FranchisesRouteImport } from './routes/franchises'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as AiCuratorRouteImport } from './routes/ai-curator'
+import { Route as ActivityRouteImport } from './routes/activity'
+import { Route as NotFoundRouteImport } from './routes/_not-found'
+import { Route as PlatformsIndexRouteImport } from './routes/platforms.index'
+import { Route as LibraryIndexRouteImport } from './routes/library.index'
+import { Route as FranchisesIndexRouteImport } from './routes/franchises.index'
+import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
+import { Route as PlatformsOnboardingRouteImport } from './routes/platforms.onboarding'
+import { Route as PlatformsIdRouteImport } from './routes/platforms.$id'
+import { Route as LibraryIdRouteImport } from './routes/library.$id'
+import { Route as FranchisesSeriesNameRouteImport } from './routes/franchises.$seriesName'
+import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
+import { Route as CollectionsSeriesSeriesNameRouteImport } from './routes/collections.series.$seriesName'
 
 const SettingsRoute = SettingsRouteImport.update({
-  id: "/settings",
-  path: "/settings",
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
-  id: "/register",
-  path: "/register",
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PlatformsRoute = PlatformsRouteImport.update({
-  id: "/platforms",
-  path: "/platforms",
+  id: '/platforms',
+  path: '/platforms',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LoginRoute = LoginRouteImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LibraryRoute = LibraryRouteImport.update({
-  id: "/library",
-  path: "/library",
+  id: '/library',
+  path: '/library',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ImportRoute = ImportRouteImport.update({
-  id: "/import",
-  path: "/import",
+  id: '/import',
+  path: '/import',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const FranchisesRoute = FranchisesRouteImport.update({
-  id: "/franchises",
-  path: "/franchises",
+  id: '/franchises',
+  path: '/franchises',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const CollectionsRoute = CollectionsRouteImport.update({
-  id: "/collections",
-  path: "/collections",
+  id: '/collections',
+  path: '/collections',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AiCuratorRoute = AiCuratorRouteImport.update({
-  id: "/ai-curator",
-  path: "/ai-curator",
+  id: '/ai-curator',
+  path: '/ai-curator',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ActivityRoute = ActivityRouteImport.update({
-  id: "/activity",
-  path: "/activity",
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const NotFoundRoute = NotFoundRouteImport.update({
-  id: "/_not-found",
+  id: '/_not-found',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PlatformsIndexRoute = PlatformsIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => PlatformsRoute,
-} as any);
+} as any)
 const LibraryIndexRoute = LibraryIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => LibraryRoute,
-} as any);
+} as any)
 const FranchisesIndexRoute = FranchisesIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => FranchisesRoute,
-} as any);
+} as any)
 const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => CollectionsRoute,
-} as any);
+} as any)
 const PlatformsOnboardingRoute = PlatformsOnboardingRouteImport.update({
-  id: "/onboarding",
-  path: "/onboarding",
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => PlatformsRoute,
-} as any);
+} as any)
 const PlatformsIdRoute = PlatformsIdRouteImport.update({
-  id: "/$id",
-  path: "/$id",
+  id: '/$id',
+  path: '/$id',
   getParentRoute: () => PlatformsRoute,
-} as any);
+} as any)
 const LibraryIdRoute = LibraryIdRouteImport.update({
-  id: "/$id",
-  path: "/$id",
+  id: '/$id',
+  path: '/$id',
   getParentRoute: () => LibraryRoute,
-} as any);
+} as any)
 const FranchisesSeriesNameRoute = FranchisesSeriesNameRouteImport.update({
-  id: "/$seriesName",
-  path: "/$seriesName",
+  id: '/$seriesName',
+  path: '/$seriesName',
   getParentRoute: () => FranchisesRoute,
-} as any);
+} as any)
 const CollectionsIdRoute = CollectionsIdRouteImport.update({
-  id: "/$id",
-  path: "/$id",
+  id: '/$id',
+  path: '/$id',
   getParentRoute: () => CollectionsRoute,
-} as any);
-const CollectionsSeriesSeriesNameRoute = CollectionsSeriesSeriesNameRouteImport.update({
-  id: "/series/$seriesName",
-  path: "/series/$seriesName",
-  getParentRoute: () => CollectionsRoute,
-} as any);
+} as any)
+const CollectionsSeriesSeriesNameRoute =
+  CollectionsSeriesSeriesNameRouteImport.update({
+    id: '/series/$seriesName',
+    path: '/series/$seriesName',
+    getParentRoute: () => CollectionsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/activity": typeof ActivityRoute;
-  "/ai-curator": typeof AiCuratorRoute;
-  "/collections": typeof CollectionsRouteWithChildren;
-  "/dashboard": typeof DashboardRoute;
-  "/franchises": typeof FranchisesRouteWithChildren;
-  "/import": typeof ImportRoute;
-  "/library": typeof LibraryRouteWithChildren;
-  "/login": typeof LoginRoute;
-  "/platforms": typeof PlatformsRouteWithChildren;
-  "/register": typeof RegisterRoute;
-  "/settings": typeof SettingsRoute;
-  "/collections/$id": typeof CollectionsIdRoute;
-  "/franchises/$seriesName": typeof FranchisesSeriesNameRoute;
-  "/library/$id": typeof LibraryIdRoute;
-  "/platforms/$id": typeof PlatformsIdRoute;
-  "/platforms/onboarding": typeof PlatformsOnboardingRoute;
-  "/collections/": typeof CollectionsIndexRoute;
-  "/franchises/": typeof FranchisesIndexRoute;
-  "/library/": typeof LibraryIndexRoute;
-  "/platforms/": typeof PlatformsIndexRoute;
-  "/collections/series/$seriesName": typeof CollectionsSeriesSeriesNameRoute;
+  '/activity': typeof ActivityRoute
+  '/ai-curator': typeof AiCuratorRoute
+  '/collections': typeof CollectionsRouteWithChildren
+  '/dashboard': typeof DashboardRoute
+  '/franchises': typeof FranchisesRouteWithChildren
+  '/import': typeof ImportRoute
+  '/library': typeof LibraryRouteWithChildren
+  '/login': typeof LoginRoute
+  '/platforms': typeof PlatformsRouteWithChildren
+  '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
+  '/collections/$id': typeof CollectionsIdRoute
+  '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
+  '/library/$id': typeof LibraryIdRoute
+  '/platforms/$id': typeof PlatformsIdRoute
+  '/platforms/onboarding': typeof PlatformsOnboardingRoute
+  '/collections/': typeof CollectionsIndexRoute
+  '/franchises/': typeof FranchisesIndexRoute
+  '/library/': typeof LibraryIndexRoute
+  '/platforms/': typeof PlatformsIndexRoute
+  '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRoutesByTo {
-  "/activity": typeof ActivityRoute;
-  "/ai-curator": typeof AiCuratorRoute;
-  "/dashboard": typeof DashboardRoute;
-  "/import": typeof ImportRoute;
-  "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
-  "/settings": typeof SettingsRoute;
-  "/collections/$id": typeof CollectionsIdRoute;
-  "/franchises/$seriesName": typeof FranchisesSeriesNameRoute;
-  "/library/$id": typeof LibraryIdRoute;
-  "/platforms/$id": typeof PlatformsIdRoute;
-  "/platforms/onboarding": typeof PlatformsOnboardingRoute;
-  "/collections": typeof CollectionsIndexRoute;
-  "/franchises": typeof FranchisesIndexRoute;
-  "/library": typeof LibraryIndexRoute;
-  "/platforms": typeof PlatformsIndexRoute;
-  "/collections/series/$seriesName": typeof CollectionsSeriesSeriesNameRoute;
+  '/activity': typeof ActivityRoute
+  '/ai-curator': typeof AiCuratorRoute
+  '/dashboard': typeof DashboardRoute
+  '/import': typeof ImportRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
+  '/collections/$id': typeof CollectionsIdRoute
+  '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
+  '/library/$id': typeof LibraryIdRoute
+  '/platforms/$id': typeof PlatformsIdRoute
+  '/platforms/onboarding': typeof PlatformsOnboardingRoute
+  '/collections': typeof CollectionsIndexRoute
+  '/franchises': typeof FranchisesIndexRoute
+  '/library': typeof LibraryIndexRoute
+  '/platforms': typeof PlatformsIndexRoute
+  '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/_not-found": typeof NotFoundRoute;
-  "/activity": typeof ActivityRoute;
-  "/ai-curator": typeof AiCuratorRoute;
-  "/collections": typeof CollectionsRouteWithChildren;
-  "/dashboard": typeof DashboardRoute;
-  "/franchises": typeof FranchisesRouteWithChildren;
-  "/import": typeof ImportRoute;
-  "/library": typeof LibraryRouteWithChildren;
-  "/login": typeof LoginRoute;
-  "/platforms": typeof PlatformsRouteWithChildren;
-  "/register": typeof RegisterRoute;
-  "/settings": typeof SettingsRoute;
-  "/collections/$id": typeof CollectionsIdRoute;
-  "/franchises/$seriesName": typeof FranchisesSeriesNameRoute;
-  "/library/$id": typeof LibraryIdRoute;
-  "/platforms/$id": typeof PlatformsIdRoute;
-  "/platforms/onboarding": typeof PlatformsOnboardingRoute;
-  "/collections/": typeof CollectionsIndexRoute;
-  "/franchises/": typeof FranchisesIndexRoute;
-  "/library/": typeof LibraryIndexRoute;
-  "/platforms/": typeof PlatformsIndexRoute;
-  "/collections/series/$seriesName": typeof CollectionsSeriesSeriesNameRoute;
+  __root__: typeof rootRouteImport
+  '/_not-found': typeof NotFoundRoute
+  '/activity': typeof ActivityRoute
+  '/ai-curator': typeof AiCuratorRoute
+  '/collections': typeof CollectionsRouteWithChildren
+  '/dashboard': typeof DashboardRoute
+  '/franchises': typeof FranchisesRouteWithChildren
+  '/import': typeof ImportRoute
+  '/library': typeof LibraryRouteWithChildren
+  '/login': typeof LoginRoute
+  '/platforms': typeof PlatformsRouteWithChildren
+  '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
+  '/collections/$id': typeof CollectionsIdRoute
+  '/franchises/$seriesName': typeof FranchisesSeriesNameRoute
+  '/library/$id': typeof LibraryIdRoute
+  '/platforms/$id': typeof PlatformsIdRoute
+  '/platforms/onboarding': typeof PlatformsOnboardingRoute
+  '/collections/': typeof CollectionsIndexRoute
+  '/franchises/': typeof FranchisesIndexRoute
+  '/library/': typeof LibraryIndexRoute
+  '/platforms/': typeof PlatformsIndexRoute
+  '/collections/series/$seriesName': typeof CollectionsSeriesSeriesNameRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/activity"
-    | "/ai-curator"
-    | "/collections"
-    | "/dashboard"
-    | "/franchises"
-    | "/import"
-    | "/library"
-    | "/login"
-    | "/platforms"
-    | "/register"
-    | "/settings"
-    | "/collections/$id"
-    | "/franchises/$seriesName"
-    | "/library/$id"
-    | "/platforms/$id"
-    | "/platforms/onboarding"
-    | "/collections/"
-    | "/franchises/"
-    | "/library/"
-    | "/platforms/"
-    | "/collections/series/$seriesName";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/activity'
+    | '/ai-curator'
+    | '/collections'
+    | '/dashboard'
+    | '/franchises'
+    | '/import'
+    | '/library'
+    | '/login'
+    | '/platforms'
+    | '/register'
+    | '/settings'
+    | '/collections/$id'
+    | '/franchises/$seriesName'
+    | '/library/$id'
+    | '/platforms/$id'
+    | '/platforms/onboarding'
+    | '/collections/'
+    | '/franchises/'
+    | '/library/'
+    | '/platforms/'
+    | '/collections/series/$seriesName'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/activity"
-    | "/ai-curator"
-    | "/dashboard"
-    | "/import"
-    | "/login"
-    | "/register"
-    | "/settings"
-    | "/collections/$id"
-    | "/franchises/$seriesName"
-    | "/library/$id"
-    | "/platforms/$id"
-    | "/platforms/onboarding"
-    | "/collections"
-    | "/franchises"
-    | "/library"
-    | "/platforms"
-    | "/collections/series/$seriesName";
+    | '/activity'
+    | '/ai-curator'
+    | '/dashboard'
+    | '/import'
+    | '/login'
+    | '/register'
+    | '/settings'
+    | '/collections/$id'
+    | '/franchises/$seriesName'
+    | '/library/$id'
+    | '/platforms/$id'
+    | '/platforms/onboarding'
+    | '/collections'
+    | '/franchises'
+    | '/library'
+    | '/platforms'
+    | '/collections/series/$seriesName'
   id:
-    | "__root__"
-    | "/_not-found"
-    | "/activity"
-    | "/ai-curator"
-    | "/collections"
-    | "/dashboard"
-    | "/franchises"
-    | "/import"
-    | "/library"
-    | "/login"
-    | "/platforms"
-    | "/register"
-    | "/settings"
-    | "/collections/$id"
-    | "/franchises/$seriesName"
-    | "/library/$id"
-    | "/platforms/$id"
-    | "/platforms/onboarding"
-    | "/collections/"
-    | "/franchises/"
-    | "/library/"
-    | "/platforms/"
-    | "/collections/series/$seriesName";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/_not-found'
+    | '/activity'
+    | '/ai-curator'
+    | '/collections'
+    | '/dashboard'
+    | '/franchises'
+    | '/import'
+    | '/library'
+    | '/login'
+    | '/platforms'
+    | '/register'
+    | '/settings'
+    | '/collections/$id'
+    | '/franchises/$seriesName'
+    | '/library/$id'
+    | '/platforms/$id'
+    | '/platforms/onboarding'
+    | '/collections/'
+    | '/franchises/'
+    | '/library/'
+    | '/platforms/'
+    | '/collections/series/$seriesName'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  NotFoundRoute: typeof NotFoundRoute;
-  ActivityRoute: typeof ActivityRoute;
-  AiCuratorRoute: typeof AiCuratorRoute;
-  CollectionsRoute: typeof CollectionsRouteWithChildren;
-  DashboardRoute: typeof DashboardRoute;
-  FranchisesRoute: typeof FranchisesRouteWithChildren;
-  ImportRoute: typeof ImportRoute;
-  LibraryRoute: typeof LibraryRouteWithChildren;
-  LoginRoute: typeof LoginRoute;
-  PlatformsRoute: typeof PlatformsRouteWithChildren;
-  RegisterRoute: typeof RegisterRoute;
-  SettingsRoute: typeof SettingsRoute;
+  NotFoundRoute: typeof NotFoundRoute
+  ActivityRoute: typeof ActivityRoute
+  AiCuratorRoute: typeof AiCuratorRoute
+  CollectionsRoute: typeof CollectionsRouteWithChildren
+  DashboardRoute: typeof DashboardRoute
+  FranchisesRoute: typeof FranchisesRouteWithChildren
+  ImportRoute: typeof ImportRoute
+  LibraryRoute: typeof LibraryRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PlatformsRoute: typeof PlatformsRouteWithChildren
+  RegisterRoute: typeof RegisterRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/settings": {
-      id: "/settings";
-      path: "/settings";
-      fullPath: "/settings";
-      preLoaderRoute: typeof SettingsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/register": {
-      id: "/register";
-      path: "/register";
-      fullPath: "/register";
-      preLoaderRoute: typeof RegisterRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/platforms": {
-      id: "/platforms";
-      path: "/platforms";
-      fullPath: "/platforms";
-      preLoaderRoute: typeof PlatformsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/login": {
-      id: "/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/library": {
-      id: "/library";
-      path: "/library";
-      fullPath: "/library";
-      preLoaderRoute: typeof LibraryRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/import": {
-      id: "/import";
-      path: "/import";
-      fullPath: "/import";
-      preLoaderRoute: typeof ImportRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/franchises": {
-      id: "/franchises";
-      path: "/franchises";
-      fullPath: "/franchises";
-      preLoaderRoute: typeof FranchisesRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/dashboard": {
-      id: "/dashboard";
-      path: "/dashboard";
-      fullPath: "/dashboard";
-      preLoaderRoute: typeof DashboardRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/collections": {
-      id: "/collections";
-      path: "/collections";
-      fullPath: "/collections";
-      preLoaderRoute: typeof CollectionsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/ai-curator": {
-      id: "/ai-curator";
-      path: "/ai-curator";
-      fullPath: "/ai-curator";
-      preLoaderRoute: typeof AiCuratorRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/activity": {
-      id: "/activity";
-      path: "/activity";
-      fullPath: "/activity";
-      preLoaderRoute: typeof ActivityRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_not-found": {
-      id: "/_not-found";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof NotFoundRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/platforms/": {
-      id: "/platforms/";
-      path: "/";
-      fullPath: "/platforms/";
-      preLoaderRoute: typeof PlatformsIndexRouteImport;
-      parentRoute: typeof PlatformsRoute;
-    };
-    "/library/": {
-      id: "/library/";
-      path: "/";
-      fullPath: "/library/";
-      preLoaderRoute: typeof LibraryIndexRouteImport;
-      parentRoute: typeof LibraryRoute;
-    };
-    "/franchises/": {
-      id: "/franchises/";
-      path: "/";
-      fullPath: "/franchises/";
-      preLoaderRoute: typeof FranchisesIndexRouteImport;
-      parentRoute: typeof FranchisesRoute;
-    };
-    "/collections/": {
-      id: "/collections/";
-      path: "/";
-      fullPath: "/collections/";
-      preLoaderRoute: typeof CollectionsIndexRouteImport;
-      parentRoute: typeof CollectionsRoute;
-    };
-    "/platforms/onboarding": {
-      id: "/platforms/onboarding";
-      path: "/onboarding";
-      fullPath: "/platforms/onboarding";
-      preLoaderRoute: typeof PlatformsOnboardingRouteImport;
-      parentRoute: typeof PlatformsRoute;
-    };
-    "/platforms/$id": {
-      id: "/platforms/$id";
-      path: "/$id";
-      fullPath: "/platforms/$id";
-      preLoaderRoute: typeof PlatformsIdRouteImport;
-      parentRoute: typeof PlatformsRoute;
-    };
-    "/library/$id": {
-      id: "/library/$id";
-      path: "/$id";
-      fullPath: "/library/$id";
-      preLoaderRoute: typeof LibraryIdRouteImport;
-      parentRoute: typeof LibraryRoute;
-    };
-    "/franchises/$seriesName": {
-      id: "/franchises/$seriesName";
-      path: "/$seriesName";
-      fullPath: "/franchises/$seriesName";
-      preLoaderRoute: typeof FranchisesSeriesNameRouteImport;
-      parentRoute: typeof FranchisesRoute;
-    };
-    "/collections/$id": {
-      id: "/collections/$id";
-      path: "/$id";
-      fullPath: "/collections/$id";
-      preLoaderRoute: typeof CollectionsIdRouteImport;
-      parentRoute: typeof CollectionsRoute;
-    };
-    "/collections/series/$seriesName": {
-      id: "/collections/series/$seriesName";
-      path: "/series/$seriesName";
-      fullPath: "/collections/series/$seriesName";
-      preLoaderRoute: typeof CollectionsSeriesSeriesNameRouteImport;
-      parentRoute: typeof CollectionsRoute;
-    };
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms': {
+      id: '/platforms'
+      path: '/platforms'
+      fullPath: '/platforms'
+      preLoaderRoute: typeof PlatformsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/import': {
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/franchises': {
+      id: '/franchises'
+      path: '/franchises'
+      fullPath: '/franchises'
+      preLoaderRoute: typeof FranchisesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-curator': {
+      id: '/ai-curator'
+      path: '/ai-curator'
+      fullPath: '/ai-curator'
+      preLoaderRoute: typeof AiCuratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_not-found': {
+      id: '/_not-found'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof NotFoundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms/': {
+      id: '/platforms/'
+      path: '/'
+      fullPath: '/platforms/'
+      preLoaderRoute: typeof PlatformsIndexRouteImport
+      parentRoute: typeof PlatformsRoute
+    }
+    '/library/': {
+      id: '/library/'
+      path: '/'
+      fullPath: '/library/'
+      preLoaderRoute: typeof LibraryIndexRouteImport
+      parentRoute: typeof LibraryRoute
+    }
+    '/franchises/': {
+      id: '/franchises/'
+      path: '/'
+      fullPath: '/franchises/'
+      preLoaderRoute: typeof FranchisesIndexRouteImport
+      parentRoute: typeof FranchisesRoute
+    }
+    '/collections/': {
+      id: '/collections/'
+      path: '/'
+      fullPath: '/collections/'
+      preLoaderRoute: typeof CollectionsIndexRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
+    '/platforms/onboarding': {
+      id: '/platforms/onboarding'
+      path: '/onboarding'
+      fullPath: '/platforms/onboarding'
+      preLoaderRoute: typeof PlatformsOnboardingRouteImport
+      parentRoute: typeof PlatformsRoute
+    }
+    '/platforms/$id': {
+      id: '/platforms/$id'
+      path: '/$id'
+      fullPath: '/platforms/$id'
+      preLoaderRoute: typeof PlatformsIdRouteImport
+      parentRoute: typeof PlatformsRoute
+    }
+    '/library/$id': {
+      id: '/library/$id'
+      path: '/$id'
+      fullPath: '/library/$id'
+      preLoaderRoute: typeof LibraryIdRouteImport
+      parentRoute: typeof LibraryRoute
+    }
+    '/franchises/$seriesName': {
+      id: '/franchises/$seriesName'
+      path: '/$seriesName'
+      fullPath: '/franchises/$seriesName'
+      preLoaderRoute: typeof FranchisesSeriesNameRouteImport
+      parentRoute: typeof FranchisesRoute
+    }
+    '/collections/$id': {
+      id: '/collections/$id'
+      path: '/$id'
+      fullPath: '/collections/$id'
+      preLoaderRoute: typeof CollectionsIdRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
+    '/collections/series/$seriesName': {
+      id: '/collections/series/$seriesName'
+      path: '/series/$seriesName'
+      fullPath: '/collections/series/$seriesName'
+      preLoaderRoute: typeof CollectionsSeriesSeriesNameRouteImport
+      parentRoute: typeof CollectionsRoute
+    }
   }
 }
 
 interface CollectionsRouteChildren {
-  CollectionsIdRoute: typeof CollectionsIdRoute;
-  CollectionsIndexRoute: typeof CollectionsIndexRoute;
-  CollectionsSeriesSeriesNameRoute: typeof CollectionsSeriesSeriesNameRoute;
+  CollectionsIdRoute: typeof CollectionsIdRoute
+  CollectionsIndexRoute: typeof CollectionsIndexRoute
+  CollectionsSeriesSeriesNameRoute: typeof CollectionsSeriesSeriesNameRoute
 }
 
 const CollectionsRouteChildren: CollectionsRouteChildren = {
   CollectionsIdRoute: CollectionsIdRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
   CollectionsSeriesSeriesNameRoute: CollectionsSeriesSeriesNameRoute,
-};
+}
 
-const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(CollectionsRouteChildren);
+const CollectionsRouteWithChildren = CollectionsRoute._addFileChildren(
+  CollectionsRouteChildren,
+)
 
 interface FranchisesRouteChildren {
-  FranchisesSeriesNameRoute: typeof FranchisesSeriesNameRoute;
-  FranchisesIndexRoute: typeof FranchisesIndexRoute;
+  FranchisesSeriesNameRoute: typeof FranchisesSeriesNameRoute
+  FranchisesIndexRoute: typeof FranchisesIndexRoute
 }
 
 const FranchisesRouteChildren: FranchisesRouteChildren = {
   FranchisesSeriesNameRoute: FranchisesSeriesNameRoute,
   FranchisesIndexRoute: FranchisesIndexRoute,
-};
+}
 
-const FranchisesRouteWithChildren = FranchisesRoute._addFileChildren(FranchisesRouteChildren);
+const FranchisesRouteWithChildren = FranchisesRoute._addFileChildren(
+  FranchisesRouteChildren,
+)
 
 interface LibraryRouteChildren {
-  LibraryIdRoute: typeof LibraryIdRoute;
-  LibraryIndexRoute: typeof LibraryIndexRoute;
+  LibraryIdRoute: typeof LibraryIdRoute
+  LibraryIndexRoute: typeof LibraryIndexRoute
 }
 
 const LibraryRouteChildren: LibraryRouteChildren = {
   LibraryIdRoute: LibraryIdRoute,
   LibraryIndexRoute: LibraryIndexRoute,
-};
+}
 
-const LibraryRouteWithChildren = LibraryRoute._addFileChildren(LibraryRouteChildren);
+const LibraryRouteWithChildren =
+  LibraryRoute._addFileChildren(LibraryRouteChildren)
 
 interface PlatformsRouteChildren {
-  PlatformsIdRoute: typeof PlatformsIdRoute;
-  PlatformsOnboardingRoute: typeof PlatformsOnboardingRoute;
-  PlatformsIndexRoute: typeof PlatformsIndexRoute;
+  PlatformsIdRoute: typeof PlatformsIdRoute
+  PlatformsOnboardingRoute: typeof PlatformsOnboardingRoute
+  PlatformsIndexRoute: typeof PlatformsIndexRoute
 }
 
 const PlatformsRouteChildren: PlatformsRouteChildren = {
   PlatformsIdRoute: PlatformsIdRoute,
   PlatformsOnboardingRoute: PlatformsOnboardingRoute,
   PlatformsIndexRoute: PlatformsIndexRoute,
-};
+}
 
-const PlatformsRouteWithChildren = PlatformsRoute._addFileChildren(PlatformsRouteChildren);
+const PlatformsRouteWithChildren = PlatformsRoute._addFileChildren(
+  PlatformsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   NotFoundRoute: NotFoundRoute,
@@ -517,7 +525,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlatformsRoute: PlatformsRouteWithChildren,
   RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

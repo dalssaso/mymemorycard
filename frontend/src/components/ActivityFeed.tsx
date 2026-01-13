@@ -81,15 +81,15 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                 ? "achievements"
                 : "stats"
           }
-          className="bg-ctp-surface0/50 hover:bg-ctp-surface0 focus-visible:ring-ctp-teal focus-visible:ring-offset-ctp-base group flex gap-2 rounded-lg px-2 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="bg-surface/50 group flex gap-2 rounded-lg px-2 py-1.5 transition-all duration-standard hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
         >
           <div
             className={`flex h-7 w-7 items-center justify-center rounded-lg ${
               item.type === "session"
-                ? "bg-ctp-teal/20 text-ctp-teal"
+                ? "bg-accent/20 text-accent"
                 : item.type === "achievement"
-                  ? "bg-yellow-400/20 text-yellow-400"
-                  : "bg-ctp-green/20 text-ctp-green"
+                  ? "bg-achievement/20 text-achievement"
+                  : "bg-status-finished/20 text-status-finished"
             }`}
           >
             {item.type === "session" ? (
@@ -142,35 +142,33 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-ctp-text group-hover:text-ctp-teal truncate text-xs font-medium leading-4 transition-colors">
+                <p className="truncate text-xs font-medium leading-4 text-text-primary transition-colors group-hover:text-accent">
                   {item.game_name}
                 </p>
-                <p className="text-ctp-subtext0 text-[11px] leading-4">
+                <p className="text-[11px] leading-4 text-text-secondary">
                   {item.type === "session" ? (
                     item.duration_minutes ? (
                       <>
                         Played for{" "}
-                        <span className="text-ctp-teal">
-                          {formatDuration(item.duration_minutes)}
-                        </span>
+                        <span className="text-accent">{formatDuration(item.duration_minutes)}</span>
                       </>
                     ) : (
-                      <span className="text-ctp-overlay1">Session logged</span>
+                      <span className="text-text-muted">Session logged</span>
                     )
                   ) : item.type === "achievement" ? (
                     <>
                       Unlocked{" "}
-                      <span className="border-ctp-yellow/40 bg-ctp-yellow/20 text-ctp-yellow inline-flex items-center rounded border px-1.5 py-0.5 font-medium">
+                      <span className="border-accent/40 bg-accent/20 inline-flex items-center rounded border px-1.5 py-0.5 font-medium text-accent">
                         {item.achievement_name}
                       </span>
                       {item.rarity_percent !== null && item.rarity_percent !== undefined && (
                         <span
                           className={`ml-1 inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
                             item.rarity_percent < 10
-                              ? "border-ctp-yellow/40 bg-ctp-yellow/20 text-ctp-yellow"
+                              ? "border-accent/40 bg-accent/20 text-accent"
                               : item.rarity_percent < 25
-                                ? "border-ctp-mauve/40 bg-ctp-mauve/20 text-ctp-mauve"
-                                : "border-ctp-surface2 bg-ctp-surface1 text-ctp-subtext0"
+                                ? "border-accent/40 bg-accent/20 text-accent"
+                                : "border-elevated bg-elevated text-text-secondary"
                           }`}
                         >
                           {item.rarity_percent.toFixed(1)}%
@@ -180,14 +178,14 @@ export function ActivityFeedList({ feed, className, containerRef }: ActivityFeed
                   ) : (
                     <>
                       {formatCompletionTypeLabel(item.completion_type)} progress updated to{" "}
-                      <span className="border-ctp-green/40 bg-ctp-green/20 text-ctp-green inline-flex items-center rounded border px-1.5 py-0.5 font-medium">
+                      <span className="border-status-finished/40 bg-status-finished/20 inline-flex items-center rounded border px-1.5 py-0.5 font-medium text-status-finished">
                         {item.percentage}%
                       </span>
                     </>
                   )}
                 </p>
               </div>
-              <span className="text-ctp-overlay1 whitespace-nowrap text-[10px]">
+              <span className="whitespace-nowrap text-[10px] text-text-muted">
                 {formatRelativeTime(new Date(item.timestamp))}
               </span>
             </div>
@@ -271,10 +269,10 @@ export function ActivityFeed({
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="flex animate-pulse gap-3">
-            <div className="bg-ctp-surface1 h-10 w-10 rounded-lg" />
+            <div className="h-10 w-10 rounded-lg bg-elevated" />
             <div className="flex-1 space-y-2">
-              <div className="bg-ctp-surface1 h-4 w-3/4 rounded" />
-              <div className="bg-ctp-surface1 h-3 w-1/2 rounded" />
+              <div className="h-4 w-3/4 rounded bg-elevated" />
+              <div className="h-3 w-1/2 rounded bg-elevated" />
             </div>
           </div>
         ))}
@@ -284,7 +282,7 @@ export function ActivityFeed({
 
   if (feed.length === 0) {
     return (
-      <div className="text-ctp-overlay1 py-8 text-center">
+      <div className="py-8 text-center text-text-muted">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -316,7 +314,7 @@ export function ActivityFeed({
         <div className="mt-3">
           <Link
             to={showMoreHref}
-            className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors duration-standard hover:bg-elevated"
           >
             Show more activity
           </Link>

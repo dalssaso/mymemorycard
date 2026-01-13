@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BackButton, PageLayout } from "@/components/layout";
-import { Button, Card, Input, SelectField } from "@/components/ui";
+import { Button, Card, Input, Label, SelectField, TextDisplay } from "@/components/ui";
 import type { SelectFieldOption } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -233,16 +233,18 @@ export function Settings() {
           <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-ctp-text text-4xl font-bold">Settings</h1>
+            <TextDisplay as="h1" size="2xl" weight="bold">
+              Settings
+            </TextDisplay>
           </div>
           <Card className="p-6">
             <div className="animate-pulse space-y-6">
-              <div className="bg-ctp-surface1 h-8 w-1/3 rounded"></div>
-              <div className="bg-ctp-surface1 h-12 rounded"></div>
-              <div className="bg-ctp-surface1 h-8 w-1/3 rounded"></div>
-              <div className="bg-ctp-surface1 h-12 rounded"></div>
+              <div className="h-8 w-1/3 rounded bg-elevated"></div>
+              <div className="h-12 rounded bg-elevated"></div>
+              <div className="h-8 w-1/3 rounded bg-elevated"></div>
+              <div className="h-12 rounded bg-elevated"></div>
             </div>
           </Card>
         </div>
@@ -256,17 +258,21 @@ export function Settings() {
         <div className="mb-8 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
           />
-          <h1 className="text-ctp-text text-4xl font-bold">Settings</h1>
+          <TextDisplay as="h1" size="2xl" weight="bold">
+            Settings
+          </TextDisplay>
         </div>
 
         <Card className="space-y-8 p-6">
           <div>
-            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">Library View</h2>
-            <p className="text-ctp-subtext0 mb-4 text-sm">
+            <TextDisplay as="h2" size="xl" weight="semibold" variant="primary">
+              Library View
+            </TextDisplay>
+            <TextDisplay variant="secondary" size="sm" className="mb-4 mt-2">
               Choose how your game library is displayed by default.
-            </p>
+            </TextDisplay>
             <div className="flex gap-3">
               <Button
                 onClick={() => handleViewChange("grid")}
@@ -274,8 +280,8 @@ export function Settings() {
                 variant="ghost"
                 className={`h-auto flex-1 rounded-lg border-2 px-4 py-3 transition-all ${
                   preferences.default_view === "grid"
-                    ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
-                    : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2"
+                    ? "bg-accent/20 border-accent text-accent"
+                    : "border-border bg-surface text-text-secondary hover:border-elevated"
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
@@ -294,7 +300,7 @@ export function Settings() {
                     />
                   </svg>
                   <span className="font-medium">Grid View</span>
-                  <span className="text-ctp-overlay1 text-xs">Game covers in a grid</span>
+                  <span className="text-xs text-text-muted">Game covers in a grid</span>
                 </div>
               </Button>
               <Button
@@ -303,8 +309,8 @@ export function Settings() {
                 variant="ghost"
                 className={`h-auto flex-1 rounded-lg border-2 px-4 py-3 transition-all ${
                   preferences.default_view === "table"
-                    ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
-                    : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2"
+                    ? "bg-accent/20 border-accent text-accent"
+                    : "border-border bg-surface text-text-secondary hover:border-elevated"
                 }`}
               >
                 <div className="flex flex-col items-center gap-2">
@@ -323,17 +329,19 @@ export function Settings() {
                     />
                   </svg>
                   <span className="font-medium">Table View</span>
-                  <span className="text-ctp-overlay1 text-xs">Sortable list format</span>
+                  <span className="text-xs text-text-muted">Sortable list format</span>
                 </div>
               </Button>
             </div>
           </div>
 
-          <div className="border-ctp-surface0 border-t pt-8">
-            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">Items Per Page</h2>
-            <p className="text-ctp-subtext0 mb-4 text-sm">
+          <div className="border-t border-border pt-8">
+            <TextDisplay as="h2" size="xl" weight="semibold" variant="primary">
+              Items Per Page
+            </TextDisplay>
+            <TextDisplay variant="secondary" size="sm" className="mb-4 mt-2">
               Number of games to show per page in your library.
-            </p>
+            </TextDisplay>
             <div className="flex gap-2">
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <Button
@@ -343,8 +351,8 @@ export function Settings() {
                   variant="ghost"
                   className={`h-auto rounded-lg border px-4 py-2 transition-all ${
                     preferences.items_per_page === size
-                      ? "bg-ctp-teal/20 border-ctp-teal text-ctp-teal"
-                      : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2"
+                      ? "bg-accent/20 border-accent text-accent"
+                      : "border-border bg-surface text-text-secondary hover:border-elevated"
                   }`}
                 >
                   {size}
@@ -353,11 +361,13 @@ export function Settings() {
             </div>
           </div>
 
-          <div className="border-ctp-surface0 border-t pt-8">
-            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">Theme</h2>
-            <p className="text-ctp-subtext0 mb-4 text-sm">
+          <div className="border-t border-border pt-8">
+            <TextDisplay as="h2" size="xl" weight="semibold" variant="primary">
+              Theme
+            </TextDisplay>
+            <TextDisplay variant="secondary" size="sm" className="mb-4 mt-2">
               Appearance settings for the application.
-            </p>
+            </TextDisplay>
             <div className="grid gap-3 sm:grid-cols-3">
               {THEME_OPTIONS.map((option) => (
                 <Button
@@ -368,58 +378,67 @@ export function Settings() {
                   variant="ghost"
                   className={`h-auto rounded-lg border-2 px-4 py-3 text-left transition-all ${
                     theme === option.value
-                      ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
-                      : "border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext0 hover:border-ctp-surface2"
+                      ? "bg-accent/20 border-accent text-accent"
+                      : "border-border bg-surface text-text-secondary hover:border-elevated"
                   }`}
                 >
                   <div className="font-medium">{option.label}</div>
-                  <div className="text-ctp-overlay1 text-xs">{option.description}</div>
+                  <div className="text-xs text-text-muted">{option.description}</div>
                 </Button>
               ))}
             </div>
           </div>
 
-          <div className="border-ctp-surface0 border-t pt-8">
-            <h2 className="text-ctp-mauve mb-4 text-xl font-semibold">AI Curator Settings</h2>
-            <p className="text-ctp-subtext0 mb-4 text-sm">
+          <div className="border-t border-border pt-8">
+            <TextDisplay as="h2" size="xl" weight="semibold" variant="primary">
+              AI Curator Settings
+            </TextDisplay>
+            <TextDisplay variant="secondary" size="sm" className="mb-4 mt-2">
               Configure AI-powered features for collection suggestions and recommendations.
-            </p>
+            </TextDisplay>
 
             <div className="mb-6">
-              <p className="text-ctp-text mb-3 block text-sm font-medium">AI Provider</p>
-              <div className="border-ctp-mauve/50 bg-ctp-mauve/20 text-ctp-mauve rounded-lg border-2 px-4 py-3 text-sm">
+              <Label
+                htmlFor="provider-select"
+                className="mb-3 block text-sm font-medium text-text-primary"
+              >
+                AI Provider
+              </Label>
+              <div className="border-accent/50 bg-accent/20 rounded-lg border-2 px-4 py-3 text-sm text-accent">
                 <div className="flex items-center gap-2">
-                  <span className="bg-ctp-green h-2 w-2 rounded-full"></span>
+                  <span className="h-2 w-2 rounded-full bg-status-finished"></span>
                   OpenAI
                 </div>
               </div>
-              <p className="text-ctp-overlay1 mt-2 text-xs">
+              <TextDisplay variant="muted" size="xs" className="mt-2">
                 <a
                   href="https://github.com/dalssaso/mymemorycard/blob/main/docs/ai-curator-settings/openai.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ctp-blue hover:underline"
+                  className="text-accent hover:underline"
                 >
                   View setup guide
                 </a>
-              </p>
+              </TextDisplay>
             </div>
 
             <form
               onSubmit={handleAiSettingsSubmit}
-              className="border-ctp-surface0 space-y-6 border-t pt-6"
+              className="space-y-6 border-t border-border pt-6"
             >
               <div>
-                <h3 className="text-ctp-text text-lg font-medium">OpenAI Configuration</h3>
+                <TextDisplay as="h3" size="lg" weight="medium" variant="primary">
+                  OpenAI Configuration
+                </TextDisplay>
               </div>
 
               <div>
-                <label
-                  className="text-ctp-text mb-2 block text-sm font-medium"
+                <Label
                   htmlFor="provider-api-key"
+                  className="mb-2 block text-sm font-medium text-text-primary"
                 >
                   API Key
-                </label>
+                </Label>
                 <Input
                   id="provider-api-key"
                   type={
@@ -445,28 +464,30 @@ export function Settings() {
                       ? "Click to replace existing key"
                       : "Enter your API key"
                   }
-                  className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                  className="bg-surface text-text-primary focus-visible:ring-accent"
                   readOnly={currentForm.api_key === undefined && currentForm.api_key_masked != null}
                 />
                 {errors.api_key && (
-                  <p className="text-ctp-red mt-1 text-xs">{errors.api_key.message}</p>
+                  <TextDisplay variant="muted" size="xs" className="mt-1 text-status-dropped">
+                    {errors.api_key.message}
+                  </TextDisplay>
                 )}
-                <p className="text-ctp-overlay1 mt-1 text-xs">
+                <TextDisplay variant="muted" size="xs" className="mt-1">
                   {currentForm.api_key_masked && currentForm.api_key === undefined
                     ? "API key configured. Click the field to replace it."
                     : "Your API key is encrypted before being stored."}
-                </p>
+                </TextDisplay>
               </div>
 
               {currentForm.api_key_masked && (
                 <>
                   <div>
-                    <label
-                      className="text-ctp-text mb-2 block text-sm font-medium"
+                    <Label
                       htmlFor="model-select"
+                      className="mb-2 block text-sm font-medium text-text-primary"
                     >
                       Model
-                    </label>
+                    </Label>
                     {modelsData && modelsData.textModels.length > 0 ? (
                       <SelectField
                         id="model-select"
@@ -496,25 +517,25 @@ export function Settings() {
                           modelsLoading ? "Loading models..." : "e.g., gpt-4o, gpt-4o-mini"
                         }
                         disabled={modelsLoading}
-                        className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
+                        className="bg-surface text-text-primary focus-visible:ring-accent disabled:opacity-50"
                       />
                     )}
-                    <p className="text-ctp-overlay1 mt-1 text-xs">
+                    <TextDisplay variant="muted" size="xs" className="mt-1">
                       {modelsLoading
                         ? "Loading available models from OpenAI..."
                         : modelsData && modelsData.textModels.length > 0
                           ? "Select from available OpenAI models"
                           : "Save your API key first, then reload to see available models"}
-                    </p>
+                    </TextDisplay>
                   </div>
 
                   <div>
-                    <label
-                      className="text-ctp-text mb-2 block text-sm font-medium"
+                    <Label
                       htmlFor="image-model-select"
+                      className="mb-2 block text-sm font-medium text-text-primary"
                     >
                       Image Model
-                    </label>
+                    </Label>
                     {modelsData && modelsData.imageModels.length > 0 ? (
                       <>
                         <SelectField
@@ -533,9 +554,9 @@ export function Settings() {
                           placeholder="Select an image model"
                           className="w-full"
                         />
-                        <p className="text-ctp-overlay1 mt-1 text-xs">
+                        <TextDisplay variant="muted" size="xs" className="mt-1">
                           Select from available OpenAI image models
-                        </p>
+                        </TextDisplay>
                       </>
                     ) : (
                       <>
@@ -549,13 +570,13 @@ export function Settings() {
                           }
                           placeholder={modelsLoading ? "Loading models..." : "dall-e-3"}
                           disabled={modelsLoading}
-                          className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve disabled:opacity-50"
+                          className="bg-surface text-text-primary focus-visible:ring-accent disabled:opacity-50"
                         />
-                        <p className="text-ctp-overlay1 mt-1 text-xs">
+                        <TextDisplay variant="muted" size="xs" className="mt-1">
                           {modelsLoading
                             ? "Loading available models from OpenAI..."
                             : "Save your API key first, then reload to see available models. DALL-E 3 is recommended."}
-                        </p>
+                        </TextDisplay>
                       </>
                     )}
                   </div>
@@ -567,7 +588,7 @@ export function Settings() {
                   type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   variant="link"
-                  className="text-ctp-blue flex h-auto items-center gap-1 p-0 text-sm hover:underline"
+                  className="flex h-auto items-center gap-1 p-0 text-sm text-accent hover:underline"
                 >
                   {showAdvanced ? "Hide" : "Show"} Advanced Options
                   <svg
@@ -587,14 +608,14 @@ export function Settings() {
               </div>
 
               {showAdvanced && (
-                <div className="border-ctp-surface1 space-y-4 border-l-2 pl-4">
+                <div className="space-y-4 border-l-2 border-elevated pl-4">
                   <div>
-                    <label
-                      className="text-ctp-text mb-2 block text-sm font-medium"
+                    <Label
                       htmlFor="provider-base-url"
+                      className="mb-2 block text-sm font-medium text-text-primary"
                     >
                       Base URL (Optional)
-                    </label>
+                    </Label>
                     <Input
                       id="provider-base-url"
                       type="url"
@@ -602,24 +623,30 @@ export function Settings() {
                       value={currentForm.base_url || ""}
                       onChange={(e) => updateCurrentForm({ base_url: e.target.value || null })}
                       placeholder="https://api.openai.com/v1"
-                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                      className="bg-surface text-text-primary focus-visible:ring-accent"
                     />
                     {errors.base_url && (
-                      <p className="text-ctp-red mt-1 text-xs">{errors.base_url.message}</p>
+                      <TextDisplay
+                        variant="secondary"
+                        size="xs"
+                        className="mt-1 text-status-dropped"
+                      >
+                        {errors.base_url.message}
+                      </TextDisplay>
                     )}
-                    <p className="text-ctp-overlay1 mt-1 text-xs">
+                    <TextDisplay variant="muted" size="xs" className="mt-1">
                       Default: https://api.openai.com/v1. Use custom URL for Azure OpenAI or
                       proxies.
-                    </p>
+                    </TextDisplay>
                   </div>
 
                   <div>
-                    <label
-                      className="text-ctp-text mb-2 block text-sm font-medium"
+                    <Label
                       htmlFor="temperature"
+                      className="mb-2 block text-sm font-medium text-text-primary"
                     >
                       Temperature: {temperatureValue}
-                    </label>
+                    </Label>
                     <Input
                       id="temperature"
                       type="range"
@@ -633,18 +660,18 @@ export function Settings() {
                       }
                       className="w-full"
                     />
-                    <p className="text-ctp-overlay1 mt-1 text-xs">
+                    <TextDisplay variant="muted" size="xs" className="mt-1">
                       Lower = more focused, Higher = more creative
-                    </p>
+                    </TextDisplay>
                   </div>
 
                   <div>
-                    <label
-                      className="text-ctp-text mb-2 block text-sm font-medium"
+                    <Label
                       htmlFor="max-tokens"
+                      className="mb-2 block text-sm font-medium text-text-primary"
                     >
                       Max Tokens
-                    </label>
+                    </Label>
                     <Input
                       id="max-tokens"
                       type="number"
@@ -655,15 +682,21 @@ export function Settings() {
                       onChange={(e) =>
                         updateCurrentForm({ max_tokens: parseInt(e.target.value, 10) })
                       }
-                      className="bg-ctp-surface0 text-ctp-text focus-visible:ring-ctp-mauve"
+                      className="bg-surface text-text-primary focus-visible:ring-accent"
                     />
                     {errors.max_tokens && (
-                      <p className="text-ctp-red mt-1 text-xs">{errors.max_tokens.message}</p>
+                      <TextDisplay
+                        variant="secondary"
+                        size="xs"
+                        className="mt-1 text-status-dropped"
+                      >
+                        {errors.max_tokens.message}
+                      </TextDisplay>
                     )}
-                    <p className="text-ctp-overlay1 mt-1 text-xs">
+                    <TextDisplay variant="muted" size="xs" className="mt-1">
                       Maximum response length. Reasoning models (GPT-5 Nano, Mini) require 12000+
                       tokens
-                    </p>
+                    </TextDisplay>
                   </div>
                 </div>
               )}
@@ -672,7 +705,7 @@ export function Settings() {
                 type="submit"
                 disabled={updateAiMutation.isPending}
                 variant="ghost"
-                className="hover:bg-ctp-mauve/90 bg-ctp-mauve text-ctp-base h-auto rounded-lg px-6 py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                className="hover:bg-accent/90 h-auto rounded-lg bg-accent px-6 py-2 text-base transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {updateAiMutation.isPending ? "Saving..." : "Save OpenAI Settings"}
               </Button>

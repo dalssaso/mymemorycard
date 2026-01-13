@@ -15,7 +15,7 @@ import {
   type RowSelectionState,
 } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
-import { GameCard } from "@/components/GameCard";
+import { GameCard } from "@/design-system/patterns";
 import { BackButton, PageLayout } from "@/components/layout";
 import { LibrarySidebar } from "@/components/sidebar";
 import { PlatformIcons } from "@/components/PlatformIcon";
@@ -48,6 +48,7 @@ import {
 } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI, gamesAPI } from "@/lib/api";
+import { getStatusConfig } from "@/lib/constants/status";
 import { SortControl, ActiveFilterPills } from "@/components/filters";
 
 interface Collection {
@@ -298,14 +299,14 @@ export function Library() {
                 className="h-12 w-8 rounded object-cover"
               />
             ) : (
-              <div className="bg-ctp-surface0 flex h-12 w-8 items-center justify-center rounded">
-                <span className="text-ctp-overlay1 text-xs">No image</span>
+              <div className="flex h-12 w-8 items-center justify-center rounded bg-surface">
+                <span className="text-xs text-text-muted">No image</span>
               </div>
             )}
             <Link
               to="/library/$id"
               params={{ id: info.row.original.id }}
-              className="text-ctp-blue hover:text-ctp-sky"
+              className="text-accent transition-colors duration-standard hover:bg-elevated"
             >
               {info.getValue()}
             </Link>
@@ -376,9 +377,9 @@ export function Library() {
           <div className="mb-8 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-ctp-text text-4xl font-bold">Library</h1>
+            <h1 className="text-4xl font-bold text-text-primary">Library</h1>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -395,8 +396,8 @@ export function Library() {
       <PageLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="max-w-md p-6">
-            <h2 className="text-ctp-red mb-4 text-2xl font-bold">Error</h2>
-            <p className="text-ctp-subtext0">Failed to load your library. Please try again.</p>
+            <h2 className="mb-4 text-2xl font-bold text-status-dropped">Error</h2>
+            <p className="text-text-secondary">Failed to load your library. Please try again.</p>
           </Card>
         </div>
       </PageLayout>
@@ -430,9 +431,9 @@ export function Library() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-ctp-mauve text-4xl font-bold">Library</h1>
+            <h1 className="text-4xl font-bold text-accent">Library</h1>
           </div>
 
           {/* Export Buttons */}
@@ -463,7 +464,7 @@ export function Library() {
               <Button
                 variant="outline"
                 onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className="bg-ctp-surface0/50 border-ctp-surface1 text-ctp-subtext1 hover:border-ctp-mauve text-sm"
+                className="bg-surface/50 text-sm text-text-muted hover:border-accent"
                 aria-expanded={showColumnSettings}
                 aria-controls="column-settings"
               >
@@ -491,19 +492,19 @@ export function Library() {
               {showColumnSettings && (
                 <div
                   id="column-settings"
-                  className="border-ctp-surface1 bg-ctp-mantle absolute left-0 top-full z-10 mt-2 min-w-[200px] rounded-lg border p-3 shadow-lg"
+                  className="absolute left-0 top-full z-10 mt-2 min-w-[200px] rounded-lg border border-border bg-elevated p-3 shadow-lg"
                 >
                   <div className="flex flex-col gap-2">
                     {table.getAllLeafColumns().map((column) => (
                       <label
                         key={column.id}
-                        className="hover:text-ctp-text flex cursor-pointer items-center gap-2 text-sm"
+                        className="flex cursor-pointer items-center gap-2 text-sm hover:text-text-primary"
                       >
                         <Checkbox
                           checked={column.getIsVisible()}
                           onCheckedChange={(checked) => column.toggleVisibility(checked === true)}
                         />
-                        <span className="text-ctp-subtext1">
+                        <span className="text-text-muted">
                           {COLUMN_LABELS[column.id] ?? column.id}
                         </span>
                       </label>
@@ -529,7 +530,7 @@ export function Library() {
         {/* Results count, page size, and selection toggle */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="text-ctp-subtext0 text-sm">
+            <span className="text-sm text-text-secondary">
               {(() => {
                 const { pageIndex, pageSize } = table.getState().pagination;
                 const start = pageIndex * pageSize + 1;
@@ -570,7 +571,7 @@ export function Library() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="pageSize" className="text-ctp-subtext0 whitespace-nowrap text-sm">
+            <label htmlFor="pageSize" className="whitespace-nowrap text-sm text-text-secondary">
               Items per page:
             </label>
             <Select
@@ -593,9 +594,9 @@ export function Library() {
 
         {/* Selection Mode Bar */}
         {selectionMode && (
-          <div className="bg-ctp-surface0/50 border-ctp-surface1 mb-4 flex items-center justify-between rounded-lg border p-4">
+          <div className="bg-surface/50 mb-4 flex items-center justify-between rounded-lg border border-border p-4">
             <div className="flex items-center gap-4">
-              <span className="text-ctp-text text-sm font-medium">
+              <span className="text-sm font-medium text-text-primary">
                 {selectedGameIds.length > 0
                   ? `${selectedGameIds.length} game(s) selected`
                   : "Select games to manage"}
@@ -636,10 +637,10 @@ export function Library() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="border-ctp-surface1 bg-ctp-mantle min-w-[200px]"
+                      className="min-w-[200px] border-border bg-elevated"
                     >
                       {collections.length === 0 ? (
-                        <div className="text-ctp-subtext0 px-2 py-1 text-sm">
+                        <div className="px-2 py-1 text-sm text-text-secondary">
                           No collections yet
                         </div>
                       ) : (
@@ -682,23 +683,23 @@ export function Library() {
 
         {/* Delete Confirmation Modal */}
         <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <AlertDialogContent className="border-ctp-surface1 bg-ctp-mantle">
+          <AlertDialogContent className="border-border bg-elevated">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-ctp-text text-xl font-bold">
+              <AlertDialogTitle className="text-xl font-bold text-text-primary">
                 Delete Games
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-ctp-subtext0">
+              <AlertDialogDescription className="text-text-secondary">
                 Are you sure you want to delete {selectedGameIds.length} game(s) from your library?
                 This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <AlertDialogCancel className="border-ctp-surface1 bg-ctp-surface1 text-ctp-text hover:bg-ctp-surface2">
+              <AlertDialogCancel className="hover:bg-elevated-hover border-border bg-elevated text-text-primary transition-colors duration-quick">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => bulkDeleteMutation.mutate(selectedGameIds)}
-                className="hover:bg-ctp-red/90 bg-ctp-red text-ctp-base"
+                className="hover:bg-status-dropped/90 bg-status-dropped text-base"
               >
                 {bulkDeleteMutation.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
@@ -711,16 +712,16 @@ export function Library() {
             <div className="grid gap-6 text-center md:grid-cols-[2fr_1fr] md:text-left">
               <div>
                 <h2 className="mb-4 text-2xl font-bold">No Games Yet</h2>
-                <p className="text-ctp-subtext0 mb-6">
+                <p className="mb-6 text-text-secondary">
                   Start building your library by importing games from your platforms.
                 </p>
                 <Button asChild>
                   <Link to="/import">Import Games</Link>
                 </Button>
               </div>
-              <div className="bg-ctp-surface0/40 border-ctp-surface1 rounded-lg border p-4">
-                <h3 className="text-ctp-text text-sm font-semibold">Next steps</h3>
-                <div className="text-ctp-subtext0 mt-2 space-y-2 text-sm">
+              <div className="bg-surface/40 rounded-lg border border-border p-4">
+                <h3 className="text-sm font-semibold text-text-primary">Next steps</h3>
+                <div className="mt-2 space-y-2 text-sm text-text-secondary">
                   <p>Connect platforms so imports stay accurate.</p>
                   <p>Use filters to highlight favorites and backlog.</p>
                   <p>Create collections to group by theme.</p>
@@ -746,10 +747,8 @@ export function Library() {
                       }}
                       role="button"
                       tabIndex={0}
-                      className={`bg-ctp-surface0/40 border-ctp-surface1 relative cursor-pointer rounded-xl border p-0 transition-all sm:p-5 ${
-                        isSelected
-                          ? "bg-ctp-mauve/20 border-ctp-mauve"
-                          : "hover:border-ctp-surface2"
+                      className={`bg-surface/40 relative cursor-pointer rounded-xl border border-border p-0 transition-all sm:p-5 ${
+                        isSelected ? "bg-accent/20 border-accent" : "hover:border-accent/50"
                       }`}
                     >
                       {/* Mobile: Poster-only layout */}
@@ -761,25 +760,25 @@ export function Library() {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="bg-ctp-surface0 flex h-full w-full items-center justify-center">
-                            <span className="text-ctp-overlay1 text-sm">No image</span>
+                          <div className="flex h-full w-full items-center justify-center bg-surface">
+                            <span className="text-sm text-text-muted">No image</span>
                           </div>
                         )}
-                        <div className="from-ctp-base/70 via-ctp-base/20 dark:from-ctp-crust/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
+                        <div className="from-base/70 via-base/20 dark:from-base/80 absolute inset-0 bg-gradient-to-t to-transparent dark:via-transparent dark:to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <h3 className="text-ctp-text line-clamp-2 text-sm font-bold">
+                          <h3 className="line-clamp-2 text-sm font-bold text-text-primary">
                             {row.original.name}
                           </h3>
                         </div>
                         {isSelected && (
-                          <div className="bg-ctp-mauve absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="text-ctp-text h-4 w-4"
+                              className="h-4 w-4 text-text-primary"
                             >
                               <path
                                 strokeLinecap="round"
@@ -800,8 +799,8 @@ export function Library() {
                             className="h-32 w-24 rounded object-cover"
                           />
                         ) : (
-                          <div className="bg-ctp-surface0 flex h-32 w-24 items-center justify-center rounded">
-                            <span className="text-ctp-overlay1 text-xs">No image</span>
+                          <div className="flex h-32 w-24 items-center justify-center rounded bg-surface">
+                            <span className="text-xs text-text-muted">No image</span>
                           </div>
                         )}
                         <div className="flex-1">
@@ -812,27 +811,35 @@ export function Library() {
                               size="sm"
                               maxDisplay={5}
                             />
-                            <Badge className="border-ctp-surface2 text-ctp-subtext0 border">
-                              {row.original.status.charAt(0).toUpperCase() +
-                                row.original.status.slice(1)}
-                            </Badge>
+                            {(() => {
+                              const statusConfig = getStatusConfig(row.original.status);
+                              return (
+                                <Badge
+                                  className="border text-text-primary"
+                                  style={statusConfig?.activeStyle}
+                                >
+                                  {row.original.status.charAt(0).toUpperCase() +
+                                    row.original.status.slice(1)}
+                                </Badge>
+                              );
+                            })()}
                           </div>
                           {row.original.metacritic_score && (
-                            <div className="text-ctp-subtext0 flex items-center gap-1 text-sm">
-                              <span className="text-ctp-yellow">★</span>
+                            <div className="flex items-center gap-1 text-sm text-text-secondary">
+                              <span className="text-status-finished">★</span>
                               <span>{row.original.metacritic_score}</span>
                             </div>
                           )}
                         </div>
                         {isSelected && (
-                          <div className="bg-ctp-mauve absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full">
+                          <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="text-ctp-text h-4 w-4"
+                              className="h-4 w-4 text-text-primary"
                             >
                               <path
                                 strokeLinecap="round"
@@ -859,7 +866,7 @@ export function Library() {
                 >
                   Previous
                 </Button>
-                <span className="text-ctp-subtext0">
+                <span className="text-text-secondary">
                   Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </span>
                 <Button
@@ -879,7 +886,7 @@ export function Library() {
                 <table className="w-full">
                   <thead>
                     {table.getHeaderGroups().map((headerGroup) => (
-                      <tr key={headerGroup.id} className="border-ctp-surface1 border-b">
+                      <tr key={headerGroup.id} className="border-b border-border">
                         {selectionMode && (
                           <th className="w-12 p-4">
                             <Checkbox
@@ -892,7 +899,7 @@ export function Library() {
                         {headerGroup.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="text-ctp-subtext0 p-4 text-left font-medium"
+                            className="p-4 text-left font-medium text-text-secondary"
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                           </th>
@@ -904,7 +911,7 @@ export function Library() {
                     {table.getRowModel().rows.map((row) => (
                       <tr
                         key={row.id}
-                        className={`border-ctp-surface0 hover:bg-ctp-surface1 border-b transition-colors ${selectionMode && row.getIsSelected() ? "bg-ctp-mauve/10" : ""}`}
+                        className={`border-b border-border transition-colors duration-standard hover:bg-surface ${selectionMode && row.getIsSelected() ? "bg-accent/10" : ""}`}
                       >
                         {selectionMode && (
                           <td className="w-12 p-4">
@@ -936,7 +943,7 @@ export function Library() {
                 >
                   Previous
                 </Button>
-                <span className="text-ctp-subtext0">
+                <span className="text-text-secondary">
                   Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </span>
                 <Button

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { gamesAPI } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { PlaySessionTracker } from "@/components/PlaySessionTracker";
 import { ProgressHistory } from "@/components/ProgressHistory";
 
@@ -58,15 +59,15 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
     <div className="space-y-8">
       <PlaySessionTracker gameId={gameId} platformId={platformId} />
 
-      <div className="border-ctp-surface1 border-t" />
+      <div className="border-t border-elevated" />
 
       <ProgressHistory gameId={gameId} platformId={platformId} />
 
-      <div className="border-ctp-surface1 border-t" />
+      <div className="border-t border-elevated" />
 
       <div>
         <span
-          className="text-ctp-subtext0 mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-text-secondary"
           id="difficulty-rating-label"
         >
           Difficulty Rating (1-10)
@@ -78,11 +79,12 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
               onClick={() => handleFieldChange("difficulty_rating", rating)}
               aria-pressed={fields.difficulty_rating === rating}
               variant="ghost"
-              className={`h-auto flex-1 rounded py-2 text-sm transition-all ${
+              className={cn(
+                "h-auto flex-1 rounded py-2 text-sm transition-all duration-standard",
                 fields.difficulty_rating === rating
-                  ? "shadow-ctp-red/50 bg-ctp-red text-ctp-base shadow-lg"
-                  : "bg-ctp-surface0 text-ctp-subtext0 hover:bg-ctp-surface1 hover:text-ctp-text"
-              }`}
+                  ? "shadow-status-dropped/50 bg-status-dropped text-text-primary shadow-lg"
+                  : "bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary"
+              )}
             >
               {rating}
             </Button>
@@ -92,7 +94,7 @@ export function CustomFieldsEditor({ gameId, platformId }: CustomFieldsEditorPro
           <Button
             onClick={() => handleFieldChange("difficulty_rating", null)}
             variant="link"
-            className="text-ctp-overlay1 hover:text-ctp-subtext1 mt-2 h-auto p-0 text-sm"
+            className="mt-2 h-auto p-0 text-sm text-text-muted hover:text-text-muted"
           >
             Clear rating
           </Button>

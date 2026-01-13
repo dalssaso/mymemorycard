@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 interface Platform {
   id: string;
@@ -25,11 +26,11 @@ export function ImportSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="border-ctp-surface0 space-y-3 border-t pt-3">
+      <div className="space-y-3 border-t border-surface pt-3">
         <div className="flex justify-center">
           <Link
             to="/platforms"
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all"
+            className="rounded-lg p-2 text-text-secondary transition-colors duration-standard hover:bg-surface hover:text-text-primary"
             title="Manage Platforms"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,7 +43,7 @@ export function ImportSidebar({
             </svg>
           </Link>
         </div>
-        <div className="border-ctp-surface0 flex flex-col items-center gap-1 border-t pt-2">
+        <div className="flex flex-col items-center gap-1 border-t border-surface pt-2">
           {platforms.map((platform) => (
             <Button
               key={platform.id}
@@ -50,11 +51,12 @@ export function ImportSidebar({
               disabled={isImporting}
               variant="ghost"
               size="icon"
-              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-all disabled:opacity-50 ${
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-all duration-standard disabled:opacity-50",
                 selectedPlatform === platform.id
-                  ? "bg-ctp-mauve/20 text-ctp-mauve ring-ctp-mauve ring-2"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
-              }`}
+                  ? "bg-accent/20 text-accent ring-2 ring-accent"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
+              )}
               title={platform.display_name}
             >
               {platform.display_name.trim().charAt(0).toUpperCase() || "?"}
@@ -69,7 +71,7 @@ export function ImportSidebar({
     <div className="space-y-6">
       <Link
         to="/platforms"
-        className="bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors duration-standard hover:bg-elevated"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -83,9 +85,9 @@ export function ImportSidebar({
       </Link>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-ctp-mauve h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -106,11 +108,12 @@ export function ImportSidebar({
               onClick={() => onPlatformSelect(platform.id)}
               disabled={isImporting}
               variant="ghost"
-              className={`h-auto w-full rounded-lg px-3 py-2 text-left text-sm transition-all disabled:opacity-50 ${
+              className={cn(
+                "h-auto w-full rounded-lg px-3 py-2 text-left text-sm transition-all duration-standard disabled:opacity-50",
                 selectedPlatform === platform.id
-                  ? "bg-ctp-mauve/20 border-ctp-mauve/30 text-ctp-mauve border"
-                  : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
-              }`}
+                  ? "bg-accent/20 border-accent/30 border text-accent"
+                  : "text-text-secondary hover:bg-surface hover:text-text-primary"
+              )}
             >
               {platform.display_name}
             </Button>
@@ -119,9 +122,9 @@ export function ImportSidebar({
       </div>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-ctp-teal h-4 w-4"
+            className="h-4 w-4 text-accent"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -135,19 +138,19 @@ export function ImportSidebar({
           </svg>
           Import Tips
         </h3>
-        <div className="text-ctp-subtext0 space-y-3 text-sm">
-          <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="text-ctp-subtext1 mb-1 font-medium">One game per line</p>
+        <div className="space-y-3 text-sm text-text-secondary">
+          <div className="bg-surface/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-text-muted">One game per line</p>
             <p className="text-xs">Enter each game name on its own line for best results.</p>
           </div>
-          <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="text-ctp-subtext1 mb-1 font-medium">Use official names</p>
+          <div className="bg-surface/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-text-muted">Use official names</p>
             <p className="text-xs">
               &quot;The Witcher 3: Wild Hunt&quot; works better than &quot;Witcher 3&quot;.
             </p>
           </div>
-          <div className="bg-ctp-surface0/50 rounded-lg p-3">
-            <p className="text-ctp-subtext1 mb-1 font-medium">Review matches</p>
+          <div className="bg-surface/50 rounded-lg p-3">
+            <p className="mb-1 font-medium text-text-muted">Review matches</p>
             <p className="text-xs">
               If a game isn&apos;t matched exactly, you&apos;ll be able to pick from candidates.
             </p>
@@ -156,9 +159,9 @@ export function ImportSidebar({
       </div>
 
       <div>
-        <h3 className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           <svg
-            className="text-ctp-green h-4 w-4"
+            className="h-4 w-4 text-status-finished"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -172,14 +175,14 @@ export function ImportSidebar({
           </svg>
           Data Source
         </h3>
-        <div className="bg-ctp-surface0/50 rounded-lg p-3">
+        <div className="bg-surface/50 rounded-lg p-3">
           <div className="mb-2 flex items-center gap-2">
-            <div className="bg-ctp-mauve text-ctp-base flex h-6 w-6 items-center justify-center rounded">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-accent text-base">
               <span className="text-xs font-bold">R</span>
             </div>
-            <span className="text-ctp-subtext1 text-sm">RAWG.io</span>
+            <span className="text-sm text-text-muted">RAWG.io</span>
           </div>
-          <p className="text-ctp-overlay1 text-xs">
+          <p className="text-xs text-text-muted">
             Games are enriched with metadata from RAWG including cover art, descriptions, ratings,
             and release dates.
           </p>

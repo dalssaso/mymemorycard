@@ -33,6 +33,15 @@ export default {
           completed: "var(--color-status-completed)",
           dropped: "var(--color-status-dropped)",
           backlog: "var(--color-status-backlog)",
+          favorites: "var(--color-status-favorites)",
+        },
+
+        // Rarity colors
+        rarity: {
+          common: "var(--color-rarity-common)",
+          uncommon: "var(--color-rarity-uncommon)",
+          rare: "var(--color-rarity-rare)",
+          legendary: "var(--color-rarity-legendary)",
         },
 
         // shadcn compatibility

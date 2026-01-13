@@ -24,11 +24,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  backlog: "bg-ctp-subtext1/20 border-ctp-subtext1/40 text-ctp-subtext1",
-  playing: "bg-ctp-teal/20 border-ctp-teal/40 text-ctp-teal",
-  finished: "bg-ctp-green/20 border-ctp-green/40 text-ctp-green",
-  completed: "bg-ctp-yellow/20 border-ctp-yellow/40 text-ctp-yellow",
-  dropped: "bg-ctp-red/20 border-ctp-red/40 text-ctp-red",
+  backlog: "bg-text-muted/20 border-text-muted/40 text-text-muted",
+  playing: "bg-accent/20 border-accent/40 text-accent",
+  finished: "bg-status-finished/20 border-status-finished/40 text-status-finished",
+  completed: "bg-accent/20 border-accent/40 text-accent",
+  dropped: "bg-status-dropped/20 border-status-dropped/40 text-status-dropped",
 };
 
 export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilterPillsProps) {
@@ -39,7 +39,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       key: "platform",
       label: "Platform",
       value: filters.platform,
-      colorClass: "bg-ctp-mauve/20 border-ctp-mauve/40 text-ctp-mauve",
+      colorClass: "bg-accent/20 border-accent/40 text-accent",
     });
   }
 
@@ -48,8 +48,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       key: "status",
       label: "Status",
       value: STATUS_LABELS[filters.status] || filters.status,
-      colorClass:
-        STATUS_COLORS[filters.status] || "bg-ctp-mauve/20 border-ctp-mauve/40 text-ctp-mauve",
+      colorClass: STATUS_COLORS[filters.status] || "bg-accent/20 border-accent/40 text-accent",
     });
   }
 
@@ -58,7 +57,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       key: "favorites",
       label: "Favorites",
       value: "Only",
-      colorClass: "bg-ctp-red/20 border-ctp-red/40 text-ctp-red",
+      colorClass: "bg-status-dropped/20 border-status-dropped/40 text-status-dropped",
     });
   }
 
@@ -68,7 +67,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       label: "Genre",
       value: genre,
       itemValue: genre,
-      colorClass: "bg-ctp-peach/20 border-ctp-peach/40 text-ctp-peach",
+      colorClass: "bg-accent/20 border-accent/40 text-accent",
     });
   });
 
@@ -78,7 +77,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       label: "Collection",
       value: collection,
       itemValue: collection,
-      colorClass: "bg-ctp-sapphire/20 border-ctp-sapphire/40 text-ctp-sapphire",
+      colorClass: "bg-accent/20 border-accent/40 text-accent",
     });
   });
 
@@ -88,7 +87,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
       label: "Franchise",
       value: franchise,
       itemValue: franchise,
-      colorClass: "bg-ctp-lavender/20 border-ctp-lavender/40 text-ctp-lavender",
+      colorClass: "bg-accent/20 border-accent/40 text-accent",
     });
   });
 
@@ -116,7 +115,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-ctp-subtext0 text-xs font-medium">Active filters:</span>
+      <span className="text-xs font-medium text-text-secondary">Active filters:</span>
       {pills.map((pill, index) => (
         <div
           key={`${pill.key}-${pill.itemValue || pill.value}-${index}`}
@@ -147,7 +146,7 @@ export function ActiveFilterPills({ filters, setFilter, onClearAll }: ActiveFilt
         <Button
           onClick={onClearAll}
           variant="link"
-          className="text-ctp-subtext0 hover:text-ctp-text h-auto p-0 text-xs underline transition-colors"
+          className="h-auto p-0 text-xs text-text-secondary underline transition-colors duration-standard hover:text-text-primary"
         >
           Clear all
         </Button>

@@ -139,9 +139,9 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-3">
-        <div className="bg-ctp-surface1 h-4 w-1/3 rounded" />
-        <div className="bg-ctp-surface1 h-10 rounded" />
-        <div className="bg-ctp-surface1 h-24 rounded" />
+        <div className="h-4 w-1/3 rounded bg-elevated" />
+        <div className="h-10 rounded bg-elevated" />
+        <div className="h-24 rounded bg-elevated" />
       </div>
     );
   }
@@ -157,9 +157,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
 
   if (!hasEditions && !hasDlcs) {
     return (
-      <div className="text-ctp-overlay1 text-sm italic">
-        No editions or DLCs found for this game.
-      </div>
+      <div className="text-sm italic text-text-muted">No editions or DLCs found for this game.</div>
     );
   }
 
@@ -169,7 +167,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
         <div>
           <label
             htmlFor="edition-select"
-            className="text-ctp-subtext0 mb-2 block text-sm font-medium"
+            className="mb-2 block text-sm font-medium text-text-secondary"
           >
             Which edition do you own?
           </label>
@@ -183,15 +181,15 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
               aria-haspopup="listbox"
               aria-expanded={isEditionOpen}
               variant="ghost"
-              className="border-ctp-surface1 bg-ctp-mantle text-ctp-text focus:border-ctp-mauve flex h-auto w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 focus:outline-none disabled:opacity-50"
+              className="flex h-auto w-full items-center justify-between gap-3 rounded-lg border border-elevated bg-base px-3 py-2 text-text-primary focus:border-accent focus:outline-none disabled:opacity-50"
             >
-              <span className="text-ctp-text truncate text-sm">
+              <span className="truncate text-sm text-text-primary">
                 {selectedEdition
                   ? `${selectedEdition.name}${selectedEdition.is_complete_edition ? " (includes all DLCs)" : ""}`
                   : "Standard Edition (no DLCs included)"}
               </span>
               <svg
-                className={`text-ctp-subtext0 h-4 w-4 transition-transform ${isEditionOpen ? "rotate-180" : ""}`}
+                className={`h-4 w-4 text-text-secondary transition-transform duration-quick ${isEditionOpen ? "rotate-180" : ""}`}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -206,7 +204,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
               </svg>
             </Button>
             {isEditionOpen && (
-              <div className="border-ctp-surface1 bg-ctp-mantle absolute z-20 mt-2 w-full rounded-lg border shadow-lg">
+              <div className="absolute z-20 mt-2 w-full rounded-lg border border-elevated bg-base shadow-lg">
                 <ScrollFade axis="y" className="max-h-64 overflow-y-auto" role="listbox">
                   <Button
                     type="button"
@@ -214,8 +212,8 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                     variant="ghost"
                     className={`h-auto w-full px-3 py-2 text-left text-sm transition-colors ${
                       !selectedEditionId
-                        ? "bg-ctp-mauve/20 text-ctp-mauve"
-                        : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                        ? "bg-accent/20 text-accent"
+                        : "text-text-secondary hover:bg-surface hover:text-text-primary"
                     }`}
                     role="option"
                     aria-selected={!selectedEditionId}
@@ -230,15 +228,15 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                       variant="ghost"
                       className={`h-auto w-full px-3 py-2 text-left text-sm transition-colors ${
                         selectedEditionId === edition.id
-                          ? "bg-ctp-mauve/20 text-ctp-mauve"
-                          : "text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text"
+                          ? "bg-accent/20 text-accent"
+                          : "text-text-secondary hover:bg-surface hover:text-text-primary"
                       }`}
                       role="option"
                       aria-selected={selectedEditionId === edition.id}
                     >
-                      <span className="text-ctp-text block">{edition.name}</span>
+                      <span className="block text-text-primary">{edition.name}</span>
                       {edition.is_complete_edition && (
-                        <span className="text-ctp-teal block text-xs">Includes all DLCs</span>
+                        <span className="block text-xs text-accent">Includes all DLCs</span>
                       )}
                     </Button>
                   ))}
@@ -247,7 +245,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
             )}
           </div>
           {isCompleteEdition && (
-            <p className="text-ctp-green mt-1 text-xs">
+            <p className="mt-1 text-xs text-status-finished">
               This edition includes all DLCs - they will be counted in your progress.
             </p>
           )}
@@ -257,7 +255,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
       {hasDlcs && (
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-ctp-subtext0 text-sm font-medium">
+            <span className="text-sm font-medium text-text-secondary">
               DLCs You Own {isCompleteEdition && "(all included)"}
             </span>
             {!isCompleteEdition && (
@@ -266,16 +264,16 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                   onClick={handleSelectAllDlcs}
                   disabled={updateDlcsMutation.isPending}
                   variant="link"
-                  className="text-ctp-teal hover:text-ctp-mauve h-auto p-0 text-xs disabled:opacity-50"
+                  className="h-auto p-0 text-xs text-accent hover:text-accent disabled:opacity-50"
                 >
                   Select All
                 </Button>
-                <span className="text-ctp-overlay1">|</span>
+                <span className="text-text-muted">|</span>
                 <Button
                   onClick={handleDeselectAllDlcs}
                   disabled={updateDlcsMutation.isPending}
                   variant="link"
-                  className="text-ctp-teal hover:text-ctp-mauve h-auto p-0 text-xs disabled:opacity-50"
+                  className="h-auto p-0 text-xs text-accent hover:text-accent disabled:opacity-50"
                 >
                   Deselect All
                 </Button>
@@ -290,8 +288,8 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                   key={dlc.id}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all ${
                     isOwned
-                      ? "bg-ctp-mauve/10 border-ctp-mauve"
-                      : "bg-ctp-surface0/50 border-ctp-surface1 hover:border-ctp-surface2"
+                      ? "bg-accent/10 border-accent"
+                      : "bg-surface/50 border-elevated hover:border-elevated"
                   } ${isCompleteEdition ? "cursor-not-allowed opacity-75" : ""}`}
                 >
                   <Checkbox
@@ -300,9 +298,9 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
                     disabled={isCompleteEdition || updateDlcsMutation.isPending}
                   />
                   <div className="flex-1">
-                    <span className="text-ctp-text text-sm">{dlc.name}</span>
+                    <span className="text-sm text-text-primary">{dlc.name}</span>
                     {dlc.required_for_full && (
-                      <span className="text-ctp-teal ml-2 text-xs">(Required for Full)</span>
+                      <span className="ml-2 text-xs text-accent">(Required for Full)</span>
                     )}
                   </div>
                 </label>
@@ -310,7 +308,7 @@ export function EditionOwnership({ gameId, platformId }: EditionOwnershipProps) 
             })}
           </ScrollFade>
           {!isCompleteEdition && selectedDlcIds.size > 0 && (
-            <p className="text-ctp-subtext0 mt-2 text-xs">
+            <p className="mt-2 text-xs text-text-secondary">
               {selectedDlcIds.size} of {data.dlcs.length} DLCs owned
             </p>
           )}

@@ -28,7 +28,7 @@ export function PlatformTypeIcon({
   const containerClasses = color
     ? "inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-white"
     : "inline-flex w-fit items-center gap-1";
-  const textClasses = !color ? "text-ctp-subtext0" : "";
+  const textClasses = !color ? "text-text-secondary" : "";
 
   return (
     <div className={containerClasses} style={color ? { backgroundColor: color } : undefined}>

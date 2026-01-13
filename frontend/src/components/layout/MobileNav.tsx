@@ -1,20 +1,22 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useGlobalSearch } from "@/components/GlobalSearch";
 import { Button } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 export function MobileNav(): JSX.Element {
   const { openSearch } = useGlobalSearch();
   const locationHref = useRouterState({ select: (state) => state.location.href });
 
-  const getNavLinkClass = (isActive: boolean) =>
-    `flex flex-col items-center justify-center rounded-lg transition-colors ${
+  const getNavLinkClass = (isActive: boolean): string =>
+    cn(
+      "flex flex-col items-center justify-center rounded-lg transition-colors duration-standard",
       isActive
-        ? "text-ctp-mauve bg-ctp-mauve/10"
-        : "text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0"
-    }`;
+        ? "bg-accent/10 text-accent"
+        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+    );
 
   return (
-    <nav className="supports-[backdrop-filter]:bg-ctp-mantle/90 border-ctp-surface0 bg-ctp-mantle fixed bottom-0 left-0 right-0 z-50 h-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] border-t pb-[env(safe-area-inset-bottom)] supports-[backdrop-filter]:backdrop-blur md:hidden">
+    <nav className="supports-[backdrop-filter]:bg-base/90 fixed bottom-0 left-0 right-0 z-50 h-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom))] border-t border-surface bg-base pb-[env(safe-area-inset-bottom)] supports-[backdrop-filter]:backdrop-blur md:hidden">
       <div className="grid h-[var(--mobile-nav-height)] grid-cols-5 gap-1 px-2">
         <Link to="/dashboard" className={getNavLinkClass(locationHref.includes("/dashboard"))}>
           <span className="text-xs">Home</span>
@@ -27,7 +29,7 @@ export function MobileNav(): JSX.Element {
         <Button
           type="button"
           variant="ghost"
-          className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text flex h-auto flex-col items-center justify-center rounded-lg"
+          className="flex h-auto flex-col items-center justify-center rounded-lg text-text-secondary hover:bg-surface hover:text-text-primary"
           aria-label="Open search"
           onClick={() => openSearch(document.activeElement)}
         >

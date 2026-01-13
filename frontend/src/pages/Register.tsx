@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { useAuth } from "@/contexts/AuthContext";
 import { normalizeAuthError } from "@/lib/auth-errors";
+import { cn } from "@/lib/utils";
 
 const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
@@ -57,17 +58,17 @@ export function Register(): JSX.Element {
   });
 
   return (
-    <div className="bg-ctp-base flex min-h-screen items-center justify-center px-4">
-      <Card className="bg-ctp-surface0/60 border-ctp-surface1 w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-base px-4">
+      <Card className="bg-surface/60 w-full max-w-sm border-border">
         <CardHeader>
-          <h1 className="text-ctp-mauve text-center text-2xl font-semibold">Create Account</h1>
-          <p className="text-ctp-subtext1 text-center text-sm">Start organizing your library</p>
+          <h1 className="text-center text-2xl font-semibold text-accent">Create Account</h1>
+          <p className="text-center text-sm text-text-muted">Start organizing your library</p>
         </CardHeader>
         <CardContent>
           <FormProvider {...form}>
             <form onSubmit={handleSubmit} className="space-y-4">
               {form.formState.errors.root?.message ? (
-                <div className="border-ctp-red/30 bg-ctp-red/10 text-ctp-red rounded-md border px-3 py-2 text-sm">
+                <div className="border-status-dropped/30 bg-status-dropped/10 rounded-md border px-3 py-2 text-sm text-status-dropped">
                   {form.formState.errors.root.message}
                 </div>
               ) : null}
@@ -76,7 +77,12 @@ export function Register(): JSX.Element {
               <div className="space-y-2">
                 <FormField name="password" label="Password" type="password" />
                 {password.length > 0 ? (
-                  <p className={`text-xs ${passwordStrong ? "text-ctp-green" : "text-ctp-red"}`}>
+                  <p
+                    className={cn(
+                      "text-xs",
+                      passwordStrong ? "text-status-finished" : "text-status-dropped"
+                    )}
+                  >
                     {passwordStrong
                       ? "Password looks strong"
                       : "Use 8+ chars with upper, lower, number, and symbol"}
@@ -86,7 +92,12 @@ export function Register(): JSX.Element {
               <div className="space-y-2">
                 <FormField name="confirmPassword" label="Confirm password" type="password" />
                 {confirmPassword.length > 0 ? (
-                  <p className={`text-xs ${passwordsMatch ? "text-ctp-green" : "text-ctp-red"}`}>
+                  <p
+                    className={cn(
+                      "text-xs",
+                      passwordsMatch ? "text-status-finished" : "text-status-dropped"
+                    )}
+                  >
                     {passwordsMatch ? "Passwords match" : "Passwords do not match"}
                   </p>
                 ) : null}
@@ -96,9 +107,12 @@ export function Register(): JSX.Element {
               </Button>
             </form>
           </FormProvider>
-          <p className="text-ctp-subtext1 mt-4 text-center text-sm">
+          <p className="mt-4 text-center text-sm text-text-muted">
             Already have an account?{" "}
-            <Link to="/login" className="text-ctp-teal hover:text-ctp-sky">
+            <Link
+              to="/login"
+              className="text-accent transition-colors duration-standard hover:underline"
+            >
               Login
             </Link>
           </p>

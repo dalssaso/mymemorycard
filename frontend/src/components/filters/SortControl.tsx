@@ -31,7 +31,7 @@ export function SortControl({ currentSort, onSortChange }: SortControlProps): JS
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort-select" className="text-ctp-subtext0 whitespace-nowrap text-sm">
+      <label htmlFor="sort-select" className="whitespace-nowrap text-sm text-text-secondary">
         Sort by:
       </label>
       <Select

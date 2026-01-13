@@ -118,11 +118,11 @@ export function PlatformOnboarding() {
           <div className="flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-ctp-text text-4xl font-bold">Choose Your Platforms</h1>
+            <h1 className="text-4xl font-bold text-text-primary">Choose Your Platforms</h1>
           </div>
-          <p className="text-ctp-subtext0 mt-2">
+          <p className="mt-2 text-text-secondary">
             Select the platforms you use. This keeps your imports focused and relevant.
           </p>
         </div>
@@ -141,12 +141,14 @@ export function PlatformOnboarding() {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-ctp-text text-lg font-semibold">Platforms</h2>
-            <span className="text-ctp-subtext0 text-sm">{selectedPlatformIds.length} selected</span>
+            <h2 className="text-lg font-semibold text-text-primary">Platforms</h2>
+            <span className="text-sm text-text-secondary">
+              {selectedPlatformIds.length} selected
+            </span>
           </div>
 
           {isLoadingPlatforms ? (
-            <div className="text-ctp-subtext0">Loading platforms...</div>
+            <div className="text-text-secondary">Loading platforms...</div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredPlatforms.map((platform) => {
@@ -161,13 +163,13 @@ export function PlatformOnboarding() {
                     variant="outline"
                     className={`w-full justify-start border px-4 py-3 text-left transition-colors ${
                       isSelected
-                        ? "bg-ctp-mauve/20 border-ctp-mauve"
-                        : "bg-ctp-mantle/50 border-ctp-surface0 hover:border-ctp-surface1"
+                        ? "bg-accent/20 border-accent"
+                        : "bg-elevated/50 border-surface hover:border-elevated"
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="text-ctp-text font-medium">{platform.display_name}</div>
-                      {isLocked && <span className="text-ctp-mauve text-xs">Saved</span>}
+                      <div className="font-medium text-text-primary">{platform.display_name}</div>
+                      {isLocked && <span className="text-xs text-accent">Saved</span>}
                     </div>
                     <PlatformTypeIcon
                       type={platform.platform_type}
@@ -180,7 +182,7 @@ export function PlatformOnboarding() {
               })}
 
               {!isLoadingPlatforms && filteredPlatforms.length === 0 && (
-                <p className="text-ctp-subtext0">No platforms match your search.</p>
+                <p className="text-text-secondary">No platforms match your search.</p>
               )}
             </div>
           )}

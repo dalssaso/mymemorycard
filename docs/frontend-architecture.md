@@ -2,7 +2,7 @@
 
 ## Overview
 
-The frontend uses React 18 with Vite and TanStack Router + TanStack Query. UI components are built on shadcn/ui and styled with the Catppuccin palette via CSS variables.
+The frontend uses React 18 with Vite and TanStack Router + TanStack Query. UI components are built on shadcn/ui and styled with semantic design tokens via CSS variables.
 
 ## Structure
 
@@ -38,15 +38,16 @@ src/
   pages/              # Route-level pages (Library, GameDetail, Collections, etc.)
   routes/             # File-based routes (TanStack Router)
   styles/
-    theme.css         # Catppuccin theme mapping
+    theme.css         # Design tokens and theme configuration
   components.json     # shadcn/ui configuration
 ```
 
 ## UI Conventions
 
 - Prefer shadcn/ui primitives (`Button`, `Card`, `Input`, `Select`, `Dialog`, `Command`).
-- Use the Catppuccin CSS variables in `src/styles/theme.css` to keep a consistent palette.
+- Use semantic design tokens (defined in `design-system/tokens/`) to keep a consistent palette.
 - Avoid global utility classes for primitives; keep styles close to components.
+- Use pattern components for repeated styling patterns (cards, badges, text hierarchy).
 
 ## Routing
 
@@ -276,50 +277,55 @@ const { sections, totalCount } = useSearchData(query);
 - Redirects to `/platforms` if none connected
 - Uses `hasUserPlatforms` helper
 
-## Theming
+## Design System
 
-### Catppuccin Palette
+### Semantic Design Tokens
 
-**CSS Variables** (`styles/theme.css`):
+The design system uses semantic design tokens instead of color-specific names, enabling flexible theming and better maintainability.
 
-```css
-:root {
-  --ctp-base: #1e1e2e;
-  --ctp-text: #cdd6f4;
-  --ctp-mauve: #cba6f7;
-  --ctp-teal: #94e2d5;
-  --ctp-green: #a6e3a1;
-  --ctp-red: #f38ba8;
-  /* ... */
-}
-```
+**Token Categories** (`design-system/tokens/`):
 
-**shadcn Semantic Mapping:**
+- **Colors** (`colors.ts`) - Semantic color palette
+  - Surface hierarchy: `base`, `surface`, `elevated` (layered backgrounds)
+  - Text hierarchy: `text-primary`, `text-secondary`, `text-muted` (text emphasis levels)
+  - Status colors: `status-playing`, `status-finished`, `status-completed`, `status-dropped`, `status-backlog` (game states)
+  - Accent colors: `accent`, `accent-hover` (interactive elements)
+  - Border: `border` (dividers and borders)
 
-- `--background: var(--ctp-base)`
-- `--foreground: var(--ctp-text)`
-- `--primary: var(--ctp-mauve)`
-- `--secondary: var(--ctp-teal)`
-- `--destructive: var(--ctp-red)`
+- **Motion** (`motion.ts`) - Animation tokens
+  - Duration: `instant` (0ms), `quick` (100ms), `standard` (200ms), `smooth` (350ms), `page` (400ms)
+  - Easing: `out`, `in`, `spring` (cubic-bezier curves)
 
-**Light/Dark Mode:**
+- **Typography** (`typography.ts`) - Font system
+  - Family: Manrope variable font
+  - Weights: `regular`, `medium`, `semibold`, `bold`
+  - Sizes: `xs`, `sm`, `base`, `lg`, `xl`, `2xl`, `3xl`
 
-- Light: Catppuccin Latte
-- Dark: Catppuccin Mocha (default)
-- Toggle via `.dark` class
+- **Spacing** (`spacing.ts`) - Layout tokens
+  - Spacing scale and layout constraints
 
-### Tailwind Configuration
+### Pattern Components
 
-**Extended Colors:**
+**Design System Patterns** (`design-system/patterns/`):
 
-- shadcn semantic colors (`primary`, `secondary`, `destructive`, etc.)
-- Direct Catppuccin colors (`ctp-*` prefix)
-- Chart colors (1-5) for recharts
+Reusable components composed from UI primitives using semantic tokens:
 
-**Plugins:**
+- `GameCard` - Game display card with gradient overlay and status information
 
-- `tailwindcss-animate` - Animation utilities
-- `prettier-plugin-tailwindcss` - Auto-sorted classes
+**UI Components** (`components/ui/`):
+
+Component-based styling approach:
+
+- `StatBadge` - Status indicators with semantic color variants
+- `SectionCard` - Surface hierarchy for card containers and sections
+- `TextDisplay` - Text hierarchy with consistent sizing, weight, and color
+
+### Implementation Guidelines
+
+- **Prefer components** for repeated patterns (cards, badges, text hierarchy)
+- **Use semantic tokens** for styling instead of hardcoded colors
+- **Extract patterns** to components when used 3+ times
+- **Avoid inline classes** where components provide better abstraction
 
 ## UX and Responsiveness
 

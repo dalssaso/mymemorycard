@@ -18,16 +18,17 @@ import {
 import { useToast } from "@/components/ui/Toast";
 import { franchisesAPI, type OwnedGame, type MissingGame } from "@/lib/api";
 import { useUserPlatforms } from "@/hooks/useUserPlatforms";
+import { cn } from "@/lib/utils";
 
-const STATUS_COLORS: Record<string, string> = {
-  backlog: "bg-ctp-overlay0",
-  playing: "bg-ctp-teal",
-  finished: "bg-ctp-green",
-  completed: "bg-ctp-mauve",
-  dropped: "bg-ctp-red",
-};
+const STATUS_COLORS = {
+  backlog: "bg-status-backlog",
+  playing: "bg-status-playing",
+  finished: "bg-status-finished",
+  completed: "bg-status-completed",
+  dropped: "bg-status-dropped",
+} as const;
 
-export function FranchiseDetail() {
+export function FranchiseDetail(): JSX.Element {
   const { seriesName } = useParams({ from: "/franchises/$seriesName" });
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -209,7 +210,7 @@ export function FranchiseDetail() {
     return (
       <PageLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="text-ctp-subtext0">Loading...</div>
+          <div className="text-text-secondary">Loading...</div>
         </div>
       </PageLayout>
     );
@@ -219,7 +220,7 @@ export function FranchiseDetail() {
     return (
       <PageLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="text-ctp-red">Franchise not found</div>
+          <div className="text-status-dropped">Franchise not found</div>
         </div>
       </PageLayout>
     );
@@ -249,18 +250,18 @@ export function FranchiseDetail() {
         <div className="mb-8">
           <Link
             to="/franchises"
-            className="text-ctp-teal hover:text-ctp-mauve mb-4 hidden transition-colors md:inline-block"
+            className="mb-4 hidden text-accent transition-colors duration-standard md:inline-block"
           >
             Back to Franchises
           </Link>
           <div className="mb-2 flex items-center gap-3">
             <BackButton
               iconOnly={true}
-              className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+              className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
             />
-            <h1 className="text-ctp-text text-4xl font-bold">{series_name}</h1>
+            <h1 className="text-4xl font-bold text-text-primary">{series_name}</h1>
           </div>
-          <p className="text-ctp-subtext0">
+          <p className="text-text-secondary">
             {owned_games.length} owned
             {missing_games.length > 0 && ` · ${missing_games.length} missing`}
           </p>
@@ -268,12 +269,12 @@ export function FranchiseDetail() {
 
         {/* Owned Games */}
         <div className="mb-10">
-          <h2 id="owned-games" className="text-ctp-teal mb-4 text-2xl font-bold">
+          <h2 id="owned-games" className="mb-4 text-2xl font-bold text-accent">
             Your Games
           </h2>
           {owned_games.length === 0 ? (
             <Card>
-              <p className="text-ctp-subtext0 py-8 text-center">
+              <p className="py-8 text-center text-text-secondary">
                 No games owned in this franchise.
               </p>
             </Card>
@@ -281,7 +282,7 @@ export function FranchiseDetail() {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
               {owned_games.map((game: OwnedGame) => (
                 <Link key={game.id} to="/library/$id" params={{ id: game.id }} className="group">
-                  <div className="bg-ctp-surface0 relative mb-2 aspect-[3/4] overflow-hidden rounded-lg">
+                  <div className="relative mb-2 aspect-[3/4] overflow-hidden rounded-lg bg-surface">
                     {game.cover_art_url ? (
                       <img
                         src={game.cover_art_url}
@@ -289,23 +290,23 @@ export function FranchiseDetail() {
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (
-                      <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
+                      <div className="flex h-full w-full items-center justify-center text-text-muted">
                         No Cover
                       </div>
                     )}
                     <div
-                      className={`absolute right-2 top-2 h-3 w-3 rounded-full ${STATUS_COLORS[game.status] || "bg-ctp-overlay0"}`}
+                      className={`absolute right-2 top-2 h-3 w-3 rounded-full ${STATUS_COLORS[game.status as keyof typeof STATUS_COLORS] || "bg-status-backlog"}`}
                       title={game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     />
                   </div>
-                  <p className="text-ctp-subtext1 group-hover:text-ctp-text mb-1 truncate text-sm">
+                  <p className="mb-1 truncate text-sm text-text-muted group-hover:text-text-primary">
                     {game.name}
                   </p>
-                  <div className="text-ctp-overlay1 flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
                     {game.release_date && <span>{new Date(game.release_date).getFullYear()}</span>}
                     {game.platforms.length > 0 && (
                       <>
-                        <span className="text-ctp-overlay1">·</span>
+                        <span className="text-text-muted">·</span>
                         <span>{game.platforms.join(", ")}</span>
                       </>
                     )}
@@ -320,7 +321,7 @@ export function FranchiseDetail() {
         {missing_games.length > 0 && (
           <div>
             <div className="mb-4 flex items-center justify-between">
-              <h2 id="missing-games" className="text-ctp-mauve text-2xl font-bold">
+              <h2 id="missing-games" className="text-2xl font-bold text-accent">
                 Missing from Your Library
               </h2>
               <div className="flex items-center gap-2">
@@ -330,7 +331,7 @@ export function FranchiseDetail() {
                       variant="secondary"
                       size="sm"
                       onClick={handleSelectAll}
-                      className="bg-ctp-surface1 text-ctp-text hover:bg-ctp-overlay0"
+                      className="bg-elevated text-text-primary hover:bg-surface"
                     >
                       {selectedGames.size === missing_games.length ? "Deselect All" : "Select All"}
                     </Button>
@@ -338,7 +339,7 @@ export function FranchiseDetail() {
                       variant="secondary"
                       size="sm"
                       onClick={handleExitSelectionMode}
-                      className="bg-ctp-surface1 text-ctp-text hover:bg-ctp-overlay0"
+                      className="bg-elevated text-text-primary hover:bg-surface"
                     >
                       Cancel
                     </Button>
@@ -374,11 +375,12 @@ export function FranchiseDetail() {
                     tabIndex={0}
                   >
                     <div
-                      className={`bg-ctp-surface0 relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border transition-colors ${
+                      className={cn(
+                        "relative mb-2 aspect-[3/4] overflow-hidden rounded-lg border bg-surface transition-colors duration-standard",
                         isSelected
-                          ? "bg-ctp-mauve/20 border-ctp-mauve"
-                          : "border-ctp-surface1 hover:border-ctp-mauve border-dashed"
-                      }`}
+                          ? "bg-accent/20 border-accent"
+                          : "border-dashed border-border hover:border-accent"
+                      )}
                     >
                       {game.background_image ? (
                         <img
@@ -391,20 +393,20 @@ export function FranchiseDetail() {
                           }`}
                         />
                       ) : (
-                        <div className="text-ctp-overlay1 flex h-full w-full items-center justify-center">
+                        <div className="flex h-full w-full items-center justify-center text-text-muted">
                           No Image
                         </div>
                       )}
                       {selectionMode ? (
                         isSelected && (
-                          <div className="bg-ctp-mauve absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full">
+                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
                               viewBox="0 0 24 24"
                               strokeWidth={3}
                               stroke="currentColor"
-                              className="text-ctp-text h-4 w-4"
+                              className="h-4 w-4 text-text-primary"
                             >
                               <path
                                 strokeLinecap="round"
@@ -415,18 +417,18 @@ export function FranchiseDetail() {
                           </div>
                         )
                       ) : (
-                        <div className="bg-ctp-base/50 absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-                          <span className="text-ctp-text text-sm font-medium">
+                        <div className="bg-base/50 absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-standard group-hover:opacity-100">
+                          <span className="text-sm font-medium text-text-primary">
                             + Add to Library
                           </span>
                         </div>
                       )}
                     </div>
-                    <p className="text-ctp-subtext0 group-hover:text-ctp-subtext1 mb-1 truncate text-sm">
+                    <p className="mb-1 truncate text-sm text-text-secondary group-hover:text-text-primary">
                       {game.name}
                     </p>
                     {game.released && (
-                      <p className="text-ctp-overlay1 text-xs">
+                      <p className="text-xs text-text-muted">
                         {new Date(game.released).getFullYear()}
                       </p>
                     )}
@@ -439,18 +441,18 @@ export function FranchiseDetail() {
 
         {/* Bulk Import Floating Action Bar */}
         {selectionMode && selectedGames.size > 0 && (
-          <div className="border-ctp-surface1 bg-ctp-mantle fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border px-6 py-4 shadow-xl md:bottom-6">
-            <span className="text-ctp-text font-medium">
+          <div className="fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl border border-border bg-elevated px-6 py-4 shadow-xl md:bottom-6">
+            <span className="font-medium text-text-primary">
               {selectedGames.size} game{selectedGames.size !== 1 ? "s" : ""} selected
             </span>
-            <div className="bg-ctp-surface1 h-6 w-px" />
+            <div className="h-6 w-px bg-border" />
             <div className="flex items-center gap-2">
-              <span className="text-ctp-subtext0 text-sm">Import to:</span>
+              <span className="text-sm text-text-secondary">Import to:</span>
               <Button
                 variant="secondary"
                 onClick={openBulkImportModal}
                 disabled={bulkImportMutation.isPending}
-                className="bg-ctp-mauve/20 hover:bg-ctp-mauve/30 border-ctp-mauve text-ctp-mauve focus:ring-ctp-mauve border px-3 py-1 text-sm shadow-none"
+                className="bg-accent/20 hover:bg-accent/30 border border-accent px-3 py-1 text-sm text-accent shadow-none focus:ring-accent"
               >
                 Choose platforms
               </Button>
@@ -467,18 +469,18 @@ export function FranchiseDetail() {
             }
           }}
         >
-          <DialogContent className="border-ctp-surface1 bg-ctp-mantle max-w-md">
+          <DialogContent className="max-w-md border-border bg-elevated">
             <DialogHeader>
-              <DialogTitle className="text-ctp-text text-xl font-bold">
+              <DialogTitle className="text-xl font-bold text-text-primary">
                 {isBulkImport ? "Bulk Import" : "Add to Library"}
               </DialogTitle>
-              <DialogDescription className="text-ctp-subtext0">
+              <DialogDescription className="text-text-secondary">
                 {isBulkImport
                   ? `Import ${selectedGames.size} selected game${selectedGames.size !== 1 ? "s" : ""}`
                   : selectedGame?.name}
               </DialogDescription>
             </DialogHeader>
-            <p className="text-ctp-overlay1 text-sm">Select platform(s):</p>
+            <p className="text-sm text-text-muted">Select platform(s):</p>
             <ScrollFade axis="y" className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto">
               {platforms.map((platform) => {
                 const isSelected = selectedPlatformIds.has(platform.id);
@@ -487,8 +489,8 @@ export function FranchiseDetail() {
                     key={platform.id}
                     className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${
                       isSelected
-                        ? "bg-ctp-mauve/20 border-ctp-mauve text-ctp-mauve"
-                        : "hover:border-ctp-mauve/60 border-ctp-surface1 bg-ctp-surface0 text-ctp-subtext1"
+                        ? "bg-accent/20 border-accent text-accent"
+                        : "hover:border-accent/60 border-border bg-surface text-text-muted"
                     }`}
                   >
                     <Checkbox

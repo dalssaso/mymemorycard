@@ -53,11 +53,11 @@ export function Activity() {
         <div className="mb-6 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
           />
           <div>
-            <h1 className="text-ctp-text text-3xl font-bold">Activity</h1>
-            <p className="text-ctp-subtext1 text-sm">
+            <h1 className="text-3xl font-bold text-text-primary">Activity</h1>
+            <p className="text-sm text-text-muted">
               {total === 0 ? "No activity yet" : `Showing ${pageStart}-${pageEnd} of ${total}`}
             </p>
           </div>
@@ -68,22 +68,25 @@ export function Activity() {
             <div className="space-y-3">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="flex animate-pulse gap-3">
-                  <div className="bg-ctp-surface1 h-10 w-10 rounded-lg" />
+                  <div className="h-10 w-10 rounded-lg bg-elevated" />
                   <div className="flex-1 space-y-2">
-                    <div className="bg-ctp-surface1 h-4 w-3/4 rounded" />
-                    <div className="bg-ctp-surface1 h-3 w-1/2 rounded" />
+                    <div className="h-4 w-3/4 rounded bg-elevated" />
+                    <div className="h-3 w-1/2 rounded bg-elevated" />
                   </div>
                 </div>
               ))}
             </div>
           ) : feed.length === 0 ? (
-            <div className="text-ctp-overlay1 py-10 text-center">
+            <div className="py-10 text-center text-text-muted">
               <p>No recent activity</p>
               <p className="mt-1 text-sm">
                 Start tracking sessions, achievements, or completion updates
               </p>
               <div className="mt-4">
-                <Link to="/library" className="text-ctp-teal hover:text-ctp-mauve text-sm">
+                <Link
+                  to="/library"
+                  className="hover:text-accent/80 text-sm text-accent transition-colors duration-standard"
+                >
                   Go to library
                 </Link>
               </div>
@@ -103,7 +106,7 @@ export function Activity() {
             >
               Previous
             </Button>
-            <div className="text-ctp-subtext1 text-sm">
+            <div className="text-sm text-text-muted">
               Page {currentPage} of {totalPages}
             </div>
             <Button

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BackButton, PageLayout } from "@/components/layout";
 import { ImportSidebar } from "@/components/sidebar";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Card,
@@ -350,17 +351,17 @@ export function Import() {
         <div className="mb-2 flex items-center gap-3">
           <BackButton
             iconOnly={true}
-            className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+            className="rounded-lg p-2 text-text-secondary transition-all duration-standard hover:bg-surface hover:text-text-primary md:hidden"
           />
-          <h1 className="text-ctp-text text-4xl font-bold">Import Games</h1>
+          <h1 className="text-4xl font-bold text-text-primary">Import Games</h1>
         </div>
-        <p className="text-ctp-subtext0 mb-8">
+        <p className="mb-8 text-text-secondary">
           Paste game names (one per line) and we&apos;ll automatically enrich them with metadata
         </p>
 
         {platforms.length === 0 && (
           <Card className="mb-8 p-6">
-            <p className="text-ctp-subtext0">
+            <p className="text-text-secondary">
               You have not selected any platforms yet. Choose your platforms to start importing.
             </p>
             <div className="mt-4">
@@ -382,18 +383,19 @@ export function Import() {
                   type="button"
                   onClick={() => setSelectedPlatform(platform.id)}
                   disabled={importMutation.isPending}
-                  className={
+                  className={cn(
+                    "transition-colors duration-standard",
                     selectedPlatform === platform.id
-                      ? "hover:bg-ctp-mauve/90 border-ctp-mauve bg-ctp-mauve text-ctp-base shadow-glow-purple"
-                      : "border-ctp-surface1 bg-ctp-mantle text-ctp-subtext0 hover:border-ctp-surface2 hover:text-ctp-text"
-                  }
+                      ? "shadow-glow-purple hover:bg-accent/90 border-accent bg-accent text-text-primary"
+                      : "border-border bg-base text-text-secondary hover:border-accent hover:text-text-primary"
+                  )}
                 >
                   {platform.display_name}
                 </Button>
               ))}
             </div>
             {selectedPlatform && (
-              <p className="text-ctp-teal mt-2 text-xs">
+              <p className="mt-2 text-xs text-accent">
                 Games will be imported to{" "}
                 {platforms.find((p) => p.id === selectedPlatform)?.display_name}
               </p>
@@ -442,7 +444,7 @@ export function Import() {
           </div>
 
           {importMutation.isError && (
-            <div className="bg-ctp-red/20 border-ctp-red text-ctp-red mt-4 rounded border px-4 py-2">
+            <div className="bg-status-dropped/20 mt-4 rounded border border-status-dropped px-4 py-2 text-status-dropped">
               Failed to import games. Please try again.
             </div>
           )}
@@ -451,8 +453,8 @@ export function Import() {
         {importMutation.isPending && (
           <Card className="p-6">
             <div className="flex items-center gap-3">
-              <div className="border-ctp-mauve h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
-              <span className="text-ctp-subtext0">Importing and enriching games...</span>
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+              <span className="text-text-secondary">Importing and enriching games...</span>
             </div>
           </Card>
         )}
@@ -461,14 +463,14 @@ export function Import() {
           <div className="space-y-6">
             {results.imported.length > 0 && (
               <Card className="p-6">
-                <h2 className="text-ctp-green mb-4 text-2xl font-bold">
+                <h2 className="mb-4 text-2xl font-bold text-status-finished">
                   Successfully Imported ({results.imported.length})
                 </h2>
                 <div className="space-y-3">
                   {results.imported.map((item, idx) => (
                     <div
                       key={idx}
-                      className="border-ctp-surface1 bg-ctp-mantle flex items-center gap-4 rounded border p-3"
+                      className="flex items-center gap-4 rounded border border-border bg-elevated p-3"
                     >
                       {item.display?.cover_art_url || item.game.cover_art_url ? (
                         <img
@@ -477,17 +479,17 @@ export function Import() {
                           className="h-16 w-16 rounded object-cover"
                         />
                       ) : (
-                        <div className="bg-ctp-surface0 flex h-16 w-16 items-center justify-center rounded">
-                          <span className="text-ctp-overlay1 text-xs">No image</span>
+                        <div className="flex h-16 w-16 items-center justify-center rounded bg-surface">
+                          <span className="text-xs text-text-muted">No image</span>
                         </div>
                       )}
                       <div className="flex-1">
                         <h3 className="font-medium">{item.display?.name || item.game.name}</h3>
-                        <p className="text-ctp-overlay1 text-sm">
+                        <p className="text-sm text-text-muted">
                           {item.source === "exact" ? "Exact match" : "Selected"}
                         </p>
                       </div>
-                      <div className="text-ctp-green">
+                      <div className="text-status-finished">
                         <svg
                           className="h-6 w-6"
                           fill="none"
@@ -512,10 +514,10 @@ export function Import() {
               <Card className="p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-ctp-yellow text-2xl font-bold">
+                    <h2 className="text-2xl font-bold text-accent">
                       Select the games from the list below
                     </h2>
-                    <p className="text-ctp-overlay1 mt-2 text-sm">
+                    <p className="mt-2 text-sm text-text-muted">
                       Choose the correct match for each entry. You can import multiple games at
                       once.
                     </p>
@@ -542,9 +544,9 @@ export function Import() {
           }
         }}
       >
-        <DialogContent className="border-ctp-surface1 bg-ctp-mantle flex max-h-[85vh] max-w-3xl flex-col">
+        <DialogContent className="flex max-h-[85vh] max-w-3xl flex-col border-border bg-elevated">
           <DialogHeader>
-            <DialogTitle className="text-ctp-text text-2xl font-bold">
+            <DialogTitle className="text-2xl font-bold text-text-primary">
               Select games ({selectedCandidates.length} selected)
             </DialogTitle>
             <DialogDescription>Select each match and import in bulk when ready.</DialogDescription>
@@ -552,12 +554,12 @@ export function Import() {
 
           <ScrollFade axis="y" className="flex-1 space-y-2 overflow-y-auto pr-2">
             {results?.needsReview.some((item) => item.error) && (
-              <div className="bg-ctp-red/10 border-ctp-red/30 text-ctp-red rounded border p-3 text-sm">
+              <div className="bg-status-dropped/10 border-status-dropped/30 rounded border p-3 text-sm text-status-dropped">
                 Some items failed to search. You can retry those imports later.
               </div>
             )}
             {results && getSelectionList(results.needsReview).length === 0 ? (
-              <div className="text-ctp-subtext0 py-6 text-center text-sm">
+              <div className="py-6 text-center text-sm text-text-secondary">
                 No matches found for the imported names.
               </div>
             ) : (
@@ -576,11 +578,12 @@ export function Import() {
                     }}
                     role="button"
                     tabIndex={0}
-                    className={`flex cursor-pointer items-center gap-3 rounded border p-3 transition-colors ${
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded border p-3 transition-colors duration-standard",
                       isSelected
-                        ? "bg-ctp-mauve/10 border-ctp-mauve"
-                        : "bg-ctp-surface0/60 border-ctp-surface1 hover:bg-ctp-surface1"
-                    }`}
+                        ? "bg-accent/10 border-accent"
+                        : "bg-surface/60 border-border hover:bg-surface"
+                    )}
                   >
                     <Checkbox
                       id={`import-select-${candidate.id}`}
@@ -595,15 +598,15 @@ export function Import() {
                         className="h-12 w-12 rounded object-cover"
                       />
                     ) : (
-                      <div className="bg-ctp-surface0 text-ctp-overlay1 flex h-12 w-12 items-center justify-center rounded text-xs">
+                      <div className="flex h-12 w-12 items-center justify-center rounded bg-surface text-xs text-text-muted">
                         No image
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{candidate.name}</p>
-                      <div className="text-ctp-overlay1 flex items-center gap-2 text-xs">
+                      <div className="flex items-center gap-2 text-xs text-text-muted">
                         {candidate.released && <span>{candidate.released}</span>}
-                        <span className="text-ctp-subtext0">From: {searchTerm}</span>
+                        <span className="text-text-secondary">From: {searchTerm}</span>
                       </div>
                     </div>
                     <Button
@@ -633,7 +636,7 @@ export function Import() {
           </ScrollFade>
 
           <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
-            <div className="text-ctp-subtext0 text-sm">{selectedCandidates.length} selected</div>
+            <div className="text-sm text-text-secondary">{selectedCandidates.length} selected</div>
             <div className="flex gap-2">
               <Button
                 onClick={() => setSelectedCandidates([])}
@@ -669,9 +672,11 @@ export function Import() {
           }
         }}
       >
-        <DialogContent className="border-ctp-surface1 bg-ctp-mantle flex max-h-[85vh] max-w-2xl flex-col">
+        <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col border-border bg-elevated">
           <DialogHeader>
-            <DialogTitle className="text-ctp-text text-2xl font-bold">Confirm Import</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-text-primary">
+              Confirm Import
+            </DialogTitle>
             <DialogDescription>
               You are about to import {gamesForConfirmation.length} game(s) to{" "}
               {getPlatformDisplayName()}
@@ -682,7 +687,7 @@ export function Import() {
             {gamesForConfirmation.map((game) => (
               <div
                 key={game.rawgId}
-                className="bg-ctp-surface0/60 border-ctp-surface1 flex items-center gap-3 rounded border p-3"
+                className="bg-surface/60 flex items-center gap-3 rounded border border-border p-3"
               >
                 {game.background_image ? (
                   <img
@@ -691,15 +696,15 @@ export function Import() {
                     className="h-16 w-16 rounded object-cover"
                   />
                 ) : (
-                  <div className="bg-ctp-surface0 flex h-16 w-16 items-center justify-center rounded">
-                    <span className="text-ctp-overlay1 text-xs">No image</span>
+                  <div className="flex h-16 w-16 items-center justify-center rounded bg-surface">
+                    <span className="text-xs text-text-muted">No image</span>
                   </div>
                 )}
                 <div className="flex-1">
-                  <p className="text-ctp-text font-medium">{game.name}</p>
-                  <div className="text-ctp-overlay1 flex items-center gap-2 text-sm">
+                  <p className="font-medium text-text-primary">{game.name}</p>
+                  <div className="flex items-center gap-2 text-sm text-text-muted">
                     {game.released && <span>{game.released}</span>}
-                    <span className="text-ctp-subtext0">From: {game.searchTerm}</span>
+                    <span className="text-text-secondary">From: {game.searchTerm}</span>
                   </div>
                 </div>
               </div>

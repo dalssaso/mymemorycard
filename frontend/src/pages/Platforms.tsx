@@ -37,7 +37,7 @@ function PlatformIcon({
   }
 
   const initial = name.trim().charAt(0).toUpperCase() || "P";
-  const colorValue = color || "var(--ctp-surface2)";
+  const colorValue = color || "var(--color-border)";
   const hex = colorValue.startsWith("#") ? colorValue.replace("#", "") : null;
   const isLightBackground = hex
     ? (parseInt(hex.slice(0, 2), 16) * 299 +
@@ -50,7 +50,7 @@ function PlatformIcon({
   return (
     <div
       className={`flex h-full w-full items-center justify-center text-6xl font-semibold ${
-        isLightBackground ? "text-ctp-crust" : "text-ctp-base dark:text-ctp-text"
+        isLightBackground ? "text-text-secondary" : "text-text-primary"
       }`}
       style={{ backgroundColor: colorValue }}
     >
@@ -200,11 +200,11 @@ export function Platforms() {
             <div className="flex items-center gap-3">
               <BackButton
                 iconOnly={true}
-                className="text-ctp-subtext0 hover:bg-ctp-surface0 hover:text-ctp-text rounded-lg p-2 transition-all md:hidden"
+                className="rounded-lg p-2 text-text-secondary transition-all hover:bg-surface hover:text-text-primary md:hidden"
               />
-              <h1 className="text-ctp-text text-4xl font-bold">Platforms</h1>
+              <h1 className="text-4xl font-bold text-text-primary">Platforms</h1>
             </div>
-            <p className="text-ctp-subtext0 mt-1">
+            <p className="mt-1 text-text-secondary">
               Keep your platform list current for accurate imports.
             </p>
           </div>
@@ -220,7 +220,7 @@ export function Platforms() {
 
         {userPlatforms.length === 0 ? (
           <Card className="mb-8 p-6">
-            <p className="text-ctp-subtext0 py-8 text-center">
+            <p className="py-8 text-center text-text-secondary">
               No platforms saved yet. Add your first platform to get started.
             </p>
           </Card>
@@ -236,7 +236,7 @@ export function Platforms() {
                 <Link to="/platforms/$id" params={{ id: platform.id }}>
                   <div
                     className={[
-                      "bg-ctp-surface0 aspect-square overflow-hidden rounded-lg",
+                      "aspect-square overflow-hidden rounded-lg bg-surface",
                       "relative mb-2",
                     ].join(" ")}
                   >
@@ -248,13 +248,15 @@ export function Platforms() {
                     <div
                       className={[
                         "absolute inset-0 bg-gradient-to-t",
-                        "from-ctp-base/70 via-ctp-base/20 to-transparent",
-                        "dark:from-ctp-crust/80 dark:via-transparent dark:to-transparent",
+                        "from-base/70 via-base/20 to-transparent",
+                        "dark:from-base/80 dark:via-transparent dark:to-transparent",
                       ].join(" ")}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-ctp-text truncate font-medium">{platform.display_name}</p>
-                      <p className="text-ctp-teal truncate text-sm">
+                      <p className="truncate font-medium text-text-primary">
+                        {platform.display_name}
+                      </p>
+                      <p className="truncate text-sm text-accent">
                         {platform.username || "No username set"}
                       </p>
                     </div>
@@ -279,12 +281,14 @@ export function Platforms() {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-ctp-text text-lg font-semibold">Add Platforms</h2>
-            <span className="text-ctp-subtext0 text-sm">{selectedPlatformIds.length} selected</span>
+            <h2 className="text-lg font-semibold text-text-primary">Add Platforms</h2>
+            <span className="text-sm text-text-secondary">
+              {selectedPlatformIds.length} selected
+            </span>
           </div>
 
           {isLoadingPlatforms ? (
-            <div className="text-ctp-subtext0">Loading platforms...</div>
+            <div className="text-text-secondary">Loading platforms...</div>
           ) : (
             <div className="space-y-6">
               <div className="flex flex-wrap gap-2">
@@ -292,7 +296,7 @@ export function Platforms() {
                   variant={platformTypeFilter === "all" ? "secondary" : "ghost"}
                   size="sm"
                   onClick={() => setPlatformTypeFilter("all")}
-                  className="border-ctp-surface1 rounded-full border px-3"
+                  className="rounded-full border border-border px-3"
                 >
                   All
                 </Button>
@@ -309,7 +313,7 @@ export function Platforms() {
                     variant={platformTypeFilter === option.value ? "secondary" : "ghost"}
                     size="sm"
                     onClick={() => setPlatformTypeFilter(option.value)}
-                    className="border-ctp-surface1 rounded-full border px-3"
+                    className="rounded-full border border-border px-3"
                   >
                     {option.label}
                   </Button>
@@ -329,7 +333,7 @@ export function Platforms() {
 
                 return (
                   <div key={group.type}>
-                    <div className="text-ctp-subtext0 mb-3 flex items-center gap-2 text-sm font-semibold">
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-text-secondary">
                       <PlatformTypeIcon type={group.type} size="sm" showLabel={false} />
                       <span>{group.label}</span>
                     </div>
@@ -346,16 +350,16 @@ export function Platforms() {
                             disabled={isLocked}
                             className={`h-auto w-full justify-start rounded-lg border px-5 py-4 text-left ${
                               isSelected
-                                ? "bg-ctp-teal/10 hover:bg-ctp-teal/20 border-ctp-teal"
-                                : "bg-ctp-mantle/50 hover:bg-ctp-mantle/70 border-ctp-surface0 hover:border-ctp-surface1"
+                                ? "bg-accent/10 hover:bg-accent/20 border-accent"
+                                : "bg-elevated/50 hover:bg-elevated/70 border-surface hover:border-elevated"
                             }`}
                           >
                             <div className="w-full">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="text-ctp-text font-medium">
+                                <div className="font-medium text-text-primary">
                                   {platform.display_name}
                                 </div>
-                                {isLocked && <span className="text-ctp-teal text-xs">Saved</span>}
+                                {isLocked && <span className="text-xs text-accent">Saved</span>}
                               </div>
                               <PlatformTypeIcon
                                 type={platform.platform_type}
@@ -373,7 +377,7 @@ export function Platforms() {
               })}
 
               {!isLoadingPlatforms && filteredPlatforms.length === 0 && (
-                <p className="text-ctp-subtext0">No platforms match your search.</p>
+                <p className="text-text-secondary">No platforms match your search.</p>
               )}
             </div>
           )}

@@ -16,6 +16,9 @@ export type { BadgeProps } from "./Badge";
 
 export { ClickableBadge } from "./ClickableBadge";
 
+export { StatBadge } from "./stat-badge";
+export type { StatBadgeProps } from "./stat-badge";
+
 export {
   Skeleton,
   GameCardSkeleton,
@@ -108,3 +111,9 @@ export {
 } from "./command";
 
 export { ThemeToggle } from "./ThemeToggle";
+
+export { SectionCard } from "./section-card";
+export type { SectionCardProps } from "./section-card";
+
+export { TextDisplay } from "./text-display";
+export type { TextDisplayProps } from "./text-display";
