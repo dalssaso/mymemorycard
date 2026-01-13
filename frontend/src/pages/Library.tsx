@@ -305,7 +305,7 @@ export function Library() {
             <Link
               to="/library/$id"
               params={{ id: info.row.original.id }}
-              className="text-accent transition-colors duration-quick hover:bg-elevated"
+              className="text-accent transition-colors duration-standard hover:bg-elevated"
             >
               {info.getValue()}
             </Link>
