@@ -9,13 +9,14 @@
  */
 
 import "reflect-metadata";
+import { beforeAll } from "bun:test";
 import { runMigrations, seedPlatforms, closeMigrationConnection } from "@/db";
 
-// Run migrations and seed data before all integration tests
-console.log("Setting up integration tests...");
-
-await runMigrations();
-await seedPlatforms();
-await closeMigrationConnection();
-
-console.log("Integration test setup complete");
+// Use beforeAll to ensure migrations run after test framework initializes
+beforeAll(async () => {
+  console.log("Setting up integration tests...");
+  await runMigrations();
+  await seedPlatforms();
+  await closeMigrationConnection();
+  console.log("Integration test setup complete");
+});
