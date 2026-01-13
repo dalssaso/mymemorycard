@@ -148,7 +148,7 @@ export function GameCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="mb-2 break-words text-lg font-bold transition-colors group-hover:text-accent">
+          <h3 className="mb-2 break-words text-lg font-bold transition-colors duration-standard group-hover:text-accent">
             {name}
           </h3>
 
