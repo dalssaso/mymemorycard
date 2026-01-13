@@ -56,7 +56,7 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
 
   // Auth routes (DI-based)
   const authController = container.resolve<IAuthController>("IAuthController");
-  app.route("/api/auth", authController.router);
+  app.route("/api/v1/auth", authController.router);
 
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)
