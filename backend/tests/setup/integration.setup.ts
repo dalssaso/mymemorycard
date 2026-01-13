@@ -44,19 +44,23 @@ async function retryWithBackoff<T>(
 }
 
 // Use beforeAll to ensure migrations run after test framework initializes
-beforeAll(async () => {
-  console.log("Setting up integration tests...");
+// Set timeout to 60 seconds to allow for retry attempts (default is 5 seconds)
+beforeAll(
+  async () => {
+    console.log("Setting up integration tests...");
 
-  // Retry migrations to handle DNS timing issues
-  await retryWithBackoff(
-    async () => {
-      await runMigrations();
-      await seedPlatforms();
-    },
-    5,
-    1000
-  );
+    // Retry migrations to handle DNS timing issues
+    await retryWithBackoff(
+      async () => {
+        await runMigrations();
+        await seedPlatforms();
+      },
+      5,
+      1000
+    );
 
-  await closeMigrationConnection();
-  console.log("Integration test setup complete");
-});
+    await closeMigrationConnection();
+    console.log("Integration test setup complete");
+  },
+  { timeout: 60000 }
+);
