@@ -78,7 +78,10 @@ export function Register(): JSX.Element {
                 <FormField name="password" label="Password" type="password" />
                 {password.length > 0 ? (
                   <p
-                    className={`text-xs ${passwordStrong ? "text-status-finished" : "text-status-dropped"}`}
+                    className={cn(
+                      "text-xs",
+                      passwordStrong ? "text-status-finished" : "text-status-dropped"
+                    )}
                   >
                     {passwordStrong
                       ? "Password looks strong"
