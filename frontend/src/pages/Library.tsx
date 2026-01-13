@@ -747,7 +747,7 @@ export function Library() {
                       role="button"
                       tabIndex={0}
                       className={`bg-surface/40 relative cursor-pointer rounded-xl border border-border p-0 transition-all sm:p-5 ${
-                        isSelected ? "bg-accent/20 border-accent" : "hover:border-elevated"
+                        isSelected ? "bg-accent/20 border-accent" : "hover:border-accent/50"
                       }`}
                     >
                       {/* Mobile: Poster-only layout */}
