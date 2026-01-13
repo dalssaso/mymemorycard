@@ -65,6 +65,8 @@ export function GameCard({
     toggleFavoriteMutation.mutate(!isFavorite);
   };
 
+  const statusConfig = getStatusConfig(status);
+
   return (
     <Link
       to="/library/$id"
@@ -152,14 +154,9 @@ export function GameCard({
 
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <PlatformIcons platforms={platforms} size="sm" maxDisplay={5} />
-            {(() => {
-              const statusConfig = getStatusConfig(status);
-              return (
-                <Badge className="border text-text-primary" style={statusConfig?.activeStyle}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </Badge>
-              );
-            })()}
+            <Badge className="border text-text-primary" style={statusConfig?.activeStyle}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Badge>
             {seriesName && (
               <Button
                 type="button"
