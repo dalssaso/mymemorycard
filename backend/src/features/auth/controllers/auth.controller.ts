@@ -122,6 +122,7 @@ export class AuthController implements IAuthController {
       method: "get",
       path: "/me",
       tags: ["auth"],
+      security: [{ bearerAuth: [] }],
       responses: {
         200: {
           content: {

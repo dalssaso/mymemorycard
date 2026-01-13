@@ -288,6 +288,14 @@ describe("Auth Integration Tests", () => {
 
       expect(response.status).toBe(401);
     });
+
+    it("should return 401 with invalid token", async () => {
+      const response = await app.request("/api/v1/auth/me", {
+        headers: { Authorization: "Bearer invalid.token.here" },
+      });
+
+      expect(response.status).toBe(401);
+    });
   });
 
   describe("GET /metrics", () => {

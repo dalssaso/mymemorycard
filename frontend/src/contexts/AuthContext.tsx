@@ -10,11 +10,13 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "@/lib/api";
 import { clearToken, getToken, setToken, subscribe } from "@/lib/auth-storage";
+import type {
+  GetApiV1AuthMeResponse,
+  PostApiV1AuthLoginResponse,
+  PostApiV1AuthRegisterResponse,
+} from "@/shared/api/generated";
 
-interface User {
-  id: string;
-  username: string;
-}
+type User = GetApiV1AuthMeResponse["user"];
 
 export interface AuthContextType {
   user: User | null;
@@ -41,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     queryKey: ["auth", "me"],
     queryFn: async () => {
       const response = await authAPI.me();
-      return (response.user ?? response) as User;
+      return response.user;
     },
     enabled: Boolean(token),
     retry: false,
@@ -49,11 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const login = useCallback(
     async (username: string, password: string) => {
-      const response = await authAPI.login({ username, password });
-      const { user: userData, token: userToken } = response as {
-        user: User;
-        token: string;
-      };
+      const response: PostApiV1AuthLoginResponse = await authAPI.login({ username, password });
+      const { user: userData, token: userToken } = response;
 
       setToken(userToken);
       queryClient.setQueryData(["auth", "me"], userData);
@@ -63,11 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const register = useCallback(
     async (username: string, email: string, password: string) => {
-      const response = await authAPI.register({ username, email, password });
-      const { user: userData, token: userToken } = response as {
-        user: User;
-        token: string;
-      };
+      const response: PostApiV1AuthRegisterResponse = await authAPI.register({
+        username,
+        email,
+        password,
+      });
+      const { user: userData, token: userToken } = response;
 
       setToken(userToken);
       queryClient.setQueryData(["auth", "me"], userData);

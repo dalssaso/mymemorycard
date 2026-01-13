@@ -1,35 +1,40 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { authAPI, gamesAPI, importAPI } from "@/lib/api"
-import { AuthService } from "@/shared/api/generated/services/AuthService"
+import * as generated from "@/shared/api/generated"
 
 describe("API Client", () => {
   describe("authAPI", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it("uses generated auth client", async () => {
-      const loginSpy = vi
-        .spyOn(AuthService, "postApiV1AuthLogin")
-        .mockResolvedValue({ user: { id: "1", username: "user", email: "u@example.com" }, token: "t" })
+      const loginSpy = vi.spyOn(generated, "postApiV1AuthLogin").mockResolvedValue({
+        data: { user: { id: "1", username: "user", email: "u@example.com" }, token: "t" },
+      })
       const registerSpy = vi
-        .spyOn(AuthService, "postApiV1AuthRegister")
-        .mockResolvedValue({ user: { id: "2", username: "user", email: "u@example.com" }, token: "t" })
-      const meSpy = vi
-        .spyOn(AuthService, "getApiV1AuthMe")
-        .mockResolvedValue({ user: { id: "3", username: "user", email: "u@example.com" } })
+        .spyOn(generated, "postApiV1AuthRegister")
+        .mockResolvedValue({
+          data: { user: { id: "2", username: "user", email: "u@example.com" }, token: "t" },
+        })
+      const meSpy = vi.spyOn(generated, "getApiV1AuthMe").mockResolvedValue({
+        data: { user: { id: "3", username: "user", email: "u@example.com" } },
+      })
 
       await authAPI.login({ username: "user", password: "pass" })
       await authAPI.register({ username: "user", email: "u@example.com", password: "pass" })
       await authAPI.me()
 
       expect(loginSpy).toHaveBeenCalledWith({
-        requestBody: { username: "user", password: "pass" },
+        body: { username: "user", password: "pass" },
+        throwOnError: true,
       })
       expect(registerSpy).toHaveBeenCalledWith({
-        requestBody: { username: "user", email: "u@example.com", password: "pass" },
+        body: { username: "user", email: "u@example.com", password: "pass" },
+        throwOnError: true,
       })
-      expect(meSpy).toHaveBeenCalledWith()
+      expect(meSpy).toHaveBeenCalledWith({ throwOnError: true })
 
-      loginSpy.mockRestore()
-      registerSpy.mockRestore()
-      meSpy.mockRestore()
     })
 
     it("should have register method", () => {

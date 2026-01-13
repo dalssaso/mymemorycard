@@ -41,9 +41,20 @@ describe("buildOpenApiDocument", () => {
 
   it("includes versioned auth paths", () => {
     const doc = buildOpenApiDocument();
+    const login = doc.paths["/api/v1/auth/login"];
+    const register = doc.paths["/api/v1/auth/register"];
+    const me = doc.paths["/api/v1/auth/me"];
 
-    expect(doc.paths["/api/v1/auth/login"]).toBeDefined();
-    expect(doc.paths["/api/v1/auth/register"]).toBeDefined();
-    expect(doc.paths["/api/v1/auth/me"]).toBeDefined();
+    expect(login).toBeDefined();
+    expect(register).toBeDefined();
+    expect(me).toBeDefined();
+    expect(login?.post).toBeDefined();
+    expect(register?.post).toBeDefined();
+    expect(me?.get).toBeDefined();
+    expect(login?.post?.requestBody).toBeDefined();
+    expect(register?.post?.requestBody).toBeDefined();
+    expect(login?.post?.responses?.["200"]).toBeDefined();
+    expect(register?.post?.responses?.["201"]).toBeDefined();
+    expect(me?.get?.responses?.["200"]).toBeDefined();
   });
 });

@@ -1,3 +1,4 @@
+import type { OpenAPIObject } from "openapi3-ts/oas30";
 import { registerDependencies } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 
@@ -23,15 +24,26 @@ function applyOpenApiEnvDefaults(): void {
  * Builds the OpenAPI document from the DI-backed Hono app.
  * Applies default environment variables to avoid required-config failures.
  */
-export function buildOpenApiDocument(): ReturnType<
-  ReturnType<typeof createHonoApp>["getOpenAPIDocument"]
-> {
+export function buildOpenApiDocument(): OpenAPIObject {
   applyOpenApiEnvDefaults();
   registerDependencies();
   const app = createHonoApp();
 
-  return app.getOpenAPIDocument({
+  const document = app.getOpenAPIDocument({
     openapi: "3.0.0",
     info: { title: "MyMemoryCard API", version: "v1" },
   });
+  const components = document.components ?? {};
+  document.components = {
+    ...components,
+    securitySchemes: {
+      ...components.securitySchemes,
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
+  };
+  return document;
 }

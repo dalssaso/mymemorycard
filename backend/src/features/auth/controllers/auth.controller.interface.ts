@@ -1,10 +1,12 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { User } from "@/types";
 
+export type AuthVariables = {
+  user: User;
+};
+
 export type AuthEnv = {
-  Variables: {
-    user: User;
-  };
+  Variables: AuthVariables;
 };
 
 /**
@@ -17,5 +19,5 @@ export interface IAuthController {
    * - POST /register - Register new user
    * - POST /login - Authenticate user
    */
-  router: OpenAPIHono<AuthEnv>;
+  router: OpenAPIHono<{ Variables: AuthVariables }>;
 }

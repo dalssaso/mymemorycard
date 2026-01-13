@@ -21,7 +21,6 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   // Resolve dependencies once at app creation time (avoid repeated resolution on each request)
   const logger = container.resolve(Logger);
   const metricsService = container.resolve(MetricsService);
-  const dbConnection = container.resolve(DatabaseConnection);
   const metricsMiddleware = createMetricsMiddleware(metricsService);
   const errorHandler = createErrorHandler(logger);
 
@@ -33,8 +32,9 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   });
   app.use("*", metricsMiddleware);
 
-  // Health check (reuses resolved dbConnection instance)
+  // Health check (resolves db connection only when requested)
   app.get("/api/health", async (c) => {
+    const dbConnection = container.resolve(DatabaseConnection);
     const dbHealthy = await dbConnection.healthCheck();
 
     return c.json(

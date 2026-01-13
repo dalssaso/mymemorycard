@@ -99,7 +99,7 @@ just test-integration
 
 Use conventional commits:
 
-```
+```text
 type: short description
 ```
 

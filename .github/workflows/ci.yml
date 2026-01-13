@@ -52,6 +52,9 @@ jobs:
         working-directory: ./backend
         run: bun run generate:openapi
 
+      - name: Verify OpenAPI spec is committed
+        run: git diff --exit-code backend/openapi.json
+
       - name: TypeScript type check
         working-directory: ./backend
         run: bun run typecheck

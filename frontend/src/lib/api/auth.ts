@@ -1,27 +1,25 @@
+import axios from "axios";
 import { clearToken, getToken } from "@/lib/auth-storage";
-import { ApiError } from "@/shared/api/generated/core/ApiError";
-import { OpenAPI } from "@/shared/api/generated/core/OpenAPI";
-import { AuthService } from "@/shared/api/generated/services/AuthService";
+import {
+  type GetApiV1AuthMeResponse,
+  type PostApiV1AuthLoginResponse,
+  type PostApiV1AuthRegisterResponse,
+  getApiV1AuthMe,
+  postApiV1AuthLogin,
+  postApiV1AuthRegister,
+} from "@/shared/api/generated";
+import { client } from "@/shared/api/generated/client.gen";
 
 const AUTH_EVENT = "auth:unauthorized";
 
-OpenAPI.WITH_CREDENTIALS = true;
-OpenAPI.CREDENTIALS = "include";
-OpenAPI.TOKEN = async (options) => {
-  const isAuthExempt =
-    options.url.includes("/api/v1/auth/login") ||
-    options.url.includes("/api/v1/auth/register") ||
-    options.url.includes("/api/v1/auth/refresh");
-
-  if (isAuthExempt) {
-    return "";
-  }
-
-  return getToken() ?? "";
-};
+client.setConfig({
+  auth: () => getToken() ?? "",
+  baseURL: "/",
+  withCredentials: true,
+});
 
 const handleAuthError = (error: unknown): never => {
-  if (error instanceof ApiError && error.status === 401) {
+  if (axios.isAxiosError(error) && error.response?.status === 401) {
     clearToken();
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent(AUTH_EVENT));
@@ -31,9 +29,20 @@ const handleAuthError = (error: unknown): never => {
 };
 
 export const authAPI = {
-  register: (data: { username: string; email: string; password: string }) =>
-    AuthService.postApiV1AuthRegister({ requestBody: data }).catch(handleAuthError),
-  login: (data: { username: string; password: string }) =>
-    AuthService.postApiV1AuthLogin({ requestBody: data }).catch(handleAuthError),
-  me: () => AuthService.getApiV1AuthMe().catch(handleAuthError),
+  register: (data: {
+    username: string;
+    email: string;
+    password: string;
+  }): Promise<PostApiV1AuthRegisterResponse> =>
+    postApiV1AuthRegister({ body: data, throwOnError: true })
+      .then((response) => response.data)
+      .catch(handleAuthError),
+  login: (data: { username: string; password: string }): Promise<PostApiV1AuthLoginResponse> =>
+    postApiV1AuthLogin({ body: data, throwOnError: true })
+      .then((response) => response.data)
+      .catch(handleAuthError),
+  me: (): Promise<GetApiV1AuthMeResponse> =>
+    getApiV1AuthMe({ throwOnError: true })
+      .then((response) => response.data)
+      .catch(handleAuthError),
 };
