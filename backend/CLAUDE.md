@@ -107,38 +107,15 @@ Tables in `src/db/schema.ts`:
 
 ### Drizzle ORM Patterns
 
-```typescript
-import { db } from '@/services/db'
-import { games, userGames } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
-
-// Query with joins
-const results = await db
-  .select()
-  .from(userGames)
-  .innerJoin(games, eq(userGames.gameId, games.id))
-  .where(eq(userGames.userId, userId))
-
-// Use transactions for multi-statement operations
-await db.transaction(async (tx) => {
-  await tx.insert(games).values(gameData)
-  await tx.insert(userGames).values(userGameData)
-})
-```
+Prefer Drizzle queries with typed schema imports and transactions for multi-step writes.
 
 ### Database Migrations
 
 **IMPORTANT**: Use Drizzle's migration workflow (never create SQL files manually):
-
-```bash
-# 1. Modify schema.ts with your changes
-# 2. Generate migration from schema changes
-bun run db:generate
-
-# 3. Review generated SQL in drizzle/ directory
-# 4. Apply migration (runs on backend startup)
-bun run db:migrate
-```
+1. Modify `schema.ts`.
+2. Generate migrations with `bun run db:generate`.
+3. Review generated SQL in `drizzle/`.
+4. Apply with `bun run db:migrate` (also runs on backend startup).
 
 **For data migrations** (deleting records, transforming data):
 1. Create schema-only migration with `db:generate`
@@ -148,37 +125,11 @@ bun run db:migrate
 ## Router
 
 Custom lightweight router in `lib/router.ts`:
-
-```typescript
-import { router } from '@/lib/router'
-
-// Define routes with path parameters
-router.get('/api/games/:id', getGameHandler, true) // true = requires auth
-router.post('/api/games', createGameHandler, true)
-router.delete('/api/games/:id', deleteGameHandler, true)
-
-// Handler signature
-type RouteHandler = (
-  req: Request,
-  params: Record<string, string>,
-  user?: JWTPayload
-) => Promise<Response>
-```
+Use the router for legacy `/api` routes only. New DI routes live under `/api/v1`.
 
 ## Authentication
 
-JWT-based auth with optional WebAuthn:
-
-```typescript
-// Middleware adds user to handlers marked as requiresAuth
-router.get('/api/protected', handler, true)
-
-// In handler, user is available as third parameter
-async function handler(req: Request, params: Record<string, string>, user?: JWTPayload) {
-  if (!user) return new Response('Unauthorized', { status: 401 })
-  // user.id, user.username available
-}
-```
+JWT-based auth with optional WebAuthn. DI auth endpoints are versioned under `/api/v1`.
 
 ## Testing
 
@@ -218,16 +169,11 @@ DATABASE_URL=postgresql://user:pass@host:port/db bun run test:integration
 
 ## API Response Patterns
 
-```typescript
-// Success
-return new Response(JSON.stringify(data), {
-  status: 200,
-  headers: { 'Content-Type': 'application/json' },
-})
+Return JSON with `snake_case` fields and include a `Content-Type` header.
 
-// Error
-return new Response(JSON.stringify({ error: 'Not found' }), {
-  status: 404,
-  headers: { 'Content-Type': 'application/json' },
-})
-```
+## API Standards
+
+- `/api/v1` for all new DI routes.
+- JSON and query payloads use `snake_case`.
+- OpenAPI is generated from the DI app and used for frontend codegen.
+- Reference: `docs/architecture/guidelines.md`.

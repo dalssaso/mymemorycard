@@ -17,21 +17,20 @@ MyMemoryCard aggregates game libraries across platforms for self-hosted tracking
 
 ## Documentation Lookup
 
-Use **Context7 MCP** to fetch current documentation when implementing features:
-
-```
-# Resolve library ID first
-resolve-library-id: "tanstack query"
-
-# Then query docs
-query-docs: libraryId="/tanstack/query", query="optimistic updates mutation"
-```
+Use **Context7 MCP** to fetch current documentation when implementing features.
 
 Query these libraries:
 - `/tanstack/query` - Server state, mutations, optimistic updates
 - `/tanstack/router` - File-based routing, loaders
 - `/shadcn-ui/ui` - UI components, installation
 - `/tailwindlabs/tailwindcss` - Styling utilities
+
+## API Standards
+
+- All new DI routes live under `/api/v1`.
+- JSON and query payloads use `snake_case`.
+- OpenAPI is generated from the DI app and used for frontend codegen.
+- Reference: `docs/architecture/guidelines.md`.
 
 ## Quick Start
 

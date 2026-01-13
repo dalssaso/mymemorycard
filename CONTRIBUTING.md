@@ -121,8 +121,8 @@ git push --force-with-lease origin feature/your-feature-name
 3. **Code Formatting**
    - Prettier is configured - run `just format` or let pre-commit hooks handle it
    - 2 spaces for indentation
-   - Single quotes for strings
-   - Semicolons required
+   - No semicolons
+   - 100 character line width
    - Trailing commas in multi-line structures
 
 ### Backend (Bun/TypeScript)
@@ -140,7 +140,7 @@ export async function getGame(id: string): Promise<Game> {
 // Bad
 export async function getGame(id: any) {
   const result = await db.query("SELECT * FROM games WHERE id = $1", [id]);
-  console.log("✅ Game found!"); // No emojis!
+  console.log("Success"); // No emojis
   return result.rows[0];
 }
 ```
@@ -150,23 +150,37 @@ export async function getGame(id: any) {
 ```typescript
 // Good
 interface GameCardProps {
-  game: Game;
-  onUpdate: (game: Game) => void;
+  game: Game
+  onUpdate: (game: Game) => void
 }
 
 export function GameCard({ game, onUpdate }: GameCardProps): JSX.Element {
-  return <div>{game.name}</div>;
+  return <div>{game.name}</div>
 }
 
 // Bad
 export function GameCard({ game, onUpdate }: any) {
-  return <div>{game.name}</div>;
+  return <div>{game.name}</div>
 }
 ```
 
 ### shadcn/ui Components
 
 Use shadcn/ui for all UI primitives. Never use raw HTML buttons or inputs.
+
+## API Standards
+
+- New DI endpoints live under `/api/v1`.
+- JSON and query payloads use `snake_case`.
+- OpenAPI is generated from the DI app and the generated client is committed.
+- Legacy routes stay under `/api` until migration is complete.
+
+OpenAPI workflow:
+
+```bash
+cd backend && bun run generate:openapi
+cd frontend && npm run generate:api
+```
 
 ```bash
 # Add a new shadcn component
