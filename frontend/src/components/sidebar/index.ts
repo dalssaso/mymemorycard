@@ -9,4 +9,3 @@ export { FranchiseDetailSidebar } from "./FranchiseDetailSidebar";
 export { PlatformsSidebar } from "./PlatformsSidebar";
 export { PlatformOnboardingSidebar } from "./PlatformOnboardingSidebar";
 export { PlatformDetailSidebar } from "./PlatformDetailSidebar";
-export { AICuratorSidebar } from "./AICuratorSidebar";
