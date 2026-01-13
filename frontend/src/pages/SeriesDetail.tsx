@@ -111,7 +111,7 @@ export function SeriesDetail() {
                     </div>
                   )}
                 </div>
-                <p className="mb-1 truncate text-sm text-text-muted group-hover:text-text-primary">
+                <p className="mb-1 truncate text-sm text-text-muted transition-colors duration-standard group-hover:text-text-primary">
                   {game.name}
                 </p>
                 {game.release_date && (
