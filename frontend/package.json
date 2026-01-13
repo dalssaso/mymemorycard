@@ -18,7 +18,8 @@
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore"
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore",
+    "generate:api": "openapi --input ../backend/openapi.json --output src/shared/api/generated --client axios --useOptions"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -78,6 +79,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.0.0",
     "jsdom": "^27.4.0",
+    "openapi-typescript-codegen": "^0.30.0",
     "postcss": "^8.4.49",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.7.2",

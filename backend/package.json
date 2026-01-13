@@ -21,7 +21,8 @@
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,js,json,md}\""
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "generate:openapi": "bun src/scripts/generate-openapi.ts"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.2.0",
