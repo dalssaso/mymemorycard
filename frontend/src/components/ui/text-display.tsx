@@ -63,10 +63,8 @@ const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps<React.Ele
     },
     ref
   ): React.ReactElement | null => {
-    const element = component as React.ElementType;
-
     return React.createElement(
-      element,
+      component as React.ElementType,
       {
         ref,
         className: cn(
@@ -77,7 +75,7 @@ const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps<React.Ele
         ),
         ...(props as Record<string, unknown>),
       },
-      children as ReactNode
+      children
     );
   }
 ) as unknown as TextDisplayComponent;
