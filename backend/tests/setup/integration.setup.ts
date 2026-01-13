@@ -6,6 +6,8 @@
  *
  * Run integration tests with:
  * bun test --preload ./tests/setup/integration.setup.ts ./tests/integration
+ *
+ * CI service containers are configured to use localhost with port mapping.
  */
 
 import "reflect-metadata";
