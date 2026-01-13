@@ -12,11 +12,51 @@ import "reflect-metadata";
 import { beforeAll } from "bun:test";
 import { runMigrations, seedPlatforms, closeMigrationConnection } from "@/db";
 
+/**
+ * Retry logic for database operations with exponential backoff
+ * Handles DNS resolution timing issues in CI environments
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 5,
+  initialDelay = 1000
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxAttempts) {
+        const delay = initialDelay * Math.pow(2, attempt - 1);
+        console.log(
+          `Attempt ${attempt}/${maxAttempts} failed, retrying in ${delay}ms...`,
+          lastError.message
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 // Use beforeAll to ensure migrations run after test framework initializes
 beforeAll(async () => {
   console.log("Setting up integration tests...");
-  await runMigrations();
-  await seedPlatforms();
+
+  // Retry migrations to handle DNS timing issues
+  await retryWithBackoff(
+    async () => {
+      await runMigrations();
+      await seedPlatforms();
+    },
+    5,
+    1000
+  );
+
   await closeMigrationConnection();
   console.log("Integration test setup complete");
 });
