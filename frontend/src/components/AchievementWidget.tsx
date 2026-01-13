@@ -4,6 +4,7 @@ import { gamesAPI, statsAPI } from "@/lib/api";
 import type { AchievementStats } from "@/lib/api";
 import { Card } from "@/components/ui";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
+import { cn } from "@/lib/utils";
 
 const RARITY_CONFIG = {
   common: {
@@ -219,10 +220,13 @@ export function AchievementWidget({ games }: AchievementWidgetProps) {
 
             return (
               <div key={key} className="flex items-center gap-2">
-                <div className={`w-20 text-sm ${config.textClass}`}>{config.label}</div>
+                <div className={cn("w-20 text-sm", config.textClass)}>{config.label}</div>
                 <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-elevated">
                   <div
-                    className={`${config.bgClass} h-full rounded-full transition-all duration-standard`}
+                    className={cn(
+                      config.bgClass,
+                      "h-full rounded-full transition-all duration-standard"
+                    )}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
