@@ -65,7 +65,7 @@ export function GameCard({
     toggleFavoriteMutation.mutate(!isFavorite);
   };
 
-  const statusConfig = getStatusConfig(status);
+  const statusConfig = getStatusConfig(status) ?? getStatusConfig("backlog");
 
   return (
     <Link
