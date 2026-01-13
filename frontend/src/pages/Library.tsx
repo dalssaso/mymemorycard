@@ -48,6 +48,7 @@ import {
 } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { collectionsAPI, gamesAPI } from "@/lib/api";
+import { getStatusConfig } from "@/lib/constants/status";
 import { SortControl, ActiveFilterPills } from "@/components/filters";
 
 interface Collection {
@@ -810,10 +811,19 @@ export function Library() {
                               size="sm"
                               maxDisplay={5}
                             />
-                            <Badge className="border border-elevated text-text-secondary">
-                              {row.original.status.charAt(0).toUpperCase() +
-                                row.original.status.slice(1)}
-                            </Badge>
+                            {(() => {
+                              const statusConfig =
+                                getStatusConfig(row.original.status) ?? getStatusConfig("backlog")!;
+                              return (
+                                <Badge
+                                  className="border text-text-primary"
+                                  style={statusConfig.activeStyle}
+                                >
+                                  {row.original.status.charAt(0).toUpperCase() +
+                                    row.original.status.slice(1)}
+                                </Badge>
+                              );
+                            })()}
                           </div>
                           {row.original.metacritic_score && (
                             <div className="flex items-center gap-1 text-sm text-text-secondary">
