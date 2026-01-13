@@ -3,7 +3,9 @@ import { createErrorHandler } from "@/infrastructure/http/middleware/error.middl
 import { Logger } from "@/infrastructure/logging/logger";
 import { ValidationError } from "@/shared/errors/base";
 
-const makeContext = (requestId: string) =>
+type ErrorHandlerContext = Parameters<ReturnType<typeof createErrorHandler>>[1];
+
+const makeContext = (requestId: string): ErrorHandlerContext =>
   ({
     get: (key: string) => (key === "requestId" ? requestId : undefined),
     json: (body: unknown, status: number) =>
@@ -11,7 +13,7 @@ const makeContext = (requestId: string) =>
         status,
         headers: { "Content-Type": "application/json" },
       }),
-  }) as unknown as Parameters<ReturnType<typeof createErrorHandler>>[1];
+  }) as ErrorHandlerContext;
 
 describe("createErrorHandler", () => {
   it("returns snake_case request_id for DomainError", async () => {
