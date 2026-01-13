@@ -134,6 +134,7 @@ Never commit unformatted code. The project's `.prettierrc` files define the exac
 - **No `any`** - use proper types or `unknown`
 - **Explicit return types** on functions
 - **Type imports** use `import type { X }` or `import { type X }`
+- **JSDoc** for all public methods (frontend and backend)
 
 ### Naming Conventions (ESLint enforced)
 
