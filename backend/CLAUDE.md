@@ -66,14 +66,12 @@ src/
     auth.ts           # Login, register, WebAuthn
     sessions.ts       # Play session tracking
     achievements.ts   # Achievement tracking
-    ai.ts             # AI curator features
     stats.ts          # Dashboard statistics
     ...
   services/
     db.ts             # PostgreSQL connection
     redis.ts          # Redis connection
     rawg.ts           # RAWG API client
-    ai/               # AI provider integrations
   types/              # TypeScript type definitions
   index.ts            # Server entry point
 drizzle/              # Migration files (auto-generated)
@@ -146,22 +144,6 @@ bun run db:migrate
 1. Create schema-only migration with `db:generate`
 2. Edit generated SQL to add data migration logic
 3. Apply with `db:migrate`
-
-Example workflow:
-```typescript
-// 1. Update schema.ts
-export const aiProviderEnum = pgEnum("ai_provider", ["openai"]) // was ["openai", "openrouter", "ollama", "lmstudio"]
-
-// 2. Generate migration
-// $ bun run db:generate
-// ✓ Generated migration: drizzle/0017_update_ai_provider.sql
-
-// 3. Edit generated SQL to add data cleanup (if needed)
-// Add: DELETE FROM user_ai_settings WHERE provider != 'openai';
-
-// 4. Apply migration
-// $ bun run db:migrate
-```
 
 ## Router
 

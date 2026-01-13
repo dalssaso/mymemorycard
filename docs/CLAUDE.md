@@ -9,7 +9,6 @@ Documentation-specific instructions for Claude Code. See also the root [CLAUDE.m
 | `local-setup.md` | Local development environment setup |
 | `deployment-nginx.md` | Production deployment with Nginx reverse proxy |
 | `release-process.md` | Release automation with release-please |
-| `ai-curator-settings/` | AI curator configuration guides |
 
 ## Editing Guidelines
 

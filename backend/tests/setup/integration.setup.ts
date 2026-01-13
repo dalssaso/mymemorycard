@@ -1,109 +1,68 @@
 /**
  * Integration Test Setup
  *
- * This file provides helpers for integration tests that run against
- * real database and redis services via docker-compose.
+ * This file runs database migrations and seeds platforms before integration tests.
+ * It ensures the test database has the complete schema and required seed data.
  *
- * Prerequisites:
- * - docker compose up -d (postgres and redis running)
- * - Backend server running on localhost:3000
+ * Run integration tests with:
+ * bun test --preload ./tests/setup/integration.setup.ts ./tests/integration
  *
- * Environment variables:
- * - API_BASE_URL: Base URL for API calls (default: http://localhost:3000)
- * - TEST_DATABASE_URL: PostgreSQL connection string for test setup/cleanup
- *   (default: postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard)
+ * CI service containers are configured to use localhost with port mapping.
  */
 
-import pg from "pg";
-
-const { Pool } = pg;
-
-export const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
+import "reflect-metadata";
+import { beforeAll } from "bun:test";
+import { runMigrations, seedPlatforms, closeMigrationConnection } from "@/db";
 
 /**
- * Test database connection pool.
- * Uses TEST_DATABASE_URL if set, otherwise defaults to local Docker postgres on port 5433.
- * This is separate from the application's pool to allow running tests from the host
- * against a backend running either locally or in Docker.
+ * Retry logic for database operations with exponential backoff
+ * Handles DNS resolution timing issues in CI environments
  */
-const testDatabaseUrl =
-  process.env.TEST_DATABASE_URL ||
-  "postgresql://mymemorycard:devpassword@localhost:5433/mymemorycard";
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 5,
+  initialDelay = 1000
+): Promise<T> {
+  let lastError: Error | undefined;
 
-export const testPool = new Pool({
-  connectionString: testDatabaseUrl,
-  max: 5,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
-
-/**
- * Helper to make authenticated API requests
- */
-export async function fetchWithAuth(
-  path: string,
-  token: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  return fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-}
-
-/**
- * Helper to create a test user and get auth token
- */
-export async function createTestUser(
-  email: string,
-  password = "password123"
-): Promise<{ token: string; userId: string }> {
-  const username = email.split("@")[0];
-
-  let response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, password }),
-  });
-
-  // If user exists, try to login
-  if (response.status === 409) {
-    response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-  }
-
-  const data = (await response.json()) as { token: string; user: { id: string } };
-  return { token: data.token, userId: data.user.id };
-}
-
-/**
- * Wait for the backend to be ready
- */
-export async function waitForBackend(maxRetries = 30, delayMs = 1000): Promise<boolean> {
-  for (let i = 0; i < maxRetries; i++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/health`);
-      if (response.ok) {
-        return true;
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxAttempts) {
+        const delay = initialDelay * Math.pow(2, attempt - 1);
+        console.log(
+          `Attempt ${attempt}/${maxAttempts} failed, retrying in ${delay}ms...`,
+          lastError.message
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-    } catch {
-      // Server not ready yet
     }
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
-  return false;
+
+  throw lastError;
 }
 
-/**
- * Clean up test pool connections after all tests
- */
-export async function closeTestPool(): Promise<void> {
-  await testPool.end();
-}
+// Use beforeAll to ensure migrations run after test framework initializes
+// Set timeout to 60 seconds to allow for retry attempts (default is 5 seconds)
+beforeAll(
+  async () => {
+    console.log("Setting up integration tests...");
+
+    // Retry migrations to handle DNS timing issues
+    await retryWithBackoff(
+      async () => {
+        await runMigrations();
+        await seedPlatforms();
+      },
+      5,
+      1000
+    );
+
+    await closeMigrationConnection();
+    console.log("Integration test setup complete");
+  },
+  { timeout: 60000 }
+);

@@ -188,7 +188,6 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_set_header Connection "";
 
-            # Extended timeouts for AI responses (can take 60-120+ seconds)
             proxy_connect_timeout 30s;
             proxy_send_timeout 300s;
             proxy_read_timeout 300s;
@@ -199,26 +198,6 @@ http {
             proxy_buffer_size 128k;
             proxy_buffers 4 256k;
             proxy_busy_buffers_size 256k;
-        }
-
-        # AI endpoint with streaming support
-        location /api/ai {
-            proxy_pass http://backend;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header Connection "";
-
-            # Extended timeout for AI responses (5 minutes)
-            proxy_connect_timeout 30s;
-            proxy_send_timeout 300s;
-            proxy_read_timeout 300s;
-
-            # Disable buffering for streaming responses
-            proxy_buffering off;
-            proxy_cache off;
         }
 
         # Frontend (SPA)
@@ -352,6 +331,5 @@ docker compose up -d
 ## Resources
 
 - [Full documentation](../docs/)
-- [AI Curator setup](../docs/ai-curator-settings/)
 - [Local development setup](../docs/local-setup.md)
 - [RAWG API](https://rawg.io/apidocs)
