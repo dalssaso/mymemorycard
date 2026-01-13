@@ -812,12 +812,11 @@ export function Library() {
                               maxDisplay={5}
                             />
                             {(() => {
-                              const statusConfig =
-                                getStatusConfig(row.original.status) ?? getStatusConfig("backlog")!;
+                              const statusConfig = getStatusConfig(row.original.status);
                               return (
                                 <Badge
                                   className="border text-text-primary"
-                                  style={statusConfig.activeStyle}
+                                  style={statusConfig?.activeStyle}
                                 >
                                   {row.original.status.charAt(0).toUpperCase() +
                                     row.original.status.slice(1)}
