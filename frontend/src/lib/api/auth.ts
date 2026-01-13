@@ -8,17 +8,16 @@ const AUTH_EVENT = "auth:unauthorized";
 OpenAPI.WITH_CREDENTIALS = true;
 OpenAPI.CREDENTIALS = "include";
 OpenAPI.TOKEN = async (options) => {
-  const token = getToken();
-  if (!token) {
-    return undefined;
-  }
-
   const isAuthExempt =
     options.url.includes("/api/v1/auth/login") ||
     options.url.includes("/api/v1/auth/register") ||
     options.url.includes("/api/v1/auth/refresh");
 
-  return isAuthExempt ? undefined : token;
+  if (isAuthExempt) {
+    return "";
+  }
+
+  return getToken() ?? "";
 };
 
 const handleAuthError = (error: unknown): never => {

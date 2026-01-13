@@ -18,7 +18,7 @@ describe("createErrorHandler", () => {
     const logger = new Logger();
     const handler = createErrorHandler(logger);
     const response = handler(new ValidationError("bad"), makeContext("req-123"));
-    const body = await response.json();
+    const body = (await response.json()) as { request_id?: string };
     expect(body.request_id).toBe("req-123");
   });
 
@@ -26,7 +26,7 @@ describe("createErrorHandler", () => {
     const logger = new Logger();
     const handler = createErrorHandler(logger);
     const response = handler(new Error("boom"), makeContext("req-999"));
-    const body = await response.json();
+    const body = (await response.json()) as { request_id?: string };
     expect(body.request_id).toBe("req-999");
   });
 });

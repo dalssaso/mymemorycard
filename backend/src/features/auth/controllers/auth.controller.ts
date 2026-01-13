@@ -1,7 +1,7 @@
 import { injectable, inject } from "tsyringe";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import type { IAuthService } from "../services/auth.service.interface";
-import type { IAuthController } from "./auth.controller.interface";
+import type { AuthEnv, IAuthController } from "./auth.controller.interface";
 import {
   RegisterRequestSchema,
   LoginRequestSchema,
@@ -11,22 +11,17 @@ import {
 } from "../dtos/auth.dto";
 import { Logger } from "@/infrastructure/logging/logger";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
-import type { User } from "@/types";
-
-type AuthVariables = {
-  user: User;
-};
 
 @injectable()
 export class AuthController implements IAuthController {
-  public router: OpenAPIHono<{ Variables: AuthVariables }>;
+  public router: OpenAPIHono<AuthEnv>;
 
   constructor(
     @inject("IAuthService") private authService: IAuthService,
     private logger: Logger
   ) {
     this.logger = logger.child("AuthController");
-    this.router = new OpenAPIHono<{ Variables: AuthVariables }>();
+    this.router = new OpenAPIHono<AuthEnv>();
     this.registerRoutes();
   }
 
