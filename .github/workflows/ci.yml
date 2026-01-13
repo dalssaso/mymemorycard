@@ -100,7 +100,7 @@ jobs:
     if: ${{ needs.changes.outputs.backend == 'true' }}
     services:
       postgres:
-        image: pgvector/pgvector:pg16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: mymemorycard
           POSTGRES_PASSWORD: ci_password
