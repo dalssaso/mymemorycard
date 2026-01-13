@@ -13,7 +13,7 @@
     "db:studio": "drizzle-kit studio",
     "test": "bun run test:unit && bun run test:integration",
     "test:unit": "SKIP_REDIS_CONNECT=1 bun test --preload ./tests/setup/unit.setup.ts ./tests/unit",
-    "test:integration": "bun test ./tests/integration",
+    "test:integration": "bun test --preload ./tests/setup/integration.setup.ts ./tests/integration",
     "test:watch": "bun test --watch ./tests/unit",
     "test:coverage": "SKIP_REDIS_CONNECT=1 bun test --coverage --preload ./tests/setup/unit.setup.ts ./tests/unit",
     "test:coverage:integration": "bun test --coverage ./tests/integration",
