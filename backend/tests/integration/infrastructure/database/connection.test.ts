@@ -2,8 +2,8 @@ import "reflect-metadata";
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { registerDependencies, resetContainer, container } from "@/container";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
-import { makeTestConfig } from "../../../unit/helpers/make-test-config";
 import { Logger } from "@/infrastructure/logging/logger";
+import { makeTestConfig } from "../../../unit/helpers/make-test-config";
 
 describe("DatabaseConnection Integration Tests", () => {
   let dbConnection: DatabaseConnection;

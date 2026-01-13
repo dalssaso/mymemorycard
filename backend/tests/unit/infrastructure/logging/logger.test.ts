@@ -41,7 +41,7 @@ describe("Logger", () => {
       expect((grandchild as any).context).toBe("Parent:Child:Grandchild");
     });
 
-    it("should pass chained context to pino child logger", () => {
+    it("should store combined context in private property when chaining", () => {
       const logger = new Logger();
       const parent = logger.child("Service");
       const child = parent.child("Method");
