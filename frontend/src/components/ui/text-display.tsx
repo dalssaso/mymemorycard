@@ -49,7 +49,6 @@ interface TextDisplayComponent extends React.ForwardRefExoticComponent<
   ): React.ReactElement | null;
 }
 
-// eslint-disable-next-line react/display-name
 const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps<React.ElementType>>(
   (
     {
@@ -63,23 +62,22 @@ const TextDisplayImpl = React.forwardRef<HTMLElement, TextDisplayProps<React.Ele
     },
     ref
   ): React.ReactElement | null => {
+    const variantClass = variantStyles[variant as Variant] ?? variantStyles.primary;
+    const sizeClass = sizeStyles[size as Size] ?? sizeStyles.base;
+    const weightClass = weightStyles[weight as Weight] ?? weightStyles.regular;
+
     return React.createElement(
       component as React.ElementType,
       {
         ref,
-        className: cn(
-          variantStyles[variant as Variant],
-          sizeStyles[size as Size],
-          weightStyles[weight as Weight],
-          className
-        ),
+        className: cn(variantClass, sizeClass, weightClass, className),
         ...(props as Record<string, unknown>),
       },
       children
     );
   }
-) as unknown as TextDisplayComponent;
+);
 
 TextDisplayImpl.displayName = "TextDisplay";
 
-export const TextDisplay = TextDisplayImpl;
+export const TextDisplay = TextDisplayImpl as unknown as TextDisplayComponent;
