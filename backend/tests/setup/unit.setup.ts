@@ -66,22 +66,34 @@ container.register<ITokenService>("ITokenService", {
 
 // Register mock IUserRepository for auth middleware tests
 const mockUserRepository: IUserRepository = {
-  findById: async (id: string): Promise<User | null> => ({
-    id,
-    username: "testuser",
-    email: "test@example.com",
-    passwordHash: "hashed-password",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }),
-  findByUsername: async (username: string): Promise<User | null> => ({
-    id: "mock-user-id",
-    username,
-    email: `${username}@example.com`,
-    passwordHash: "hashed-password",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }),
+  findById: async (id: string): Promise<User | null> => {
+    // Return null for specific test IDs to enable testing "user not found" paths
+    if (id === "nonexistent-user-id" || id === "mock-token-nonexistent-user-id") {
+      return null;
+    }
+    return {
+      id,
+      username: "testuser",
+      email: "test@example.com",
+      passwordHash: "hashed-password",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  },
+  findByUsername: async (username: string): Promise<User | null> => {
+    // Return null for specific test usernames to enable testing "user not found" paths
+    if (username === "nonexistent-user" || username === "") {
+      return null;
+    }
+    return {
+      id: "mock-user-id",
+      username,
+      email: `${username}@example.com`,
+      passwordHash: "hashed-password",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  },
   create: async (username: string, email: string, passwordHash: string): Promise<User> => ({
     id: "new-user-id",
     username,
@@ -90,7 +102,13 @@ const mockUserRepository: IUserRepository = {
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
-  exists: async (_username: string): Promise<boolean> => false,
+  exists: async (username: string): Promise<boolean> => {
+    // Return true for specific test usernames to enable testing "user exists" paths
+    if (username === "existing-user" || username === "testuser") {
+      return true;
+    }
+    return false;
+  },
 };
 
 container.register<IUserRepository>("IUserRepository", {
