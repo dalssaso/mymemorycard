@@ -30,13 +30,19 @@ export const LoginRequestSchema = z.object({
   password: passwordSchema,
 });
 
+const AuthUserSchema = z.object({
+  id: z.uuid(),
+  username: z.string(),
+  email: z.email(),
+});
+
 export const AuthResponseSchema = z.object({
-  user: z.object({
-    id: z.uuid(),
-    username: z.string(),
-    email: z.email(),
-  }),
+  user: AuthUserSchema,
   token: z.string(),
+});
+
+export const MeResponseSchema = z.object({
+  user: AuthUserSchema,
 });
 
 export const ErrorResponseSchema = z.object({
@@ -49,4 +55,5 @@ export const ErrorResponseSchema = z.object({
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+export type MeResponse = z.infer<typeof MeResponseSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;

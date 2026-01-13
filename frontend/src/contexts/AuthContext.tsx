@@ -39,9 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["auth", "me"],
-    queryFn: async ({ signal }) => {
-      const response = await authAPI.me(signal);
-      return (response.data.user ?? response.data) as User;
+    queryFn: async () => {
+      const response = await authAPI.me();
+      return (response.user ?? response) as User;
     },
     enabled: Boolean(token),
     retry: false,
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const login = useCallback(
     async (username: string, password: string) => {
       const response = await authAPI.login({ username, password });
-      const { user: userData, token: userToken } = response.data as {
+      const { user: userData, token: userToken } = response as {
         user: User;
         token: string;
       };
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   const register = useCallback(
     async (username: string, email: string, password: string) => {
       const response = await authAPI.register({ username, email, password });
-      const { user: userData, token: userToken } = response.data as {
+      const { user: userData, token: userToken } = response as {
         user: User;
         token: string;
       };

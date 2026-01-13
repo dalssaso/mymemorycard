@@ -1,23 +1,35 @@
 import { describe, expect, it, vi } from "vitest"
 import { authAPI, gamesAPI, importAPI } from "@/lib/api"
-import { api } from "@/lib/api/axios"
+import { AuthService } from "@/shared/api/generated/services/AuthService"
 
 describe("API Client", () => {
   describe("authAPI", () => {
-    it("uses /v1 auth endpoints", () => {
-      const postSpy = vi.spyOn(api, "post").mockResolvedValue({ data: {} })
-      const getSpy = vi.spyOn(api, "get").mockResolvedValue({ data: {} })
+    it("uses generated auth client", async () => {
+      const loginSpy = vi
+        .spyOn(AuthService, "postApiV1AuthLogin")
+        .mockResolvedValue({ user: { id: "1", username: "user", email: "u@example.com" }, token: "t" })
+      const registerSpy = vi
+        .spyOn(AuthService, "postApiV1AuthRegister")
+        .mockResolvedValue({ user: { id: "2", username: "user", email: "u@example.com" }, token: "t" })
+      const meSpy = vi
+        .spyOn(AuthService, "getApiV1AuthMe")
+        .mockResolvedValue({ user: { id: "3", username: "user", email: "u@example.com" } })
 
-      authAPI.login({ username: "user", password: "pass" })
-      authAPI.register({ username: "user", email: "u@example.com", password: "pass" })
-      authAPI.me()
+      await authAPI.login({ username: "user", password: "pass" })
+      await authAPI.register({ username: "user", email: "u@example.com", password: "pass" })
+      await authAPI.me()
 
-      expect(postSpy).toHaveBeenCalledWith("/v1/auth/login", expect.anything())
-      expect(postSpy).toHaveBeenCalledWith("/v1/auth/register", expect.anything())
-      expect(getSpy).toHaveBeenCalledWith("/v1/auth/me", expect.anything())
+      expect(loginSpy).toHaveBeenCalledWith({
+        requestBody: { username: "user", password: "pass" },
+      })
+      expect(registerSpy).toHaveBeenCalledWith({
+        requestBody: { username: "user", email: "u@example.com", password: "pass" },
+      })
+      expect(meSpy).toHaveBeenCalledWith()
 
-      postSpy.mockRestore()
-      getSpy.mockRestore()
+      loginSpy.mockRestore()
+      registerSpy.mockRestore()
+      meSpy.mockRestore()
     })
 
     it("should have register method", () => {

@@ -7,5 +7,6 @@ describe("buildOpenApiDocument", () => {
 
     expect(doc.paths["/api/v1/auth/login"]).toBeDefined()
     expect(doc.paths["/api/v1/auth/register"]).toBeDefined()
+    expect(doc.paths["/api/v1/auth/me"]).toBeDefined()
   })
 })

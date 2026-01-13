@@ -66,4 +66,23 @@ export class AuthService {
             },
         });
     }
+    /**
+     * @returns any Current user
+     * @throws ApiError
+     */
+    public static getApiV1AuthMe(): CancelablePromise<{
+        user: {
+            id: string;
+            username: string;
+            email: string;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/auth/me',
+            errors: {
+                401: `Unauthorized`,
+            },
+        });
+    }
 }
