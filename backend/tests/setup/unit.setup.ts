@@ -13,6 +13,7 @@ import type { IConfig } from "@/infrastructure/config/config.interface";
 import type { ITokenService, JWTPayload } from "@/features/auth/services/token.service.interface";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { User } from "@/features/auth/types";
+import { CONFIG_TOKEN, TOKEN_SERVICE_TOKEN, USER_REPOSITORY_TOKEN } from "@/container/tokens";
 
 // Register IConfig for tests
 const mockConfig: IConfig = {
@@ -45,7 +46,7 @@ const mockConfig: IConfig = {
   skipRedisConnect: true,
 };
 
-container.register<IConfig>("IConfig", {
+container.register<IConfig>(CONFIG_TOKEN, {
   useValue: mockConfig,
 });
 
@@ -60,7 +61,7 @@ const mockTokenService: ITokenService = {
   },
 };
 
-container.register<ITokenService>("ITokenService", {
+container.register<ITokenService>(TOKEN_SERVICE_TOKEN, {
   useValue: mockTokenService,
 });
 
@@ -111,6 +112,6 @@ const mockUserRepository: IUserRepository = {
   },
 };
 
-container.register<IUserRepository>("IUserRepository", {
+container.register<IUserRepository>(USER_REPOSITORY_TOKEN, {
   useValue: mockUserRepository,
 });

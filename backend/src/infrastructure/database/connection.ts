@@ -5,6 +5,7 @@ import { injectable, inject } from "tsyringe";
 import { sql } from "drizzle-orm";
 import { Logger } from "@/infrastructure/logging/logger";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import { CONFIG_TOKEN } from "@/container/tokens";
 
 export type DrizzleDB = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -57,7 +58,7 @@ export class DatabaseConnection {
    * @param config - Injected configuration with optional database.pool overrides
    * @param logger - Injected logger instance for connection diagnostics
    */
-  constructor(@inject("IConfig") config: IConfig, @inject(Logger) logger: Logger) {
+  constructor(@inject(CONFIG_TOKEN) config: IConfig, @inject(Logger) logger: Logger) {
     const poolConfig = config.database.pool || {};
 
     this.queryClient = postgres(config.database.url, {

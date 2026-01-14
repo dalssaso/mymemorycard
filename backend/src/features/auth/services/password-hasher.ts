@@ -2,12 +2,13 @@ import * as bcrypt from "bcryptjs";
 import { injectable, inject } from "tsyringe";
 import type { IPasswordHasher } from "./password-hasher.interface";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import { CONFIG_TOKEN } from "@/container/tokens";
 
 @injectable()
 export class PasswordHasher implements IPasswordHasher {
   private readonly saltRounds: number;
 
-  constructor(@inject("IConfig") config: IConfig) {
+  constructor(@inject(CONFIG_TOKEN) config: IConfig) {
     const saltRounds = config.bcrypt.saltRounds;
 
     // Validate saltRounds is a number

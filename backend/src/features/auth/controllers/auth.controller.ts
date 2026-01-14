@@ -11,14 +11,15 @@ import {
 } from "../dtos/auth.dto";
 import { Logger } from "@/infrastructure/logging/logger";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
+import { AUTH_SERVICE_TOKEN } from "@/container/tokens";
 
 @injectable()
 export class AuthController implements IAuthController {
   public router: OpenAPIHono<AuthEnv>;
 
   constructor(
-    @inject("IAuthService") private authService: IAuthService,
-    private logger: Logger
+    @inject(AUTH_SERVICE_TOKEN) private authService: IAuthService,
+    @inject(Logger) private logger: Logger
   ) {
     this.logger = logger.child("AuthController");
     this.router = new OpenAPIHono<AuthEnv>();

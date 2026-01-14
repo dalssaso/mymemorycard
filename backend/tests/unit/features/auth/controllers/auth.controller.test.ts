@@ -1,8 +1,9 @@
 import "reflect-metadata";
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthService } from "@/features/auth/services/auth.service.interface";
 import { Logger } from "@/infrastructure/logging/logger";
+import { resetContainer } from "@/container";
 
 describe("AuthController", () => {
   let controller: AuthController;
@@ -10,6 +11,8 @@ describe("AuthController", () => {
   let mockLogger: Logger;
 
   beforeEach(() => {
+    resetContainer();
+
     mockAuthService = {
       register: mock().mockResolvedValue({
         user: { id: "user-123", username: "testuser", email: "test@example.com" },

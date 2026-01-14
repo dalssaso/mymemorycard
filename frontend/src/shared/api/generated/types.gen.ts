@@ -39,6 +39,27 @@ export type MeResponse = {
     user: User;
 };
 
+export type PlatformListResponse = {
+    platforms: Array<Platform>;
+};
+
+export type Platform = {
+    id: string;
+    name: string;
+    display_name: string;
+    platform_type: 'pc' | 'console' | 'mobile' | 'physical';
+    is_system: boolean;
+    is_physical: boolean;
+    website_url: string | null;
+    color_primary: string;
+    default_icon_url: string | null;
+    sort_order: number;
+};
+
+export type PlatformResponse = {
+    platform: Platform;
+};
+
 export type PostApiV1AuthRegisterData = {
     body?: RegisterRequest;
     path?: never;
@@ -117,3 +138,59 @@ export type GetApiV1AuthMeResponses = {
 };
 
 export type GetApiV1AuthMeResponse = GetApiV1AuthMeResponses[keyof GetApiV1AuthMeResponses];
+
+export type GetApiV1PlatformsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/platforms';
+};
+
+export type GetApiV1PlatformsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1PlatformsError = GetApiV1PlatformsErrors[keyof GetApiV1PlatformsErrors];
+
+export type GetApiV1PlatformsResponses = {
+    /**
+     * List platforms
+     */
+    200: PlatformListResponse;
+};
+
+export type GetApiV1PlatformsResponse = GetApiV1PlatformsResponses[keyof GetApiV1PlatformsResponses];
+
+export type GetApiV1PlatformsByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/platforms/{id}';
+};
+
+export type GetApiV1PlatformsByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Platform not found
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1PlatformsByIdError = GetApiV1PlatformsByIdErrors[keyof GetApiV1PlatformsByIdErrors];
+
+export type GetApiV1PlatformsByIdResponses = {
+    /**
+     * Get platform
+     */
+    200: PlatformResponse;
+};
+
+export type GetApiV1PlatformsByIdResponse = GetApiV1PlatformsByIdResponses[keyof GetApiV1PlatformsByIdResponses];

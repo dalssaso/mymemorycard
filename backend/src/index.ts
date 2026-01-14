@@ -7,6 +7,7 @@ import { initializeEncryptionKey } from "@/lib/encryption";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import redisClient from "@/services/redis";
+import { CONFIG_TOKEN } from "@/container/tokens";
 
 // Import legacy routes (registers them with the old router)
 import "@/routes/import";
@@ -42,7 +43,7 @@ async function startServer(): Promise<void> {
   const app = createHonoApp();
 
   // Start server
-  const config = container.resolve<IConfig>("IConfig");
+  const config = container.resolve<IConfig>(CONFIG_TOKEN);
   const server = Bun.serve({
     port: config.port,
     fetch: app.fetch,

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { container } from "@/container";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import { CONFIG_TOKEN } from "@/container/tokens";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
@@ -12,7 +13,7 @@ let KEY: Buffer | undefined;
  * Initialize encryption key at startup
  */
 export function initializeEncryptionKey(): void {
-  const config = container.resolve<IConfig>("IConfig");
+  const config = container.resolve<IConfig>(CONFIG_TOKEN);
   KEY = crypto.scryptSync(config.encryption.secret, config.encryption.salt, 32);
 }
 
