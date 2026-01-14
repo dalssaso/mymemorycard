@@ -69,8 +69,19 @@ describe("buildOpenApiDocument", () => {
     expect(login?.post?.requestBody).toBeDefined();
     expect(register?.post?.requestBody).toBeDefined();
     expect(login?.post?.responses?.["200"]).toBeDefined();
+    expect(login?.post?.responses?.["401"]).toBeDefined();
     expect(register?.post?.responses?.["201"]).toBeDefined();
+    expect(register?.post?.responses?.["400"]).toBeDefined();
+    expect(register?.post?.responses?.["409"]).toBeDefined();
     expect(me?.get?.responses?.["200"]).toBeDefined();
+    expect(me?.get?.responses?.["401"]).toBeDefined();
+    expect(login?.post?.responses?.["200"]?.content?.["application/json"]).toBeDefined();
+    expect(login?.post?.responses?.["401"]?.content?.["application/json"]).toBeDefined();
+    expect(register?.post?.responses?.["201"]?.content?.["application/json"]).toBeDefined();
+    expect(register?.post?.responses?.["400"]?.content?.["application/json"]).toBeDefined();
+    expect(register?.post?.responses?.["409"]?.content?.["application/json"]).toBeDefined();
+    expect(me?.get?.responses?.["200"]?.content?.["application/json"]).toBeDefined();
+    expect(me?.get?.responses?.["401"]?.content?.["application/json"]).toBeDefined();
   });
 
   it("includes versioned platform paths", () => {
@@ -82,5 +93,18 @@ describe("buildOpenApiDocument", () => {
     expect(list?.get).toBeDefined();
     expect(getById).toBeDefined();
     expect(getById?.get).toBeDefined();
+    expect(list?.get?.security).toEqual([{ bearerAuth: [] }]);
+    expect(getById?.get?.security).toEqual([{ bearerAuth: [] }]);
+    expect(getById?.get?.parameters).toBeDefined();
+    expect(list?.get?.responses?.["200"]).toBeDefined();
+    expect(list?.get?.responses?.["401"]).toBeDefined();
+    expect(getById?.get?.responses?.["200"]).toBeDefined();
+    expect(getById?.get?.responses?.["401"]).toBeDefined();
+    expect(getById?.get?.responses?.["404"]).toBeDefined();
+    expect(list?.get?.responses?.["200"]?.content?.["application/json"]).toBeDefined();
+    expect(list?.get?.responses?.["401"]?.content?.["application/json"]).toBeDefined();
+    expect(getById?.get?.responses?.["200"]?.content?.["application/json"]).toBeDefined();
+    expect(getById?.get?.responses?.["401"]?.content?.["application/json"]).toBeDefined();
+    expect(getById?.get?.responses?.["404"]?.content?.["application/json"]).toBeDefined();
   });
 });
