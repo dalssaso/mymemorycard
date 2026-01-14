@@ -48,16 +48,24 @@ describe("buildOpenApiDocument", () => {
     const login = doc.paths["/api/v1/auth/login"];
     const register = doc.paths["/api/v1/auth/register"];
     const me = doc.paths["/api/v1/auth/me"];
+    const bearerAuth = doc.components?.securitySchemes?.bearerAuth;
 
     expect(doc.openapi).toBe("3.0.0");
     expect(doc.info.title).toBe("MyMemoryCard API");
     expect(doc.info.version).toBe("v1");
+    expect(bearerAuth).toBeDefined();
+    expect(bearerAuth).toMatchObject({
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+    });
     expect(login).toBeDefined();
     expect(register).toBeDefined();
     expect(me).toBeDefined();
     expect(login?.post).toBeDefined();
     expect(register?.post).toBeDefined();
     expect(me?.get).toBeDefined();
+    expect(me?.get?.security).toEqual([{ bearerAuth: [] }]);
     expect(login?.post?.requestBody).toBeDefined();
     expect(register?.post?.requestBody).toBeDefined();
     expect(login?.post?.responses?.["200"]).toBeDefined();
