@@ -9,7 +9,7 @@ import {
   postApiV1AuthRegister,
 } from "@/shared/api/generated";
 import { client } from "@/shared/api/generated/client.gen";
-import type { Auth } from "@hey-api/client-axios";
+import type { Auth } from "@/shared/api/generated/client";
 
 const AUTH_EVENT = "auth:unauthorized";
 
