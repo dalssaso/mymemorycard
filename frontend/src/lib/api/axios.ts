@@ -14,8 +14,16 @@ const AUTH_EVENT = "auth:unauthorized";
 api.interceptors.request.use((config) => {
   const token = getToken();
   const url = config.url ?? "";
-  const isAuthExempt =
-    url.includes("/auth/login") || url.includes("/auth/register") || url.includes("/auth/refresh");
+  const pathname = (() => {
+    try {
+      return new URL(url, "http://localhost").pathname;
+    } catch {
+      return url;
+    }
+  })();
+  const isAuthExempt = ["/v1/auth/login", "/v1/auth/register", "/v1/auth/refresh"].includes(
+    pathname
+  );
 
   if (!token && !isAuthExempt) {
     throw new axios.CanceledError("Auth token missing");

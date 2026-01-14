@@ -35,10 +35,10 @@ describe("Auth Integration Tests", () => {
     resetContainer();
   });
 
-  describe("POST /api/auth/register", () => {
+  describe("POST /api/v1/auth/register", () => {
     it("should register new user", async () => {
       const username = `testuser_${Date.now()}`;
-      const response = await app.request("/api/auth/register", {
+      const response = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -60,7 +60,7 @@ describe("Auth Integration Tests", () => {
     });
 
     it("should return 400 for invalid data", async () => {
-      const response = await app.request("/api/auth/register", {
+      const response = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -74,7 +74,7 @@ describe("Auth Integration Tests", () => {
     });
 
     it("should return 400 for username with invalid characters", async () => {
-      const response = await app.request("/api/auth/register", {
+      const response = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -95,7 +95,7 @@ describe("Auth Integration Tests", () => {
     ].forEach(({ username: baseUsername, desc }) => {
       it(`should accept username "${baseUsername}" ${desc}`, async () => {
         const uniqueUsername = `${baseUsername}_${Date.now()}`;
-        const response = await app.request("/api/auth/register", {
+        const response = await app.request("/api/v1/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -118,7 +118,7 @@ describe("Auth Integration Tests", () => {
       const username = `duplicate_${Date.now()}`;
 
       // First registration
-      const firstResponse = await app.request("/api/auth/register", {
+      const firstResponse = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -136,7 +136,7 @@ describe("Auth Integration Tests", () => {
       createdUserIds.push(firstData.user.id);
 
       // Second registration with same username
-      const response = await app.request("/api/auth/register", {
+      const response = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -153,13 +153,13 @@ describe("Auth Integration Tests", () => {
     });
   });
 
-  describe("POST /api/auth/login", () => {
+  describe("POST /api/v1/auth/login", () => {
     it("should login existing user", async () => {
       const username = `logintest_${Date.now()}`;
       const password = "SecurePass123!";
 
       // Register user first
-      const registerResponse = await app.request("/api/auth/register", {
+      const registerResponse = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -174,7 +174,7 @@ describe("Auth Integration Tests", () => {
       createdUserIds.push(registerData.user.id);
 
       // Login
-      const response = await app.request("/api/auth/login", {
+      const response = await app.request("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -194,7 +194,7 @@ describe("Auth Integration Tests", () => {
     });
 
     it("should return 401 for invalid credentials", async () => {
-      const response = await app.request("/api/auth/login", {
+      const response = await app.request("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -215,7 +215,7 @@ describe("Auth Integration Tests", () => {
       const wrongPassword = "WrongPassword456!";
 
       // Register user first
-      const registerResponse = await app.request("/api/auth/register", {
+      const registerResponse = await app.request("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -231,7 +231,7 @@ describe("Auth Integration Tests", () => {
       createdUserIds.push(registerData.user.id);
 
       // Attempt login with wrong password
-      const response = await app.request("/api/auth/login", {
+      const response = await app.request("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -245,6 +245,56 @@ describe("Auth Integration Tests", () => {
 
       const data = (await response.json()) as { code: string };
       expect(data.code).toBe("UNAUTHORIZED");
+    });
+  });
+
+  describe("GET /api/v1/auth/me", () => {
+    it("should return current user", async () => {
+      const username = `current_${Date.now()}`;
+      const email = `${username}@example.com`;
+
+      const registerResponse = await app.request("/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          email,
+          password: "SecurePass123!",
+        }),
+      });
+
+      const registerData = (await registerResponse.json()) as {
+        user: { id: string; username: string; email: string };
+        token: string;
+      };
+      createdUserIds.push(registerData.user.id);
+
+      const response = await app.request("/api/v1/auth/me", {
+        headers: { Authorization: `Bearer ${registerData.token}` },
+      });
+
+      expect(response.status).toBe(200);
+
+      const data = (await response.json()) as {
+        user: { id: string; username: string; email: string };
+      };
+      expect(data.user.id).toBe(registerData.user.id);
+      expect(data.user.username).toBe(username);
+      expect(data.user.email).toBe(email);
+    });
+
+    it("should return 401 without token", async () => {
+      const response = await app.request("/api/v1/auth/me");
+
+      expect(response.status).toBe(401);
+    });
+
+    it("should return 401 with invalid token", async () => {
+      const response = await app.request("/api/v1/auth/me", {
+        headers: { Authorization: "Bearer invalid.token.here" },
+      });
+
+      expect(response.status).toBe(401);
     });
   });
 

@@ -118,6 +118,7 @@ export default defineConfig(
       'node_modules/**',
       'public/**',
       'src/routeTree.gen.ts',
+      'src/shared/api/generated/**',
     ],
   }
 )

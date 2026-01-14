@@ -21,7 +21,8 @@
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,js,json,md}\""
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "generate:openapi": "bun src/scripts/generate-openapi.ts"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.2.0",
@@ -29,7 +30,7 @@
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.1.2",
     "drizzle-orm": "^0.45.1",
-    "hono": "^4.11.3",
+    "hono": "^4.11.4",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
     "pino": "^10.1.1",

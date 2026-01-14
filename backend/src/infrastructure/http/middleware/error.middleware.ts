@@ -22,7 +22,7 @@ export function createErrorHandler(logger: Logger) {
           error: err.message,
           code: err.code,
           details: err.details,
-          requestId,
+          request_id: requestId,
         },
         statusCode
       );
@@ -37,7 +37,7 @@ export function createErrorHandler(logger: Logger) {
       {
         error: "Internal server error",
         code: "INTERNAL_ERROR",
-        requestId,
+        request_id: requestId,
       },
       500
     );

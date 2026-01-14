@@ -48,6 +48,13 @@ jobs:
         working-directory: ./backend
         run: bun install --frozen-lockfile
 
+      - name: Generate OpenAPI spec
+        working-directory: ./backend
+        run: bun run generate:openapi
+
+      - name: Verify OpenAPI spec is committed
+        run: git diff --exit-code backend/openapi.json
+
       - name: TypeScript type check
         working-directory: ./backend
         run: bun run typecheck
@@ -80,6 +87,14 @@ jobs:
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Generate API client
+        working-directory: ./frontend
+        run: npm run generate:api
+
+      - name: Verify generated client is committed
+        working-directory: ./frontend
+        run: git diff --exit-code src/shared/api/generated/
 
       - name: TypeScript type check
         working-directory: ./frontend

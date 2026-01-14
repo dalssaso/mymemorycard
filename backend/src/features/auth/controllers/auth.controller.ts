@@ -1,29 +1,33 @@
 import { injectable, inject } from "tsyringe";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import type { IAuthService } from "../services/auth.service.interface";
-import type { IAuthController } from "./auth.controller.interface";
+import type { AuthEnv, IAuthController } from "./auth.controller.interface";
 import {
   RegisterRequestSchema,
   LoginRequestSchema,
   AuthResponseSchema,
+  MeResponseSchema,
   ErrorResponseSchema,
 } from "../dtos/auth.dto";
 import { Logger } from "@/infrastructure/logging/logger";
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 
 @injectable()
 export class AuthController implements IAuthController {
-  public router: OpenAPIHono;
+  public router: OpenAPIHono<AuthEnv>;
 
   constructor(
     @inject("IAuthService") private authService: IAuthService,
     private logger: Logger
   ) {
     this.logger = logger.child("AuthController");
-    this.router = new OpenAPIHono();
+    this.router = new OpenAPIHono<AuthEnv>();
     this.registerRoutes();
   }
 
   private registerRoutes(): void {
+    const authMiddleware = createAuthMiddleware();
+
     const registerRoute = createRoute({
       method: "post",
       path: "/register",
@@ -112,6 +116,47 @@ export class AuthController implements IAuthController {
       const result = await this.authService.login(body.username, body.password);
 
       return c.json(result, 200);
+    });
+
+    const meRoute = createRoute({
+      method: "get",
+      path: "/me",
+      tags: ["auth"],
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: MeResponseSchema,
+            },
+          },
+          description: "Current user",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized",
+        },
+      },
+    });
+
+    this.router.use("/me", authMiddleware);
+    this.router.openapi(meRoute, async (c) => {
+      const user = c.get("user");
+
+      return c.json(
+        {
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+          },
+        },
+        200
+      );
     });
   }
 }
