@@ -1,26 +1,27 @@
-import "reflect-metadata"
-import { beforeEach, describe, expect, it } from "bun:test"
-import { PostgresPlatformRepository } from "@/features/platforms/repositories/platform.repository"
+import "reflect-metadata";
+import { beforeEach, describe, expect, it } from "bun:test";
+import { PostgresPlatformRepository } from "@/features/platforms/repositories/platform.repository";
 import {
   createMockDrizzleDB,
   mockSelectAllError,
   mockSelectAllResult,
   mockSelectError,
   mockSelectResult,
-} from "@/tests/helpers/drizzle.mocks"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
+} from "@/tests/helpers/drizzle.mocks";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
+import type { Platform } from "@/features/platforms/types";
 
 describe("PostgresPlatformRepository", () => {
-  let repository: PostgresPlatformRepository
-  let mockDb: DrizzleDB
+  let repository: PostgresPlatformRepository;
+  let mockDb: DrizzleDB;
 
   beforeEach(() => {
-    mockDb = createMockDrizzleDB()
-    repository = new PostgresPlatformRepository(mockDb)
-  })
+    mockDb = createMockDrizzleDB();
+    repository = new PostgresPlatformRepository(mockDb);
+  });
 
   it("lists platforms ordered", async () => {
-    const platforms = [
+    const platforms: Platform[] = [
       {
         id: "plat-1",
         name: "pc",
@@ -33,17 +34,17 @@ describe("PostgresPlatformRepository", () => {
         defaultIconUrl: null,
         sortOrder: 0,
       },
-    ]
+    ];
 
-    mockSelectAllResult(mockDb, platforms)
+    mockSelectAllResult(mockDb, platforms);
 
-    const result = await repository.list()
+    const result = await repository.list();
 
-    expect(result).toEqual(platforms)
-  })
+    expect(result).toEqual(platforms);
+  });
 
   it("returns platform by id", async () => {
-    const platform = {
+    const platform: Platform = {
       id: "plat-1",
       name: "pc",
       displayName: "PC",
@@ -54,32 +55,32 @@ describe("PostgresPlatformRepository", () => {
       colorPrimary: "#6B7280",
       defaultIconUrl: null,
       sortOrder: 0,
-    }
+    };
 
-    mockSelectResult(mockDb, [platform])
+    mockSelectResult(mockDb, [platform]);
 
-    const result = await repository.getById("plat-1")
+    const result = await repository.getById("plat-1");
 
-    expect(result).toEqual(platform)
-  })
+    expect(result).toEqual(platform);
+  });
 
   it("returns null when platform not found", async () => {
-    mockSelectResult(mockDb, [])
+    mockSelectResult(mockDb, []);
 
-    const result = await repository.getById("missing")
+    const result = await repository.getById("missing");
 
-    expect(result).toBeNull()
-  })
+    expect(result).toBeNull();
+  });
 
   it("propagates list errors", async () => {
-    mockSelectAllError(mockDb, new Error("db down"))
+    mockSelectAllError(mockDb, new Error("db down"));
 
-    await expect(repository.list()).rejects.toThrow("db down")
-  })
+    await expect(repository.list()).rejects.toThrow("db down");
+  });
 
   it("propagates getById errors", async () => {
-    mockSelectError(mockDb, new Error("db down"))
+    mockSelectError(mockDb, new Error("db down"));
 
-    await expect(repository.getById("plat-1")).rejects.toThrow("db down")
-  })
-})
+    await expect(repository.getById("plat-1")).rejects.toThrow("db down");
+  });
+});

@@ -1,23 +1,24 @@
-import "reflect-metadata"
-import { afterEach, beforeEach, describe, expect, it } from "bun:test"
-import { PlatformController } from "@/features/platforms/controllers/platform.controller"
-import type { IPlatformService } from "@/features/platforms/services/platform.service.interface"
-import { createMockLogger } from "@/tests/helpers/repository.mocks"
-import { container, resetContainer } from "@/container"
-import type { ITokenService } from "@/features/auth/services/token.service.interface"
-import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface"
+import "reflect-metadata";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { PlatformController } from "@/features/platforms/controllers/platform.controller";
+import type { IPlatformService } from "@/features/platforms/services/platform.service.interface";
+import { createMockLogger } from "@/tests/helpers/repository.mocks";
+import { container, resetContainer } from "@/container";
+import type { ITokenService } from "@/features/auth/services/token.service.interface";
+import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
+import type { PlatformListResponse } from "@/features/platforms/dtos/platform.dto";
 
 describe("PlatformController", () => {
-  let controller: PlatformController
-  let service: IPlatformService
+  let controller: PlatformController;
+  let service: IPlatformService;
 
   beforeEach(() => {
-    resetContainer()
+    resetContainer();
 
     container.registerInstance<ITokenService>("ITokenService", {
       generateToken: () => "token",
       verifyToken: () => ({ userId: "user-1", username: "testuser" }),
-    })
+    });
 
     container.registerInstance<IUserRepository>("IUserRepository", {
       findById: async () => ({
@@ -30,10 +31,10 @@ describe("PlatformController", () => {
       }),
       findByUsername: async () => null,
       create: async () => {
-        throw new Error("not used")
+        throw new Error("not used");
       },
       exists: async () => false,
-    })
+    });
 
     service = {
       list: async () => ({
@@ -66,34 +67,34 @@ describe("PlatformController", () => {
           sort_order: 0,
         },
       }),
-    }
+    };
 
-    controller = new PlatformController(service, createMockLogger())
-  })
+    controller = new PlatformController(service, createMockLogger());
+  });
 
   afterEach(() => {
-    resetContainer()
-  })
+    resetContainer();
+  });
 
   it("exposes a router", () => {
-    expect(controller.router).toBeDefined()
-  })
+    expect(controller.router).toBeDefined();
+  });
 
   it("returns platforms when authenticated", async () => {
     const response = await controller.router.request("/", {
       headers: {
         Authorization: "Bearer token",
       },
-    })
+    });
 
-    expect(response.status).toBe(200)
-    const data = await response.json()
-    expect(data.platforms).toBeDefined()
-  })
+    expect(response.status).toBe(200);
+    const data = (await response.json()) as PlatformListResponse;
+    expect(data.platforms).toBeDefined();
+  });
 
   it("returns 401 when missing auth", async () => {
-    const response = await controller.router.request("/")
+    const response = await controller.router.request("/");
 
-    expect(response.status).toBe(401)
-  })
-})
+    expect(response.status).toBe(401);
+  });
+});
