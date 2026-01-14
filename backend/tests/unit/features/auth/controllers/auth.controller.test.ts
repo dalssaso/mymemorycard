@@ -1,8 +1,11 @@
 import "reflect-metadata";
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthService } from "@/features/auth/services/auth.service.interface";
 import { Logger } from "@/infrastructure/logging/logger";
+import { container, resetContainer } from "@/container";
+import type { ITokenService } from "@/features/auth/services/token.service.interface";
+import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 
 describe("AuthController", () => {
   let controller: AuthController;
@@ -10,6 +13,29 @@ describe("AuthController", () => {
   let mockLogger: Logger;
 
   beforeEach(() => {
+    resetContainer();
+
+    container.registerInstance<ITokenService>("ITokenService", {
+      generateToken: () => "token",
+      verifyToken: () => ({ userId: "user-1", username: "testuser" }),
+    });
+
+    container.registerInstance<IUserRepository>("IUserRepository", {
+      findById: async () => ({
+        id: "user-1",
+        username: "testuser",
+        email: "test@example.com",
+        passwordHash: "hash",
+        createdAt: new Date(),
+        updatedAt: null,
+      }),
+      findByUsername: async () => null,
+      create: async () => {
+        throw new Error("not used");
+      },
+      exists: async () => false,
+    });
+
     mockAuthService = {
       register: mock().mockResolvedValue({
         user: { id: "user-123", username: "testuser", email: "test@example.com" },
@@ -25,6 +51,10 @@ describe("AuthController", () => {
     mockLogger = new Logger().child("AuthController");
 
     controller = new AuthController(mockAuthService, mockLogger);
+  });
+
+  afterEach(() => {
+    resetContainer();
   });
 
   it("should have router instance", () => {
