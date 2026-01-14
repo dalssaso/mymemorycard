@@ -21,9 +21,7 @@ api.interceptors.request.use((config) => {
       return url;
     }
   })();
-  const isAuthExempt = ["/v1/auth/login", "/v1/auth/register", "/v1/auth/refresh"].includes(
-    pathname
-  );
+  const isAuthExempt = ["/v1/auth/login", "/v1/auth/register"].includes(pathname);
 
   if (!token && !isAuthExempt) {
     throw new axios.CanceledError("Auth token missing");

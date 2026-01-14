@@ -9,7 +9,6 @@ import { DatabaseConnection } from "@/infrastructure/database/connection";
 import redisClient from "@/services/redis";
 
 // Import legacy routes (registers them with the old router)
-import "@/routes/auth";
 import "@/routes/import";
 import "@/routes/platforms";
 import "@/routes/games";
