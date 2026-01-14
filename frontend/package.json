@@ -80,6 +80,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.0.0",
     "jsdom": "^27.4.0",
+    "magicast": "^0.3.5",
     "@hey-api/openapi-ts": "^0.67.3",
     "postcss": "^8.4.49",
     "prettier": "^3.5.3",
