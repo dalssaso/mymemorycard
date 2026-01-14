@@ -22,6 +22,9 @@ export function createAuthMiddleware() {
 
   return async (c: Context, next: Next): Promise<Response | void> => {
     resolveDependencies();
+    if (!tokenService || !userRepository) {
+      throw new Error("Auth middleware dependencies not registered");
+    }
 
     const authHeader = c.req.header("Authorization");
 
@@ -31,13 +34,13 @@ export function createAuthMiddleware() {
 
     const token = authHeader.slice(7);
 
-    const payload = tokenService?.verifyToken(token);
+    const payload = tokenService.verifyToken(token);
 
     if (!payload) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const user = await userRepository?.findById(payload.userId);
+    const user = await userRepository.findById(payload.userId);
 
     if (!user) {
       return c.json({ error: "Unauthorized" }, 401);

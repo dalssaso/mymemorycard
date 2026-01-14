@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthService } from "@/features/auth/services/auth.service.interface";
 import { Logger } from "@/infrastructure/logging/logger";
@@ -28,10 +28,6 @@ describe("AuthController", () => {
     mockLogger = new Logger().child("AuthController");
 
     controller = new AuthController(mockAuthService, mockLogger);
-  });
-
-  afterEach(() => {
-    resetContainer();
   });
 
   it("should have router instance", () => {

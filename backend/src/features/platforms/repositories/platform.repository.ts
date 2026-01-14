@@ -2,7 +2,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { inject, injectable } from "tsyringe";
 import { platforms } from "@/db/schema";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
-import type { Platform } from "../types";
+import type { Platform } from "@/features/platforms/types";
 import type { IPlatformRepository } from "./platform.repository.interface";
 import { DATABASE_TOKEN } from "@/container/tokens";
 
