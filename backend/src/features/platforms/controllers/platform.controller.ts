@@ -1,31 +1,31 @@
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
-import { inject, injectable } from "tsyringe"
-import type { IPlatformService } from "../services/platform.service.interface"
-import type { IPlatformController, PlatformEnv } from "./platform.controller.interface"
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
+import { inject, injectable } from "tsyringe";
+import type { IPlatformService } from "../services/platform.service.interface";
+import type { IPlatformController, PlatformEnv } from "./platform.controller.interface";
 import {
   PlatformIdParamsSchema,
   PlatformListResponseSchema,
   PlatformResponseSchema,
-} from "../dtos/platform.dto"
-import { Logger } from "@/infrastructure/logging/logger"
-import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
-import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto"
+} from "../dtos/platform.dto";
+import { Logger } from "@/infrastructure/logging/logger";
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
+import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
 
 @injectable()
 export class PlatformController implements IPlatformController {
-  public router: OpenAPIHono<PlatformEnv>
+  public router: OpenAPIHono<PlatformEnv>;
 
   constructor(
     @inject("IPlatformService") private platformService: IPlatformService,
     @inject(Logger) private logger: Logger
   ) {
-    this.logger = logger.child("PlatformController")
-    this.router = new OpenAPIHono<PlatformEnv>()
-    this.registerRoutes()
+    this.logger = logger.child("PlatformController");
+    this.router = new OpenAPIHono<PlatformEnv>();
+    this.registerRoutes();
   }
 
   private registerRoutes(): void {
-    const authMiddleware = createAuthMiddleware()
+    const authMiddleware = createAuthMiddleware();
 
     const listRoute = createRoute({
       method: "get",
@@ -42,13 +42,13 @@ export class PlatformController implements IPlatformController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
-    this.router.use("/", authMiddleware)
+    this.router.use("/", authMiddleware);
     this.router.openapi(listRoute, async (c) => {
-      const result = await this.platformService.list()
-      return c.json(result, 200)
-    })
+      const result = await this.platformService.list();
+      return c.json(result, 200);
+    });
 
     const getRoute = createRoute({
       method: "get",
@@ -72,13 +72,13 @@ export class PlatformController implements IPlatformController {
           description: "Platform not found",
         },
       },
-    })
+    });
 
-    this.router.use("/:id", authMiddleware)
+    this.router.use("/:id", authMiddleware);
     this.router.openapi(getRoute, async (c) => {
-      const params = c.req.valid("param")
-      const result = await this.platformService.getById(params.id)
-      return c.json(result, 200)
-    })
+      const params = c.req.valid("param");
+      const result = await this.platformService.getById(params.id);
+      return c.json(result, 200);
+    });
   }
 }

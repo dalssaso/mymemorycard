@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 export const PlatformSchema = z
   .object({
@@ -13,25 +13,25 @@ export const PlatformSchema = z
     default_icon_url: z.string().nullable(),
     sort_order: z.number(),
   })
-  .openapi("Platform")
+  .openapi("Platform");
 
 export const PlatformListResponseSchema = z
   .object({
     platforms: z.array(PlatformSchema),
   })
-  .openapi("PlatformListResponse")
+  .openapi("PlatformListResponse");
 
 export const PlatformResponseSchema = z
   .object({
     platform: PlatformSchema,
   })
-  .openapi("PlatformResponse")
+  .openapi("PlatformResponse");
 
 export const PlatformIdParamsSchema = z
   .object({
     id: z.uuid(),
   })
-  .openapi("PlatformIdParams")
+  .openapi("PlatformIdParams");
 
-export type PlatformResponse = z.infer<typeof PlatformResponseSchema>
-export type PlatformListResponse = z.infer<typeof PlatformListResponseSchema>
+export type PlatformResponse = z.infer<typeof PlatformResponseSchema>;
+export type PlatformListResponse = z.infer<typeof PlatformListResponseSchema>;

@@ -1,13 +1,13 @@
-import type { OpenAPIHono } from "@hono/zod-openapi"
-import type { User } from "@/types"
+import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { User } from "@/types";
 
 export type PlatformVariables = {
-  user: User
-}
+  user: User;
+};
 
 export type PlatformEnv = {
-  Variables: PlatformVariables
-}
+  Variables: PlatformVariables;
+};
 
 /**
  * Interface for PlatformController
@@ -19,5 +19,5 @@ export interface IPlatformController {
    * - GET / - List platforms
    * - GET /:id - Get platform
    */
-  router: OpenAPIHono<PlatformEnv>
+  router: OpenAPIHono<PlatformEnv>;
 }

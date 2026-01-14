@@ -1,15 +1,12 @@
-import { inject, injectable } from "tsyringe"
-import { Logger } from "@/infrastructure/logging/logger"
-import { NotFoundError } from "@/shared/errors/base"
-import type { Platform } from "../types"
-import type { IPlatformRepository } from "../repositories/platform.repository.interface"
-import type {
-  PlatformListResponse,
-  PlatformResponse,
-} from "../dtos/platform.dto"
-import type { IPlatformService } from "./platform.service.interface"
+import { inject, injectable } from "tsyringe";
+import { Logger } from "@/infrastructure/logging/logger";
+import { NotFoundError } from "@/shared/errors/base";
+import type { Platform } from "../types";
+import type { IPlatformRepository } from "../repositories/platform.repository.interface";
+import type { PlatformListResponse, PlatformResponse } from "../dtos/platform.dto";
+import type { IPlatformService } from "./platform.service.interface";
 
-type PlatformDto = PlatformResponse["platform"]
+type PlatformDto = PlatformResponse["platform"];
 
 @injectable()
 export class PlatformService implements IPlatformService {
@@ -17,20 +14,20 @@ export class PlatformService implements IPlatformService {
     @inject("IPlatformRepository") private repo: IPlatformRepository,
     @inject(Logger) private logger: Logger
   ) {
-    this.logger = logger.child("PlatformService")
+    this.logger = logger.child("PlatformService");
   }
 
   async list(): Promise<PlatformListResponse> {
-    const platforms = await this.repo.list()
-    return { platforms: platforms.map((platform) => this.toDto(platform)) }
+    const platforms = await this.repo.list();
+    return { platforms: platforms.map((platform) => this.toDto(platform)) };
   }
 
   async getById(id: string): Promise<PlatformResponse> {
-    const platform = await this.repo.getById(id)
+    const platform = await this.repo.getById(id);
     if (!platform) {
-      throw new NotFoundError("Platform", id)
+      throw new NotFoundError("Platform", id);
     }
-    return { platform: this.toDto(platform) }
+    return { platform: this.toDto(platform) };
   }
 
   private toDto(platform: Platform): PlatformDto {
@@ -45,6 +42,6 @@ export class PlatformService implements IPlatformService {
       color_primary: platform.colorPrimary,
       default_icon_url: platform.defaultIconUrl,
       sort_order: platform.sortOrder ?? 0,
-    }
+    };
   }
 }
