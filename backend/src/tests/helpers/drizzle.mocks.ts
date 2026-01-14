@@ -33,6 +33,12 @@ export function mockSelectResult<T>(mockDb: DrizzleDB, result: T[]): void {
   });
 }
 
+/**
+ * Mock a successful select().from().orderBy() chain with a resolved result.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
 export function mockSelectAllResult<T>(mockDb: DrizzleDB, result: T[]): void {
   const selectMock = mockDb.select as ReturnType<typeof mock>;
   selectMock.mockReturnValue({
@@ -42,6 +48,12 @@ export function mockSelectAllResult<T>(mockDb: DrizzleDB, result: T[]): void {
   });
 }
 
+/**
+ * Mock a failed select().from().orderBy() chain with a rejected error.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param error - Error to reject with.
+ */
 export function mockSelectAllError(mockDb: DrizzleDB, error: Error): void {
   const selectMock = mockDb.select as ReturnType<typeof mock>;
   selectMock.mockReturnValue({

@@ -10,13 +10,24 @@ import {
 import { Logger } from "@/infrastructure/logging/logger";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
+import { PLATFORM_SERVICE_TOKEN } from "@/container/tokens";
 
+/**
+ * PlatformController handles platform-related routes.
+ *
+ * @class
+ * @public
+ * @implements {IPlatformController}
+ * @param {IPlatformService} platformService - Injected platform service.
+ * @param {Logger} logger - Injected logger instance.
+ * @property {OpenAPIHono<PlatformEnv>} router - OpenAPI-enabled router.
+ */
 @injectable()
 export class PlatformController implements IPlatformController {
   public router: OpenAPIHono<PlatformEnv>;
 
   constructor(
-    @inject("IPlatformService") private platformService: IPlatformService,
+    @inject(PLATFORM_SERVICE_TOKEN) private platformService: IPlatformService,
     @inject(Logger) private logger: Logger
   ) {
     this.logger = logger.child("PlatformController");

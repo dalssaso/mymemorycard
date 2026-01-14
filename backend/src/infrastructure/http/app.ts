@@ -3,6 +3,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { container } from "@/container";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 import type { IPlatformController } from "@/features/platforms/controllers/platform.controller.interface";
+import { AUTH_CONTROLLER_TOKEN, PLATFORM_CONTROLLER_TOKEN } from "@/container/tokens";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { createErrorHandler } from "./middleware/error.middleware";
 import { corsMiddleware } from "./middleware/cors.middleware";
@@ -56,11 +57,11 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   });
 
   // Auth routes (DI-based)
-  const authController = container.resolve<IAuthController>("IAuthController");
+  const authController = container.resolve<IAuthController>(AUTH_CONTROLLER_TOKEN);
   app.route("/api/v1/auth", authController.router);
 
   // Platforms routes (DI-based)
-  const platformController = container.resolve<IPlatformController>("IPlatformController");
+  const platformController = container.resolve<IPlatformController>(PLATFORM_CONTROLLER_TOKEN);
   app.route("/api/v1/platforms", platformController.router);
 
   // Legacy routes proxy (for gradual migration)

@@ -1,6 +1,7 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { injectable, inject } from "tsyringe";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import { CONFIG_TOKEN } from "@/container/tokens";
 import type { ITokenService, JWTPayload } from "./token.service.interface";
 
 /**
@@ -22,7 +23,7 @@ export class TokenService implements ITokenService {
   private readonly secret: string;
   private readonly expiresIn: string;
 
-  constructor(@inject("IConfig") config: IConfig) {
+  constructor(@inject(CONFIG_TOKEN) config: IConfig) {
     this.secret = config.jwt.secret;
     this.expiresIn = config.jwt.expiresIn;
   }

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses } from './types.gen';
+import type { GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -42,5 +42,19 @@ export const getApiV1AuthMe = <ThrowOnError extends boolean = false>(options?: O
     responseType: 'json',
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/auth/me',
+    ...options
+});
+
+export const getApiV1Platforms = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1PlatformsData, ThrowOnError>) => (options?.client ?? client).get<GetApiV1PlatformsResponses, GetApiV1PlatformsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/platforms',
+    ...options
+});
+
+export const getApiV1PlatformsById = <ThrowOnError extends boolean = false>(options: Options<GetApiV1PlatformsByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiV1PlatformsByIdResponses, GetApiV1PlatformsByIdErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/platforms/{id}',
     ...options
 });

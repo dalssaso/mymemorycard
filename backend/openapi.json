@@ -122,7 +122,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Platform"
-            }
+            },
+            "maxItems": 100
           }
         },
         "required": [
@@ -169,7 +170,7 @@
             "nullable": true
           },
           "sort_order": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [

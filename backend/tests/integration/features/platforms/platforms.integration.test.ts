@@ -120,6 +120,17 @@ describe("Platforms Integration Tests", () => {
       expect(data.platform.platform_type).toBeDefined();
     });
 
+    it("should return 400 for invalid platform id", async () => {
+      const { token } = await registerUser();
+
+      const response = await app.request("/api/v1/platforms/not-a-valid-uuid", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.headers.get("content-type")).toContain("application/json");
+    });
+
     it("should return 404 for unknown platform", async () => {
       const { token } = await registerUser();
       const missingId = randomUUID();

@@ -3,9 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthService } from "@/features/auth/services/auth.service.interface";
 import { Logger } from "@/infrastructure/logging/logger";
-import { container, resetContainer } from "@/container";
-import type { ITokenService } from "@/features/auth/services/token.service.interface";
-import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
+import { resetContainer } from "@/container";
 
 describe("AuthController", () => {
   let controller: AuthController;
@@ -14,27 +12,6 @@ describe("AuthController", () => {
 
   beforeEach(() => {
     resetContainer();
-
-    container.registerInstance<ITokenService>("ITokenService", {
-      generateToken: () => "token",
-      verifyToken: () => ({ userId: "user-1", username: "testuser" }),
-    });
-
-    container.registerInstance<IUserRepository>("IUserRepository", {
-      findById: async () => ({
-        id: "user-1",
-        username: "testuser",
-        email: "test@example.com",
-        passwordHash: "hash",
-        createdAt: new Date(),
-        updatedAt: null,
-      }),
-      findByUsername: async () => null,
-      create: async () => {
-        throw new Error("not used");
-      },
-      exists: async () => false,
-    });
 
     mockAuthService = {
       register: mock().mockResolvedValue({

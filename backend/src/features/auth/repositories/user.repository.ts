@@ -4,10 +4,11 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ConflictError } from "@/shared/errors/base";
 import type { IUserRepository, User } from "./user.repository.interface";
+import { DATABASE_TOKEN } from "@/container/tokens";
 
 @injectable()
 export class PostgresUserRepository implements IUserRepository {
-  constructor(@inject("Database") private db: DrizzleDB) {}
+  constructor(@inject(DATABASE_TOKEN) private db: DrizzleDB) {}
 
   async findByUsername(username: string): Promise<User | null> {
     const result = await this.db.select().from(users).where(eq(users.username, username)).limit(1);

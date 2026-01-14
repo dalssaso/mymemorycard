@@ -11,13 +11,13 @@ export const PlatformSchema = z
     website_url: z.string().nullable(),
     color_primary: z.string(),
     default_icon_url: z.string().nullable(),
-    sort_order: z.number(),
+    sort_order: z.number().int(),
   })
   .openapi("Platform");
 
 export const PlatformListResponseSchema = z
   .object({
-    platforms: z.array(PlatformSchema),
+    platforms: z.array(PlatformSchema).max(100),
   })
   .openapi("PlatformListResponse");
 
@@ -33,5 +33,6 @@ export const PlatformIdParamsSchema = z
   })
   .openapi("PlatformIdParams");
 
+export type PlatformIdParams = z.infer<typeof PlatformIdParamsSchema>;
 export type PlatformResponse = z.infer<typeof PlatformResponseSchema>;
 export type PlatformListResponse = z.infer<typeof PlatformListResponseSchema>;

@@ -6,13 +6,18 @@ import type { ITokenService } from "./token.service.interface";
 import { ConflictError, UnauthorizedError } from "@/shared/errors/base";
 import { Logger } from "@/infrastructure/logging/logger";
 import { MetricsService } from "@/infrastructure/metrics/metrics";
+import {
+  PASSWORD_HASHER_TOKEN,
+  TOKEN_SERVICE_TOKEN,
+  USER_REPOSITORY_TOKEN,
+} from "@/container/tokens";
 
 @injectable()
 export class AuthService implements IAuthService {
   constructor(
-    @inject("IUserRepository") private userRepo: IUserRepository,
-    @inject("IPasswordHasher") private passwordHasher: IPasswordHasher,
-    @inject("ITokenService") private tokenService: ITokenService,
+    @inject(USER_REPOSITORY_TOKEN) private userRepo: IUserRepository,
+    @inject(PASSWORD_HASHER_TOKEN) private passwordHasher: IPasswordHasher,
+    @inject(TOKEN_SERVICE_TOKEN) private tokenService: ITokenService,
     @inject(Logger) private logger: Logger,
     @inject(MetricsService) private metrics: MetricsService
   ) {

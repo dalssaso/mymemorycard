@@ -1,4 +1,4 @@
-import type { Platform } from "../types";
+import type { Platform } from "@/features/platforms/types";
 
 export interface IPlatformRepository {
   list(): Promise<Platform[]>;

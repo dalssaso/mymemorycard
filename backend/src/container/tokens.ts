@@ -1,0 +1,10 @@
+export const AUTH_CONTROLLER_TOKEN = "IAuthController";
+export const AUTH_SERVICE_TOKEN = "IAuthService";
+export const CONFIG_TOKEN = "IConfig";
+export const DATABASE_TOKEN = "Database";
+export const PASSWORD_HASHER_TOKEN = "IPasswordHasher";
+export const PLATFORM_CONTROLLER_TOKEN = "IPlatformController";
+export const PLATFORM_REPOSITORY_TOKEN = "IPlatformRepository";
+export const PLATFORM_SERVICE_TOKEN = "IPlatformService";
+export const TOKEN_SERVICE_TOKEN = "ITokenService";
+export const USER_REPOSITORY_TOKEN = "IUserRepository";

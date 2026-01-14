@@ -7,6 +7,9 @@ import { container, resetContainer } from "@/container";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { PlatformListResponse } from "@/features/platforms/dtos/platform.dto";
+import { TOKEN_SERVICE_TOKEN, USER_REPOSITORY_TOKEN } from "@/container/tokens";
+import { NotFoundError } from "@/shared/errors/base";
+import { createErrorHandler } from "@/infrastructure/http/middleware/error.middleware";
 
 describe("PlatformController", () => {
   let controller: PlatformController;
@@ -15,12 +18,12 @@ describe("PlatformController", () => {
   beforeEach(() => {
     resetContainer();
 
-    container.registerInstance<ITokenService>("ITokenService", {
+    container.registerInstance<ITokenService>(TOKEN_SERVICE_TOKEN, {
       generateToken: () => "token",
       verifyToken: () => ({ userId: "user-1", username: "testuser" }),
     });
 
-    container.registerInstance<IUserRepository>("IUserRepository", {
+    container.registerInstance<IUserRepository>(USER_REPOSITORY_TOKEN, {
       findById: async () => ({
         id: "user-1",
         username: "testuser",
@@ -36,11 +39,13 @@ describe("PlatformController", () => {
       exists: async () => false,
     });
 
+    const platformId = "00000000-0000-4000-8000-000000000001";
+
     service = {
       list: async () => ({
         platforms: [
           {
-            id: "plat-1",
+            id: platformId,
             name: "pc",
             display_name: "PC",
             platform_type: "pc",
@@ -55,7 +60,7 @@ describe("PlatformController", () => {
       }),
       getById: async () => ({
         platform: {
-          id: "plat-1",
+          id: platformId,
           name: "pc",
           display_name: "PC",
           platform_type: "pc",
@@ -69,7 +74,9 @@ describe("PlatformController", () => {
       }),
     };
 
-    controller = new PlatformController(service, createMockLogger());
+    const logger = createMockLogger();
+    controller = new PlatformController(service, logger);
+    controller.router.onError(createErrorHandler(logger));
   });
 
   afterEach(() => {
@@ -96,5 +103,31 @@ describe("PlatformController", () => {
     const response = await controller.router.request("/");
 
     expect(response.status).toBe(401);
+  });
+
+  it("returns platform when authenticated", async () => {
+    const response = await controller.router.request("/00000000-0000-4000-8000-000000000001", {
+      headers: {
+        Authorization: "Bearer token",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    const data = (await response.json()) as { platform?: { id?: string } };
+    expect(data.platform).toBeDefined();
+  });
+
+  it("returns 404 when platform is missing", async () => {
+    service.getById = async () => {
+      throw new NotFoundError("Platform", "missing");
+    };
+
+    const response = await controller.router.request("/00000000-0000-4000-8000-000000000002", {
+      headers: {
+        Authorization: "Bearer token",
+      },
+    });
+
+    expect(response.status).toBe(404);
   });
 });
