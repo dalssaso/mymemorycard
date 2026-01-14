@@ -8,6 +8,7 @@ const REQUIRED_ENV_KEYS = [
   "RAWG_API_KEY",
   "ENCRYPTION_SECRET",
   "ENCRYPTION_SALT",
+  "SKIP_REDIS_CONNECT",
 ];
 
 function withClearedEnv(run: () => void): void {
@@ -35,6 +36,9 @@ describe("buildOpenApiDocument", () => {
   it("builds without required env vars", () => {
     withClearedEnv(() => {
       const doc = buildOpenApiDocument();
+      expect(doc.openapi).toBe("3.0.0");
+      expect(doc.info.title).toBe("MyMemoryCard API");
+      expect(doc.info.version).toBe("v1");
       expect(doc.paths["/api/v1/auth/login"]).toBeDefined();
     });
   });
@@ -45,6 +49,9 @@ describe("buildOpenApiDocument", () => {
     const register = doc.paths["/api/v1/auth/register"];
     const me = doc.paths["/api/v1/auth/me"];
 
+    expect(doc.openapi).toBe("3.0.0");
+    expect(doc.info.title).toBe("MyMemoryCard API");
+    expect(doc.info.version).toBe("v1");
     expect(login).toBeDefined();
     expect(register).toBeDefined();
     expect(me).toBeDefined();

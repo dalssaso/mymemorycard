@@ -19,5 +19,5 @@ export interface IAuthController {
    * - POST /register - Register new user
    * - POST /login - Authenticate user
    */
-  router: OpenAPIHono<{ Variables: AuthVariables }>;
+  router: OpenAPIHono<AuthEnv>;
 }

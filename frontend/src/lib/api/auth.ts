@@ -9,11 +9,14 @@ import {
   postApiV1AuthRegister,
 } from "@/shared/api/generated";
 import { client } from "@/shared/api/generated/client.gen";
+import type { Auth } from "@hey-api/client-axios";
 
 const AUTH_EVENT = "auth:unauthorized";
 
+const resolveAuthToken = (_auth: Auth): string => getToken() ?? "";
+
 client.setConfig({
-  auth: () => getToken() ?? "",
+  auth: resolveAuthToken,
   baseURL: "/",
   withCredentials: true,
 });
