@@ -17,7 +17,7 @@ export class PlatformController implements IPlatformController {
 
   constructor(
     @inject("IPlatformService") private platformService: IPlatformService,
-    private logger: Logger
+    @inject(Logger) private logger: Logger
   ) {
     this.logger = logger.child("PlatformController")
     this.router = new OpenAPIHono<PlatformEnv>()
@@ -52,7 +52,7 @@ export class PlatformController implements IPlatformController {
 
     const getRoute = createRoute({
       method: "get",
-      path: "/:id",
+      path: "/{id}",
       tags: ["platforms"],
       security: [{ bearerAuth: [] }],
       request: {

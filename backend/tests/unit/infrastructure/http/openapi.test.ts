@@ -72,4 +72,15 @@ describe("buildOpenApiDocument", () => {
     expect(register?.post?.responses?.["201"]).toBeDefined();
     expect(me?.get?.responses?.["200"]).toBeDefined();
   });
+
+  it("includes versioned platform paths", () => {
+    const doc = buildOpenApiDocument();
+    const list = doc.paths["/api/v1/platforms"];
+    const getById = doc.paths["/api/v1/platforms/{id}"];
+
+    expect(list).toBeDefined();
+    expect(list?.get).toBeDefined();
+    expect(getById).toBeDefined();
+    expect(getById?.get).toBeDefined();
+  });
 });

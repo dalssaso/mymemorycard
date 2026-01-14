@@ -26,6 +26,12 @@ import type { IAuthService } from "@/features/auth/services/auth.service.interfa
 // Auth - Controllers
 import { AuthController } from "@/features/auth/controllers/auth.controller";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
+import { PostgresPlatformRepository } from "@/features/platforms/repositories/platform.repository";
+import type { IPlatformRepository } from "@/features/platforms/repositories/platform.repository.interface";
+import { PlatformService } from "@/features/platforms/services/platform.service";
+import type { IPlatformService } from "@/features/platforms/services/platform.service.interface";
+import { PlatformController } from "@/features/platforms/controllers/platform.controller";
+import type { IPlatformController } from "@/features/platforms/controllers/platform.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -57,6 +63,18 @@ export function registerDependencies(): void {
 
   // Auth Domain - Controllers
   container.registerSingleton<IAuthController>("IAuthController", AuthController);
+
+  // Platforms Domain - Repositories
+  container.registerSingleton<IPlatformRepository>(
+    "IPlatformRepository",
+    PostgresPlatformRepository
+  );
+
+  // Platforms Domain - Services
+  container.registerSingleton<IPlatformService>("IPlatformService", PlatformService);
+
+  // Platforms Domain - Controllers
+  container.registerSingleton<IPlatformController>("IPlatformController", PlatformController);
 }
 
 /**

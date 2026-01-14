@@ -18,7 +18,7 @@ export class AuthController implements IAuthController {
 
   constructor(
     @inject("IAuthService") private authService: IAuthService,
-    private logger: Logger
+    @inject(Logger) private logger: Logger
   ) {
     this.logger = logger.child("AuthController");
     this.router = new OpenAPIHono<AuthEnv>();
