@@ -8,3 +8,6 @@ export const PLATFORM_REPOSITORY_TOKEN = "IPlatformRepository";
 export const PLATFORM_SERVICE_TOKEN = "IPlatformService";
 export const TOKEN_SERVICE_TOKEN = "ITokenService";
 export const USER_REPOSITORY_TOKEN = "IUserRepository";
+export const USER_PLATFORMS_REPOSITORY_TOKEN = "IUserPlatformsRepository"
+export const USER_PLATFORMS_SERVICE_TOKEN = "IUserPlatformsService"
+export const USER_PLATFORMS_CONTROLLER_TOKEN = "IUserPlatformsController"
