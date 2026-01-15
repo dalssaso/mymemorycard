@@ -1,0 +1,59 @@
+import { z } from "zod";
+
+/**
+ * Schema for updating user preferences
+ */
+export const UpdatePreferencesRequestSchema = z
+  .object({
+    default_view: z.enum(["grid", "table"]).optional(),
+    items_per_page: z
+      .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
+      .optional(),
+    theme: z.enum(["light", "dark", "auto"]).optional(),
+  })
+  .strict()
+  .openapi("UpdatePreferencesRequest", {
+    description: "Request to update user preferences",
+    example: {
+      default_view: "table",
+      items_per_page: 50,
+      theme: "dark",
+    },
+  });
+
+export type UpdatePreferencesRequest = z.infer<typeof UpdatePreferencesRequestSchema>;
+
+/**
+ * Schema for preferences response
+ */
+export const PreferencesResponseSchema = z
+  .object({
+    default_view: z.string(),
+    items_per_page: z.number(),
+    theme: z.string(),
+    updated_at: z.string().datetime().nullable(),
+  })
+  .openapi("PreferencesResponse", {
+    description: "User preferences",
+    example: {
+      default_view: "grid",
+      items_per_page: 25,
+      theme: "dark",
+      updated_at: "2026-01-15T10:00:00.000Z",
+    },
+  });
+
+export type PreferencesResponseDto = z.infer<typeof PreferencesResponseSchema>;
+
+/**
+ * Schema for get preferences response (wrapped)
+ */
+export const GetPreferencesResponseSchema = z
+  .object({
+    preferences: PreferencesResponseSchema,
+  })
+  .openapi("GetPreferencesResponse", {
+    description: "Get preferences response",
+  });
+
+export type GetPreferencesResponse = z.infer<typeof GetPreferencesResponseSchema>;
