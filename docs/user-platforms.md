@@ -195,9 +195,11 @@ Integration tests verify all CRUD operations and error cases:
 ```bash
 # Run user-platforms integration tests
 bun test tests/integration/features/user-platforms/
+# Expected: 11 tests passing
 
 # Run all backend tests
 bun test
+# Expected: All tests passing (184+ tests across unit, integration, and feature tests)
 ```
 
 Test coverage includes:

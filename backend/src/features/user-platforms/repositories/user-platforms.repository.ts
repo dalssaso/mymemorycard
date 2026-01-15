@@ -73,25 +73,29 @@ export class PostgresUserPlatformsRepository implements IUserPlatformsRepository
    * @throws ConflictError if the association already exists
    */
   async create(userId: string, data: CreateUserPlatformInput): Promise<UserPlatform> {
-    // Check if association already exists
-    const existing = await this.findByUserAndPlatform(userId, data.platformId);
-    if (existing) {
-      throw new ConflictError(`User already has platform ${data.platformId} associated`);
+    try {
+      const [created] = await this.db
+        .insert(userPlatforms)
+        .values({
+          userId,
+          platformId: data.platformId,
+          username: data.username,
+          iconUrl: data.iconUrl,
+          profileUrl: data.profileUrl,
+          notes: data.notes,
+        })
+        .returning();
+
+      return created!;
+    } catch (error) {
+      // Catch unique constraint violation and translate to ConflictError
+      if (error instanceof Error && error.message.includes("unique")) {
+        throw new ConflictError(
+          `User already has platform ${data.platformId} associated`
+        );
+      }
+      throw error;
     }
-
-    const [created] = await this.db
-      .insert(userPlatforms)
-      .values({
-        userId,
-        platformId: data.platformId,
-        username: data.username,
-        iconUrl: data.iconUrl,
-        profileUrl: data.profileUrl,
-        notes: data.notes,
-      })
-      .returning();
-
-    return created!;
   }
 
   /**

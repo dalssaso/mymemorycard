@@ -35,7 +35,17 @@ const createMockRepository = (): IUserPlatformsRepository => ({
       notes: null,
       createdAt: new Date(),
     }) as UserPlatform,
-  update: async () => ({}) as UserPlatform,
+  update: async () =>
+    ({
+      id: "test-id",
+      userId: "test-user-id",
+      platformId: "test-platform-id",
+      username: null,
+      iconUrl: null,
+      profileUrl: null,
+      notes: null,
+      createdAt: new Date(),
+    }) as UserPlatform,
   delete: async () => {},
   deleteByUserId: async () => {},
 });

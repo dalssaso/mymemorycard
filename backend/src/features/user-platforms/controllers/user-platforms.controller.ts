@@ -6,7 +6,7 @@ import { Logger } from "@/infrastructure/logging/logger";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
 import type { IUserPlatformsService } from "../services/user-platforms.service.interface";
-import type { IUserPlatformsController } from "./user-platforms.controller.interface";
+import type { IUserPlatformsController, UserPlatformsEnv } from "./user-platforms.controller.interface";
 import {
   AddUserPlatformRequestSchema,
   UpdateUserPlatformRequestSchema,
@@ -20,7 +20,7 @@ import {
  */
 @injectable()
 export class UserPlatformsController implements IUserPlatformsController {
-  readonly router: OpenAPIHono<any>;
+  readonly router: OpenAPIHono<UserPlatformsEnv>;
 
   constructor(
     @inject(USER_PLATFORMS_SERVICE_TOKEN)

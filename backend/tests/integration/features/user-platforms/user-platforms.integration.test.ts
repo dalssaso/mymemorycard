@@ -261,6 +261,7 @@ describe("User-Platforms Integration Tests", () => {
       if (response.status === 201) {
         const data = (await response.json()) as { id: string };
         testUserPlatformId = data.id;
+        createdUserPlatformIds.push(testUserPlatformId);
       }
     });
 
