@@ -22,7 +22,7 @@ const createMockRepository = (): IUserPlatformsRepository => ({
       notes: null,
       createdAt: new Date(),
     }) as UserPlatform,
-  update: async () => ({} as UserPlatform),
+  update: async () => ({}) as UserPlatform,
   delete: async () => {},
   deleteByUserId: async () => {},
 });
@@ -195,14 +195,11 @@ describe("UserPlatformsService", () => {
     it("should throw NotFoundError if platform does not exist", async () => {
       mockRepository.findById = async () => null;
 
-      try {
-        await service.updatePlatform(testUserId, "nonexistent", {
+      await expect(
+        service.updatePlatform(testUserId, "nonexistent", {
           username: "newname",
-        });
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error instanceof NotFoundError).toBe(true);
-      }
+        })
+      ).rejects.toThrow(NotFoundError);
     });
 
     it("should throw ForbiddenError if platform belongs to different user", async () => {
@@ -219,14 +216,11 @@ describe("UserPlatformsService", () => {
 
       mockRepository.findById = async () => userPlatform;
 
-      try {
-        await service.updatePlatform(testUserId, "up-1", {
+      await expect(
+        service.updatePlatform(testUserId, "up-1", {
           username: "newname",
-        });
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error instanceof ForbiddenError).toBe(true);
-      }
+        })
+      ).rejects.toThrow(ForbiddenError);
     });
   });
 
@@ -263,23 +257,15 @@ describe("UserPlatformsService", () => {
 
       mockRepository.findById = async () => userPlatform;
 
-      try {
-        await service.removePlatform(testUserId, "up-1");
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error instanceof ForbiddenError).toBe(true);
-      }
+      await expect(service.removePlatform(testUserId, "up-1")).rejects.toThrow(ForbiddenError);
     });
 
     it("should throw NotFoundError if platform does not exist", async () => {
       mockRepository.findById = async () => null;
 
-      try {
-        await service.removePlatform(testUserId, "nonexistent");
-        expect(true).toBe(false);
-      } catch (error) {
-        expect(error instanceof NotFoundError).toBe(true);
-      }
+      await expect(service.removePlatform(testUserId, "nonexistent")).rejects.toThrow(
+        NotFoundError
+      );
     });
   });
 });
