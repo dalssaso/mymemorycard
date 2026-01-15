@@ -11,6 +11,9 @@ import {
   PLATFORM_SERVICE_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_REPOSITORY_TOKEN,
+  USER_PLATFORMS_CONTROLLER_TOKEN,
+  USER_PLATFORMS_REPOSITORY_TOKEN,
+  USER_PLATFORMS_SERVICE_TOKEN,
 } from "@/container/tokens";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
@@ -50,6 +53,18 @@ import type { IPlatformService } from "@/features/platforms/services/platform.se
 // Platform - Controllers
 import { PlatformController } from "@/features/platforms/controllers/platform.controller";
 import type { IPlatformController } from "@/features/platforms/controllers/platform.controller.interface";
+
+// User-Platforms - Repositories
+import { PostgresUserPlatformsRepository } from "@/features/user-platforms/repositories/user-platforms.repository";
+import type { IUserPlatformsRepository } from "@/features/user-platforms/repositories/user-platforms.repository.interface";
+
+// User-Platforms - Services
+import { UserPlatformsService } from "@/features/user-platforms/services/user-platforms.service";
+import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
+
+// User-Platforms - Controllers
+import { UserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller";
+import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -93,6 +108,24 @@ export function registerDependencies(): void {
 
   // Platforms Domain - Controllers
   container.registerSingleton<IPlatformController>(PLATFORM_CONTROLLER_TOKEN, PlatformController);
+
+  // User-Platforms Domain - Repositories
+  container.registerSingleton<IUserPlatformsRepository>(
+    USER_PLATFORMS_REPOSITORY_TOKEN,
+    PostgresUserPlatformsRepository
+  );
+
+  // User-Platforms Domain - Services
+  container.registerSingleton<IUserPlatformsService>(
+    USER_PLATFORMS_SERVICE_TOKEN,
+    UserPlatformsService
+  );
+
+  // User-Platforms Domain - Controllers
+  container.registerSingleton<IUserPlatformsController>(
+    USER_PLATFORMS_CONTROLLER_TOKEN,
+    UserPlatformsController
+  );
 }
 
 /**
