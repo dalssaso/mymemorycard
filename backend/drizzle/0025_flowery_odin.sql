@@ -1,0 +1,1 @@
+ALTER TABLE "user_platforms" ALTER COLUMN "created_at" SET NOT NULL;

@@ -6,6 +6,7 @@ Documentation-specific instructions for Claude Code. See also the root [CLAUDE.m
 
 | File | Description |
 |------|-------------|
+| `user-platforms.md` | User-platforms feature API documentation |
 | `local-setup.md` | Local development environment setup |
 | `deployment-nginx.md` | Production deployment with Nginx reverse proxy |
 | `release-process.md` | Release automation with release-please |

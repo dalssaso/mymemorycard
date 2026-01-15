@@ -178,6 +178,20 @@ just test-integration         # Backend integration tests (requires Docker + bac
 just test-coverage            # Coverage reports
 ```
 
+### Integration Test Rules
+
+- Run backend integration tests from `backend/` directory to load `.env` file
+- Ensure Docker infrastructure is running before integration tests (`just dev`)
+- Always verify setup requests succeeded before using response data
+- Track created resources for cleanup to prevent test pollution
+- Test authorization boundaries (cross-user access should return 404)
+
+### Test Code Quality
+
+- Do NOT add explicit type annotations when type can be inferred from literal
+- Use shared mock helpers instead of duplicating mock implementations
+- Follow import order: test framework, reflect-metadata, external, internal
+
 ## Database
 
 ```bash
@@ -213,6 +227,20 @@ refactor: extract api client to separate module
 Release-please automates releases from conventional commits.
 
 **Commit only after user confirms changes work.**
+
+## Security Patterns
+
+- Never return 403 Forbidden for cross-user resource access - use 404 Not Found instead
+- This prevents attackers from discovering which resources exist
+- Validate resource ownership in service layer, not controller
+- Let domain errors bubble up to the global error handler
+
+## Error Handling
+
+- Use domain-specific error classes (NotFoundError, ConflictError, ValidationError)
+- Never expose internal error details in API responses
+- Database constraint violations should be translated to domain errors
+- Drizzle ORM wraps database errors - check nested error structures
 
 ## Frontend Patterns
 
