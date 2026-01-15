@@ -662,3 +662,25 @@ export const userPreferences = pgTable(
     check("theme_check", sql`theme IN ('light', 'dark', 'auto')`),
   ]
 );
+
+// ============================================================================
+// ADMIN SETTINGS (Instance-Level Configuration)
+// ============================================================================
+
+export const analyticsProviderEnum = pgEnum("analytics_provider", [
+  "umami",
+  "plausible",
+  "posthog",
+  "google-analytics",
+])
+
+export const adminSettings = pgTable("admin_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  analyticsEnabled: boolean("analytics_enabled").default(false).notNull(),
+  analyticsProvider: analyticsProviderEnum("analytics_provider"),
+  analyticsKey: varchar("analytics_key", { length: 255 }),
+  analyticsHost: text("analytics_host"),
+  searchServerSide: boolean("search_server_side").default(true).notNull(),
+  searchDebounceMs: integer("search_debounce_ms").default(300).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+})
