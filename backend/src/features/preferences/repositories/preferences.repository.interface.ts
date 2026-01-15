@@ -1,4 +1,4 @@
-import type { UpdatePreferencesInput, UserPreference } from "../types"
+import type { UpdatePreferencesInput, UserPreference } from "../types";
 
 /**
  * Repository interface for user preferences persistence
@@ -10,7 +10,7 @@ export interface IPreferencesRepository {
    * @param userId - User ID to find preferences for
    * @returns Preferences if found, null otherwise
    */
-  findByUserId(userId: string): Promise<UserPreference | null>
+  findByUserId(userId: string): Promise<UserPreference | null>;
 
   /**
    * Create or update preferences for a user (upsert)
@@ -19,5 +19,5 @@ export interface IPreferencesRepository {
    * @param data - Preferences data to save
    * @returns Created or updated preferences
    */
-  upsert(userId: string, data: UpdatePreferencesInput): Promise<UserPreference>
+  upsert(userId: string, data: UpdatePreferencesInput): Promise<UserPreference>;
 }
