@@ -1,11 +1,11 @@
-import { inject, injectable } from "tsyringe"
+import { inject, injectable } from "tsyringe";
 
-import { DATABASE_TOKEN } from "@/container/tokens"
-import { adminSettings } from "@/db/schema"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
+import { DATABASE_TOKEN } from "@/container/tokens";
+import { adminSettings } from "@/db/schema";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
 
-import type { AdminSetting, UpdateAdminSettingsInput } from "../types"
-import type { IAdminRepository } from "./admin.repository.interface"
+import type { AdminSetting, UpdateAdminSettingsInput } from "../types";
+import type { IAdminRepository } from "./admin.repository.interface";
 
 /**
  * PostgreSQL implementation of admin repository using Drizzle ORM
@@ -20,9 +20,9 @@ export class PostgresAdminRepository implements IAdminRepository {
    * @returns Admin settings if found, null otherwise
    */
   async findSettings(): Promise<AdminSetting | null> {
-    const results = await this.db.select().from(adminSettings).limit(1)
+    const results = await this.db.select().from(adminSettings).limit(1);
 
-    return results[0] ?? null
+    return results[0] ?? null;
   }
 
   /**
@@ -32,42 +32,39 @@ export class PostgresAdminRepository implements IAdminRepository {
    * @returns Created or updated settings
    */
   async upsert(data: UpdateAdminSettingsInput): Promise<AdminSetting> {
-    const existing = await this.findSettings()
+    const existing = await this.findSettings();
 
     if (existing) {
       const updateValues: Record<string, unknown> = {
         updatedAt: new Date(),
-      }
+      };
 
       if (data.analyticsEnabled !== undefined) {
-        updateValues.analyticsEnabled = data.analyticsEnabled
+        updateValues.analyticsEnabled = data.analyticsEnabled;
       }
       if (data.analyticsProvider !== undefined) {
-        updateValues.analyticsProvider = data.analyticsProvider
+        updateValues.analyticsProvider = data.analyticsProvider;
       }
       if (data.analyticsKey !== undefined) {
-        updateValues.analyticsKey = data.analyticsKey
+        updateValues.analyticsKey = data.analyticsKey;
       }
       if (data.analyticsHost !== undefined) {
-        updateValues.analyticsHost = data.analyticsHost
+        updateValues.analyticsHost = data.analyticsHost;
       }
       if (data.searchServerSide !== undefined) {
-        updateValues.searchServerSide = data.searchServerSide
+        updateValues.searchServerSide = data.searchServerSide;
       }
       if (data.searchDebounceMs !== undefined) {
-        updateValues.searchDebounceMs = data.searchDebounceMs
+        updateValues.searchDebounceMs = data.searchDebounceMs;
       }
 
-      const result = await this.db
-        .update(adminSettings)
-        .set(updateValues)
-        .returning()
+      const result = await this.db.update(adminSettings).set(updateValues).returning();
 
       if (!result || result.length === 0) {
-        throw new Error("Update did not return a row")
+        throw new Error("Update did not return a row");
       }
 
-      return result[0]
+      return result[0];
     }
 
     // Create new row with defaults
@@ -82,12 +79,12 @@ export class PostgresAdminRepository implements IAdminRepository {
         searchDebounceMs: data.searchDebounceMs ?? 300,
         updatedAt: new Date(),
       })
-      .returning()
+      .returning();
 
     if (!result || result.length === 0) {
-      throw new Error("Insert did not return a row")
+      throw new Error("Insert did not return a row");
     }
 
-    return result[0]
+    return result[0];
   }
 }

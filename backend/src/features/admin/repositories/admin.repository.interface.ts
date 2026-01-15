@@ -1,4 +1,4 @@
-import type { AdminSetting, UpdateAdminSettingsInput } from "../types"
+import type { AdminSetting, UpdateAdminSettingsInput } from "../types";
 
 /**
  * Repository interface for admin settings persistence
@@ -9,7 +9,7 @@ export interface IAdminRepository {
    *
    * @returns Admin settings if found, null otherwise
    */
-  findSettings(): Promise<AdminSetting | null>
+  findSettings(): Promise<AdminSetting | null>;
 
   /**
    * Create or update admin settings (upsert singleton)
@@ -17,5 +17,5 @@ export interface IAdminRepository {
    * @param data - Settings data to save
    * @returns Created or updated settings
    */
-  upsert(data: UpdateAdminSettingsInput): Promise<AdminSetting>
+  upsert(data: UpdateAdminSettingsInput): Promise<AdminSetting>;
 }

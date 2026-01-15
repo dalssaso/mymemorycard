@@ -1,9 +1,9 @@
-import { z } from "zod"
+import { z } from "zod";
 
 /**
  * Analytics provider enum values
  */
-const ANALYTICS_PROVIDER_VALUES = ["umami", "plausible", "posthog", "google-analytics"] as const
+const ANALYTICS_PROVIDER_VALUES = ["umami", "plausible", "posthog", "google-analytics"] as const;
 
 /**
  * Schema for analytics configuration in request
@@ -15,7 +15,7 @@ const AnalyticsConfigRequestSchema = z
     key: z.string().max(255).nullable().optional(),
     host: z.string().url().nullable().optional(),
   })
-  .strict()
+  .strict();
 
 /**
  * Schema for search configuration in request
@@ -25,7 +25,7 @@ const SearchConfigRequestSchema = z
     server_side: z.boolean().optional(),
     debounce_ms: z.number().int().min(0).max(2000).optional(),
   })
-  .strict()
+  .strict();
 
 /**
  * Schema for updating admin settings
@@ -49,9 +49,9 @@ export const UpdateAdminSettingsRequestSchema = z
         host: "https://analytics.example.com",
       },
     },
-  })
+  });
 
-export type UpdateAdminSettingsRequest = z.infer<typeof UpdateAdminSettingsRequestSchema>
+export type UpdateAdminSettingsRequest = z.infer<typeof UpdateAdminSettingsRequestSchema>;
 
 /**
  * Schema for analytics configuration in response
@@ -61,7 +61,7 @@ const AnalyticsConfigResponseSchema = z.object({
   provider: z.enum(ANALYTICS_PROVIDER_VALUES).nullable(),
   key: z.string().nullable(),
   host: z.string().nullable(),
-})
+});
 
 /**
  * Schema for search configuration in response
@@ -69,7 +69,7 @@ const AnalyticsConfigResponseSchema = z.object({
 const SearchConfigResponseSchema = z.object({
   server_side: z.boolean(),
   debounce_ms: z.number().int(),
-})
+});
 
 /**
  * Schema for admin settings response
@@ -93,9 +93,9 @@ export const AdminSettingsResponseSchema = z
         debounce_ms: 300,
       },
     },
-  })
+  });
 
-export type AdminSettingsResponseDto = z.infer<typeof AdminSettingsResponseSchema>
+export type AdminSettingsResponseDto = z.infer<typeof AdminSettingsResponseSchema>;
 
 /**
  * Schema for get admin settings response (wrapped)
@@ -106,6 +106,6 @@ export const GetAdminSettingsResponseSchema = z
   })
   .openapi("GetAdminSettingsResponse", {
     description: "Get admin settings response",
-  })
+  });
 
-export type GetAdminSettingsResponse = z.infer<typeof GetAdminSettingsResponseSchema>
+export type GetAdminSettingsResponse = z.infer<typeof GetAdminSettingsResponseSchema>;

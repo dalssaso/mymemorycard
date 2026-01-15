@@ -672,7 +672,7 @@ export const analyticsProviderEnum = pgEnum("analytics_provider", [
   "plausible",
   "posthog",
   "google-analytics",
-])
+]);
 
 export const adminSettings = pgTable("admin_settings", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -683,4 +683,4 @@ export const adminSettings = pgTable("admin_settings", {
   searchServerSide: boolean("search_server_side").default(true).notNull(),
   searchDebounceMs: integer("search_debounce_ms").default(300).notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-})
+});

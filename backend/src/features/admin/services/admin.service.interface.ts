@@ -1,4 +1,4 @@
-import type { AdminSettingsResponse, UpdateAdminSettingsInput } from "../types"
+import type { AdminSettingsResponse, UpdateAdminSettingsInput } from "../types";
 
 /**
  * Service interface for admin settings business logic
@@ -9,7 +9,7 @@ export interface IAdminService {
    *
    * @returns Admin settings (or defaults)
    */
-  getSettings(): Promise<AdminSettingsResponse>
+  getSettings(): Promise<AdminSettingsResponse>;
 
   /**
    * Update admin settings (creates if not exists)
@@ -17,5 +17,5 @@ export interface IAdminService {
    * @param data - Partial settings to update
    * @returns Updated settings
    */
-  updateSettings(data: UpdateAdminSettingsInput): Promise<AdminSettingsResponse>
+  updateSettings(data: UpdateAdminSettingsInput): Promise<AdminSettingsResponse>;
 }
