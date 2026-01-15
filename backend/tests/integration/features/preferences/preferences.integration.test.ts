@@ -284,6 +284,19 @@ describe("Preferences Integration Tests", () => {
 
       expect(response.status).toBe(400);
     });
+
+    it("should reject empty body", async () => {
+      const response = await app.request("/api/v1/preferences", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${testUserToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      expect(response.status).toBe(400);
+    });
   });
 
   describe("User isolation", () => {

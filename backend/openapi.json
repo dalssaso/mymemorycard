@@ -355,31 +355,12 @@
             ]
           },
           "items_per_page": {
-            "anyOf": [
-              {
-                "type": "number",
-                "enum": [
-                  10
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  25
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  50
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  100
-                ]
-              }
+            "type": "integer",
+            "enum": [
+              10,
+              25,
+              50,
+              100
             ]
           },
           "theme": {
@@ -421,31 +402,12 @@
             ]
           },
           "items_per_page": {
-            "anyOf": [
-              {
-                "type": "number",
-                "enum": [
-                  10
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  25
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  50
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  100
-                ]
-              }
+            "type": "integer",
+            "enum": [
+              10,
+              25,
+              50,
+              100
             ]
           },
           "theme": {

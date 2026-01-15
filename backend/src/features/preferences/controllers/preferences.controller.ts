@@ -20,12 +20,14 @@ import type { UpdatePreferencesInput } from "../types";
 export class PreferencesController implements IPreferencesController {
   readonly router: OpenAPIHono<PreferencesEnv>;
 
+  private logger: Logger;
+
   constructor(
     @inject(PREFERENCES_SERVICE_TOKEN)
     private service: IPreferencesService,
-    @inject(Logger) private logger: Logger
+    @inject(Logger) parentLogger: Logger
   ) {
-    this.logger = logger.child("PreferencesController");
+    this.logger = parentLogger.child("PreferencesController");
     this.router = new OpenAPIHono<PreferencesEnv>();
 
     this.registerRoutes();

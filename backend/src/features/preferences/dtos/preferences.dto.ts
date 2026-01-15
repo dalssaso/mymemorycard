@@ -4,7 +4,15 @@ import { z } from "zod";
  * Shared enum definitions for preferences
  */
 const DEFAULT_VIEW_VALUES = ["grid", "table"] as const;
+const ITEMS_PER_PAGE_VALUES = [10, 25, 50, 100] as const;
 const THEME_VALUES = ["light", "dark", "auto"] as const;
+
+/**
+ * Shared schema for items_per_page with OpenAPI numeric enum
+ */
+const ITEMS_PER_PAGE_SCHEMA = z
+  .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
+  .openapi({ type: "integer", enum: [...ITEMS_PER_PAGE_VALUES] });
 
 /**
  * Schema for updating user preferences
@@ -12,12 +20,17 @@ const THEME_VALUES = ["light", "dark", "auto"] as const;
 export const UpdatePreferencesRequestSchema = z
   .object({
     default_view: z.enum(DEFAULT_VIEW_VALUES).optional(),
-    items_per_page: z
-      .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
-      .optional(),
+    items_per_page: ITEMS_PER_PAGE_SCHEMA.optional(),
     theme: z.enum(THEME_VALUES).optional(),
   })
   .strict()
+  .refine(
+    (data) =>
+      data.default_view !== undefined ||
+      data.items_per_page !== undefined ||
+      data.theme !== undefined,
+    { message: "At least one preference field must be provided" }
+  )
   .openapi("UpdatePreferencesRequest", {
     description: "Request to update user preferences",
     example: {
@@ -35,7 +48,7 @@ export type UpdatePreferencesRequest = z.infer<typeof UpdatePreferencesRequestSc
 export const PreferencesResponseSchema = z
   .object({
     default_view: z.enum(DEFAULT_VIEW_VALUES),
-    items_per_page: z.union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)]),
+    items_per_page: ITEMS_PER_PAGE_SCHEMA,
     theme: z.enum(THEME_VALUES),
     updated_at: z.string().datetime().nullable(),
   })
