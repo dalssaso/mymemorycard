@@ -1,11 +1,22 @@
 import "reflect-metadata";
-import { beforeEach, describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
+import type { Logger } from "pino";
 import { UserPlatformsService } from "@/features/user-platforms/services/user-platforms.service";
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
 import type { IUserPlatformsRepository } from "@/features/user-platforms/repositories/user-platforms.repository.interface";
 import type { UserPlatform, CreateUserPlatformInput } from "@/features/user-platforms/types";
 import { NotFoundError, ForbiddenError } from "@/shared/errors/base";
-import { createMockLogger } from "@/tests/helpers/repository.mocks";
+
+const createMockLogger = (): Logger => {
+  const mockLogger = {
+    debug: mock(),
+    info: mock(),
+    warn: mock(),
+    error: mock(),
+    child: mock().mockReturnThis(),
+  };
+  return mockLogger as unknown as Logger;
+};
 
 const createMockRepository = (): IUserPlatformsRepository => ({
   findById: async () => null,
