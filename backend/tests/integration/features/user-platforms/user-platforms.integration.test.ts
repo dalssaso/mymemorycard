@@ -20,11 +20,12 @@ describe("User-Platforms Integration Tests", () => {
     app = createHonoApp();
     dbConnection = container.resolve(DatabaseConnection);
 
-    // Get a test platform (assuming platforms exist in DB)
+    // Get a test platform (fail fast if none exist)
     const platformList = await dbConnection.db.query.platforms.findFirst();
-    if (platformList) {
-      testPlatformId = platformList.id;
+    if (!platformList) {
+      throw new Error("No platforms found in database - ensure seed data exists");
     }
+    testPlatformId = platformList.id;
 
     // Create test user and get token
     const username = `testuser_${Date.now()}`;

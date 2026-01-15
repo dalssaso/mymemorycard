@@ -9,9 +9,9 @@ import { createMockLogger } from "@/tests/helpers/repository.mocks";
 const createMockService = (): IUserPlatformsService => ({
   getUserPlatforms: async () => [],
   addPlatform: async () => ({
-    id: "test-id",
-    user_id: "test-user-id",
-    platform_id: "test-platform-id",
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    user_id: "550e8400-e29b-41d4-a716-446655440001",
+    platform_id: "550e8400-e29b-41d4-a716-446655440002",
     username: undefined,
     icon_url: undefined,
     profile_url: undefined,
@@ -19,9 +19,9 @@ const createMockService = (): IUserPlatformsService => ({
     created_at: new Date().toISOString(),
   }),
   updatePlatform: async () => ({
-    id: "test-id",
-    user_id: "test-user-id",
-    platform_id: "test-platform-id",
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    user_id: "550e8400-e29b-41d4-a716-446655440001",
+    platform_id: "550e8400-e29b-41d4-a716-446655440002",
     username: undefined,
     icon_url: undefined,
     profile_url: undefined,

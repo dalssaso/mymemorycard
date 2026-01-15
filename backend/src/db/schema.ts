@@ -142,7 +142,7 @@ export const userPlatforms = pgTable(
     iconUrl: text("icon_url"),
     profileUrl: text("profile_url"),
     notes: text("notes"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique().on(table.userId, table.platformId),
