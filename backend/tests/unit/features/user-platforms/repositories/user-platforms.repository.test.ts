@@ -6,7 +6,6 @@ import type {
   UpdateUserPlatformInput,
   UserPlatform,
 } from '@/features/user-platforms/types'
-import { ConflictError, NotFoundError } from '@/shared/errors/base'
 
 const createMockRepository = (): IUserPlatformsRepository => ({
   findById: async () => null,
