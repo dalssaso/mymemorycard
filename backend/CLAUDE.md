@@ -177,3 +177,64 @@ Return JSON with `snake_case` fields and include a `Content-Type` header.
 - JSON and query payloads use `snake_case`.
 - OpenAPI is generated from the DI app and used for frontend codegen.
 - Reference: `docs/architecture/guidelines.md`.
+
+## DI Architecture Rules
+
+### Controller Patterns
+
+- Use strongly typed environment types (e.g., `ControllerEnv`) instead of `any` for `OpenAPIHono<T>`
+- Define all possible error responses in OpenAPI route definitions (400, 401, 404, 409)
+- Register auth middleware on ALL route paths including nested paths (e.g., both `/` and `/:id`)
+- Middleware does NOT cascade from parent to child paths in Hono - register explicitly
+
+### Service Layer Patterns
+
+- Services handle business logic and authorization
+- For cross-user access attempts: return `NotFoundError` (404), NOT `ForbiddenError` (403)
+- This prevents leaking resource existence to unauthorized users
+- Let domain errors bubble up to the global error handler
+
+### Repository Patterns
+
+- Use transactions for atomic read-then-update operations to prevent race conditions
+- Wrap the read operation INSIDE the transaction, not outside
+- Translate database errors to domain errors (ConflictError, NotFoundError)
+- Drizzle ORM wraps PostgreSQL errors - check `error.code`, `error.cause?.code`, and `error.message`
+- PostgreSQL error code 23505 = unique constraint violation
+
+### Error Handling
+
+- Domain errors extend `DomainError` with appropriate status codes
+- The global error handler in `app.ts` automatically converts domain errors to HTTP responses
+- Never catch and swallow errors in controllers - let them propagate
+- Add error checks for both direct code and wrapped error structures
+
+## Testing Rules
+
+### Integration Tests
+
+- Run integration tests from the `backend/` directory to ensure `.env` is loaded
+- Always verify test setup succeeded before proceeding (check response.ok)
+- Track created resource IDs in arrays for cleanup in `afterAll`
+- Clean up in reverse order of creation (child records before parent)
+
+### Test File Structure
+
+- Import order: `bun:test` first, then `reflect-metadata`, then external, then internal
+- Use shared mock helpers from `@/tests/helpers/` instead of duplicating mocks
+- Test both success cases and error cases (404, 401, 409)
+- Add cross-user authorization tests to verify resources aren't accessible to other users
+
+### Type Annotations in Tests
+
+- Do NOT add explicit type annotations when type is inferred from literal value
+- Wrong: `let testId: string = ""`
+- Right: `let testId = ""`
+
+## OpenAPI Generation
+
+After modifying controller routes or DTOs:
+
+1. Run `bun run generate:openapi` to regenerate the schema
+2. Verify the generated `openapi.json` contains correct examples and constraints
+3. Use valid UUID format in examples (e.g., `550e8400-e29b-41d4-a716-446655440000`)
