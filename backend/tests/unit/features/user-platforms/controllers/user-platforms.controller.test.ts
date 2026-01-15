@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { UserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
-import { Logger } from "@/infrastructure/logging/logger";
+import type { Logger } from "@/infrastructure/logging/logger";
 
 const createMockLogger = (): Logger => {
   const mockLogger = {

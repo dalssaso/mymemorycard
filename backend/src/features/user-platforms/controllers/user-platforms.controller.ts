@@ -6,7 +6,10 @@ import { Logger } from "@/infrastructure/logging/logger";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
 import type { IUserPlatformsService } from "../services/user-platforms.service.interface";
-import type { IUserPlatformsController, UserPlatformsEnv } from "./user-platforms.controller.interface";
+import type {
+  IUserPlatformsController,
+  UserPlatformsEnv,
+} from "./user-platforms.controller.interface";
 import {
   AddUserPlatformRequestSchema,
   UpdateUserPlatformRequestSchema,
@@ -28,7 +31,7 @@ export class UserPlatformsController implements IUserPlatformsController {
     @inject(Logger) private logger: Logger
   ) {
     this.logger = logger.child("UserPlatformsController");
-    this.router = new OpenAPIHono<any>();
+    this.router = new OpenAPIHono<UserPlatformsEnv>();
 
     this.registerRoutes();
   }

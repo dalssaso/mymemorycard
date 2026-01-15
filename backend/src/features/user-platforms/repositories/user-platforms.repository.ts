@@ -90,9 +90,7 @@ export class PostgresUserPlatformsRepository implements IUserPlatformsRepository
     } catch (error) {
       // Catch unique constraint violation and translate to ConflictError
       if (error instanceof Error && error.message.includes("unique")) {
-        throw new ConflictError(
-          `User already has platform ${data.platformId} associated`
-        );
+        throw new ConflictError(`User already has platform ${data.platformId} associated`);
       }
       throw error;
     }

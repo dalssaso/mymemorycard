@@ -5,7 +5,7 @@ import type { IUserPlatformsService } from "@/features/user-platforms/services/u
 import type { IUserPlatformsRepository } from "@/features/user-platforms/repositories/user-platforms.repository.interface";
 import type { UserPlatform, CreateUserPlatformInput } from "@/features/user-platforms/types";
 import { NotFoundError, ForbiddenError } from "@/shared/errors/base";
-import { Logger } from "@/infrastructure/logging/logger";
+import type { Logger } from "@/infrastructure/logging/logger";
 
 const createMockLogger = (): Logger => {
   const mockLogger = {

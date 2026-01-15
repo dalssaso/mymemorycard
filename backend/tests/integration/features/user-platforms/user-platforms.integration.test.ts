@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { registerDependencies, resetContainer, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
-import { users, userPlatforms, platforms } from "@/db/schema";
+import { users, userPlatforms } from "@/db/schema";
 import { inArray } from "drizzle-orm";
 
 describe("User-Platforms Integration Tests", () => {
@@ -155,7 +155,7 @@ describe("User-Platforms Integration Tests", () => {
   });
 
   describe("PATCH /api/v1/user-platforms/:id", () => {
-    let testUserPlatformId: string = "";
+    let testUserPlatformId = "";
 
     beforeAll(async () => {
       // Create a user-platform to test updates
@@ -240,7 +240,7 @@ describe("User-Platforms Integration Tests", () => {
   });
 
   describe("DELETE /api/v1/user-platforms/:id", () => {
-    let testUserPlatformId: string = "";
+    let testUserPlatformId = "";
 
     beforeAll(async () => {
       // Create a user-platform to test deletion
