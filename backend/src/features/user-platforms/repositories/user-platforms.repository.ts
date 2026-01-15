@@ -105,25 +105,33 @@ export class PostgresUserPlatformsRepository implements IUserPlatformsRepository
    * @throws NotFoundError if the association does not exist
    */
   async update(id: string, data: UpdateUserPlatformInput): Promise<UserPlatform> {
-    // Verify the record exists
+    // Fetch current record to use existing values for unspecified fields
     const existing = await this.findById(id);
     if (!existing) {
       throw new NotFoundError("UserPlatform", id);
     }
 
-    // Update only provided fields
-    const [updated] = await this.db
-      .update(userPlatforms)
-      .set({
-        username: data.username ?? existing.username,
-        iconUrl: data.iconUrl ?? existing.iconUrl,
-        profileUrl: data.profileUrl ?? existing.profileUrl,
-        notes: data.notes ?? existing.notes,
-      })
-      .where(eq(userPlatforms.id, id))
-      .returning();
+    // Perform atomic update in a transaction
+    const updated = await this.db.transaction(async (tx) => {
+      const result = await tx
+        .update(userPlatforms)
+        .set({
+          username: data.username ?? existing.username,
+          iconUrl: data.iconUrl ?? existing.iconUrl,
+          profileUrl: data.profileUrl ?? existing.profileUrl,
+          notes: data.notes ?? existing.notes,
+        })
+        .where(eq(userPlatforms.id, id))
+        .returning();
 
-    return updated!;
+      if (!result.length) {
+        throw new NotFoundError("UserPlatform", id);
+      }
+
+      return result[0];
+    });
+
+    return updated;
   }
 
   /**

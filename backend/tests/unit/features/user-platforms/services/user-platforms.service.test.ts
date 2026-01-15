@@ -1,24 +1,11 @@
+import { beforeEach, describe, expect, it } from "bun:test";
 import "reflect-metadata";
-import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { UserPlatformsService } from "@/features/user-platforms/services/user-platforms.service";
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
 import type { IUserPlatformsRepository } from "@/features/user-platforms/repositories/user-platforms.repository.interface";
 import type { UserPlatform, CreateUserPlatformInput } from "@/features/user-platforms/types";
 import { NotFoundError, ForbiddenError } from "@/shared/errors/base";
-import type { Logger } from "@/infrastructure/logging/logger";
-
-const createMockLogger = (): Logger => {
-  const mockLogger = {
-    debug: mock(),
-    info: mock(),
-    warn: mock(),
-    error: mock(),
-    child: mock(function (this: Logger) {
-      return this;
-    }),
-  };
-  return mockLogger as unknown as Logger;
-};
+import { createMockLogger } from "@/tests/helpers/repository.mocks";
 
 const createMockRepository = (): IUserPlatformsRepository => ({
   findById: async () => null,
@@ -263,9 +250,7 @@ describe("UserPlatformsService", () => {
       mockRepository.findById = async () => userPlatform;
       mockRepository.delete = async () => {};
 
-      const result = service.removePlatform(testUserId, "up-1");
-      expect(result).toBeDefined();
-      await result;
+      await expect(service.removePlatform(testUserId, "up-1")).resolves.toBeUndefined();
     });
 
     it("should throw ForbiddenError if platform belongs to different user", async () => {

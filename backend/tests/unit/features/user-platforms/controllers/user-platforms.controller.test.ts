@@ -1,22 +1,9 @@
+import { beforeEach, describe, expect, it } from "bun:test";
 import "reflect-metadata";
-import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { UserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
-import type { Logger } from "@/infrastructure/logging/logger";
-
-const createMockLogger = (): Logger => {
-  const mockLogger = {
-    debug: mock(),
-    info: mock(),
-    warn: mock(),
-    error: mock(),
-    child: mock(function (this: Logger) {
-      return this;
-    }),
-  };
-  return mockLogger as unknown as Logger;
-};
+import { createMockLogger } from "@/tests/helpers/repository.mocks";
 
 const createMockService = (): IUserPlatformsService => ({
   getUserPlatforms: async () => [],

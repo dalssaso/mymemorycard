@@ -153,6 +153,14 @@ export class UserPlatformsController implements IUserPlatformsController {
           },
           description: "Platform updated successfully",
         },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Bad Request – validation error",
+        },
         401: {
           content: {
             "application/json": {

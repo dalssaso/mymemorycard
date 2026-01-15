@@ -1,10 +1,10 @@
-import "reflect-metadata";
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import "reflect-metadata";
+import { inArray } from "drizzle-orm";
 import { registerDependencies, resetContainer, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { users, userPlatforms } from "@/db/schema";
-import { inArray } from "drizzle-orm";
 
 describe("User-Platforms Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
