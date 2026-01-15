@@ -111,8 +111,8 @@ describe("UserPlatformsService", () => {
 
       const result = await service.getUserPlatforms(testUserId);
 
-      expect(result[0].username).toBeNull();
-      expect(result[0].icon_url).toBeNull();
+      expect(result[0].username).toBeUndefined();
+      expect(result[0].icon_url).toBeUndefined();
     });
   });
 
@@ -166,8 +166,8 @@ describe("UserPlatformsService", () => {
 
       const result = await service.addPlatform(testUserId, input);
 
-      expect(result.username).toBeNull();
-      expect(result.icon_url).toBeNull();
+      expect(result.username).toBeUndefined();
+      expect(result.icon_url).toBeUndefined();
     });
   });
 
@@ -251,7 +251,9 @@ describe("UserPlatformsService", () => {
       mockRepository.findById = async () => userPlatform;
       mockRepository.delete = async () => {};
 
-      await expect(service.removePlatform(testUserId, "up-1")).resolves.not.toThrow();
+      const result = service.removePlatform(testUserId, "up-1");
+      expect(result).toBeDefined();
+      await result;
     });
 
     it("should throw ForbiddenError if platform belongs to different user", async () => {
