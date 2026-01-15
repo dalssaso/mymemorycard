@@ -38,10 +38,20 @@ describe("User-Platforms Integration Tests", () => {
       }),
     });
 
+    if (!registerResponse.ok) {
+      const errorBody = await registerResponse.text();
+      throw new Error(`Failed to register test user: ${registerResponse.status} - ${errorBody}`);
+    }
+
     const registerData = (await registerResponse.json()) as {
       user: { id: string };
       token: string;
     };
+
+    if (!registerData.user?.id || !registerData.token) {
+      throw new Error(`Invalid registration response: missing user id or token`);
+    }
+
     testUserId = registerData.user.id;
     testUserToken = registerData.token;
     createdUserIds.push(testUserId);
@@ -306,6 +316,133 @@ describe("User-Platforms Integration Tests", () => {
       });
 
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe("POST /api/v1/user-platforms - Duplicate constraint", () => {
+    let secondTestUserPlatformId = "";
+
+    beforeAll(async () => {
+      if (!testPlatformId) return;
+
+      // Create first user-platform
+      const response = await app.request("/api/v1/user-platforms", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${testUserToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          platform_id: testPlatformId,
+          username: "duplicate_test",
+        }),
+      });
+
+      if (response.status === 201) {
+        const data = (await response.json()) as { id: string };
+        secondTestUserPlatformId = data.id;
+        createdUserPlatformIds.push(secondTestUserPlatformId);
+      }
+    });
+
+    it("should return 409 conflict when creating duplicate platform association", async () => {
+      if (!testPlatformId) return;
+
+      // Try to create second association with same platform
+      const response = await app.request("/api/v1/user-platforms", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${testUserToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          platform_id: testPlatformId,
+          username: "another_username",
+        }),
+      });
+
+      expect(response.status).toBe(409);
+    });
+  });
+
+  describe("Cross-user authorization tests", () => {
+    let secondUserId = "";
+    let secondUserToken = "";
+    let secondUserPlatformId = "";
+
+    beforeAll(async () => {
+      if (!testPlatformId) return;
+
+      // Register second user
+      const username2 = `testuser2_${Date.now()}`;
+      const registerResponse = await app.request("/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: username2,
+          email: `${username2}@example.com`,
+          password: "SecurePass123!",
+        }),
+      });
+
+      if (!registerResponse.ok) return;
+
+      const registerData = (await registerResponse.json()) as {
+        user: { id: string };
+        token: string;
+      };
+      secondUserId = registerData.user.id;
+      secondUserToken = registerData.token;
+      createdUserIds.push(secondUserId);
+
+      // Create platform association for second user
+      const createResponse = await app.request("/api/v1/user-platforms", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secondUserToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          platform_id: testPlatformId,
+          username: "seconduser_platform",
+        }),
+      });
+
+      if (createResponse.status === 201) {
+        const data = (await createResponse.json()) as { id: string };
+        secondUserPlatformId = data.id;
+        createdUserPlatformIds.push(secondUserPlatformId);
+      }
+    });
+
+    it("should return 404 when patching another user's platform", async () => {
+      if (!secondUserPlatformId) return;
+
+      const response = await app.request(`/api/v1/user-platforms/${secondUserPlatformId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${testUserToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "hacked_username",
+        }),
+      });
+
+      expect(response.status).toBe(404);
+    });
+
+    it("should return 404 when deleting another user's platform", async () => {
+      if (!secondUserPlatformId) return;
+
+      const response = await app.request(`/api/v1/user-platforms/${secondUserPlatformId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${testUserToken}`,
+        },
+      });
+
+      expect(response.status).toBe(404);
     });
   });
 });

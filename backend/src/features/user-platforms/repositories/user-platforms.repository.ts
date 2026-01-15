@@ -88,9 +88,19 @@ export class PostgresUserPlatformsRepository implements IUserPlatformsRepository
 
       return created!;
     } catch (error) {
-      // Catch unique constraint violation and translate to ConflictError
-      if (error instanceof Error && error.message.includes("unique")) {
-        throw new ConflictError(`User already has platform ${data.platformId} associated`);
+      // Catch PostgreSQL unique constraint violation (code 23505) and translate to ConflictError
+      // Drizzle wraps DB errors, so check both direct code and message
+      if (error instanceof Error) {
+        const errorObj = error as { code?: string; cause?: { code?: string }; message?: string };
+        const isUniqueViolation =
+          errorObj.code === "23505" ||
+          errorObj.cause?.code === "23505" ||
+          errorObj.message?.includes("duplicate key") ||
+          errorObj.message?.includes("unique");
+
+        if (isUniqueViolation) {
+          throw new ConflictError(`User already has platform ${data.platformId} associated`);
+        }
       }
       throw error;
     }
@@ -105,21 +115,29 @@ export class PostgresUserPlatformsRepository implements IUserPlatformsRepository
    * @throws NotFoundError if the association does not exist
    */
   async update(id: string, data: UpdateUserPlatformInput): Promise<UserPlatform> {
-    // Fetch current record to use existing values for unspecified fields
-    const existing = await this.findById(id);
-    if (!existing) {
-      throw new NotFoundError("UserPlatform", id);
-    }
-
-    // Perform atomic update in a transaction
+    // Perform fully atomic update in a transaction: read current values, then update
     const updated = await this.db.transaction(async (tx) => {
+      // Fetch current record within transaction to ensure atomicity
+      const existing = await tx
+        .select()
+        .from(userPlatforms)
+        .where(eq(userPlatforms.id, id))
+        .limit(1);
+
+      if (!existing.length) {
+        throw new NotFoundError("UserPlatform", id);
+      }
+
+      const current = existing[0];
+
+      // Update with preserved values for omitted fields
       const result = await tx
         .update(userPlatforms)
         .set({
-          username: data.username ?? existing.username,
-          iconUrl: data.iconUrl ?? existing.iconUrl,
-          profileUrl: data.profileUrl ?? existing.profileUrl,
-          notes: data.notes ?? existing.notes,
+          username: data.username ?? current.username,
+          iconUrl: data.iconUrl ?? current.iconUrl,
+          profileUrl: data.profileUrl ?? current.profileUrl,
+          notes: data.notes ?? current.notes,
         })
         .where(eq(userPlatforms.id, id))
         .returning();

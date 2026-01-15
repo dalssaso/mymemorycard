@@ -2,7 +2,7 @@ import { injectable, inject } from "tsyringe";
 
 import { USER_PLATFORMS_REPOSITORY_TOKEN } from "@/container/tokens";
 import { Logger } from "@/infrastructure/logging/logger";
-import { ForbiddenError, NotFoundError } from "@/shared/errors/base";
+import { NotFoundError } from "@/shared/errors/base";
 import type {
   CreateUserPlatformInput,
   UpdateUserPlatformInput,
@@ -50,12 +50,8 @@ export class UserPlatformsService implements IUserPlatformsService {
     this.logger.debug(`Updating platform ${id} for user ${userId}`);
 
     const existing = await this.repository.findById(id);
-    if (!existing) {
+    if (!existing || existing.userId !== userId) {
       throw new NotFoundError("UserPlatform", id);
-    }
-
-    if (existing.userId !== userId) {
-      throw new ForbiddenError("Cannot update platform belonging to another user");
     }
 
     const updated = await this.repository.update(id, data);
@@ -67,12 +63,8 @@ export class UserPlatformsService implements IUserPlatformsService {
     this.logger.debug(`Removing platform ${id} from user ${userId}`);
 
     const existing = await this.repository.findById(id);
-    if (!existing) {
+    if (!existing || existing.userId !== userId) {
       throw new NotFoundError("UserPlatform", id);
-    }
-
-    if (existing.userId !== userId) {
-      throw new ForbiddenError("Cannot remove platform belonging to another user");
     }
 
     await this.repository.delete(id);

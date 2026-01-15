@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import "reflect-metadata";
+
 import { UserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";

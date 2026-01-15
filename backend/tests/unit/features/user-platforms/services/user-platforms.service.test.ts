@@ -4,7 +4,7 @@ import { UserPlatformsService } from "@/features/user-platforms/services/user-pl
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
 import type { IUserPlatformsRepository } from "@/features/user-platforms/repositories/user-platforms.repository.interface";
 import type { UserPlatform, CreateUserPlatformInput } from "@/features/user-platforms/types";
-import { NotFoundError, ForbiddenError } from "@/shared/errors/base";
+import { NotFoundError } from "@/shared/errors/base";
 import { createMockLogger } from "@/tests/helpers/repository.mocks";
 
 const createMockRepository = (): IUserPlatformsRepository => ({
@@ -212,7 +212,7 @@ describe("UserPlatformsService", () => {
       ).rejects.toThrow(NotFoundError);
     });
 
-    it("should throw ForbiddenError if platform belongs to different user", async () => {
+    it("should throw NotFoundError if platform belongs to different user", async () => {
       const userPlatform: UserPlatform = {
         id: "up-1",
         userId: "different-user",
@@ -230,7 +230,7 @@ describe("UserPlatformsService", () => {
         service.updatePlatform(testUserId, "up-1", {
           username: "newname",
         })
-      ).rejects.toThrow(ForbiddenError);
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -253,7 +253,7 @@ describe("UserPlatformsService", () => {
       await expect(service.removePlatform(testUserId, "up-1")).resolves.toBeUndefined();
     });
 
-    it("should throw ForbiddenError if platform belongs to different user", async () => {
+    it("should throw NotFoundError if platform belongs to different user", async () => {
       const userPlatform: UserPlatform = {
         id: "up-1",
         userId: "different-user",
@@ -267,7 +267,7 @@ describe("UserPlatformsService", () => {
 
       mockRepository.findById = async () => userPlatform;
 
-      await expect(service.removePlatform(testUserId, "up-1")).rejects.toThrow(ForbiddenError);
+      await expect(service.removePlatform(testUserId, "up-1")).rejects.toThrow(NotFoundError);
     });
 
     it("should throw NotFoundError if platform does not exist", async () => {
