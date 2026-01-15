@@ -1,4 +1,6 @@
 import type { Context } from "hono";
+import { HTTPException } from "hono/http-exception";
+
 import { DomainError } from "@/shared/errors/base";
 import type { Logger } from "@/infrastructure/logging/logger";
 
@@ -9,6 +11,19 @@ import type { Logger } from "@/infrastructure/logging/logger";
 export function createErrorHandler(logger: Logger) {
   return function errorHandler(err: Error, c: Context): Response {
     const requestId = c.get("requestId") || "unknown";
+
+    // Handle Hono's HTTPException (used by middleware)
+    if (err instanceof HTTPException) {
+      const statusCode = err.status as 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500;
+      return c.json(
+        {
+          error: err.message,
+          code: statusCode === 401 ? "UNAUTHORIZED" : statusCode === 403 ? "FORBIDDEN" : "ERROR",
+          request_id: requestId,
+        },
+        statusCode
+      );
+    }
 
     if (err instanceof DomainError) {
       // Validate status code is a valid HTTP status (3-digit number)
