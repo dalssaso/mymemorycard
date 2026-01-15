@@ -1,9 +1,9 @@
 import "reflect-metadata";
 import { beforeEach, describe, expect, it, mock } from "bun:test";
-import type { Logger } from "pino";
 import { UserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
 import type { IUserPlatformsService } from "@/features/user-platforms/services/user-platforms.service.interface";
+import { Logger } from "@/infrastructure/logging/logger";
 
 const createMockLogger = (): Logger => {
   const mockLogger = {
@@ -11,7 +11,9 @@ const createMockLogger = (): Logger => {
     info: mock(),
     warn: mock(),
     error: mock(),
-    child: mock().mockReturnThis(),
+    child: mock(function (this: Logger) {
+      return this;
+    }),
   };
   return mockLogger as unknown as Logger;
 };
