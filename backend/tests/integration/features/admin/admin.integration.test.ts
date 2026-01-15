@@ -4,9 +4,10 @@ import "reflect-metadata";
 import { eq, inArray } from "drizzle-orm";
 
 import { container, registerDependencies, resetContainer } from "@/container";
-import { adminSettings, users } from "@/db/schema";
+import { adminSettings, ADMIN_SETTINGS_SINGLETON_ID, users } from "@/db/schema";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { createHonoApp } from "@/infrastructure/http/app";
+import type { AdminSetting } from "@/features/admin/types";
 
 describe("Admin Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -16,11 +17,20 @@ describe("Admin Integration Tests", () => {
   let adminUserId = "";
   let regularUserToken = "";
   let regularUserId = "";
+  let originalAdminSettings: AdminSetting | null = null;
+  let adminSettingsCreatedByTests = false;
 
   beforeAll(async () => {
     registerDependencies();
     app = createHonoApp();
     dbConnection = container.resolve(DatabaseConnection);
+
+    // Capture original admin_settings state before tests
+    const existingSettings = await dbConnection.db
+      .select()
+      .from(adminSettings)
+      .where(eq(adminSettings.id, ADMIN_SETTINGS_SINGLETON_ID));
+    originalAdminSettings = existingSettings[0] ?? null;
 
     // Create admin user
     const adminUsername = `admin_test_${Date.now()}`;
@@ -109,18 +119,29 @@ describe("Admin Integration Tests", () => {
 
   afterAll(async () => {
     try {
-      // Clean up admin_settings (only one row exists, reset to defaults)
-      await dbConnection.db
-        .update(adminSettings)
-        .set({
-          analyticsEnabled: false,
-          analyticsProvider: null,
-          analyticsKey: null,
-          analyticsHost: null,
-          searchServerSide: true,
-          searchDebounceMs: 300,
-        })
-        .execute();
+      // Clean up admin_settings - restore to original state or delete if created by tests
+      if (originalAdminSettings) {
+        // Restore original settings
+        await dbConnection.db
+          .update(adminSettings)
+          .set({
+            analyticsEnabled: originalAdminSettings.analyticsEnabled,
+            analyticsProvider: originalAdminSettings.analyticsProvider,
+            analyticsKey: originalAdminSettings.analyticsKey,
+            analyticsHost: originalAdminSettings.analyticsHost,
+            searchServerSide: originalAdminSettings.searchServerSide,
+            searchDebounceMs: originalAdminSettings.searchDebounceMs,
+            updatedAt: originalAdminSettings.updatedAt,
+          })
+          .where(eq(adminSettings.id, ADMIN_SETTINGS_SINGLETON_ID))
+          .execute();
+      } else if (adminSettingsCreatedByTests) {
+        // Delete the row if it was created by tests
+        await dbConnection.db
+          .delete(adminSettings)
+          .where(eq(adminSettings.id, ADMIN_SETTINGS_SINGLETON_ID))
+          .execute();
+      }
 
       // Clean up users
       if (createdUserIds.length > 0) {
@@ -208,6 +229,7 @@ describe("Admin Integration Tests", () => {
       });
 
       expect(response.status).toBe(200);
+      adminSettingsCreatedByTests = true;
 
       const data = (await response.json()) as {
         settings: {

@@ -9,11 +9,48 @@ import { Logger } from "@/infrastructure/logging/logger";
 import {
   GetAdminSettingsResponseSchema,
   UpdateAdminSettingsRequestSchema,
+  type UpdateAdminSettingsRequest,
 } from "../dtos/admin.dto";
 import { requireAdmin } from "../middleware/admin-auth.middleware";
 import type { IAdminService } from "../services/admin.service.interface";
 import type { UpdateAdminSettingsInput } from "../types";
 import type { AdminEnv, IAdminController } from "./admin.controller.interface";
+
+/**
+ * Maps snake_case request body to camelCase input for service layer.
+ *
+ * @param body - Validated request body with snake_case fields
+ * @returns Input object with camelCase fields for service layer
+ */
+function mapRequestToInput(body: UpdateAdminSettingsRequest): UpdateAdminSettingsInput {
+  const input: UpdateAdminSettingsInput = {};
+
+  if (body.analytics) {
+    if (body.analytics.enabled !== undefined) {
+      input.analyticsEnabled = body.analytics.enabled;
+    }
+    if (body.analytics.provider !== undefined) {
+      input.analyticsProvider = body.analytics.provider;
+    }
+    if (body.analytics.key !== undefined) {
+      input.analyticsKey = body.analytics.key;
+    }
+    if (body.analytics.host !== undefined) {
+      input.analyticsHost = body.analytics.host;
+    }
+  }
+
+  if (body.search) {
+    if (body.search.server_side !== undefined) {
+      input.searchServerSide = body.search.server_side;
+    }
+    if (body.search.debounce_ms !== undefined) {
+      input.searchDebounceMs = body.search.debounce_ms;
+    }
+  }
+
+  return input;
+}
 
 /**
  * Controller for admin endpoints
@@ -138,32 +175,7 @@ export class AdminController implements IAdminController {
       this.logger.debug("PATCH /admin/settings");
       const body = c.req.valid("json");
 
-      const input: UpdateAdminSettingsInput = {};
-
-      if (body.analytics) {
-        if (body.analytics.enabled !== undefined) {
-          input.analyticsEnabled = body.analytics.enabled;
-        }
-        if (body.analytics.provider !== undefined) {
-          input.analyticsProvider = body.analytics.provider;
-        }
-        if (body.analytics.key !== undefined) {
-          input.analyticsKey = body.analytics.key;
-        }
-        if (body.analytics.host !== undefined) {
-          input.analyticsHost = body.analytics.host;
-        }
-      }
-
-      if (body.search) {
-        if (body.search.server_side !== undefined) {
-          input.searchServerSide = body.search.server_side;
-        }
-        if (body.search.debounce_ms !== undefined) {
-          input.searchDebounceMs = body.search.debounce_ms;
-        }
-      }
-
+      const input = mapRequestToInput(body);
       const settings = await this.service.updateSettings(input);
 
       return c.json({ settings }, 200);

@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-/**
- * Analytics provider enum values
- */
-const ANALYTICS_PROVIDER_VALUES = ["umami", "plausible", "posthog", "google-analytics"] as const;
+import { ANALYTICS_PROVIDER_VALUES } from "../types";
 
 /**
  * Schema for analytics configuration in request
@@ -60,7 +57,7 @@ const AnalyticsConfigResponseSchema = z.object({
   enabled: z.boolean(),
   provider: z.enum(ANALYTICS_PROVIDER_VALUES).nullable(),
   key: z.string().nullable(),
-  host: z.string().nullable(),
+  host: z.string().url().nullable(),
 });
 
 /**

@@ -4,12 +4,7 @@ import { ADMIN_REPOSITORY_TOKEN } from "@/container/tokens";
 import { Logger } from "@/infrastructure/logging/logger";
 
 import type { IAdminRepository } from "../repositories/admin.repository.interface";
-import type {
-  AdminSetting,
-  AdminSettingsResponse,
-  AnalyticsProvider,
-  UpdateAdminSettingsInput,
-} from "../types";
+import type { AdminSetting, AdminSettingsResponse, UpdateAdminSettingsInput } from "../types";
 import type { IAdminService } from "./admin.service.interface";
 
 /**
@@ -83,7 +78,7 @@ export class AdminService implements IAdminService {
     return {
       analytics: {
         enabled: settings.analyticsEnabled,
-        provider: settings.analyticsProvider as AnalyticsProvider | null,
+        provider: settings.analyticsProvider,
         key: settings.analyticsKey,
         host: settings.analyticsHost,
       },

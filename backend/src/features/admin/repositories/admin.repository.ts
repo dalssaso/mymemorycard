@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 
 import { DATABASE_TOKEN } from "@/container/tokens";
-import { adminSettings } from "@/db/schema";
+import { adminSettings, ADMIN_SETTINGS_SINGLETON_ID } from "@/db/schema";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 
 import type { AdminSetting, UpdateAdminSettingsInput } from "../types";
@@ -27,50 +27,39 @@ export class PostgresAdminRepository implements IAdminRepository {
 
   /**
    * Create or update admin settings (upsert singleton)
+   * Uses atomic upsert with onConflictDoUpdate to prevent TOCTOU race conditions.
    *
    * @param data - Settings data to save
    * @returns Created or updated settings
    */
   async upsert(data: UpdateAdminSettingsInput): Promise<AdminSetting> {
-    const existing = await this.findSettings();
+    const updateValues: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
 
-    if (existing) {
-      const updateValues: Record<string, unknown> = {
-        updatedAt: new Date(),
-      };
-
-      if (data.analyticsEnabled !== undefined) {
-        updateValues.analyticsEnabled = data.analyticsEnabled;
-      }
-      if (data.analyticsProvider !== undefined) {
-        updateValues.analyticsProvider = data.analyticsProvider;
-      }
-      if (data.analyticsKey !== undefined) {
-        updateValues.analyticsKey = data.analyticsKey;
-      }
-      if (data.analyticsHost !== undefined) {
-        updateValues.analyticsHost = data.analyticsHost;
-      }
-      if (data.searchServerSide !== undefined) {
-        updateValues.searchServerSide = data.searchServerSide;
-      }
-      if (data.searchDebounceMs !== undefined) {
-        updateValues.searchDebounceMs = data.searchDebounceMs;
-      }
-
-      const result = await this.db.update(adminSettings).set(updateValues).returning();
-
-      if (!result || result.length === 0) {
-        throw new Error("Update did not return a row");
-      }
-
-      return result[0];
+    if (data.analyticsEnabled !== undefined) {
+      updateValues.analyticsEnabled = data.analyticsEnabled;
+    }
+    if (data.analyticsProvider !== undefined) {
+      updateValues.analyticsProvider = data.analyticsProvider;
+    }
+    if (data.analyticsKey !== undefined) {
+      updateValues.analyticsKey = data.analyticsKey;
+    }
+    if (data.analyticsHost !== undefined) {
+      updateValues.analyticsHost = data.analyticsHost;
+    }
+    if (data.searchServerSide !== undefined) {
+      updateValues.searchServerSide = data.searchServerSide;
+    }
+    if (data.searchDebounceMs !== undefined) {
+      updateValues.searchDebounceMs = data.searchDebounceMs;
     }
 
-    // Create new row with defaults
     const result = await this.db
       .insert(adminSettings)
       .values({
+        id: ADMIN_SETTINGS_SINGLETON_ID,
         analyticsEnabled: data.analyticsEnabled ?? false,
         analyticsProvider: data.analyticsProvider ?? null,
         analyticsKey: data.analyticsKey ?? null,
@@ -79,10 +68,14 @@ export class PostgresAdminRepository implements IAdminRepository {
         searchDebounceMs: data.searchDebounceMs ?? 300,
         updatedAt: new Date(),
       })
+      .onConflictDoUpdate({
+        target: adminSettings.id,
+        set: updateValues,
+      })
       .returning();
 
     if (!result || result.length === 0) {
-      throw new Error("Insert did not return a row");
+      throw new Error("Upsert did not return a row");
     }
 
     return result[0];

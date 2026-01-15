@@ -14,14 +14,21 @@ export function createErrorHandler(logger: Logger) {
 
     // Handle Hono's HTTPException (used by middleware)
     if (err instanceof HTTPException) {
-      const statusCode = err.status as 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500;
+      const status = err.status;
+      let code = "ERROR";
+      if (status === 401) {
+        code = "UNAUTHORIZED";
+      } else if (status === 403) {
+        code = "FORBIDDEN";
+      }
+
       return c.json(
         {
           error: err.message,
-          code: statusCode === 401 ? "UNAUTHORIZED" : statusCode === 403 ? "FORBIDDEN" : "ERROR",
+          code,
           request_id: requestId,
         },
-        statusCode
+        status
       );
     }
 

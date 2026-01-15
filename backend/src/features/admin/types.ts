@@ -1,11 +1,16 @@
 import type { InferSelectModel } from "drizzle-orm";
 
-import type { adminSettings } from "@/db/schema";
+import { analyticsProviderEnum, type adminSettings } from "@/db/schema";
 
 /**
- * Allowed values for analytics provider
+ * Allowed values for analytics provider, derived from DB enum
  */
-export type AnalyticsProvider = "umami" | "plausible" | "posthog" | "google-analytics";
+export const ANALYTICS_PROVIDER_VALUES = analyticsProviderEnum.enumValues;
+
+/**
+ * Analytics provider type derived from DB enum
+ */
+export type AnalyticsProvider = (typeof ANALYTICS_PROVIDER_VALUES)[number];
 
 /**
  * Database model type for admin settings

@@ -465,7 +465,8 @@
               },
               "host": {
                 "type": "string",
-                "nullable": true
+                "nullable": true,
+                "format": "uri"
               }
             },
             "required": [

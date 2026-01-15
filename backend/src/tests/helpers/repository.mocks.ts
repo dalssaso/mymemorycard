@@ -4,7 +4,8 @@ import type { InferSelectModel } from "drizzle-orm";
 
 import { type users } from "@/db/schema";
 import type { IAdminRepository } from "@/features/admin/repositories/admin.repository.interface";
-import type { AdminSetting } from "@/features/admin/types";
+import type { IAdminService } from "@/features/admin/services/admin.service.interface";
+import type { AdminSetting, AdminSettingsResponse } from "@/features/admin/types";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
@@ -132,9 +133,7 @@ export function createMockPreferencesRepository(
  * @param overrides - Optional partial overrides for specific methods.
  * @returns Mocked IAdminRepository.
  */
-export function createMockAdminRepository(
-  overrides?: Partial<IAdminRepository>
-): IAdminRepository {
+export function createMockAdminRepository(overrides?: Partial<IAdminRepository>): IAdminRepository {
   const defaultSettings: AdminSetting = {
     id: "550e8400-e29b-41d4-a716-446655440000",
     analyticsEnabled: false,
@@ -149,6 +148,36 @@ export function createMockAdminRepository(
   return {
     findSettings: mock().mockResolvedValue(null),
     upsert: mock().mockResolvedValue(defaultSettings),
+    ...overrides,
+  };
+}
+
+/**
+ * Default admin settings response for mocks
+ */
+export const DEFAULT_ADMIN_SETTINGS_RESPONSE: AdminSettingsResponse = {
+  analytics: {
+    enabled: false,
+    provider: null,
+    key: null,
+    host: null,
+  },
+  search: {
+    server_side: true,
+    debounce_ms: 300,
+  },
+};
+
+/**
+ * Create a mock admin service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IAdminService.
+ */
+export function createMockAdminService(overrides?: Partial<IAdminService>): IAdminService {
+  return {
+    getSettings: mock().mockResolvedValue(DEFAULT_ADMIN_SETTINGS_RESPONSE),
+    updateSettings: mock().mockResolvedValue(DEFAULT_ADMIN_SETTINGS_RESPONSE),
     ...overrides,
   };
 }
