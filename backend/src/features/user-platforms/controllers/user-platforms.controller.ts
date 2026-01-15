@@ -1,8 +1,8 @@
 import { injectable, inject } from "tsyringe";
-import type { Logger } from "pino";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 
 import { USER_PLATFORMS_SERVICE_TOKEN } from "@/container/tokens";
+import { Logger } from "@/infrastructure/logging/logger";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
 import type { IUserPlatformsService } from "../services/user-platforms.service.interface";
@@ -21,14 +21,13 @@ import {
 @injectable()
 export class UserPlatformsController implements IUserPlatformsController {
   readonly router: OpenAPIHono<any>;
-  private logger: Logger;
 
   constructor(
     @inject(USER_PLATFORMS_SERVICE_TOKEN)
     private service: IUserPlatformsService,
-    @inject("Logger") logger: Logger
+    @inject(Logger) private logger: Logger
   ) {
-    this.logger = logger.child({ controller: "UserPlatformsController" });
+    this.logger = logger.child("UserPlatformsController");
     this.router = new OpenAPIHono<any>();
 
     this.registerRoutes();

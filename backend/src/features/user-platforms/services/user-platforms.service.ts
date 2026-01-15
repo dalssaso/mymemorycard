@@ -1,7 +1,7 @@
 import { injectable, inject } from "tsyringe";
-import type { Logger } from "pino";
 
 import { USER_PLATFORMS_REPOSITORY_TOKEN } from "@/container/tokens";
+import { Logger } from "@/infrastructure/logging/logger";
 import { ForbiddenError, NotFoundError } from "@/shared/errors/base";
 import type {
   CreateUserPlatformInput,
@@ -18,18 +18,16 @@ import type { IUserPlatformsService } from "./user-platforms.service.interface";
  */
 @injectable()
 export class UserPlatformsService implements IUserPlatformsService {
-  private logger: Logger;
-
   constructor(
     @inject(USER_PLATFORMS_REPOSITORY_TOKEN)
     private repository: IUserPlatformsRepository,
-    @inject("Logger") logger: Logger
+    @inject(Logger) private logger: Logger
   ) {
-    this.logger = logger.child({ service: "UserPlatformsService" });
+    this.logger = logger.child("UserPlatformsService");
   }
 
   async getUserPlatforms(userId: string): Promise<UserPlatformResponse[]> {
-    this.logger.debug({ userId }, "Fetching user platforms");
+    this.logger.debug(`Fetching user platforms for ${userId}`);
 
     const platforms = await this.repository.findByUserId(userId);
 
@@ -37,7 +35,7 @@ export class UserPlatformsService implements IUserPlatformsService {
   }
 
   async addPlatform(userId: string, data: CreateUserPlatformInput): Promise<UserPlatformResponse> {
-    this.logger.debug({ userId, platformId: data.platformId }, "Adding platform to user");
+    this.logger.debug(`Adding platform ${data.platformId} for user ${userId}`);
 
     const platform = await this.repository.create(userId, data);
 
@@ -49,7 +47,7 @@ export class UserPlatformsService implements IUserPlatformsService {
     id: string,
     data: UpdateUserPlatformInput
   ): Promise<UserPlatformResponse> {
-    this.logger.debug({ userId, id }, "Updating user platform");
+    this.logger.debug(`Updating platform ${id} for user ${userId}`);
 
     const existing = await this.repository.findById(id);
     if (!existing) {
@@ -66,7 +64,7 @@ export class UserPlatformsService implements IUserPlatformsService {
   }
 
   async removePlatform(userId: string, id: string): Promise<void> {
-    this.logger.debug({ userId, id }, "Removing platform from user");
+    this.logger.debug(`Removing platform ${id} from user ${userId}`);
 
     const existing = await this.repository.findById(id);
     if (!existing) {
