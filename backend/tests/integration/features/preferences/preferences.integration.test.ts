@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import "reflect-metadata";
+
 import { inArray } from "drizzle-orm";
-import { registerDependencies, resetContainer, container } from "@/container";
-import { createHonoApp } from "@/infrastructure/http/app";
+
+import { container, registerDependencies, resetContainer } from "@/container";
+import { userPreferences, users } from "@/db/schema";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
-import { users, userPreferences } from "@/db/schema";
+import { createHonoApp } from "@/infrastructure/http/app";
 
 describe("Preferences Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -141,7 +143,7 @@ describe("Preferences Integration Tests", () => {
 
     it("should persist updated preferences", async () => {
       // First update
-      await app.request("/api/v1/preferences", {
+      const setupResponse = await app.request("/api/v1/preferences", {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${testUserToken}`,
@@ -151,6 +153,8 @@ describe("Preferences Integration Tests", () => {
           theme: "auto",
         }),
       });
+
+      expect(setupResponse.status).toBe(200);
 
       // Then fetch
       const getResponse = await app.request("/api/v1/preferences", {
@@ -166,7 +170,7 @@ describe("Preferences Integration Tests", () => {
 
     it("should handle partial updates", async () => {
       // First set known state
-      await app.request("/api/v1/preferences", {
+      const setupResponse = await app.request("/api/v1/preferences", {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${testUserToken}`,
@@ -178,6 +182,8 @@ describe("Preferences Integration Tests", () => {
           theme: "dark",
         }),
       });
+
+      expect(setupResponse.status).toBe(200);
 
       // Update only one field
       const response = await app.request("/api/v1/preferences", {
@@ -297,12 +303,22 @@ describe("Preferences Integration Tests", () => {
         }),
       });
 
-      if (!registerResponse.ok) return;
+      if (!registerResponse.ok) {
+        const errorBody = await registerResponse.text();
+        throw new Error(
+          `Failed to register second test user: ${registerResponse.status} - ${errorBody}`
+        );
+      }
 
       const registerData = (await registerResponse.json()) as {
         user: { id: string };
         token: string;
       };
+
+      if (!registerData.user?.id || !registerData.token) {
+        throw new Error(`Invalid registration response for second user: missing user id or token`);
+      }
+
       secondUserId = registerData.user.id;
       secondUserToken = registerData.token;
       createdUserIds.push(secondUserId);
@@ -310,7 +326,7 @@ describe("Preferences Integration Tests", () => {
 
     it("should not see other user preferences", async () => {
       // Set first user's preferences
-      await app.request("/api/v1/preferences", {
+      const setupResponse = await app.request("/api/v1/preferences", {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${testUserToken}`,
@@ -321,6 +337,8 @@ describe("Preferences Integration Tests", () => {
           items_per_page: 100,
         }),
       });
+
+      expect(setupResponse.status).toBe(200);
 
       // Second user should see defaults (their own)
       const response = await app.request("/api/v1/preferences", {
@@ -338,7 +356,7 @@ describe("Preferences Integration Tests", () => {
 
     it("should update only own preferences", async () => {
       // Second user updates
-      await app.request("/api/v1/preferences", {
+      const setupResponse = await app.request("/api/v1/preferences", {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${secondUserToken}`,
@@ -348,6 +366,8 @@ describe("Preferences Integration Tests", () => {
           default_view: "table",
         }),
       });
+
+      expect(setupResponse.status).toBe(200);
 
       // First user's preferences unchanged
       const response = await app.request("/api/v1/preferences", {

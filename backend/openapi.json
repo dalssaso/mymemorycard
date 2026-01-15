@@ -348,13 +348,47 @@
         "type": "object",
         "properties": {
           "default_view": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "grid",
+              "table"
+            ]
           },
           "items_per_page": {
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "enum": [
+                  10
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  25
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  50
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  100
+                ]
+              }
+            ]
           },
           "theme": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "light",
+              "dark",
+              "auto"
+            ]
           },
           "updated_at": {
             "type": "string",

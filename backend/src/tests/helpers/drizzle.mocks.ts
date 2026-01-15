@@ -81,6 +81,70 @@ export function mockInsertError(mockDb: DrizzleDB, error: Error): void {
   });
 }
 
+/**
+ * Mock a successful insert().values().onConflictDoUpdate().returning() chain (upsert pattern).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockUpsertResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const insertMock = mockDb.insert as ReturnType<typeof mock>;
+  insertMock.mockReturnValue({
+    values: mock().mockReturnValue({
+      onConflictDoUpdate: mock().mockReturnValue({
+        returning: mock().mockResolvedValue(result),
+      }),
+    }),
+  });
+}
+
+/**
+ * Mock a failed insert().values().onConflictDoUpdate().returning() chain (upsert pattern).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param error - Error to reject with.
+ */
+export function mockUpsertError(mockDb: DrizzleDB, error: Error): void {
+  const insertMock = mockDb.insert as ReturnType<typeof mock>;
+  insertMock.mockReturnValue({
+    values: mock().mockReturnValue({
+      onConflictDoUpdate: mock().mockReturnValue({
+        returning: mock().mockRejectedValue(error),
+      }),
+    }),
+  });
+}
+
+/**
+ * Mock a successful select().from().where() chain (no limit).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockSelectWhereResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      where: mock().mockResolvedValue(result),
+    }),
+  });
+}
+
+/**
+ * Mock a failed select().from().where() chain (no limit).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param error - Error to reject with.
+ */
+export function mockSelectWhereError(mockDb: DrizzleDB, error: Error): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      where: mock().mockRejectedValue(error),
+    }),
+  });
+}
+
 export function mockSelectError(mockDb: DrizzleDB, error: Error): void {
   const selectMock = mockDb.select as ReturnType<typeof mock>;
   selectMock.mockReturnValue({

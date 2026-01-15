@@ -1,11 +1,11 @@
-import { injectable, inject } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { eq } from "drizzle-orm";
 
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import { userPreferences } from "@/db/schema";
 
-import type { UserPreference, UpdatePreferencesInput } from "../types";
+import type { UpdatePreferencesInput, UserPreference } from "../types";
 import type { IPreferencesRepository } from "./preferences.repository.interface";
 
 /**
@@ -66,6 +66,10 @@ export class PostgresPreferencesRepository implements IPreferencesRepository {
         set: updateValues,
       })
       .returning();
+
+    if (!result || result.length === 0) {
+      throw new Error("Upsert did not return a row");
+    }
 
     return result[0];
   }

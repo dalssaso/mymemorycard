@@ -1,9 +1,13 @@
 import { mock } from "bun:test";
+
+import type { InferSelectModel } from "drizzle-orm";
+
+import { type users } from "@/db/schema";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
-import type { InferSelectModel } from "drizzle-orm";
-import { type users } from "@/db/schema";
+import type { IPreferencesRepository } from "@/features/preferences/repositories/preferences.repository.interface";
+import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
 import type { MetricsService } from "@/infrastructure/metrics/metrics";
 
@@ -92,4 +96,28 @@ export function createMockMetricsService(): MetricsService {
     getMetrics: mock().mockResolvedValue("# metrics"),
   };
   return mockMetrics as unknown as MetricsService;
+}
+
+/**
+ * Create a mock preferences repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IPreferencesRepository.
+ */
+export function createMockPreferencesRepository(
+  overrides?: Partial<IPreferencesRepository>
+): IPreferencesRepository {
+  const defaultPreferences: UserPreference = {
+    userId: "test-user-id",
+    defaultView: "grid",
+    itemsPerPage: 25,
+    theme: "dark",
+    updatedAt: new Date("2026-01-15T10:00:00Z"),
+  };
+
+  return {
+    findByUserId: mock().mockResolvedValue(null),
+    upsert: mock().mockResolvedValue(defaultPreferences),
+    ...overrides,
+  };
 }

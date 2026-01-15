@@ -1,4 +1,4 @@
-import type { PreferencesResponse, UpdatePreferencesInput } from "../types"
+import type { PreferencesResponse, UpdatePreferencesInput } from "../types";
 
 /**
  * Service interface for preferences business logic
@@ -10,7 +10,7 @@ export interface IPreferencesService {
    * @param userId - User ID to get preferences for
    * @returns User preferences (or defaults)
    */
-  getPreferences(userId: string): Promise<PreferencesResponse>
+  getPreferences(userId: string): Promise<PreferencesResponse>;
 
   /**
    * Update preferences for a user (creates if not exists)
@@ -19,5 +19,5 @@ export interface IPreferencesService {
    * @param data - Partial preferences to update
    * @returns Updated preferences
    */
-  updatePreferences(userId: string, data: UpdatePreferencesInput): Promise<PreferencesResponse>
+  updatePreferences(userId: string, data: UpdatePreferencesInput): Promise<PreferencesResponse>;
 }

@@ -1,15 +1,21 @@
 import { z } from "zod";
 
 /**
+ * Shared enum definitions for preferences
+ */
+const DEFAULT_VIEW_VALUES = ["grid", "table"] as const;
+const THEME_VALUES = ["light", "dark", "auto"] as const;
+
+/**
  * Schema for updating user preferences
  */
 export const UpdatePreferencesRequestSchema = z
   .object({
-    default_view: z.enum(["grid", "table"]).optional(),
+    default_view: z.enum(DEFAULT_VIEW_VALUES).optional(),
     items_per_page: z
       .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
       .optional(),
-    theme: z.enum(["light", "dark", "auto"]).optional(),
+    theme: z.enum(THEME_VALUES).optional(),
   })
   .strict()
   .openapi("UpdatePreferencesRequest", {
@@ -28,9 +34,9 @@ export type UpdatePreferencesRequest = z.infer<typeof UpdatePreferencesRequestSc
  */
 export const PreferencesResponseSchema = z
   .object({
-    default_view: z.string(),
-    items_per_page: z.number(),
-    theme: z.string(),
+    default_view: z.enum(DEFAULT_VIEW_VALUES),
+    items_per_page: z.union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)]),
+    theme: z.enum(THEME_VALUES),
     updated_at: z.string().datetime().nullable(),
   })
   .openapi("PreferencesResponse", {

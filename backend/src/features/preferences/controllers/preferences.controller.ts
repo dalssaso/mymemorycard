@@ -1,41 +1,38 @@
-import { injectable, inject } from "tsyringe"
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
+import { injectable, inject } from "tsyringe";
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 
-import { PREFERENCES_SERVICE_TOKEN } from "@/container/tokens"
-import { Logger } from "@/infrastructure/logging/logger"
-import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
-import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto"
-import type { IPreferencesService } from "../services/preferences.service.interface"
-import type {
-  IPreferencesController,
-  PreferencesEnv,
-} from "./preferences.controller.interface"
+import { PREFERENCES_SERVICE_TOKEN } from "@/container/tokens";
+import { Logger } from "@/infrastructure/logging/logger";
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
+import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
+import type { IPreferencesService } from "../services/preferences.service.interface";
+import type { IPreferencesController, PreferencesEnv } from "./preferences.controller.interface";
 import {
   GetPreferencesResponseSchema,
   UpdatePreferencesRequestSchema,
-} from "../dtos/preferences.dto"
-import type { UpdatePreferencesInput } from "../types"
+} from "../dtos/preferences.dto";
+import type { UpdatePreferencesInput } from "../types";
 
 /**
  * Controller for preferences endpoints
  */
 @injectable()
 export class PreferencesController implements IPreferencesController {
-  readonly router: OpenAPIHono<PreferencesEnv>
+  readonly router: OpenAPIHono<PreferencesEnv>;
 
   constructor(
     @inject(PREFERENCES_SERVICE_TOKEN)
     private service: IPreferencesService,
     @inject(Logger) private logger: Logger
   ) {
-    this.logger = logger.child("PreferencesController")
-    this.router = new OpenAPIHono<PreferencesEnv>()
+    this.logger = logger.child("PreferencesController");
+    this.router = new OpenAPIHono<PreferencesEnv>();
 
-    this.registerRoutes()
+    this.registerRoutes();
   }
 
   private registerRoutes(): void {
-    const authMiddleware = createAuthMiddleware()
+    const authMiddleware = createAuthMiddleware();
 
     // GET /preferences - Get user preferences
     const getRoute = createRoute({
@@ -61,17 +58,17 @@ export class PreferencesController implements IPreferencesController {
           description: "Unauthorized - invalid or missing token",
         },
       },
-    })
+    });
 
-    this.router.use("/", authMiddleware)
+    this.router.use("/", authMiddleware);
     this.router.openapi(getRoute, async (c) => {
-      this.logger.debug("GET /preferences")
-      const user = c.get("user")
+      this.logger.debug("GET /preferences");
+      const user = c.get("user");
 
-      const preferences = await this.service.getPreferences(user.id)
+      const preferences = await this.service.getPreferences(user.id);
 
-      return c.json({ preferences }, 200)
-    })
+      return c.json({ preferences }, 200);
+    });
 
     // PATCH /preferences - Update user preferences
     const patchRoute = createRoute({
@@ -114,22 +111,22 @@ export class PreferencesController implements IPreferencesController {
           description: "Unauthorized - invalid or missing token",
         },
       },
-    })
+    });
 
     this.router.openapi(patchRoute, async (c) => {
-      this.logger.debug("PATCH /preferences")
-      const user = c.get("user")
-      const body = c.req.valid("json")
+      this.logger.debug("PATCH /preferences");
+      const user = c.get("user");
+      const body = c.req.valid("json");
 
       const input: UpdatePreferencesInput = {
         defaultView: body.default_view,
         itemsPerPage: body.items_per_page,
         theme: body.theme,
-      }
+      };
 
-      const preferences = await this.service.updatePreferences(user.id, input)
+      const preferences = await this.service.updatePreferences(user.id, input);
 
-      return c.json({ preferences }, 200)
-    })
+      return c.json({ preferences }, 200);
+    });
   }
 }
