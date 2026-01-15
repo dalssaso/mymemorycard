@@ -9,6 +9,9 @@ import {
   PLATFORM_CONTROLLER_TOKEN,
   PLATFORM_REPOSITORY_TOKEN,
   PLATFORM_SERVICE_TOKEN,
+  PREFERENCES_CONTROLLER_TOKEN,
+  PREFERENCES_REPOSITORY_TOKEN,
+  PREFERENCES_SERVICE_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
@@ -65,6 +68,18 @@ import type { IUserPlatformsService } from "@/features/user-platforms/services/u
 // User-Platforms - Controllers
 import { UserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
+
+// Preferences - Repositories
+import { PostgresPreferencesRepository } from "@/features/preferences/repositories/preferences.repository";
+import type { IPreferencesRepository } from "@/features/preferences/repositories/preferences.repository.interface";
+
+// Preferences - Services
+import { PreferencesService } from "@/features/preferences/services/preferences.service";
+import type { IPreferencesService } from "@/features/preferences/services/preferences.service.interface";
+
+// Preferences - Controllers
+import { PreferencesController } from "@/features/preferences/controllers/preferences.controller";
+import type { IPreferencesController } from "@/features/preferences/controllers/preferences.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -125,6 +140,21 @@ export function registerDependencies(): void {
   container.registerSingleton<IUserPlatformsController>(
     USER_PLATFORMS_CONTROLLER_TOKEN,
     UserPlatformsController
+  );
+
+  // Preferences Domain - Repositories
+  container.registerSingleton<IPreferencesRepository>(
+    PREFERENCES_REPOSITORY_TOKEN,
+    PostgresPreferencesRepository
+  );
+
+  // Preferences Domain - Services
+  container.registerSingleton<IPreferencesService>(PREFERENCES_SERVICE_TOKEN, PreferencesService);
+
+  // Preferences Domain - Controllers
+  container.registerSingleton<IPreferencesController>(
+    PREFERENCES_CONTROLLER_TOKEN,
+    PreferencesController
   );
 }
 
