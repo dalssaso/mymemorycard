@@ -29,6 +29,7 @@ describe("PlatformController", () => {
         username: "testuser",
         email: "test@example.com",
         passwordHash: "hash",
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: null,
       }),

@@ -23,6 +23,7 @@ export function createMockUserRepository(overrides?: Partial<IUserRepository>): 
         username,
         email,
         passwordHash,
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -62,6 +63,7 @@ export function createTestUser(overrides?: Partial<User>): User {
     username: "testuser",
     email: "testuser@users.mymemorycard.local",
     passwordHash: "hashed_password123",
+    isAdmin: false,
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
     ...overrides,

@@ -27,6 +27,7 @@ describe("PostgresUserRepository", () => {
         username: "testuser",
         email: "test@example.com",
         passwordHash: "hashed",
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: null,
       };
@@ -54,6 +55,7 @@ describe("PostgresUserRepository", () => {
         username: "testuser",
         email: "test@example.com",
         passwordHash: "hashed",
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: null,
       };
@@ -88,6 +90,7 @@ describe("PostgresUserRepository", () => {
         username: "newuser",
         email: "new@example.com",
         passwordHash: "hashed_password",
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: null,
       };
