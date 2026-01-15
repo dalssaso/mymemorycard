@@ -11,3 +11,6 @@ export const USER_REPOSITORY_TOKEN = "IUserRepository";
 export const USER_PLATFORMS_REPOSITORY_TOKEN = "IUserPlatformsRepository";
 export const USER_PLATFORMS_SERVICE_TOKEN = "IUserPlatformsService";
 export const USER_PLATFORMS_CONTROLLER_TOKEN = "IUserPlatformsController";
+export const PREFERENCES_REPOSITORY_TOKEN = "IPreferencesRepository";
+export const PREFERENCES_SERVICE_TOKEN = "IPreferencesService";
+export const PREFERENCES_CONTROLLER_TOKEN = "IPreferencesController";

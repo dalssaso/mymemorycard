@@ -331,6 +331,101 @@
           "username": "updated_username",
           "notes": "Updated notes"
         }
+      },
+      "GetPreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesResponse"
+          }
+        },
+        "required": [
+          "preferences"
+        ],
+        "description": "Get preferences response"
+      },
+      "PreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "default_view": {
+            "type": "string",
+            "enum": [
+              "grid",
+              "table"
+            ]
+          },
+          "items_per_page": {
+            "type": "integer",
+            "enum": [
+              10,
+              25,
+              50,
+              100
+            ]
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "light",
+              "dark",
+              "auto"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "default_view",
+          "items_per_page",
+          "theme",
+          "updated_at"
+        ],
+        "description": "User preferences",
+        "example": {
+          "default_view": "grid",
+          "items_per_page": 25,
+          "theme": "dark",
+          "updated_at": "2026-01-15T10:00:00.000Z"
+        }
+      },
+      "UpdatePreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "default_view": {
+            "type": "string",
+            "enum": [
+              "grid",
+              "table"
+            ]
+          },
+          "items_per_page": {
+            "type": "integer",
+            "enum": [
+              10,
+              25,
+              50,
+              100
+            ]
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "light",
+              "dark",
+              "auto"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to update user preferences",
+        "example": {
+          "default_view": "table",
+          "items_per_page": 50,
+          "theme": "dark"
+        }
       }
     },
     "parameters": {},
@@ -736,6 +831,91 @@
           },
           "404": {
             "description": "Platform not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/preferences": {
+      "get": {
+        "tags": [
+          "preferences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User preferences retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPreferencesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "preferences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePreferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preferences updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPreferencesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
             "content": {
               "application/json": {
                 "schema": {

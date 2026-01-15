@@ -4,9 +4,11 @@ import { container } from "@/container";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 import type { IPlatformController } from "@/features/platforms/controllers/platform.controller.interface";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
+import type { IPreferencesController } from "@/features/preferences/controllers/preferences.controller.interface";
 import {
   AUTH_CONTROLLER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
+  PREFERENCES_CONTROLLER_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
 } from "@/container/tokens";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
@@ -74,6 +76,12 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
     USER_PLATFORMS_CONTROLLER_TOKEN
   );
   app.route("/api/v1/user-platforms", userPlatformsController.router);
+
+  // Preferences routes (DI-based)
+  const preferencesController = container.resolve<IPreferencesController>(
+    PREFERENCES_CONTROLLER_TOKEN
+  );
+  app.route("/api/v1/preferences", preferencesController.router);
 
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)

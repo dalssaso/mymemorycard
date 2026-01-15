@@ -183,6 +183,13 @@
       "when": 1768477989151,
       "tag": "0025_flowery_odin",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1768503130180,
+      "tag": "0026_third_wild_child",
+      "breakpoints": true
     }
   ]
 }
