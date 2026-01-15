@@ -658,5 +658,6 @@ export const userPreferences = pgTable(
   () => [
     check("default_view_check", sql`default_view IN ('grid', 'table')`),
     check("items_per_page_check", sql`items_per_page IN (10, 25, 50, 100)`),
+    check("theme_check", sql`theme IN ('light', 'dark', 'auto')`),
   ]
 );
