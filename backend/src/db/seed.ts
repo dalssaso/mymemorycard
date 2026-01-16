@@ -175,3 +175,71 @@ export async function seedPlatforms(): Promise<void> {
   console.log("Calling seedStores() instead...");
   await seedStores();
 }
+
+type TestPlatformSeed = {
+  igdbPlatformId: number;
+  name: string;
+  abbreviation: string;
+  slug: string;
+  platformFamily: string;
+  colorPrimary: string;
+};
+
+const testPlatforms: TestPlatformSeed[] = [
+  {
+    igdbPlatformId: 6,
+    name: "PC (Microsoft Windows)",
+    abbreviation: "PC",
+    slug: "win",
+    platformFamily: "PC",
+    colorPrimary: "#0078D4",
+  },
+  {
+    igdbPlatformId: 167,
+    name: "PlayStation 5",
+    abbreviation: "PS5",
+    slug: "ps5",
+    platformFamily: "PlayStation",
+    colorPrimary: "#0070CC",
+  },
+  {
+    igdbPlatformId: 169,
+    name: "Xbox Series X|S",
+    abbreviation: "XSX",
+    slug: "xbox-series-xs",
+    platformFamily: "Xbox",
+    colorPrimary: "#107C10",
+  },
+  {
+    igdbPlatformId: 130,
+    name: "Nintendo Switch",
+    abbreviation: "NSW",
+    slug: "switch",
+    platformFamily: "Nintendo",
+    colorPrimary: "#E60012",
+  },
+];
+
+/**
+ * Seeds minimal platform data for integration tests.
+ * Creates a few common platforms that would normally come from IGDB.
+ */
+export async function seedTestPlatforms(): Promise<void> {
+  console.log("Seeding test platforms...");
+
+  for (const platform of testPlatforms) {
+    await db
+      .insert(schema.platforms)
+      .values({
+        igdbPlatformId: platform.igdbPlatformId,
+        name: platform.name,
+        abbreviation: platform.abbreviation,
+        slug: platform.slug,
+        platformFamily: platform.platformFamily,
+        colorPrimary: platform.colorPrimary,
+      })
+      .onConflictDoNothing();
+  }
+
+  console.log("Test platforms seeded successfully");
+}

@@ -12,7 +12,7 @@
 
 import "reflect-metadata";
 import { beforeAll } from "bun:test";
-import { runMigrations, seedStores, closeMigrationConnection } from "@/db";
+import { runMigrations, seedStores, seedTestPlatforms, closeMigrationConnection } from "@/db";
 
 /**
  * Retry logic for database operations with exponential backoff
@@ -56,6 +56,7 @@ beforeAll(
       async () => {
         await runMigrations();
         await seedStores();
+        await seedTestPlatforms();
       },
       5,
       1000

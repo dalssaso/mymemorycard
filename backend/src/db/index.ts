@@ -28,4 +28,4 @@ export async function closeMigrationConnection(): Promise<void> {
 }
 
 export { schema };
-export { seedStores, seedPlatforms } from "./seed";
+export { seedStores, seedPlatforms, seedTestPlatforms } from "./seed";
