@@ -39,11 +39,23 @@ export function createErrorHandler(logger: Logger) {
           ? (err.statusCode as unknown as 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500)
           : 500;
 
+      // For 500 errors, hide internal details and use generic message
+      if (statusCode === 500) {
+        return c.json(
+          {
+            error: "Internal server error",
+            code: err.code,
+            request_id: requestId,
+          },
+          statusCode
+        );
+      }
+
       return c.json(
         {
           error: err.message,
           code: err.code,
-          details: err.details,
+          ...(err.details && { details: err.details }),
           request_id: requestId,
         },
         statusCode
