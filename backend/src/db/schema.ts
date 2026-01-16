@@ -17,6 +17,18 @@ import {
 import { sql } from "drizzle-orm";
 
 // ============================================================================
+// API CREDENTIALS ENUMS
+// ============================================================================
+
+export const apiServiceEnum = pgEnum("api_service", ["igdb", "steam", "retroachievements", "rawg"]);
+
+export const credentialTypeEnum = pgEnum("credential_type", [
+  "twitch_oauth",
+  "steam_openid",
+  "api_key",
+]);
+
+// ============================================================================
 // USERS & AUTHENTICATION
 // ============================================================================
 
