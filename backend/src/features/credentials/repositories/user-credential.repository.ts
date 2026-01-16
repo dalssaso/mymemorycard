@@ -1,16 +1,16 @@
-import { injectable, inject } from "tsyringe"
-import { eq, and } from "drizzle-orm"
+import { injectable, inject } from "tsyringe";
+import { eq, and } from "drizzle-orm";
 
-import { DATABASE_TOKEN } from "@/container/tokens"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
-import { userApiCredentials } from "@/db/schema"
-import { NotFoundError } from "@/shared/errors/base"
-import type { ApiService, UserApiCredential } from "../types"
+import { DATABASE_TOKEN } from "@/container/tokens";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { userApiCredentials } from "@/db/schema";
+import { NotFoundError } from "@/shared/errors/base";
+import type { ApiService, UserApiCredential } from "../types";
 
 import type {
   IUserCredentialRepository,
   UpsertCredentialData,
-} from "./user-credential.repository.interface"
+} from "./user-credential.repository.interface";
 
 /**
  * PostgreSQL implementation of IUserCredentialRepository using Drizzle ORM.
@@ -33,12 +33,10 @@ export class PostgresUserCredentialRepository implements IUserCredentialReposito
     const result = await this.db
       .select()
       .from(userApiCredentials)
-      .where(
-        and(eq(userApiCredentials.userId, userId), eq(userApiCredentials.service, service))
-      )
-      .limit(1)
+      .where(and(eq(userApiCredentials.userId, userId), eq(userApiCredentials.service, service)))
+      .limit(1);
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 
   /**
@@ -52,7 +50,7 @@ export class PostgresUserCredentialRepository implements IUserCredentialReposito
       .select()
       .from(userApiCredentials)
       .where(eq(userApiCredentials.userId, userId))
-      .orderBy(userApiCredentials.service)
+      .orderBy(userApiCredentials.service);
   }
 
   /**
@@ -87,9 +85,9 @@ export class PostgresUserCredentialRepository implements IUserCredentialReposito
           updatedAt: new Date(),
         },
       })
-      .returning()
+      .returning();
 
-    return result!
+    return result!;
   }
 
   /**
@@ -102,13 +100,11 @@ export class PostgresUserCredentialRepository implements IUserCredentialReposito
   async delete(userId: string, service: ApiService): Promise<void> {
     const result = await this.db
       .delete(userApiCredentials)
-      .where(
-        and(eq(userApiCredentials.userId, userId), eq(userApiCredentials.service, service))
-      )
-      .returning({ id: userApiCredentials.id })
+      .where(and(eq(userApiCredentials.userId, userId), eq(userApiCredentials.service, service)))
+      .returning({ id: userApiCredentials.id });
 
     if (result.length === 0) {
-      throw new NotFoundError("Credential", service)
+      throw new NotFoundError("Credential", service);
     }
   }
 
@@ -135,11 +131,9 @@ export class PostgresUserCredentialRepository implements IUserCredentialReposito
         lastValidatedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(
-        and(eq(userApiCredentials.userId, userId), eq(userApiCredentials.service, service))
-      )
-      .returning()
+      .where(and(eq(userApiCredentials.userId, userId), eq(userApiCredentials.service, service)))
+      .returning();
 
-    return result[0] ?? null
+    return result[0] ?? null;
   }
 }
