@@ -70,12 +70,15 @@ export const webauthnCredentials = pgTable(
 // GAMES & METADATA
 // ============================================================================
 
+export const metadataSourceEnum = pgEnum("metadata_source", ["igdb", "rawg", "manual"]);
+
 export const games = pgTable(
   "games",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     rawgId: integer("rawg_id").unique(),
     igdbId: integer("igdb_id"),
+    metadataSource: metadataSourceEnum("metadata_source").default("igdb"),
     name: text("name").notNull(),
     slug: text("slug"),
     releaseDate: date("release_date"),
@@ -93,6 +96,7 @@ export const games = pgTable(
   (table) => [
     index("idx_games_name").on(table.name),
     index("idx_games_rawg").on(table.rawgId),
+    index("idx_games_igdb").on(table.igdbId),
     index("idx_games_slug").on(table.slug),
     index("idx_games_series").on(table.seriesName),
   ]
