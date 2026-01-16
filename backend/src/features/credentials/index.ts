@@ -1,5 +1,16 @@
 export { EncryptionService } from "./services/encryption.service"
 export type { IEncryptionService } from "./services/encryption.service.interface"
+export type {
+  ICredentialService,
+  SaveCredentialInput,
+  TwitchOAuthCredentials,
+  ApiKeyCredentials,
+  SteamOpenIdCredentials,
+  CredentialStatus,
+  CredentialStatusResponse,
+  CredentialSaveResponse,
+  CredentialValidateResponse,
+} from "./services/credential.service.interface"
 export { PostgresUserCredentialRepository } from "./repositories/user-credential.repository"
 export type {
   IUserCredentialRepository,
