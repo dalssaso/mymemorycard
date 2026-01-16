@@ -3,6 +3,7 @@ import { inject, injectable } from "tsyringe";
 import { DATABASE_TOKEN } from "@/container/tokens";
 import { adminSettings, ADMIN_SETTINGS_SINGLETON_ID } from "@/db/schema";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { InternalError } from "@/shared/errors/base";
 
 import type { AdminSetting, UpdateAdminSettingsInput } from "../types";
 import type { IAdminRepository } from "./admin.repository.interface";
@@ -75,7 +76,11 @@ export class PostgresAdminRepository implements IAdminRepository {
       .returning();
 
     if (!result || result.length === 0) {
-      throw new Error("Upsert did not return a row");
+      throw new InternalError("Admin settings upsert failed to return a row", {
+        operation: "upsert",
+        table: "admin_settings",
+        resultLength: result?.length ?? 0,
+      });
     }
 
     return result[0];

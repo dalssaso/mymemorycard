@@ -104,7 +104,7 @@ describe("PostgresAdminRepository", () => {
       mockUpsertResult(mockDb, []);
 
       await expect(repository.upsert({ analyticsEnabled: true })).rejects.toThrow(
-        "Upsert did not return a row"
+        "Admin settings upsert failed to return a row"
       );
     });
 
