@@ -123,7 +123,7 @@
             "items": {
               "$ref": "#/components/schemas/Platform"
             },
-            "maxItems": 100
+            "maxItems": 500
           }
         },
         "required": [
@@ -135,55 +135,60 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Platform unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "igdb_platform_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "IGDB platform identifier",
+            "example": 6
           },
           "name": {
-            "type": "string"
-          },
-          "display_name": {
-            "type": "string"
-          },
-          "platform_type": {
             "type": "string",
-            "enum": [
-              "pc",
-              "console",
-              "mobile",
-              "physical"
-            ]
+            "description": "Platform name",
+            "example": "PC (Windows)"
           },
-          "is_system": {
-            "type": "boolean"
-          },
-          "is_physical": {
-            "type": "boolean"
-          },
-          "website_url": {
+          "abbreviation": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Platform abbreviation",
+            "example": "PC"
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL-friendly platform identifier",
+            "example": "win"
+          },
+          "platform_family": {
+            "type": "string",
+            "nullable": true,
+            "description": "Platform family grouping",
+            "example": "PC"
           },
           "color_primary": {
-            "type": "string"
-          },
-          "default_icon_url": {
             "type": "string",
-            "nullable": true
+            "description": "Brand color in hex format",
+            "example": "#6B7280"
           },
-          "sort_order": {
-            "type": "integer"
+          "created_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Creation timestamp"
           }
         },
         "required": [
           "id",
+          "igdb_platform_id",
           "name",
-          "display_name",
-          "platform_type",
-          "is_system",
-          "is_physical",
-          "website_url",
+          "abbreviation",
+          "slug",
+          "platform_family",
           "color_primary",
-          "default_icon_url",
-          "sort_order"
+          "created_at"
         ]
       },
       "PlatformResponse": {
@@ -748,9 +753,12 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "Platform unique identifier",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
             },
             "required": true,
+            "description": "Platform unique identifier",
             "name": "id",
             "in": "path"
           }

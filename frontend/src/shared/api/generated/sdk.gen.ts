@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses } from './types.gen';
+import type { DeleteApiV1UserPlatformsByIdData, DeleteApiV1UserPlatformsByIdErrors, DeleteApiV1UserPlatformsByIdResponses, GetApiV1AdminSettingsData, GetApiV1AdminSettingsErrors, GetApiV1AdminSettingsResponses, GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, GetApiV1PreferencesData, GetApiV1PreferencesErrors, GetApiV1PreferencesResponses, GetApiV1UserPlatformsData, GetApiV1UserPlatformsErrors, GetApiV1UserPlatformsResponses, PatchApiV1AdminSettingsData, PatchApiV1AdminSettingsErrors, PatchApiV1AdminSettingsResponses, PatchApiV1PreferencesData, PatchApiV1PreferencesErrors, PatchApiV1PreferencesResponses, PatchApiV1UserPlatformsByIdData, PatchApiV1UserPlatformsByIdErrors, PatchApiV1UserPlatformsByIdResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses, PostApiV1UserPlatformsData, PostApiV1UserPlatformsErrors, PostApiV1UserPlatformsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -57,4 +57,75 @@ export const getApiV1PlatformsById = <ThrowOnError extends boolean = false>(opti
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/platforms/{id}',
     ...options
+});
+
+export const getApiV1UserPlatforms = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1UserPlatformsData, ThrowOnError>) => (options?.client ?? client).get<GetApiV1UserPlatformsResponses, GetApiV1UserPlatformsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-platforms',
+    ...options
+});
+
+export const postApiV1UserPlatforms = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1UserPlatformsData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1UserPlatformsResponses, PostApiV1UserPlatformsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-platforms',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+export const deleteApiV1UserPlatformsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1UserPlatformsByIdData, ThrowOnError>) => (options.client ?? client).delete<DeleteApiV1UserPlatformsByIdResponses, DeleteApiV1UserPlatformsByIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-platforms/{id}',
+    ...options
+});
+
+export const patchApiV1UserPlatformsById = <ThrowOnError extends boolean = false>(options: Options<PatchApiV1UserPlatformsByIdData, ThrowOnError>) => (options.client ?? client).patch<PatchApiV1UserPlatformsByIdResponses, PatchApiV1UserPlatformsByIdErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-platforms/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const getApiV1Preferences = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1PreferencesData, ThrowOnError>) => (options?.client ?? client).get<GetApiV1PreferencesResponses, GetApiV1PreferencesErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/preferences',
+    ...options
+});
+
+export const patchApiV1Preferences = <ThrowOnError extends boolean = false>(options?: Options<PatchApiV1PreferencesData, ThrowOnError>) => (options?.client ?? client).patch<PatchApiV1PreferencesResponses, PatchApiV1PreferencesErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/preferences',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+export const getApiV1AdminSettings = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1AdminSettingsData, ThrowOnError>) => (options?.client ?? client).get<GetApiV1AdminSettingsResponses, GetApiV1AdminSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/settings',
+    ...options
+});
+
+export const patchApiV1AdminSettings = <ThrowOnError extends boolean = false>(options?: Options<PatchApiV1AdminSettingsData, ThrowOnError>) => (options?.client ?? client).patch<PatchApiV1AdminSettingsResponses, PatchApiV1AdminSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
 });

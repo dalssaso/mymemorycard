@@ -59,5 +59,6 @@ ALTER TABLE "platforms" DROP COLUMN "website_url";--> statement-breakpoint
 ALTER TABLE "platforms" DROP COLUMN "default_icon_url";--> statement-breakpoint
 ALTER TABLE "platforms" DROP COLUMN "sort_order";--> statement-breakpoint
 ALTER TABLE "platforms" ADD CONSTRAINT "platforms_igdb_platform_id_unique" UNIQUE("igdb_platform_id");--> statement-breakpoint
+UPDATE "admin_settings" SET "id" = '00000000-0000-0000-0000-000000000001' WHERE true;--> statement-breakpoint
 ALTER TABLE "admin_settings" ADD CONSTRAINT "admin_settings_singleton_chk" CHECK ("admin_settings"."id" = '00000000-0000-0000-0000-000000000001'::uuid);--> statement-breakpoint
 DROP TYPE "public"."platform_type";
