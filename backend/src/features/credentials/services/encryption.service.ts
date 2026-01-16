@@ -9,12 +9,30 @@ const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
 const KEY_LENGTH = 32;
 
+/**
+ * Scrypt parameters for key derivation.
+ * N=32768 (2^15): CPU/memory cost parameter
+ * r=8: Block size parameter
+ * p=1: Parallelization parameter
+ * These provide strong protection against brute-force attacks.
+ */
+const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1 };
+
+/**
+ * Service for encrypting and decrypting sensitive credential data.
+ * Uses AES-256-GCM with scrypt-derived keys for secure storage.
+ */
 @injectable()
 export class EncryptionService implements IEncryptionService {
   private key: Buffer;
 
   constructor(@inject(CONFIG_TOKEN) config: IConfig) {
-    this.key = scryptSync(config.encryption.secret, config.encryption.salt, KEY_LENGTH);
+    this.key = scryptSync(
+      config.encryption.secret,
+      config.encryption.salt,
+      KEY_LENGTH,
+      SCRYPT_OPTIONS
+    );
   }
 
   /**

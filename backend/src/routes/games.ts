@@ -74,7 +74,7 @@ router.get(
       const whereClauses: string[] = ["ug.user_id = $1"];
 
       if (platformFilter) {
-        whereClauses.push(`p.display_name = $${paramIndex}`);
+        whereClauses.push(`p.name = $${paramIndex}`);
         params.push(platformFilter);
         paramIndex++;
       }
@@ -175,10 +175,10 @@ router.get(
           json_agg(json_build_object(
             'id', p.id,
             'name', p.name,
-            'displayName', p.display_name,
-            'iconUrl', COALESCE(up.icon_url, p.default_icon_url),
+            'displayName', p.name,
+            'iconUrl', up.icon_url,
             'colorPrimary', p.color_primary
-          ) ORDER BY p.display_name) as platforms,
+          ) ORDER BY p.name) as platforms,
 
           -- Aggregated values for sorting and display
           COALESCE(SUM(upt.total_minutes), 0) as total_minutes_sum,
@@ -316,7 +316,7 @@ router.get(
           g.metacritic_score,
           g.esrb_rating,
           g.series_name,
-          p.display_name as platform,
+          p.name as platform,
           ugp.status,
           ugp.user_rating,
           ugp.notes,
@@ -467,9 +467,9 @@ router.get(
           g.*,
           p.id as platform_id,
           p.name as platform_name,
-          p.display_name as platform_display_name,
+          p.name as platform_display_name,
           p.color_primary as platform_color_primary,
-          COALESCE(up.icon_url, p.default_icon_url) as platform_icon_url,
+          up.icon_url as platform_icon_url,
           COALESCE(ugp.status, 'backlog') as status,
           ugp.user_rating,
           ugp.notes,

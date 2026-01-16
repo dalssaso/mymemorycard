@@ -8,7 +8,7 @@ import {
   type SeriesMember,
 } from "@/services/rawg";
 import { corsHeaders } from "@/middleware/cors";
-import type { Game, Platform } from "@/types";
+import type { Game } from "@/types";
 
 interface FranchiseSummary {
   series_name: string;
@@ -90,7 +90,7 @@ router.get(
           g.name,
           g.release_date,
           g.cover_art_url,
-          ARRAY_AGG(DISTINCT p.display_name) as platforms,
+          ARRAY_AGG(DISTINCT p.name) as platforms,
           MAX(CASE 
             WHEN ugp.status = 'completed' THEN 5
             WHEN ugp.status = 'finished' THEN 4
@@ -229,7 +229,7 @@ router.post(
         });
       }
 
-      const platform = await queryOne<Platform>("SELECT * FROM platforms WHERE id = $1", [
+      const platform = await queryOne<{ id: string }>("SELECT id FROM platforms WHERE id = $1", [
         platformId,
       ]);
       if (!platform) {

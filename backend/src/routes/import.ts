@@ -3,7 +3,7 @@ import { requireAuth } from "@/middleware/auth";
 import { queryOne, queryMany, withTransaction } from "@/services/db";
 import { searchGames, getGameDetails, getGameSeries, type RAWGGame } from "@/services/rawg";
 import { corsHeaders } from "@/middleware/cors";
-import type { User, Game, Platform } from "@/types";
+import type { User, Game } from "@/types";
 
 const EDITION_PATTERNS = [
   /\s*[-–—:]\s*complete\s*edition/i,
@@ -370,7 +370,7 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
     // Only create user_games and progress if platform is specified
     // If no platform, game is imported but not associated until review
     if (platformId) {
-      const platform = await queryOne<Platform>("SELECT * FROM platforms WHERE id = $1", [
+      const platform = await queryOne<{ id: string }>("SELECT id FROM platforms WHERE id = $1", [
         platformId,
       ]);
 
@@ -383,7 +383,7 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
         `INSERT INTO user_games (user_id, game_id, platform_id, owned, import_source)
          VALUES ($1, $2, $3, true, 'bulk')
          ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
-        [user.id, game!.id, platform.id]
+        [user.id, game!.id, platformId]
       );
 
       // Create initial progress entry
@@ -391,14 +391,14 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
         `INSERT INTO user_game_progress (user_id, game_id, platform_id, status)
          VALUES ($1, $2, $3, 'backlog')
          ON CONFLICT (user_id, game_id, platform_id) DO NOTHING`,
-        [user.id, game!.id, platform.id]
+        [user.id, game!.id, platformId]
       );
 
       // If we matched to an existing base game and this is an edition,
       // set the display edition for this platform
       if (isEdition && (existingBaseGame || baseGameDetails)) {
         await client.query(
-          `INSERT INTO user_game_display_editions 
+          `INSERT INTO user_game_display_editions
            (user_id, game_id, platform_id, rawg_edition_id, edition_name, cover_art_url, background_image_url, description)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
            ON CONFLICT (user_id, game_id, platform_id) DO UPDATE SET
@@ -410,7 +410,7 @@ async function importGame(rawgGame: RAWGGame, user: User, platformId?: string): 
           [
             user.id,
             game!.id,
-            platform.id,
+            platformId,
             rawgGame.id,
             rawgGame.name,
             rawgGame.background_image || null,

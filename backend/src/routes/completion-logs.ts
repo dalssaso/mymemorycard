@@ -360,7 +360,7 @@ router.get(
         SELECT 
           cl.*,
           g.name as game_name,
-          p.display_name as platform_name,
+          p.name as platform_name,
           ga.name as dlc_name
         FROM completion_logs cl
         INNER JOIN games g ON cl.game_id = g.id

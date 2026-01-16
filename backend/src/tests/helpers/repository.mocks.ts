@@ -9,6 +9,7 @@ import type { AdminSetting, AdminSettingsResponse } from "@/features/admin/types
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
+import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { IPreferencesRepository } from "@/features/preferences/repositories/preferences.repository.interface";
 import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
@@ -178,6 +179,22 @@ export function createMockAdminService(overrides?: Partial<IAdminService>): IAdm
   return {
     getSettings: mock().mockResolvedValue(DEFAULT_ADMIN_SETTINGS_RESPONSE),
     updateSettings: mock().mockResolvedValue(DEFAULT_ADMIN_SETTINGS_RESPONSE),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock encryption service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IEncryptionService.
+ */
+export function createMockEncryptionService(
+  overrides?: Partial<IEncryptionService>
+): IEncryptionService {
+  return {
+    encrypt: mock().mockReturnValue("encrypted-data-base64"),
+    decrypt: mock().mockReturnValue({ decrypted: "data" }),
     ...overrides,
   };
 }

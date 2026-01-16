@@ -124,7 +124,7 @@ router.get(
          LEFT JOIN LATERAL (
            SELECT 
              ug.platform_id,
-             p.display_name as platform_display_name,
+             p.name as platform_display_name,
              ugp.status,
              ugp.user_rating,
              ugp.is_favorite
@@ -480,7 +480,7 @@ router.get(
         `SELECT 
           g.*,
           p.id as platform_id,
-          p.display_name as platform_display_name,
+          p.name as platform_display_name,
           ugp.status,
           ugp.user_rating,
           ugp.is_favorite
