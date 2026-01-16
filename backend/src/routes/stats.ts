@@ -610,7 +610,7 @@ router.get(
           ps.id,
           ps.game_id,
           g.name as game_name,
-          p.display_name as platform_name,
+          p.name as platform_name,
           ps.ended_at as timestamp,
           ps.duration_minutes
         FROM play_sessions ps
@@ -639,7 +639,7 @@ router.get(
           cl.id,
           cl.game_id,
           g.name as game_name,
-          p.display_name as platform_name,
+          p.name as platform_name,
           cl.logged_at as timestamp,
           cl.percentage,
           cl.completion_type,
@@ -669,7 +669,7 @@ router.get(
           ura.id::text as id,
           ura.game_id,
           g.name as game_name,
-          p.display_name as platform_name,
+          p.name as platform_name,
           ura.completed_at as timestamp,
           gra.name as achievement_name,
           gra.rarity_percent
@@ -699,7 +699,7 @@ router.get(
           ua.id::text as id,
           a.game_id,
           g.name as game_name,
-          p.display_name as platform_name,
+          p.name as platform_name,
           ua.unlock_date as timestamp,
           a.name as achievement_name,
           NULL as rarity_percent

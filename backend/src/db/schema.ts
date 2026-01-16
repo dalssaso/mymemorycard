@@ -17,6 +17,18 @@ import {
 import { sql } from "drizzle-orm";
 
 // ============================================================================
+// API CREDENTIALS ENUMS
+// ============================================================================
+
+export const apiServiceEnum = pgEnum("api_service", ["igdb", "steam", "retroachievements", "rawg"]);
+
+export const credentialTypeEnum = pgEnum("credential_type", [
+  "twitch_oauth",
+  "steam_openid",
+  "api_key",
+]);
+
+// ============================================================================
 // USERS & AUTHENTICATION
 // ============================================================================
 
@@ -58,12 +70,15 @@ export const webauthnCredentials = pgTable(
 // GAMES & METADATA
 // ============================================================================
 
+export const metadataSourceEnum = pgEnum("metadata_source", ["igdb", "rawg", "manual"]);
+
 export const games = pgTable(
   "games",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     rawgId: integer("rawg_id").unique(),
     igdbId: integer("igdb_id"),
+    metadataSource: metadataSourceEnum("metadata_source").default("igdb"),
     name: text("name").notNull(),
     slug: text("slug"),
     releaseDate: date("release_date"),
@@ -81,6 +96,7 @@ export const games = pgTable(
   (table) => [
     index("idx_games_name").on(table.name),
     index("idx_games_rawg").on(table.rawgId),
+    index("idx_games_igdb").on(table.igdbId),
     index("idx_games_slug").on(table.slug),
     index("idx_games_series").on(table.seriesName),
   ]
@@ -114,20 +130,23 @@ export const gameGenres = pgTable(
 // PLATFORMS
 // ============================================================================
 
-export const platformTypeEnum = pgEnum("platform_type", ["pc", "console", "mobile", "physical"]);
-
-export const platforms = pgTable("platforms", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 50 }).unique().notNull(),
-  displayName: varchar("display_name", { length: 100 }).notNull(),
-  platformType: platformTypeEnum("platform_type").notNull(),
-  isSystem: boolean("is_system").default(false),
-  isPhysical: boolean("is_physical").default(false),
-  websiteUrl: text("website_url"),
-  colorPrimary: varchar("color_primary", { length: 7 }).notNull().default("#6B7280"),
-  defaultIconUrl: text("default_icon_url"),
-  sortOrder: integer("sort_order").default(0),
-});
+export const platforms = pgTable(
+  "platforms",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    igdbPlatformId: integer("igdb_platform_id").unique(),
+    name: varchar("name", { length: 100 }).notNull(),
+    abbreviation: varchar("abbreviation", { length: 20 }),
+    slug: varchar("slug", { length: 50 }),
+    platformFamily: varchar("platform_family", { length: 50 }),
+    colorPrimary: varchar("color_primary", { length: 7 }).notNull().default("#6B7280"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("idx_platforms_igdb").on(table.igdbPlatformId),
+    index("idx_platforms_family").on(table.platformFamily),
+  ]
+);
 
 export const userPlatforms = pgTable(
   "user_platforms",
@@ -152,6 +171,55 @@ export const userPlatforms = pgTable(
 );
 
 // ============================================================================
+// STORES
+// ============================================================================
+
+export const storeTypeEnum = pgEnum("store_type", ["digital", "physical"]);
+
+export const stores = pgTable("stores", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: varchar("slug", { length: 50 }).unique().notNull(),
+  displayName: varchar("display_name", { length: 100 }).notNull(),
+  storeType: storeTypeEnum("store_type").notNull(),
+  platformFamily: varchar("platform_family", { length: 50 }),
+  colorPrimary: varchar("color_primary", { length: 7 }).notNull().default("#6B7280"),
+  websiteUrl: text("website_url"),
+  iconUrl: text("icon_url"),
+  supportsAchievements: boolean("supports_achievements").default(false).notNull(),
+  supportsLibrarySync: boolean("supports_library_sync").default(false).notNull(),
+  igdbWebsiteCategory: integer("igdb_website_category"),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// ============================================================================
+// USER API CREDENTIALS
+// ============================================================================
+
+export const userApiCredentials = pgTable(
+  "user_api_credentials",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    service: apiServiceEnum("service").notNull(),
+    credentialType: credentialTypeEnum("credential_type").notNull(),
+    encryptedCredentials: text("encrypted_credentials").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    hasValidToken: boolean("has_valid_token").default(false).notNull(),
+    tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+    lastValidatedAt: timestamp("last_validated_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.service),
+    index("idx_user_api_credentials_user").on(table.userId),
+  ]
+);
+
+// ============================================================================
 // USER LIBRARY
 // ============================================================================
 
@@ -168,6 +236,7 @@ export const userGames = pgTable(
     platformId: uuid("platform_id")
       .notNull()
       .references(() => platforms.id),
+    storeId: uuid("store_id").references(() => stores.id),
     platformGameId: text("platform_game_id"),
     owned: boolean("owned").default(true),
     purchasedDate: date("purchased_date"),
@@ -179,6 +248,7 @@ export const userGames = pgTable(
     index("idx_user_games_user").on(table.userId),
     index("idx_user_games_game").on(table.gameId),
     index("idx_user_games_platform").on(table.platformId),
+    index("idx_user_games_store").on(table.storeId),
   ]
 );
 

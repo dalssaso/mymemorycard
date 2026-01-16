@@ -43,7 +43,7 @@ router.get(
         SELECT 
           ps.*,
           g.name as game_name,
-          p.display_name as platform_name
+          p.name as platform_name
         FROM play_sessions ps
         INNER JOIN games g ON ps.game_id = g.id
         INNER JOIN platforms p ON ps.platform_id = p.id
@@ -417,7 +417,7 @@ router.get(
         `SELECT 
           ps.*,
           g.name as game_name,
-          p.display_name as platform_name
+          p.name as platform_name
         FROM play_sessions ps
         INNER JOIN games g ON ps.game_id = g.id
         INNER JOIN platforms p ON ps.platform_id = p.id

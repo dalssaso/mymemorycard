@@ -2,17 +2,22 @@ import type { Platform } from "@/features/platforms/types";
 
 export interface IPlatformRepository {
   /**
-   * List all platforms from storage.
-   *
-   * @returns Promise resolving to the platform list.
+   * Lists all platforms ordered by name.
    */
   list(): Promise<Platform[]>;
 
   /**
-   * Fetch a single platform by its id.
-   *
-   * @param id - Platform id.
-   * @returns Promise resolving to the platform or null when not found.
+   * Finds a platform by its internal UUID.
    */
   getById(id: string): Promise<Platform | null>;
+
+  /**
+   * Finds a platform by its IGDB platform ID.
+   */
+  getByIgdbId(igdbPlatformId: number): Promise<Platform | null>;
+
+  /**
+   * Finds platforms by family grouping.
+   */
+  getByFamily(family: string): Promise<Platform[]>;
 }

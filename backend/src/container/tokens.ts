@@ -1,6 +1,7 @@
 export const ADMIN_CONTROLLER_TOKEN = "IAdminController";
 export const ADMIN_REPOSITORY_TOKEN = "IAdminRepository";
 export const ADMIN_SERVICE_TOKEN = "IAdminService";
+export const ENCRYPTION_SERVICE_TOKEN = "IEncryptionService";
 export const AUTH_CONTROLLER_TOKEN = "IAuthController";
 export const AUTH_SERVICE_TOKEN = "IAuthService";
 export const CONFIG_TOKEN = "IConfig";

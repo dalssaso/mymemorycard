@@ -44,20 +44,149 @@ export type PlatformListResponse = {
 };
 
 export type Platform = {
+    /**
+     * Platform unique identifier
+     */
     id: string;
+    /**
+     * IGDB platform identifier
+     */
+    igdb_platform_id: number | null;
+    /**
+     * Platform name
+     */
     name: string;
-    display_name: string;
-    platform_type: 'pc' | 'console' | 'mobile' | 'physical';
-    is_system: boolean;
-    is_physical: boolean;
-    website_url: string | null;
+    /**
+     * Platform abbreviation
+     */
+    abbreviation: string | null;
+    /**
+     * URL-friendly platform identifier
+     */
+    slug: string | null;
+    /**
+     * Platform family grouping
+     */
+    platform_family: string | null;
+    /**
+     * Brand color in hex format
+     */
     color_primary: string;
-    default_icon_url: string | null;
-    sort_order: number;
+    /**
+     * Creation timestamp
+     */
+    created_at: string | null;
 };
 
 export type PlatformResponse = {
     platform: Platform;
+};
+
+/**
+ * List of user platforms
+ */
+export type UserPlatformsListResponse = {
+    user_platforms: Array<UserPlatformResponse>;
+};
+
+/**
+ * User-platform association response
+ */
+export type UserPlatformResponse = {
+    id: string;
+    user_id: string;
+    platform_id: string;
+    username?: string | null;
+    icon_url?: string | null;
+    profile_url?: string | null;
+    notes?: string | null;
+    created_at: string;
+};
+
+/**
+ * Request to add a platform to user account
+ */
+export type AddUserPlatformRequest = {
+    platform_id: string;
+    username?: string;
+    icon_url?: string;
+    profile_url?: string;
+    notes?: string;
+};
+
+/**
+ * Request to update a user-platform association
+ */
+export type UpdateUserPlatformRequest = {
+    username?: string;
+    icon_url?: string;
+    profile_url?: string;
+    notes?: string;
+};
+
+/**
+ * Get preferences response
+ */
+export type GetPreferencesResponse = {
+    preferences: PreferencesResponse;
+};
+
+/**
+ * User preferences
+ */
+export type PreferencesResponse = {
+    default_view: 'grid' | 'table';
+    items_per_page: 10 | 25 | 50 | 100;
+    theme: 'light' | 'dark' | 'auto';
+    updated_at: string | null;
+};
+
+/**
+ * Request to update user preferences
+ */
+export type UpdatePreferencesRequest = {
+    default_view?: 'grid' | 'table';
+    items_per_page?: 10 | 25 | 50 | 100;
+    theme?: 'light' | 'dark' | 'auto';
+};
+
+/**
+ * Get admin settings response
+ */
+export type GetAdminSettingsResponse = {
+    settings: AdminSettingsResponse;
+};
+
+/**
+ * Admin settings
+ */
+export type AdminSettingsResponse = {
+    analytics: {
+        enabled: boolean;
+        provider: 'umami' | 'plausible' | 'posthog' | 'google-analytics' | null;
+        key: string | null;
+        host: string | null;
+    };
+    search: {
+        server_side: boolean;
+        debounce_ms: number;
+    };
+};
+
+/**
+ * Request to update admin settings
+ */
+export type UpdateAdminSettingsRequest = {
+    analytics?: {
+        enabled?: boolean;
+        provider?: 'umami' | 'plausible' | 'posthog' | 'google-analytics' | null;
+        key?: string | null;
+        host?: string | null;
+    };
+    search?: {
+        server_side?: boolean;
+        debounce_ms?: number;
+    };
 };
 
 export type PostApiV1AuthRegisterData = {
@@ -167,6 +296,9 @@ export type GetApiV1PlatformsResponse = GetApiV1PlatformsResponses[keyof GetApiV
 export type GetApiV1PlatformsByIdData = {
     body?: never;
     path: {
+        /**
+         * Platform unique identifier
+         */
         id: string;
     };
     query?: never;
@@ -194,3 +326,235 @@ export type GetApiV1PlatformsByIdResponses = {
 };
 
 export type GetApiV1PlatformsByIdResponse = GetApiV1PlatformsByIdResponses[keyof GetApiV1PlatformsByIdResponses];
+
+export type GetApiV1UserPlatformsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/user-platforms';
+};
+
+export type GetApiV1UserPlatformsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1UserPlatformsError = GetApiV1UserPlatformsErrors[keyof GetApiV1UserPlatformsErrors];
+
+export type GetApiV1UserPlatformsResponses = {
+    /**
+     * List of user platforms
+     */
+    200: UserPlatformsListResponse;
+};
+
+export type GetApiV1UserPlatformsResponse = GetApiV1UserPlatformsResponses[keyof GetApiV1UserPlatformsResponses];
+
+export type PostApiV1UserPlatformsData = {
+    body?: AddUserPlatformRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/user-platforms';
+};
+
+export type PostApiV1UserPlatformsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type PostApiV1UserPlatformsError = PostApiV1UserPlatformsErrors[keyof PostApiV1UserPlatformsErrors];
+
+export type PostApiV1UserPlatformsResponses = {
+    /**
+     * Platform added successfully
+     */
+    201: UserPlatformResponse;
+};
+
+export type PostApiV1UserPlatformsResponse = PostApiV1UserPlatformsResponses[keyof PostApiV1UserPlatformsResponses];
+
+export type DeleteApiV1UserPlatformsByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-platforms/{id}';
+};
+
+export type DeleteApiV1UserPlatformsByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Platform not found
+     */
+    404: ErrorResponse;
+};
+
+export type DeleteApiV1UserPlatformsByIdError = DeleteApiV1UserPlatformsByIdErrors[keyof DeleteApiV1UserPlatformsByIdErrors];
+
+export type DeleteApiV1UserPlatformsByIdResponses = {
+    /**
+     * Platform removed successfully
+     */
+    204: void;
+};
+
+export type DeleteApiV1UserPlatformsByIdResponse = DeleteApiV1UserPlatformsByIdResponses[keyof DeleteApiV1UserPlatformsByIdResponses];
+
+export type PatchApiV1UserPlatformsByIdData = {
+    body?: UpdateUserPlatformRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-platforms/{id}';
+};
+
+export type PatchApiV1UserPlatformsByIdErrors = {
+    /**
+     * Bad Request – validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Platform not found
+     */
+    404: ErrorResponse;
+};
+
+export type PatchApiV1UserPlatformsByIdError = PatchApiV1UserPlatformsByIdErrors[keyof PatchApiV1UserPlatformsByIdErrors];
+
+export type PatchApiV1UserPlatformsByIdResponses = {
+    /**
+     * Platform updated successfully
+     */
+    200: UserPlatformResponse;
+};
+
+export type PatchApiV1UserPlatformsByIdResponse = PatchApiV1UserPlatformsByIdResponses[keyof PatchApiV1UserPlatformsByIdResponses];
+
+export type GetApiV1PreferencesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/preferences';
+};
+
+export type GetApiV1PreferencesErrors = {
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1PreferencesError = GetApiV1PreferencesErrors[keyof GetApiV1PreferencesErrors];
+
+export type GetApiV1PreferencesResponses = {
+    /**
+     * User preferences retrieved successfully
+     */
+    200: GetPreferencesResponse;
+};
+
+export type GetApiV1PreferencesResponse = GetApiV1PreferencesResponses[keyof GetApiV1PreferencesResponses];
+
+export type PatchApiV1PreferencesData = {
+    body?: UpdatePreferencesRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/preferences';
+};
+
+export type PatchApiV1PreferencesErrors = {
+    /**
+     * Validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+};
+
+export type PatchApiV1PreferencesError = PatchApiV1PreferencesErrors[keyof PatchApiV1PreferencesErrors];
+
+export type PatchApiV1PreferencesResponses = {
+    /**
+     * Preferences updated successfully
+     */
+    200: GetPreferencesResponse;
+};
+
+export type PatchApiV1PreferencesResponse = PatchApiV1PreferencesResponses[keyof PatchApiV1PreferencesResponses];
+
+export type GetApiV1AdminSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/admin/settings';
+};
+
+export type GetApiV1AdminSettingsErrors = {
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Forbidden - admin access required
+     */
+    403: ErrorResponse;
+};
+
+export type GetApiV1AdminSettingsError = GetApiV1AdminSettingsErrors[keyof GetApiV1AdminSettingsErrors];
+
+export type GetApiV1AdminSettingsResponses = {
+    /**
+     * Admin settings retrieved successfully
+     */
+    200: GetAdminSettingsResponse;
+};
+
+export type GetApiV1AdminSettingsResponse = GetApiV1AdminSettingsResponses[keyof GetApiV1AdminSettingsResponses];
+
+export type PatchApiV1AdminSettingsData = {
+    body?: UpdateAdminSettingsRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/admin/settings';
+};
+
+export type PatchApiV1AdminSettingsErrors = {
+    /**
+     * Validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Forbidden - admin access required
+     */
+    403: ErrorResponse;
+};
+
+export type PatchApiV1AdminSettingsError = PatchApiV1AdminSettingsErrors[keyof PatchApiV1AdminSettingsErrors];
+
+export type PatchApiV1AdminSettingsResponses = {
+    /**
+     * Admin settings updated successfully
+     */
+    200: GetAdminSettingsResponse;
+};
+
+export type PatchApiV1AdminSettingsResponse = PatchApiV1AdminSettingsResponses[keyof PatchApiV1AdminSettingsResponses];

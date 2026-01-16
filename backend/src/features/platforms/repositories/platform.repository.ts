@@ -1,35 +1,69 @@
-import { asc, desc, eq } from "drizzle-orm";
-import { inject, injectable } from "tsyringe";
-import { platforms } from "@/db/schema";
-import type { DrizzleDB } from "@/infrastructure/database/connection";
-import type { Platform } from "@/features/platforms/types";
-import type { IPlatformRepository } from "./platform.repository.interface";
+import { injectable, inject } from "tsyringe";
+import { eq, asc } from "drizzle-orm";
 import { DATABASE_TOKEN } from "@/container/tokens";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { platforms } from "@/db/schema";
+import type { Platform } from "../types";
+import type { IPlatformRepository } from "./platform.repository.interface";
 
 @injectable()
 export class PostgresPlatformRepository implements IPlatformRepository {
   constructor(@inject(DATABASE_TOKEN) private db: DrizzleDB) {}
 
   /**
-   * Return all platforms ordered by system flag, sort order, and display name.
-   *
-   * @returns Promise resolving to the ordered platforms.
+   * Lists all platforms ordered by name.
    */
   async list(): Promise<Platform[]> {
-    return await this.db
-      .select()
-      .from(platforms)
-      .orderBy(desc(platforms.isSystem), asc(platforms.sortOrder), asc(platforms.displayName));
+    const results = await this.db.select().from(platforms).orderBy(asc(platforms.name));
+
+    return results.map((row) => this.toDomain(row));
   }
 
   /**
-   * Fetch a single platform by its id.
-   *
-   * @param id - Platform id.
-   * @returns Promise resolving to the platform or null when not found.
+   * Finds a platform by its internal UUID.
    */
   async getById(id: string): Promise<Platform | null> {
-    const result = await this.db.select().from(platforms).where(eq(platforms.id, id)).limit(1);
-    return result[0] ?? null;
+    const results = await this.db.select().from(platforms).where(eq(platforms.id, id)).limit(1);
+
+    return results[0] ? this.toDomain(results[0]) : null;
+  }
+
+  /**
+   * Finds a platform by its IGDB platform ID.
+   */
+  async getByIgdbId(igdbPlatformId: number): Promise<Platform | null> {
+    const results = await this.db
+      .select()
+      .from(platforms)
+      .where(eq(platforms.igdbPlatformId, igdbPlatformId))
+      .limit(1);
+
+    return results[0] ? this.toDomain(results[0]) : null;
+  }
+
+  /**
+   * Finds platforms by family grouping.
+   */
+  async getByFamily(family: string): Promise<Platform[]> {
+    const results = await this.db
+      .select()
+      .from(platforms)
+      .where(eq(platforms.platformFamily, family))
+      .orderBy(asc(platforms.name));
+
+    return results.map((row) => this.toDomain(row));
+  }
+
+  private toDomain(row: typeof platforms.$inferSelect): Platform {
+    return {
+      id: row.id,
+      igdbPlatformId: row.igdbPlatformId,
+      name: row.name,
+      abbreviation: row.abbreviation,
+      slug: row.slug,
+      platformFamily: row.platformFamily,
+      colorPrimary: row.colorPrimary,
+      createdAt: row.createdAt,
+    };
   }
 }

@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { registerDependencies, resetContainer, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
@@ -23,13 +23,13 @@ describe("Platforms Integration Tests", () => {
     dbConnection = container.resolve(DatabaseConnection);
 
     const [platform] = await dbConnection.db
-      .select({ id: platforms.id })
+      .select({ id: platforms.id, name: platforms.name })
       .from(platforms)
-      .where(eq(platforms.name, "steam"))
+      .where(eq(platforms.name, "PC (Microsoft Windows)"))
       .limit(1);
 
     if (!platform) {
-      throw new Error("Seeded platform 'steam' not found");
+      throw new Error("Seeded platform 'PC (Microsoft Windows)' not found");
     }
 
     seededPlatformId = platform.id;
@@ -87,13 +87,13 @@ describe("Platforms Integration Tests", () => {
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const data = (await response.json()) as PlatformListResponse;
-      const steam = data.platforms.find((platform) => platform.name === "steam");
+      const pc = data.platforms.find((platform) => platform.name === "PC (Microsoft Windows)");
 
       expect(data.platforms.length).toBeGreaterThan(0);
-      expect(steam).toBeDefined();
-      expect(steam?.display_name).toBeDefined();
-      expect(steam?.platform_type).toBeDefined();
-      expect(steam && "displayName" in steam).toBe(false);
+      expect(pc).toBeDefined();
+      expect(pc?.abbreviation).toBeDefined();
+      expect(pc?.color_primary).toBeDefined();
+      expect(pc && "displayName" in pc).toBe(false);
     });
   });
 
@@ -115,9 +115,9 @@ describe("Platforms Integration Tests", () => {
 
       const data = (await response.json()) as PlatformResponse;
       expect(data.platform.id).toBe(seededPlatformId);
-      expect(data.platform.name).toBe("steam");
-      expect(data.platform.display_name).toBeDefined();
-      expect(data.platform.platform_type).toBeDefined();
+      expect(data.platform.name).toBe("PC (Microsoft Windows)");
+      expect(data.platform.abbreviation).toBeDefined();
+      expect(data.platform.color_primary).toBeDefined();
     });
 
     it("should return 400 for invalid platform id", async () => {

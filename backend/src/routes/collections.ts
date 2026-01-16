@@ -115,16 +115,16 @@ router.get(
         `SELECT 
           g.*,
           first_ug.platform_id,
-          first_ug.platform_display_name,
+          first_ug.platform_name,
           first_ug.status,
           first_ug.user_rating,
           first_ug.is_favorite
          FROM games g
          INNER JOIN collection_games cg ON g.id = cg.game_id
          LEFT JOIN LATERAL (
-           SELECT 
+           SELECT
              ug.platform_id,
-             p.display_name as platform_display_name,
+             p.name as platform_name,
              ugp.status,
              ugp.user_rating,
              ugp.is_favorite
@@ -480,7 +480,7 @@ router.get(
         `SELECT 
           g.*,
           p.id as platform_id,
-          p.display_name as platform_display_name,
+          p.name as platform_name,
           ugp.status,
           ugp.user_rating,
           ugp.is_favorite

@@ -12,10 +12,9 @@ interface UserPlatformRow {
   notes: string | null;
   created_at: string;
   name: string;
-  display_name: string;
-  platform_type: string;
+  abbreviation: string | null;
+  platform_family: string | null;
   color_primary: string;
-  default_icon_url: string | null;
 }
 
 router.get(
@@ -32,14 +31,13 @@ router.get(
           up.notes,
           up.created_at,
           p.name,
-          p.display_name,
-          p.platform_type,
-          p.color_primary,
-          p.default_icon_url
+          p.abbreviation,
+          p.platform_family,
+          p.color_primary
         FROM user_platforms up
         INNER JOIN platforms p ON p.id = up.platform_id
         WHERE up.user_id = $1
-        ORDER BY p.is_system DESC, p.sort_order ASC, p.display_name ASC`,
+        ORDER BY p.platform_family ASC NULLS LAST, p.name ASC`,
         [user.id]
       );
 
@@ -80,10 +78,9 @@ router.get(
           up.notes,
           up.created_at,
           p.name,
-          p.display_name,
-          p.platform_type,
-          p.color_primary,
-          p.default_icon_url
+          p.abbreviation,
+          p.platform_family,
+          p.color_primary
         FROM user_platforms up
         INNER JOIN platforms p ON p.id = up.platform_id
         WHERE up.user_id = $1 AND up.id = $2`,

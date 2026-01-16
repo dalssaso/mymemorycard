@@ -91,19 +91,21 @@ Migrations run on backend startup.
 
 Tables in `src/db/schema.ts`:
 
-| Table            | Description                                     |
-| ---------------- | ----------------------------------------------- |
-| users            | User accounts                                   |
-| games            | Game metadata (from RAWG)                       |
-| userGames        | User library entries (ownership per platform)   |
-| userGameProgress | Status, rating, completion, favorites           |
-| playSessions     | Play session tracking                           |
-| completionLogs   | Completion percentage history                   |
-| collections      | User-created game collections                   |
-| platforms        | Gaming platforms (Steam, PSN, etc.)             |
-| userPlatforms    | User connected platforms                        |
-| achievements     | Game achievements                               |
-| gameAdditions    | DLC and editions                                |
+| Table               | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| users               | User accounts                                   |
+| games               | Game metadata (from IGDB/RAWG)                  |
+| userGames           | User library entries (ownership per platform)   |
+| userGameProgress    | Status, rating, completion, favorites           |
+| playSessions        | Play session tracking                           |
+| completionLogs      | Completion percentage history                   |
+| collections         | User-created game collections                   |
+| platforms           | Gaming platforms (IGDB-driven)                  |
+| stores              | Digital/physical storefronts (Steam, GOG, etc.) |
+| userPlatforms       | User connected platforms                        |
+| userApiCredentials  | Encrypted API credentials for external services |
+| achievements        | Game achievements                               |
+| gameAdditions       | DLC and editions                                |
 
 ### Drizzle ORM Patterns
 
@@ -151,6 +153,8 @@ Copy `.env.example` to `.env` and customize for your environment.
 | DATABASE_URL        | `postgresql://...@localhost:5433/mymemorycard` | PostgreSQL connection             |
 | REDIS_URL           | `redis://localhost:6380`                       | Redis connection                  |
 | JWT_SECRET          | `dev-jwt-secret-change-in-production`          | JWT signing key                   |
+| ENCRYPTION_SECRET   | -                                              | AES-256 encryption key (>= 32ch)  |
+| ENCRYPTION_SALT     | -                                              | Encryption salt (>= 16ch)         |
 | RAWG_API_KEY        | -                                              | RAWG API for game metadata        |
 | PORT                | `3000`                                         | Server port                       |
 | ORIGIN              | -                                              | Additional CORS origin            |

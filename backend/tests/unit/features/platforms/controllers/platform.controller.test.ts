@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { PlatformController } from "@/features/platforms/controllers/platform.controller";
 import type { IPlatformService } from "@/features/platforms/services/platform.service.interface";
 import { createMockLogger } from "@/tests/helpers/repository.mocks";
@@ -47,30 +47,38 @@ describe("PlatformController", () => {
         platforms: [
           {
             id: platformId,
-            name: "pc",
-            display_name: "PC",
-            platform_type: "pc",
-            is_system: true,
-            is_physical: false,
-            website_url: null,
+            igdb_platform_id: 6,
+            name: "PC (Windows)",
+            abbreviation: "PC",
+            slug: "win",
+            platform_family: "PC",
             color_primary: "#6B7280",
-            default_icon_url: null,
-            sort_order: 0,
+            created_at: null,
           },
         ],
       }),
       getById: async () => ({
         platform: {
           id: platformId,
-          name: "pc",
-          display_name: "PC",
-          platform_type: "pc",
-          is_system: true,
-          is_physical: false,
-          website_url: null,
+          igdb_platform_id: 6,
+          name: "PC (Windows)",
+          abbreviation: "PC",
+          slug: "win",
+          platform_family: "PC",
           color_primary: "#6B7280",
-          default_icon_url: null,
-          sort_order: 0,
+          created_at: null,
+        },
+      }),
+      getByIgdbId: async () => ({
+        platform: {
+          id: platformId,
+          igdb_platform_id: 6,
+          name: "PC (Windows)",
+          abbreviation: "PC",
+          slug: "win",
+          platform_family: "PC",
+          color_primary: "#6B7280",
+          created_at: null,
         },
       }),
     };
