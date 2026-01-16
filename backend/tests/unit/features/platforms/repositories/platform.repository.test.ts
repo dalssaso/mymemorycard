@@ -23,16 +23,14 @@ describe("PostgresPlatformRepository", () => {
   it("lists platforms ordered", async () => {
     const platforms: Platform[] = [
       {
-        id: "plat-1",
-        name: "pc",
-        displayName: "PC",
-        platformType: "pc",
-        isSystem: true,
-        isPhysical: false,
-        websiteUrl: null,
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        igdbPlatformId: 6,
+        name: "PC (Windows)",
+        abbreviation: "PC",
+        slug: "win",
+        platformFamily: "PC",
         colorPrimary: "#6B7280",
-        defaultIconUrl: null,
-        sortOrder: 0,
+        createdAt: new Date(),
       },
     ];
 
@@ -45,21 +43,19 @@ describe("PostgresPlatformRepository", () => {
 
   it("returns platform by id", async () => {
     const platform: Platform = {
-      id: "plat-1",
-      name: "pc",
-      displayName: "PC",
-      platformType: "pc",
-      isSystem: true,
-      isPhysical: false,
-      websiteUrl: null,
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      igdbPlatformId: 6,
+      name: "PC (Windows)",
+      abbreviation: "PC",
+      slug: "win",
+      platformFamily: "PC",
       colorPrimary: "#6B7280",
-      defaultIconUrl: null,
-      sortOrder: 0,
+      createdAt: new Date(),
     };
 
     mockSelectResult(mockDb, [platform]);
 
-    const result = await repository.getById("plat-1");
+    const result = await repository.getById("550e8400-e29b-41d4-a716-446655440000");
 
     expect(result).toEqual(platform);
   });

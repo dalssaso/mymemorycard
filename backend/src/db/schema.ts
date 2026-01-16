@@ -130,20 +130,23 @@ export const gameGenres = pgTable(
 // PLATFORMS
 // ============================================================================
 
-export const platformTypeEnum = pgEnum("platform_type", ["pc", "console", "mobile", "physical"]);
-
-export const platforms = pgTable("platforms", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 50 }).unique().notNull(),
-  displayName: varchar("display_name", { length: 100 }).notNull(),
-  platformType: platformTypeEnum("platform_type").notNull(),
-  isSystem: boolean("is_system").default(false),
-  isPhysical: boolean("is_physical").default(false),
-  websiteUrl: text("website_url"),
-  colorPrimary: varchar("color_primary", { length: 7 }).notNull().default("#6B7280"),
-  defaultIconUrl: text("default_icon_url"),
-  sortOrder: integer("sort_order").default(0),
-});
+export const platforms = pgTable(
+  "platforms",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    igdbPlatformId: integer("igdb_platform_id").unique(),
+    name: varchar("name", { length: 100 }).notNull(),
+    abbreviation: varchar("abbreviation", { length: 20 }),
+    slug: varchar("slug", { length: 50 }),
+    platformFamily: varchar("platform_family", { length: 50 }),
+    colorPrimary: varchar("color_primary", { length: 7 }).notNull().default("#6B7280"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("idx_platforms_igdb").on(table.igdbPlatformId),
+    index("idx_platforms_family").on(table.platformFamily),
+  ]
+);
 
 export const userPlatforms = pgTable(
   "user_platforms",
@@ -233,6 +236,7 @@ export const userGames = pgTable(
     platformId: uuid("platform_id")
       .notNull()
       .references(() => platforms.id),
+    storeId: uuid("store_id").references(() => stores.id),
     platformGameId: text("platform_game_id"),
     owned: boolean("owned").default(true),
     purchasedDate: date("purchased_date"),
@@ -244,6 +248,7 @@ export const userGames = pgTable(
     index("idx_user_games_user").on(table.userId),
     index("idx_user_games_game").on(table.gameId),
     index("idx_user_games_platform").on(table.platformId),
+    index("idx_user_games_store").on(table.storeId),
   ]
 );
 

@@ -91,8 +91,8 @@ describe("Platforms Integration Tests", () => {
 
       expect(data.platforms.length).toBeGreaterThan(0);
       expect(steam).toBeDefined();
-      expect(steam?.display_name).toBeDefined();
-      expect(steam?.platform_type).toBeDefined();
+      expect(steam?.abbreviation).toBeDefined();
+      expect(steam?.color_primary).toBeDefined();
       expect(steam && "displayName" in steam).toBe(false);
     });
   });
@@ -116,8 +116,8 @@ describe("Platforms Integration Tests", () => {
       const data = (await response.json()) as PlatformResponse;
       expect(data.platform.id).toBe(seededPlatformId);
       expect(data.platform.name).toBe("steam");
-      expect(data.platform.display_name).toBeDefined();
-      expect(data.platform.platform_type).toBeDefined();
+      expect(data.platform.abbreviation).toBeDefined();
+      expect(data.platform.color_primary).toBeDefined();
     });
 
     it("should return 400 for invalid platform id", async () => {
