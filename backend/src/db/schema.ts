@@ -164,6 +164,28 @@ export const userPlatforms = pgTable(
 );
 
 // ============================================================================
+// STORES
+// ============================================================================
+
+export const storeTypeEnum = pgEnum("store_type", ["digital", "physical"]);
+
+export const stores = pgTable("stores", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: varchar("slug", { length: 50 }).unique().notNull(),
+  displayName: varchar("display_name", { length: 100 }).notNull(),
+  storeType: storeTypeEnum("store_type").notNull(),
+  platformFamily: varchar("platform_family", { length: 50 }),
+  colorPrimary: varchar("color_primary", { length: 7 }).notNull().default("#6B7280"),
+  websiteUrl: text("website_url"),
+  iconUrl: text("icon_url"),
+  supportsAchievements: boolean("supports_achievements").default(false).notNull(),
+  supportsLibrarySync: boolean("supports_library_sync").default(false).notNull(),
+  igdbWebsiteCategory: integer("igdb_website_category"),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// ============================================================================
 // USER LIBRARY
 // ============================================================================
 
