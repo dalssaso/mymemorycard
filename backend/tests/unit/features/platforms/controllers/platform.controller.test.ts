@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { PlatformController } from "@/features/platforms/controllers/platform.controller";
 import type { IPlatformService } from "@/features/platforms/services/platform.service.interface";
 import { createMockLogger } from "@/tests/helpers/repository.mocks";

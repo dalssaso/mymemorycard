@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { beforeEach, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { PlatformService } from "@/features/platforms/services/platform.service";
 import type { IPlatformRepository } from "@/features/platforms/repositories/platform.repository.interface";
 import { NotFoundError } from "@/shared/errors/base";

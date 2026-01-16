@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { beforeEach, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { EncryptionService } from "@/features/credentials/services/encryption.service";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 import { makeTestConfig } from "../../../helpers/make-test-config";

@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { registerDependencies, resetContainer, container } from "@/container";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { DatabaseConnection } from "@/infrastructure/database/connection";

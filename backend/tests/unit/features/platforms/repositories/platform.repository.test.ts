@@ -1,5 +1,5 @@
-import "reflect-metadata";
 import { beforeEach, describe, expect, it } from "bun:test";
+import "reflect-metadata";
 import { PostgresPlatformRepository } from "@/features/platforms/repositories/platform.repository";
 import {
   createMockDrizzleDB,
@@ -9,7 +9,6 @@ import {
   mockSelectResult,
 } from "@/tests/helpers/drizzle.mocks";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
-import type { Platform } from "@/features/platforms/types";
 
 describe("PostgresPlatformRepository", () => {
   let repository: PostgresPlatformRepository;
@@ -21,7 +20,7 @@ describe("PostgresPlatformRepository", () => {
   });
 
   it("lists platforms ordered", async () => {
-    const platforms: Platform[] = [
+    const platforms = [
       {
         id: "550e8400-e29b-41d4-a716-446655440000",
         igdbPlatformId: 6,
@@ -42,7 +41,7 @@ describe("PostgresPlatformRepository", () => {
   });
 
   it("returns platform by id", async () => {
-    const platform: Platform = {
+    const platform = {
       id: "550e8400-e29b-41d4-a716-446655440000",
       igdbPlatformId: 6,
       name: "PC (Windows)",
