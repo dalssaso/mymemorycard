@@ -8,6 +8,7 @@ import {
   AUTH_SERVICE_TOKEN,
   CONFIG_TOKEN,
   DATABASE_TOKEN,
+  ENCRYPTION_SERVICE_TOKEN,
   PASSWORD_HASHER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
   PLATFORM_REPOSITORY_TOKEN,
@@ -96,6 +97,10 @@ import type { IAdminService } from "@/features/admin/services/admin.service.inte
 import { AdminController } from "@/features/admin/controllers/admin.controller";
 import type { IAdminController } from "@/features/admin/controllers/admin.controller.interface";
 
+// Credentials - Services
+import { EncryptionService } from "@/features/credentials";
+import type { IEncryptionService } from "@/features/credentials";
+
 /**
  * Register all dependencies for the application.
  * Called once at application startup.
@@ -180,6 +185,9 @@ export function registerDependencies(): void {
 
   // Admin Domain - Controllers
   container.registerSingleton<IAdminController>(ADMIN_CONTROLLER_TOKEN, AdminController);
+
+  // Credentials Domain - Services
+  container.registerSingleton<IEncryptionService>(ENCRYPTION_SERVICE_TOKEN, EncryptionService);
 }
 
 /**
