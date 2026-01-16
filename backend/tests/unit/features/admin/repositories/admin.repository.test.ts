@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from "bun:test";
 import "reflect-metadata";
 
 import { PostgresAdminRepository } from "@/features/admin/repositories/admin.repository";
-import type { AdminSetting } from "@/features/admin/types";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import {
   createMockDrizzleDB,
@@ -31,10 +30,10 @@ describe("PostgresAdminRepository", () => {
     });
 
     it("returns settings when they exist", async () => {
-      const settings: AdminSetting = {
+      const settings = {
         id: "550e8400-e29b-41d4-a716-446655440000",
         analyticsEnabled: true,
-        analyticsProvider: "umami",
+        analyticsProvider: "umami" as const,
         analyticsKey: "test-key",
         analyticsHost: "https://analytics.example.com",
         searchServerSide: false,
@@ -58,10 +57,10 @@ describe("PostgresAdminRepository", () => {
 
   describe("upsert", () => {
     it("creates or updates settings atomically", async () => {
-      const newSettings: AdminSetting = {
+      const newSettings = {
         id: "00000000-0000-0000-0000-000000000001",
         analyticsEnabled: true,
-        analyticsProvider: "plausible",
+        analyticsProvider: "plausible" as const,
         analyticsKey: "new-key",
         analyticsHost: "https://plausible.example.com",
         searchServerSide: true,
@@ -82,7 +81,7 @@ describe("PostgresAdminRepository", () => {
     });
 
     it("handles partial updates", async () => {
-      const updated: AdminSetting = {
+      const updated = {
         id: "00000000-0000-0000-0000-000000000001",
         analyticsEnabled: false,
         analyticsProvider: null,
