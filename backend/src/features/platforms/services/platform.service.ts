@@ -49,7 +49,7 @@ export class PlatformService implements IPlatformService {
     const platform = await this.repo.getByIgdbId(igdbPlatformId);
 
     if (!platform) {
-      throw new NotFoundError("Platform");
+      throw new NotFoundError("Platform", igdbPlatformId.toString());
     }
 
     return { platform: this.toDto(platform) };

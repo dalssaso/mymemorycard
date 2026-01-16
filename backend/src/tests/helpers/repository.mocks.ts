@@ -188,6 +188,20 @@ export function createMockAdminService(overrides?: Partial<IAdminService>): IAdm
  *
  * @param overrides - Optional partial overrides for specific methods.
  * @returns Mocked IEncryptionService.
+ *
+ * @example
+ * ```typescript
+ * import { createMockEncryptionService } from "@/tests/helpers/repository.mocks";
+ *
+ * const mockEncryption = createMockEncryptionService();
+ * const encrypted = mockEncryption.encrypt({ api_key: "secret" });
+ * // encrypted === "encrypted-data-base64"
+ *
+ * // Override specific methods:
+ * const customMock = createMockEncryptionService({
+ *   decrypt: mock().mockReturnValue({ api_key: "decrypted-secret" }),
+ * });
+ * ```
  */
 export function createMockEncryptionService(
   overrides?: Partial<IEncryptionService>

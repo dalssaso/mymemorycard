@@ -10,14 +10,14 @@ const AUTH_TAG_LENGTH = 16;
 const KEY_LENGTH = 32;
 
 /**
- * Scrypt parameters for key derivation (OWASP recommended).
- * N=16384 (2^14): CPU/memory cost parameter (16MB memory)
+ * Scrypt parameters for key derivation.
+ * N=32768 (2^15): CPU/memory cost parameter
  * r=8: Block size parameter
  * p=1: Parallelization parameter
- * These provide strong protection against brute-force attacks while
- * staying within OpenSSL's default memory limits.
+ * maxmem: Explicit memory limit (64MB) with headroom above required 128*N*r=32MB.
+ * These provide strong protection against brute-force attacks.
  */
-const SCRYPT_OPTIONS = { N: 16384, r: 8, p: 1 };
+const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
 /**
  * Service for encrypting and decrypting sensitive credential data.

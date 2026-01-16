@@ -141,7 +141,8 @@ const systemStores: StoreSeed[] = [
 
 /**
  * Seeds the stores table with predefined store data.
- * Uses upsert to update existing stores on conflict.
+ * Inserts systemStores and ignores conflicts (onConflictDoNothing),
+ * leaving existing records unchanged.
  */
 export async function seedStores(): Promise<void> {
   console.log("Seeding stores...");

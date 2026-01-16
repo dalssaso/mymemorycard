@@ -30,7 +30,6 @@ interface AggregatedUserGame extends Game {
 interface UserGameWithDetails extends Game {
   platform_id: string;
   platform_name: string;
-  platform_display_name: string;
   status: string;
   user_rating: number | null;
   total_minutes: number;
@@ -467,7 +466,6 @@ router.get(
           g.*,
           p.id as platform_id,
           p.name as platform_name,
-          p.name as platform_display_name,
           p.color_primary as platform_color_primary,
           up.icon_url as platform_icon_url,
           COALESCE(ugp.status, 'backlog') as status,
