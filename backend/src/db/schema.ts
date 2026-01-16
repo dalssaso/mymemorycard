@@ -186,6 +186,33 @@ export const stores = pgTable("stores", {
 });
 
 // ============================================================================
+// USER API CREDENTIALS
+// ============================================================================
+
+export const userApiCredentials = pgTable(
+  "user_api_credentials",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    service: apiServiceEnum("service").notNull(),
+    credentialType: credentialTypeEnum("credential_type").notNull(),
+    encryptedCredentials: text("encrypted_credentials").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    hasValidToken: boolean("has_valid_token").default(false).notNull(),
+    tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+    lastValidatedAt: timestamp("last_validated_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.service),
+    index("idx_user_api_credentials_user").on(table.userId),
+  ]
+);
+
+// ============================================================================
 // USER LIBRARY
 // ============================================================================
 
