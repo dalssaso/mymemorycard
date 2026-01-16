@@ -1,6 +1,9 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
 import {
+  ADMIN_CONTROLLER_TOKEN,
+  ADMIN_REPOSITORY_TOKEN,
+  ADMIN_SERVICE_TOKEN,
   AUTH_CONTROLLER_TOKEN,
   AUTH_SERVICE_TOKEN,
   CONFIG_TOKEN,
@@ -81,6 +84,18 @@ import type { IPreferencesService } from "@/features/preferences/services/prefer
 import { PreferencesController } from "@/features/preferences/controllers/preferences.controller";
 import type { IPreferencesController } from "@/features/preferences/controllers/preferences.controller.interface";
 
+// Admin - Repositories
+import { PostgresAdminRepository } from "@/features/admin/repositories/admin.repository";
+import type { IAdminRepository } from "@/features/admin/repositories/admin.repository.interface";
+
+// Admin - Services
+import { AdminService } from "@/features/admin/services/admin.service";
+import type { IAdminService } from "@/features/admin/services/admin.service.interface";
+
+// Admin - Controllers
+import { AdminController } from "@/features/admin/controllers/admin.controller";
+import type { IAdminController } from "@/features/admin/controllers/admin.controller.interface";
+
 /**
  * Register all dependencies for the application.
  * Called once at application startup.
@@ -156,6 +171,15 @@ export function registerDependencies(): void {
     PREFERENCES_CONTROLLER_TOKEN,
     PreferencesController
   );
+
+  // Admin Domain - Repositories
+  container.registerSingleton<IAdminRepository>(ADMIN_REPOSITORY_TOKEN, PostgresAdminRepository);
+
+  // Admin Domain - Services
+  container.registerSingleton<IAdminService>(ADMIN_SERVICE_TOKEN, AdminService);
+
+  // Admin Domain - Controllers
+  container.registerSingleton<IAdminController>(ADMIN_CONTROLLER_TOKEN, AdminController);
 }
 
 /**

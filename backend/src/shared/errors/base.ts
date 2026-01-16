@@ -41,3 +41,9 @@ export class ConflictError extends DomainError {
     super(message, "CONFLICT", 409);
   }
 }
+
+export class InternalError extends DomainError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, "INTERNAL_ERROR", 500, details);
+  }
+}

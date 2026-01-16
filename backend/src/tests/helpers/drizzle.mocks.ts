@@ -155,3 +155,33 @@ export function mockSelectError(mockDb: DrizzleDB, error: Error): void {
     }),
   });
 }
+
+/**
+ * Mock a successful select().from().limit() chain (no where clause).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockSelectLimitResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      limit: mock().mockResolvedValue(result),
+    }),
+  });
+}
+
+/**
+ * Mock a failed select().from().limit() chain (no where clause).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param error - Error to reject with.
+ */
+export function mockSelectLimitError(mockDb: DrizzleDB, error: Error): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      limit: mock().mockRejectedValue(error),
+    }),
+  });
+}

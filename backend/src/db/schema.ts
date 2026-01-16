@@ -27,6 +27,7 @@ export const users = pgTable(
     username: varchar("username", { length: 50 }).unique().notNull(),
     email: varchar("email", { length: 255 }).unique().notNull(),
     passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+    isAdmin: boolean("is_admin").default(false).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   },
@@ -659,5 +660,42 @@ export const userPreferences = pgTable(
     check("default_view_check", sql`default_view IN ('grid', 'table')`),
     check("items_per_page_check", sql`items_per_page IN (10, 25, 50, 100)`),
     check("theme_check", sql`theme IN ('light', 'dark', 'auto')`),
+  ]
+);
+
+// ============================================================================
+// ADMIN SETTINGS (Instance-Level Configuration)
+// ============================================================================
+
+export const analyticsProviderEnum = pgEnum("analytics_provider", [
+  "umami",
+  "plausible",
+  "posthog",
+  "google-analytics",
+]);
+
+/**
+ * Fixed UUID for singleton admin_settings row.
+ * This ensures only one row can exist in the table.
+ */
+export const ADMIN_SETTINGS_SINGLETON_ID = "00000000-0000-0000-0000-000000000001";
+
+export const adminSettings = pgTable(
+  "admin_settings",
+  {
+    id: uuid("id").primaryKey().default(ADMIN_SETTINGS_SINGLETON_ID).notNull(),
+    analyticsEnabled: boolean("analytics_enabled").default(false).notNull(),
+    analyticsProvider: analyticsProviderEnum("analytics_provider"),
+    analyticsKey: varchar("analytics_key", { length: 255 }),
+    analyticsHost: text("analytics_host"),
+    searchServerSide: boolean("search_server_side").default(true).notNull(),
+    searchDebounceMs: integer("search_debounce_ms").default(300).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    check(
+      "admin_settings_singleton_chk",
+      sql`${table.id} = '00000000-0000-0000-0000-000000000001'::uuid`
+    ),
   ]
 );

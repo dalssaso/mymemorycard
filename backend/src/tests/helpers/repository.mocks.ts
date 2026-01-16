@@ -3,6 +3,9 @@ import { mock } from "bun:test";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { type users } from "@/db/schema";
+import type { IAdminRepository } from "@/features/admin/repositories/admin.repository.interface";
+import type { IAdminService } from "@/features/admin/services/admin.service.interface";
+import type { AdminSetting, AdminSettingsResponse } from "@/features/admin/types";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
@@ -23,6 +26,7 @@ export function createMockUserRepository(overrides?: Partial<IUserRepository>): 
         username,
         email,
         passwordHash,
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -62,6 +66,7 @@ export function createTestUser(overrides?: Partial<User>): User {
     username: "testuser",
     email: "testuser@users.mymemorycard.local",
     passwordHash: "hashed_password123",
+    isAdmin: false,
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
     ...overrides,
@@ -118,6 +123,61 @@ export function createMockPreferencesRepository(
   return {
     findByUserId: mock().mockResolvedValue(null),
     upsert: mock().mockResolvedValue(defaultPreferences),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock admin repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IAdminRepository.
+ */
+export function createMockAdminRepository(overrides?: Partial<IAdminRepository>): IAdminRepository {
+  const defaultSettings: AdminSetting = {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    analyticsEnabled: false,
+    analyticsProvider: null,
+    analyticsKey: null,
+    analyticsHost: null,
+    searchServerSide: true,
+    searchDebounceMs: 300,
+    updatedAt: new Date("2026-01-15T10:00:00Z"),
+  };
+
+  return {
+    findSettings: mock().mockResolvedValue(null),
+    upsert: mock().mockResolvedValue(defaultSettings),
+    ...overrides,
+  };
+}
+
+/**
+ * Default admin settings response for mocks
+ */
+export const DEFAULT_ADMIN_SETTINGS_RESPONSE: AdminSettingsResponse = {
+  analytics: {
+    enabled: false,
+    provider: null,
+    key: null,
+    host: null,
+  },
+  search: {
+    server_side: true,
+    debounce_ms: 300,
+  },
+};
+
+/**
+ * Create a mock admin service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IAdminService.
+ */
+export function createMockAdminService(overrides?: Partial<IAdminService>): IAdminService {
+  return {
+    getSettings: mock().mockResolvedValue(DEFAULT_ADMIN_SETTINGS_RESPONSE),
+    updateSettings: mock().mockResolvedValue(DEFAULT_ADMIN_SETTINGS_RESPONSE),
     ...overrides,
   };
 }

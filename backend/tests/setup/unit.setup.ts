@@ -77,6 +77,7 @@ const mockUserRepository: IUserRepository = {
       username: "testuser",
       email: "test@example.com",
       passwordHash: "hashed-password",
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -91,6 +92,7 @@ const mockUserRepository: IUserRepository = {
       username,
       email: `${username}@example.com`,
       passwordHash: "hashed-password",
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -100,6 +102,7 @@ const mockUserRepository: IUserRepository = {
     username,
     email,
     passwordHash,
+    isAdmin: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
