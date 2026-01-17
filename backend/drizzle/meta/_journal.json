@@ -211,6 +211,13 @@
       "when": 1768532985716,
       "tag": "0029_woozy_sunfire",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1768663225984,
+      "tag": "0030_wooden_photon",
+      "breakpoints": true
     }
   ]
 }
