@@ -660,6 +660,14 @@ export class GamesController implements IGamesController {
         204: {
           description: "User game entry deleted successfully",
         },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid user game ID format",
+        },
         401: {
           content: {
             "application/json": {

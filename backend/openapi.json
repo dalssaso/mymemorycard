@@ -2804,6 +2804,16 @@
           "204": {
             "description": "User game entry deleted successfully"
           },
+          "400": {
+            "description": "Invalid user game ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized - invalid or missing token",
             "content": {
