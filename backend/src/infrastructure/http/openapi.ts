@@ -21,6 +21,18 @@ function applyOpenApiEnvDefaults(): void {
 }
 
 /**
+ * Converts Hono-style path params (:id) to OpenAPI-style ({id}).
+ */
+function convertPathParams(paths: Record<string, unknown>): Record<string, unknown> {
+  const converted: Record<string, unknown> = {};
+  for (const [path, value] of Object.entries(paths)) {
+    const openApiPath = path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}");
+    converted[openApiPath] = value;
+  }
+  return converted;
+}
+
+/**
  * Builds the OpenAPI document from the DI-backed Hono app.
  * Applies default environment variables to avoid required-config failures.
  */
@@ -33,6 +45,12 @@ export function buildOpenApiDocument(): OpenAPIObject {
     openapi: "3.0.0",
     info: { title: "MyMemoryCard API", version: "v1" },
   });
+
+  // Convert path params from :id to {id} format
+  if (document.paths) {
+    document.paths = convertPathParams(document.paths) as typeof document.paths;
+  }
+
   const components = document.components ?? {};
   document.components = {
     ...components,

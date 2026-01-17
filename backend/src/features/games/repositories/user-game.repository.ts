@@ -242,14 +242,16 @@ export class UserGameRepository implements IUserGameRepository {
    * @throws {NotFoundError} If not found or access denied
    */
   async delete(id: string, userId: string): Promise<boolean> {
-    const existing = await this.findById(id);
-    if (!existing || existing.user_id !== userId) {
+    const result = await this.db
+      .delete(userGames)
+      .where(and(eq(userGames.id, id), eq(userGames.userId, userId)))
+      .returning();
+
+    if (result.length === 0) {
       throw new NotFoundError(`User game ${id} not found`);
     }
 
-    const result = await this.db.delete(userGames).where(eq(userGames.id, id)).returning();
-
-    return result.length > 0;
+    return true;
   }
 
   /**

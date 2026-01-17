@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 import "reflect-metadata";
 
 import { GameMetadataService } from "@/features/games/services/game-metadata.service";
@@ -19,7 +19,6 @@ import type {
   GameDetails,
   PlatformFromIgdb,
 } from "@/integrations/igdb/igdb.mapper";
-import { mock } from "bun:test";
 
 describe("GameMetadataService", () => {
   let service: GameMetadataService;

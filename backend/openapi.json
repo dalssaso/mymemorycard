@@ -1076,12 +1076,12 @@
             "example": 97
           },
           "opencritic_score": {
-            "type": "integer",
+            "type": "number",
             "nullable": true,
             "minimum": 0,
             "maximum": 100,
             "description": "OpenCritic score",
-            "example": 96
+            "example": 96.5
           },
           "esrb_rating": {
             "type": "string",
@@ -2263,7 +2263,7 @@
         }
       }
     },
-    "/api/v1/games/:id": {
+    "/api/v1/games/{id}": {
       "get": {
         "tags": [
           "games"
@@ -2328,7 +2328,7 @@
         }
       }
     },
-    "/api/v1/games/:id/import": {
+    "/api/v1/games/{id}/import": {
       "post": {
         "tags": [
           "games"
@@ -2401,7 +2401,7 @@
         }
       }
     },
-    "/api/v1/games/:id/metadata": {
+    "/api/v1/games/{id}/metadata": {
       "post": {
         "tags": [
           "games"
@@ -2559,8 +2559,9 @@
         "parameters": [
           {
             "schema": {
-              "type": "string",
-              "pattern": "^\\d+$",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
               "default": 50
             },
             "required": false,
@@ -2569,8 +2570,9 @@
           },
           {
             "schema": {
-              "type": "string",
-              "pattern": "^\\d+$",
+              "type": "integer",
+              "nullable": true,
+              "minimum": 0,
               "default": 0
             },
             "required": false,
@@ -2612,7 +2614,7 @@
         }
       }
     },
-    "/api/v1/user-games/:id": {
+    "/api/v1/user-games/{id}": {
       "get": {
         "tags": [
           "user-games"

@@ -44,6 +44,9 @@ export type {
   GameIdParamsDto,
   GameSearchResultDto,
   GameDetailsDto,
+  GameResponseDto,
+  GameListResponseDto,
+  GameSearchResultsResponseDto,
 } from "./dtos/game.dto";
 
 export {

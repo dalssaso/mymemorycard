@@ -5,6 +5,7 @@ import { PlatformRepository } from "@/features/games/repositories/platform.repos
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import {
   createMockDrizzleDB,
+  mockInsertError,
   mockInsertResult,
   mockTransaction,
 } from "@/tests/helpers/drizzle.mocks";
@@ -237,6 +238,49 @@ describe("PlatformRepository", () => {
       const result = await repository.getOrCreate(300, "Unknown Platform");
 
       expect(result.color_primary).toBe("#6B7280");
+    });
+
+    it("handles concurrent creation with unique constraint violation", async () => {
+      const existingPlatform = {
+        id: "platform-concurrent",
+        igdbPlatformId: 400,
+        name: "Steam Deck",
+        abbreviation: "SD",
+        slug: "steam-deck",
+        platformFamily: "PC",
+        colorPrimary: "#1a9fff",
+        createdAt: new Date(),
+      };
+
+      // First findFirst returns null (triggering insert), second returns the existing row
+      let findFirstCallCount = 0;
+      const mockQuery = {
+        platforms: {
+          findFirst: async () => {
+            findFirstCallCount++;
+            if (findFirstCallCount === 1) {
+              return null;
+            }
+            return existingPlatform;
+          },
+        },
+      };
+      Object.defineProperty(mockDb, "query", {
+        value: mockQuery,
+        writable: true,
+      });
+
+      // Insert throws unique constraint violation
+      const uniqueError = new Error("duplicate key value violates unique constraint");
+      Object.assign(uniqueError, { code: "23505" });
+      mockInsertError(mockDb, uniqueError);
+      mockTransaction(mockDb);
+
+      const result = await repository.getOrCreate(400, "Steam Deck");
+
+      expect(result).not.toBeNull();
+      expect(result.igdb_platform_id).toBe(400);
+      expect(result.name).toBe("Steam Deck");
     });
   });
 

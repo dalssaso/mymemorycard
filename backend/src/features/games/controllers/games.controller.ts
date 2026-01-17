@@ -429,26 +429,18 @@ export class GamesController implements IGamesController {
       request: {
         query: z
           .object({
-            limit: z
-              .string()
-              .regex(/^\d+$/)
-              .transform(Number)
-              .refine((v) => v >= 1 && v <= 500, {
-                message: "Limit must be between 1 and 500",
-              })
+            limit: z.coerce
+              .number()
+              .int()
+              .min(1, "Limit must be at least 1")
+              .max(500, "Limit cannot exceed 500")
               .optional()
-              .default(() => 50),
-            offset: z
-              .string()
-              .regex(/^\d+$/)
-              .transform(Number)
-              .refine((v) => v >= 0, { message: "Offset must be >= 0" })
-              .optional()
-              .default(() => 0),
+              .default(50),
+            offset: z.coerce.number().int().min(0, "Offset must be >= 0").optional().default(0),
           })
           .openapi("UserGameListQuery", {
             description: "Pagination parameters",
-            example: { limit: "50", offset: "0" },
+            example: { limit: 50, offset: 0 },
           }),
       },
       responses: {

@@ -25,7 +25,7 @@ import { PLATFORM_SERVICE_TOKEN } from "@/container/tokens";
 @injectable()
 export class PlatformController implements IPlatformController {
   public router: OpenAPIHono<PlatformEnv>;
-  private logger: Logger;
+  private readonly logger: Logger;
 
   constructor(
     @inject(PLATFORM_SERVICE_TOKEN) private platformService: IPlatformService,

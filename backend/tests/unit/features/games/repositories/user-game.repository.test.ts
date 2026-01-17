@@ -473,7 +473,7 @@ describe("UserGameRepository", () => {
 
   describe("delete", () => {
     it("successfully deletes user game for authorized user", async () => {
-      const existingEntry = {
+      const deletedEntry = {
         id: "ug-del-1",
         userId: "user-del",
         gameId: "game-del",
@@ -486,16 +486,8 @@ describe("UserGameRepository", () => {
         createdAt: new Date(),
       };
 
-      const mockQuery = {
-        userGames: {
-          findFirst: async () => existingEntry,
-        },
-      };
-      Object.defineProperty(mockDb, "query", {
-        value: mockQuery,
-        writable: true,
-      });
-      mockDeleteResult(mockDb, [existingEntry]);
+      // Delete returns the deleted row when successful
+      mockDeleteResult(mockDb, [deletedEntry]);
 
       const result = await repository.delete("ug-del-1", "user-del");
 
@@ -503,15 +495,8 @@ describe("UserGameRepository", () => {
     });
 
     it("throws NotFoundError when entry does not exist", async () => {
-      const mockQuery = {
-        userGames: {
-          findFirst: async () => null,
-        },
-      };
-      Object.defineProperty(mockDb, "query", {
-        value: mockQuery,
-        writable: true,
-      });
+      // Delete with non-existent id returns empty array
+      mockDeleteResult(mockDb, []);
 
       await expect(repository.delete("ug-nonexistent-del", "user-del")).rejects.toThrow(
         NotFoundError
@@ -519,28 +504,8 @@ describe("UserGameRepository", () => {
     });
 
     it("throws NotFoundError on cross-user delete attempt", async () => {
-      const existingEntry = {
-        id: "ug-cross-del",
-        userId: "user-owner",
-        gameId: "game-cross-del",
-        platformId: "platform-cross-del",
-        storeId: null,
-        platformGameId: null,
-        owned: true,
-        purchasedDate: null,
-        importSource: null,
-        createdAt: new Date(),
-      };
-
-      const mockQuery = {
-        userGames: {
-          findFirst: async () => existingEntry,
-        },
-      };
-      Object.defineProperty(mockDb, "query", {
-        value: mockQuery,
-        writable: true,
-      });
+      // Delete with wrong userId in WHERE clause returns empty array (no row matched)
+      mockDeleteResult(mockDb, []);
 
       await expect(repository.delete("ug-cross-del", "user-attacker")).rejects.toThrow(
         NotFoundError

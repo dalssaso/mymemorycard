@@ -176,9 +176,9 @@ export const GAME_DETAILS_SCHEMA = z
       description: "Metacritic score",
       example: 97,
     }),
-    opencritic_score: z.number().int().min(0).max(100).nullable().openapi({
+    opencritic_score: z.number().min(0).max(100).nullable().openapi({
       description: "OpenCritic score",
-      example: 96,
+      example: 96.5,
     }),
     esrb_rating: z.string().nullable().openapi({
       description: "ESRB rating (E, E10+, T, M, AO)",

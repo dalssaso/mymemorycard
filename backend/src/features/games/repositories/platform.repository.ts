@@ -1,5 +1,5 @@
 import { injectable, inject } from "tsyringe";
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import { platforms } from "@/db/schema";
@@ -112,15 +112,15 @@ export class PlatformRepository implements IPlatformRepository {
     return results.map((row) => this.mapToPlatform(row));
   }
 
-  private mapToPlatform(row: Record<string, unknown>): Platform {
+  private mapToPlatform(row: InferSelectModel<typeof platforms>): Platform {
     return {
-      id: row.id as string,
-      igdb_platform_id: (row.igdbPlatformId as number) || null,
-      name: row.name as string,
-      abbreviation: (row.abbreviation as string) || null,
-      slug: (row.slug as string) || null,
-      platform_family: (row.platformFamily as string) || null,
-      color_primary: (row.colorPrimary as string) || "#6B7280",
+      id: row.id,
+      igdb_platform_id: row.igdbPlatformId,
+      name: row.name,
+      abbreviation: row.abbreviation,
+      slug: row.slug,
+      platform_family: row.platformFamily,
+      color_primary: row.colorPrimary || "#6B7280",
       created_at: this.ensureDate(row.createdAt),
     };
   }
