@@ -3,11 +3,17 @@ import type { AxiosResponse } from "axios";
 import { apiClient } from "./client";
 import {
   deleteApiV1CredentialsByService,
+  deleteApiV1UserGamesById,
   getApiV1Credentials,
   getApiV1Platforms,
   getApiV1PlatformsById,
+  getApiV1UserGames,
+  getApiV1UserGamesById,
+  patchApiV1UserGamesById,
   postApiV1Credentials,
   postApiV1CredentialsValidate,
+  postApiV1GamesByIdImport,
+  postApiV1GamesSearch,
 } from "./generated";
 import type {
   CredentialListResponse,
@@ -24,6 +30,7 @@ import type {
   IgdbPlatformInfo,
   IgdbStoreInfo,
 } from "@/shared/types";
+import { adaptSearchResponse, adaptUserGame, adaptUserGamesListResponse } from "./adapters/games";
 
 // Re-export canonical types for backwards compatibility
 export type { GameSearchResult, IgdbPlatformInfo, IgdbStoreInfo };
@@ -163,12 +170,12 @@ export const GamesService = {
    * @returns Promise resolving to search results
    */
   async search(params: { query: string; signal?: AbortSignal }): Promise<SearchGamesResponse> {
-    const { signal, ...queryParams } = params;
-    const response: AxiosResponse<SearchGamesResponse> = await apiClient.get("/games/search", {
-      params: queryParams,
-      signal,
+    const response = await postApiV1GamesSearch({
+      body: { query: params.query },
+      signal: params.signal,
+      throwOnError: true,
     });
-    return response.data;
+    return adaptSearchResponse(response.data);
   },
 
   /**
@@ -178,10 +185,11 @@ export const GamesService = {
    * @returns Promise resolving to paginated games list
    */
   async list(params?: Record<string, unknown>): Promise<GamesListResponse> {
-    const response: AxiosResponse<GamesListResponse> = await apiClient.get("/games", {
-      params,
+    const response = await getApiV1UserGames({
+      query: params as Record<string, string | number | boolean | undefined>,
+      throwOnError: true,
     });
-    return response.data;
+    return adaptUserGamesListResponse(response.data);
   },
 
   /**
@@ -191,19 +199,32 @@ export const GamesService = {
    * @returns Promise resolving to game details
    */
   async getOne(id: string): Promise<Game> {
-    const response: AxiosResponse<{ game: Game }> = await apiClient.get(`/games/${id}`);
-    return response.data.game;
+    const response = await getApiV1UserGamesById({
+      path: { id },
+      throwOnError: true,
+    });
+    return adaptUserGame(response.data);
   },
 
   /**
    * Import game from IGDB into user's library.
    *
-   * @param payload - Import request with IGDB ID and optional platform/store
+   * @param payload - Import request with IGDB ID and platform/store
    * @returns Promise resolving to created game
    */
   async create(payload: ImportGameRequest): Promise<Game> {
-    const response: AxiosResponse<{ game: Game }> = await apiClient.post("/games", payload);
-    return response.data.game;
+    if (!payload.platform_id) {
+      throw new Error("platform_id is required for game import");
+    }
+    const response = await postApiV1GamesByIdImport({
+      body: {
+        igdb_id: payload.igdb_id,
+        platform_id: payload.platform_id,
+        store_id: payload.store_id,
+      },
+      throwOnError: true,
+    });
+    return adaptUserGame(response.data);
   },
 
   /**
@@ -214,8 +235,13 @@ export const GamesService = {
    * @returns Promise resolving to updated game
    */
   async update(id: string, payload: UpdateGameRequest): Promise<Game> {
-    const response: AxiosResponse<{ game: Game }> = await apiClient.patch(`/games/${id}`, payload);
-    return response.data.game;
+    const response = await patchApiV1UserGamesById({
+      path: { id },
+      // TODO: Align UpdateGameRequest with UserGameUpdateRequest after backend migration
+      body: payload as unknown as { owned?: boolean; purchased_date?: string },
+      throwOnError: true,
+    });
+    return adaptUserGame(response.data);
   },
 
   /**
@@ -225,7 +251,10 @@ export const GamesService = {
    * @returns Promise resolving when deletion completes
    */
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/games/${id}`);
+    await deleteApiV1UserGamesById({
+      path: { id },
+      throwOnError: true,
+    });
   },
 };
 
