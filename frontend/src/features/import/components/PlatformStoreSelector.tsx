@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PlatformsService, StoresService } from "@/shared/api/services";
 import {
@@ -83,7 +83,15 @@ export function PlatformStoreSelector({
     );
   }, [storesData, selectedPlatformId, availablePlatforms, suggestedStores]);
 
-  const isValid = selectedPlatformId && selectedStoreId;
+  // Clear store selection when platform changes or when store is not in available list
+  useEffect(() => {
+    if (selectedStoreId && !availableStores.some((s) => s.id === selectedStoreId)) {
+      setSelectedStoreId("");
+    }
+  }, [selectedPlatformId, availableStores, selectedStoreId]);
+
+  const isValid =
+    selectedPlatformId && selectedStoreId && availableStores.some((s) => s.id === selectedStoreId);
 
   const handleImport = (): void => {
     if (isValid) {
@@ -112,11 +120,11 @@ export function PlatformStoreSelector({
         </Select>
 
         {platformsError && (
-          <p className="mt-2 text-xs text-red-400">Failed to load platforms. Please try again.</p>
+          <p className="mt-2 text-xs text-destructive">Failed to load platforms. Please try again.</p>
         )}
 
         {!platformsLoading && !platformsError && availablePlatforms.length === 0 && (
-          <p className="mt-2 text-xs text-amber-400">No platforms available for this game.</p>
+          <p className="mt-2 text-xs text-muted-foreground">No platforms available for this game.</p>
         )}
       </div>
 
@@ -142,11 +150,11 @@ export function PlatformStoreSelector({
         </Select>
 
         {storesError && (
-          <p className="mt-2 text-xs text-red-400">Failed to load stores. Please try again.</p>
+          <p className="mt-2 text-xs text-destructive">Failed to load stores. Please try again.</p>
         )}
 
         {selectedPlatformId && availableStores.length === 0 && !storesLoading && !storesError && (
-          <p className="mt-2 text-xs text-amber-400">
+          <p className="mt-2 text-xs text-muted-foreground">
             No stores available for this platform. Please select a different platform.
           </p>
         )}
