@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteApiV1CredentialsByServiceData, DeleteApiV1CredentialsByServiceErrors, DeleteApiV1CredentialsByServiceResponses, DeleteApiV1UserPlatformsByIdData, DeleteApiV1UserPlatformsByIdErrors, DeleteApiV1UserPlatformsByIdResponses, GetApiV1AdminSettingsData, GetApiV1AdminSettingsErrors, GetApiV1AdminSettingsResponses, GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1CredentialsData, GetApiV1CredentialsErrors, GetApiV1CredentialsResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, GetApiV1PreferencesData, GetApiV1PreferencesErrors, GetApiV1PreferencesResponses, GetApiV1UserPlatformsData, GetApiV1UserPlatformsErrors, GetApiV1UserPlatformsResponses, PatchApiV1AdminSettingsData, PatchApiV1AdminSettingsErrors, PatchApiV1AdminSettingsResponses, PatchApiV1PreferencesData, PatchApiV1PreferencesErrors, PatchApiV1PreferencesResponses, PatchApiV1UserPlatformsByIdData, PatchApiV1UserPlatformsByIdErrors, PatchApiV1UserPlatformsByIdResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses, PostApiV1CredentialsData, PostApiV1CredentialsErrors, PostApiV1CredentialsResponses, PostApiV1CredentialsValidateData, PostApiV1CredentialsValidateErrors, PostApiV1CredentialsValidateResponses, PostApiV1UserPlatformsData, PostApiV1UserPlatformsErrors, PostApiV1UserPlatformsResponses } from './types.gen';
+import type { DeleteApiV1CredentialsByServiceData, DeleteApiV1CredentialsByServiceErrors, DeleteApiV1CredentialsByServiceResponses, DeleteApiV1UserGamesByIdData, DeleteApiV1UserGamesByIdErrors, DeleteApiV1UserGamesByIdResponses, DeleteApiV1UserPlatformsByIdData, DeleteApiV1UserPlatformsByIdErrors, DeleteApiV1UserPlatformsByIdResponses, GetApiV1AdminSettingsData, GetApiV1AdminSettingsErrors, GetApiV1AdminSettingsResponses, GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1CredentialsData, GetApiV1CredentialsErrors, GetApiV1CredentialsResponses, GetApiV1GamesByIdData, GetApiV1GamesByIdErrors, GetApiV1GamesByIdResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, GetApiV1PreferencesData, GetApiV1PreferencesErrors, GetApiV1PreferencesResponses, GetApiV1UserGamesByIdData, GetApiV1UserGamesByIdErrors, GetApiV1UserGamesByIdResponses, GetApiV1UserGamesData, GetApiV1UserGamesErrors, GetApiV1UserGamesResponses, GetApiV1UserPlatformsData, GetApiV1UserPlatformsErrors, GetApiV1UserPlatformsResponses, PatchApiV1AdminSettingsData, PatchApiV1AdminSettingsErrors, PatchApiV1AdminSettingsResponses, PatchApiV1PreferencesData, PatchApiV1PreferencesErrors, PatchApiV1PreferencesResponses, PatchApiV1UserGamesByIdData, PatchApiV1UserGamesByIdErrors, PatchApiV1UserGamesByIdResponses, PatchApiV1UserPlatformsByIdData, PatchApiV1UserPlatformsByIdErrors, PatchApiV1UserPlatformsByIdResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses, PostApiV1CredentialsData, PostApiV1CredentialsErrors, PostApiV1CredentialsResponses, PostApiV1CredentialsValidateData, PostApiV1CredentialsValidateErrors, PostApiV1CredentialsValidateResponses, PostApiV1GamesByIdImportData, PostApiV1GamesByIdImportErrors, PostApiV1GamesByIdImportResponses, PostApiV1GamesByIdMetadataData, PostApiV1GamesByIdMetadataErrors, PostApiV1GamesByIdMetadataResponses, PostApiV1GamesSearchData, PostApiV1GamesSearchErrors, PostApiV1GamesSearchResponses, PostApiV1UserGamesData, PostApiV1UserGamesErrors, PostApiV1UserGamesResponses, PostApiV1UserPlatformsData, PostApiV1UserPlatformsErrors, PostApiV1UserPlatformsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -183,4 +183,86 @@ export const deleteApiV1CredentialsByService = <ThrowOnError extends boolean = f
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/credentials/{service}',
     ...options
+});
+
+export const postApiV1GamesSearch = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1GamesSearchData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1GamesSearchResponses, PostApiV1GamesSearchErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/games/search',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+export const getApiV1GamesById = <ThrowOnError extends boolean = false>(options: Options<GetApiV1GamesByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiV1GamesByIdResponses, GetApiV1GamesByIdErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/games/{id}',
+    ...options
+});
+
+export const postApiV1GamesByIdImport = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1GamesByIdImportData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1GamesByIdImportResponses, PostApiV1GamesByIdImportErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/games/{id}/import',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+export const postApiV1GamesByIdMetadata = <ThrowOnError extends boolean = false>(options: Options<PostApiV1GamesByIdMetadataData, ThrowOnError>) => (options.client ?? client).post<PostApiV1GamesByIdMetadataResponses, PostApiV1GamesByIdMetadataErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/games/{id}/metadata',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const getApiV1UserGames = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1UserGamesData, ThrowOnError>) => (options?.client ?? client).get<GetApiV1UserGamesResponses, GetApiV1UserGamesErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-games',
+    ...options
+});
+
+export const postApiV1UserGames = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1UserGamesData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1UserGamesResponses, PostApiV1UserGamesErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-games',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+export const deleteApiV1UserGamesById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1UserGamesByIdData, ThrowOnError>) => (options.client ?? client).delete<DeleteApiV1UserGamesByIdResponses, DeleteApiV1UserGamesByIdErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-games/{id}',
+    ...options
+});
+
+export const getApiV1UserGamesById = <ThrowOnError extends boolean = false>(options: Options<GetApiV1UserGamesByIdData, ThrowOnError>) => (options.client ?? client).get<GetApiV1UserGamesByIdResponses, GetApiV1UserGamesByIdErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-games/{id}',
+    ...options
+});
+
+export const patchApiV1UserGamesById = <ThrowOnError extends boolean = false>(options: Options<PatchApiV1UserGamesByIdData, ThrowOnError>) => (options.client ?? client).patch<PatchApiV1UserGamesByIdResponses, PatchApiV1UserGamesByIdErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/user-games/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
