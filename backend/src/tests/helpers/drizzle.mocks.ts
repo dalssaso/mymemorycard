@@ -185,3 +185,69 @@ export function mockSelectLimitError(mockDb: DrizzleDB, error: Error): void {
     }),
   });
 }
+
+/**
+ * Mock a successful select().from().where().limit() chain.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockSelectWhereLimitResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      where: mock().mockReturnValue({
+        limit: mock().mockResolvedValue(result),
+      }),
+    }),
+  });
+}
+
+/**
+ * Mock a successful select().from().where().orderBy() chain.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockSelectWhereOrderByResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      where: mock().mockReturnValue({
+        orderBy: mock().mockResolvedValue(result),
+      }),
+    }),
+  });
+}
+
+/**
+ * Mock a successful delete().where().returning() chain.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockDeleteResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const deleteMock = mock().mockReturnValue({
+    where: mock().mockReturnValue({
+      returning: mock().mockResolvedValue(result),
+    }),
+  });
+  Object.defineProperty(mockDb, "delete", { value: deleteMock, writable: true });
+}
+
+/**
+ * Mock a successful update().set().where().returning() chain.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockUpdateResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const updateMock = mock().mockReturnValue({
+    set: mock().mockReturnValue({
+      where: mock().mockReturnValue({
+        returning: mock().mockResolvedValue(result),
+      }),
+    }),
+  });
+  Object.defineProperty(mockDb, "update", { value: updateMock, writable: true });
+}
