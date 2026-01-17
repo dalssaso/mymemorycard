@@ -3,6 +3,8 @@ export type {
   GameStatus,
   GameSearchResult,
   GameImportPayload,
+  IgdbPlatformInfo,
+  IgdbStoreInfo,
   Platform,
   Store,
   CredentialStatus,

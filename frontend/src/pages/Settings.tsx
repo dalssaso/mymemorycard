@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { BackButton, PageLayout } from "@/components/layout";
-import { Button, Card, TextDisplay } from "@/components/ui";
+import { Badge, Button, Card, TextDisplay } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { IGDBCredentialsForm } from "@/features/credentials/components";
@@ -280,18 +280,18 @@ export function Settings(): JSX.Element {
                     <TextDisplay weight="medium">IGDB</TextDisplay>
                     {hasIgdbCredentials ? (
                       isIgdbTokenExpired ? (
-                        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-500">
+                        <Badge className="rounded-full bg-amber-500/20 text-amber-500">
                           Expired
-                        </span>
+                        </Badge>
                       ) : (
-                        <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-500">
+                        <Badge className="rounded-full bg-green-500/20 text-green-500">
                           Active
-                        </span>
+                        </Badge>
                       )
                     ) : (
-                      <span className="bg-text-muted/20 rounded-full px-2 py-0.5 text-xs font-medium text-text-muted">
+                      <Badge className="bg-text-muted/20 rounded-full text-text-muted">
                         Not configured
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   {hasIgdbCredentials && (

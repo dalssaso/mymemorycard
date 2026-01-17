@@ -34,8 +34,8 @@ export function createMockSaveCredentials(
 ): Required<MockSaveCredentialsConfig> {
   return {
     ...defaultMockSaveCredentials,
-    mutate: config.mutate ?? vi.fn(),
-    ...config,
+    mutate: vi.fn(), // Fresh mock for test isolation
+    ...config, // Let config.mutate override if provided
   };
 }
 

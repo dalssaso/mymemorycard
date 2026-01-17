@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Button } from "@/components/ui";
 import { useCredentials } from "@/features/credentials/hooks/useCredentials";
 import { useCreateGame } from "@/features/library/hooks/useGames";
 import { GameSearchInput } from "@/features/import/components/GameSearchInput";
 import { PlatformStoreSelector } from "@/features/import/components/PlatformStoreSelector";
 import { useCredentialsStore } from "@/shared/stores/credentialsStore";
-import { Button } from "@/components/ui/button";
 import type { GameSearchResult } from "@/shared/api/services";
 
 /**
@@ -15,7 +15,7 @@ import type { GameSearchResult } from "@/shared/api/services";
 export function ImportIGDB(): JSX.Element {
   const [selectedGame, setSelectedGame] = useState<GameSearchResult | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
-  const { data: credentialsData } = useCredentials();
+  const { data: credentialsData, isLoading: isCredentialsLoading } = useCredentials();
   const hasIgdbCredentialsFn = useCredentialsStore((s) => s.hasIgdbCredentials);
   const isIgdbTokenExpiredFn = useCredentialsStore((s) => s.isIgdbTokenExpired);
   const hasIgdbCredentials = hasIgdbCredentialsFn();
@@ -35,6 +35,15 @@ export function ImportIGDB(): JSX.Element {
 
     return () => clearTimeout(timer);
   }, [importSuccess, navigate]);
+
+  // Show loading state while credentials are being fetched
+  if (isCredentialsLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <div className="text-text-secondary">Loading credentials...</div>
+      </div>
+    );
+  }
 
   // Show credential setup message if IGDB is not configured
   if (!hasIgdbCredentials || !igdbCredential?.is_active) {

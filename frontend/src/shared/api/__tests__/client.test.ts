@@ -84,7 +84,7 @@ describe("API Client", () => {
   });
 
   describe("request interceptor", () => {
-    it("should add Authorization header when token exists", async () => {
+    it("should add Authorization header when token exists", () => {
       vi.mocked(getToken).mockReturnValue("test-token");
 
       const config: InternalAxiosRequestConfig = {
@@ -98,7 +98,7 @@ describe("API Client", () => {
       expect(result.headers.Authorization).toBe("Bearer test-token");
     });
 
-    it("should not add Authorization header when token is null", async () => {
+    it("should not add Authorization header when token is null", () => {
       vi.mocked(getToken).mockReturnValue(null);
 
       const config: InternalAxiosRequestConfig = {
@@ -114,7 +114,7 @@ describe("API Client", () => {
   });
 
   describe("response interceptor", () => {
-    it("should pass through successful responses", async () => {
+    it("should pass through successful responses", () => {
       const mockResponse: AxiosResponse = {
         data: { success: true },
         status: 200,

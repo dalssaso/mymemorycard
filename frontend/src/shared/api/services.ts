@@ -16,6 +16,10 @@ import type {
   PlatformResponse,
   SaveCredentialRequest,
 } from "./generated";
+import type { GameSearchResult, IgdbPlatformInfo, IgdbStoreInfo } from "@/shared/types";
+
+// Re-export canonical types for backwards compatibility
+export type { GameSearchResult, IgdbPlatformInfo, IgdbStoreInfo };
 
 /**
  * Normalized API error with consistent structure.
@@ -71,30 +75,6 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
  */
 export interface SearchGamesResponse {
   games: GameSearchResult[];
-}
-
-/** Platform info from IGDB search */
-export interface IgdbPlatformInfo {
-  igdb_platform_id: number;
-  name: string;
-}
-
-/** Store suggestion from IGDB websites */
-export interface IgdbStoreInfo {
-  slug: string;
-  display_name: string;
-}
-
-/**
- * Game search result from IGDB
- */
-export interface GameSearchResult {
-  igdb_id: number;
-  name: string;
-  cover_art_url: string | null;
-  release_date: string | null;
-  platforms: IgdbPlatformInfo[];
-  stores: IgdbStoreInfo[];
 }
 
 /**
@@ -276,9 +256,9 @@ export const CredentialsService = {
    * @param service - Service identifier to validate
    * @returns Promise resolving to validation result
    */
-  async validate(service: string): Promise<CredentialValidateResponse> {
+  async validate(service: CredentialService): Promise<CredentialValidateResponse> {
     const response = await postApiV1CredentialsValidate({
-      body: { service: service as CredentialService },
+      body: { service },
       throwOnError: true,
     });
     return response.data;
@@ -290,9 +270,9 @@ export const CredentialsService = {
    * @param service - Service identifier to delete
    * @returns Promise resolving when deletion completes
    */
-  async delete(service: string): Promise<void> {
+  async delete(service: CredentialService): Promise<void> {
     await deleteApiV1CredentialsByService({
-      path: { service: service as CredentialService },
+      path: { service },
       throwOnError: true,
     });
   },

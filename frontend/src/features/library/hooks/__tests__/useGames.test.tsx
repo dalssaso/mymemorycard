@@ -286,4 +286,27 @@ describe("useSearchGames", () => {
 
     expect(typeof result.current.cancelSearch).toBe("function");
   });
+
+  it("should search after debounce delay elapses", async () => {
+    const mockSearchResults = {
+      games: [
+        { igdb_id: 1234, name: "The Legend of Zelda", cover_art_url: null },
+        { igdb_id: 5678, name: "Zelda II", cover_art_url: null },
+      ],
+    };
+    mockSearch.mockResolvedValue(mockSearchResults);
+
+    // Use a short debounce delay for test speed
+    const { result } = renderHook(() => useSearchGames("zelda", 50), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    // Wait for debounce and search to complete
+    await waitFor(() => {
+      expect(result.current.results).toHaveLength(2);
+    });
+
+    expect(mockSearch).toHaveBeenCalledWith(expect.objectContaining({ query: "zelda" }));
+    expect(result.current.results[0].name).toBe("The Legend of Zelda");
+  });
 });

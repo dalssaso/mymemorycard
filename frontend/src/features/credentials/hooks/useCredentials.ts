@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { CredentialsService } from "@/shared/api/services";
 import { useCredentialsStore } from "@/shared/stores/credentialsStore";
-import type { CredentialStatus } from "@/shared/types/games";
+import type { CredentialService, CredentialStatus } from "@/shared/types/games";
 import type {
   CredentialListResponse,
   CredentialSaveResponse,
@@ -75,12 +75,12 @@ export function useSaveCredentials(): UseMutationResult<
 export function useValidateCredentials(): UseMutationResult<
   CredentialValidateResponse,
   Error,
-  string
+  CredentialService
 > {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (service: string) => CredentialsService.validate(service),
+    mutationFn: (service: CredentialService) => CredentialsService.validate(service),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credentials"] });
     },
@@ -92,11 +92,11 @@ export function useValidateCredentials(): UseMutationResult<
  *
  * @returns TanStack Mutation hook for deleting credentials
  */
-export function useDeleteCredentials(): UseMutationResult<void, Error, string> {
+export function useDeleteCredentials(): UseMutationResult<void, Error, CredentialService> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (service: string) => CredentialsService.delete(service),
+    mutationFn: (service: CredentialService) => CredentialsService.delete(service),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credentials"] });
     },

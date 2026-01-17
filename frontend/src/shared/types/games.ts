@@ -25,22 +25,31 @@ export interface Game {
  */
 export type GameStatus = "backlog" | "playing" | "finished" | "completed" | "dropped";
 
+/** Platform info from IGDB search */
+export interface IgdbPlatformInfo {
+  igdb_platform_id: number;
+  name: string;
+}
+
+/** Store suggestion from IGDB websites */
+export interface IgdbStoreInfo {
+  slug: string;
+  display_name: string;
+}
+
 /**
  * Search result from IGDB API.
+ * Canonical type used by both services and components.
  */
 export interface GameSearchResult {
   igdb_id: number;
   name: string;
-  cover_url?: string;
-  platforms: Array<{
-    igdb_platform_id: number;
-    name: string;
-  }>;
+  cover_art_url: string | null;
+  release_date: string | null;
+  platforms: IgdbPlatformInfo[];
+  stores: IgdbStoreInfo[];
+  /** Optional franchise name if available from IGDB */
   franchise?: string;
-  stores: Array<{
-    slug: string;
-    display_name: string;
-  }>;
 }
 
 /**

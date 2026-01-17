@@ -31,7 +31,8 @@ describe("Game Types", () => {
       const result: GameSearchResult = {
         igdb_id: 12345,
         name: "Test Game",
-        cover_url: "https://images.igdb.com/...",
+        cover_art_url: "https://images.igdb.com/...",
+        release_date: "2023-01-15",
         platforms: [
           {
             igdb_platform_id: 6,

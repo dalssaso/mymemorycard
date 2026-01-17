@@ -52,7 +52,6 @@ export function useGame(id: string): UseQueryResult<Game> {
 /** Context type for optimistic update rollback */
 interface UpdateGameContext {
   previous: Game | undefined;
-  previousList: GamesListResponse | undefined;
 }
 
 /**
@@ -74,11 +73,8 @@ export function useUpdateGame(): UseMutationResult<
     onMutate: async ({ id, payload }) => {
       await queryClient.cancelQueries({ queryKey: ["games"] });
 
-      // Snapshot detail cache
+      // Snapshot detail cache for rollback
       const previous = queryClient.getQueryData<Game>(["games", id]);
-
-      // Snapshot list cache (first matching list query)
-      const previousList = queryClient.getQueryData<GamesListResponse>(["games", {}]);
 
       // Optimistically update detail cache
       queryClient.setQueryData(["games", id], (old: Game | undefined) => {
@@ -86,7 +82,7 @@ export function useUpdateGame(): UseMutationResult<
         return { ...old, ...payload };
       });
 
-      // Optimistically update list cache
+      // Optimistically update all list caches (including filtered views)
       queryClient.setQueriesData<GamesListResponse>(
         { queryKey: ["games"], exact: false },
         (old) => {
@@ -98,17 +94,16 @@ export function useUpdateGame(): UseMutationResult<
         }
       );
 
-      return { previous, previousList };
+      return { previous };
     },
     onError: (_err, variables, context) => {
       // Restore detail cache
       if (context?.previous) {
         queryClient.setQueryData(["games", variables.id], context.previous);
       }
-      // Restore list cache
-      if (context?.previousList) {
-        queryClient.setQueryData(["games", {}], context.previousList);
-      }
+      // Invalidate all list queries to restore consistency
+      // (onMutate updated all lists via setQueriesData with exact: false)
+      queryClient.invalidateQueries({ queryKey: ["games"] });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });

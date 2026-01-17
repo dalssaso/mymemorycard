@@ -1,4 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createGeneratedApiMocks,
+  mockDeleteApiV1CredentialsByService,
+  mockGetApiV1Credentials,
+  mockPostApiV1Credentials,
+  mockPostApiV1CredentialsValidate,
+} from "@/test/mocks/api";
 
 // Mock the client module
 vi.mock("../client", () => ({
@@ -10,19 +17,8 @@ vi.mock("../client", () => ({
   },
 }));
 
-// Mock the generated SDK functions
-const mockGetApiV1Credentials = vi.fn();
-const mockPostApiV1Credentials = vi.fn();
-const mockPostApiV1CredentialsValidate = vi.fn();
-const mockDeleteApiV1CredentialsByService = vi.fn();
-
-vi.mock("../generated", () => ({
-  getApiV1Credentials: (...args: unknown[]) => mockGetApiV1Credentials(...args),
-  postApiV1Credentials: (...args: unknown[]) => mockPostApiV1Credentials(...args),
-  postApiV1CredentialsValidate: (...args: unknown[]) => mockPostApiV1CredentialsValidate(...args),
-  deleteApiV1CredentialsByService: (...args: unknown[]) =>
-    mockDeleteApiV1CredentialsByService(...args),
-}));
+// Mock the generated SDK functions using shared helper
+vi.mock("../generated", () => createGeneratedApiMocks());
 
 import { AxiosError } from "axios";
 import { apiClient } from "../client";

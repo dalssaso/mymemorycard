@@ -124,7 +124,7 @@ describe("GameSearchInput", () => {
 
   it("should call onSelect when clicking a result", async () => {
     const user = userEvent.setup();
-    const mockGame: GameSearchResult = {
+    const mockGame = {
       igdb_id: 1234,
       name: "The Legend of Zelda",
       cover_art_url: "https://example.com/zelda.jpg",
