@@ -886,15 +886,8 @@
       "GameSearchResult": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Game unique identifier",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
-          },
           "igdb_id": {
             "type": "integer",
-            "nullable": true,
             "description": "IGDB game identifier",
             "example": 1020
           },
@@ -903,25 +896,12 @@
             "description": "Game title",
             "example": "The Legend of Zelda: Breath of the Wild"
           },
-          "slug": {
-            "type": "string",
-            "nullable": true,
-            "description": "URL-friendly game identifier",
-            "example": "the-legend-of-zelda-breath-of-the-wild"
-          },
-          "cover_art_url": {
+          "cover_url": {
             "type": "string",
             "nullable": true,
             "format": "uri",
             "description": "URL to cover art image",
             "example": "https://images.igdb.com/igdb/image/upload/..."
-          },
-          "release_date": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "Game release date",
-            "example": "2017-03-03T00:00:00.000Z"
           },
           "platforms": {
             "type": "array",
@@ -985,17 +965,14 @@
           }
         },
         "required": [
-          "id",
           "igdb_id",
           "name",
-          "slug",
-          "cover_art_url",
-          "release_date",
+          "cover_url",
           "platforms",
           "franchise",
           "stores"
         ],
-        "description": "Game search result"
+        "description": "Game search result from IGDB"
       },
       "GameSearchRequest": {
         "type": "object",
@@ -1289,22 +1266,6 @@
             "description": "Source of import if applicable (steam, rawg, etc.)",
             "example": "steam"
           },
-          "progress": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 0,
-            "maximum": 100,
-            "description": "Game completion progress percentage (0-100)",
-            "example": 75
-          },
-          "rating": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 0,
-            "maximum": 10,
-            "description": "User rating for the game (0-10)",
-            "example": 9
-          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1321,8 +1282,6 @@
           "owned",
           "purchased_date",
           "import_source",
-          "progress",
-          "rating",
           "created_at"
         ],
         "description": "User game library entry with related game, platform, and store info"
@@ -1412,23 +1371,16 @@
           "owned": {
             "type": "boolean"
           },
-          "progress": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 100
-          },
-          "rating": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 10
+          "purchased_date": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false,
         "description": "Request to update a user game entry",
         "example": {
           "owned": true,
-          "progress": 75,
-          "rating": 9.5
+          "purchased_date": "2024-01-15T12:00:00.000Z"
         }
       }
     },
@@ -2544,7 +2496,7 @@
         }
       }
     },
-    "/api/v1/games/user-games": {
+    "/api/v1/user-games": {
       "post": {
         "tags": [
           "user-games"
@@ -2671,7 +2623,7 @@
         }
       }
     },
-    "/api/v1/games/user-games/:id": {
+    "/api/v1/user-games/:id": {
       "get": {
         "tags": [
           "user-games"

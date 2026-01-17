@@ -103,6 +103,9 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   const gamesController = container.resolve<IGamesController>(GAMES_CONTROLLER_TOKEN);
   app.route("/api/v1/games", gamesController.router);
 
+  // User-Games routes (separate router mounted at /user-games)
+  app.route("/api/v1/user-games", gamesController.userGamesRouter);
+
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)
   app.all("/api/*", (c) => {

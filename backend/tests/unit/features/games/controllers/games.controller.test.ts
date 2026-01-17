@@ -178,6 +178,7 @@ describe("GamesController", () => {
       logger
     );
     controller.router.onError(createErrorHandler(logger));
+    controller.userGamesRouter.onError(createErrorHandler(logger));
   });
 
   afterEach(() => {
@@ -569,7 +570,7 @@ describe("GamesController", () => {
 
   describe("POST /user-games", () => {
     it("should add game to user library successfully", async () => {
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -588,7 +589,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid game_id", async () => {
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -604,7 +605,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid platform_id", async () => {
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -620,7 +621,7 @@ describe("GamesController", () => {
     });
 
     it("should return 401 when missing auth", async () => {
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -638,7 +639,7 @@ describe("GamesController", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (userGameRepository.create as any).mockRejectedValue(new NotFoundError("Platform"));
 
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -654,7 +655,7 @@ describe("GamesController", () => {
     });
 
     it("should allow optional store_id", async () => {
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -670,7 +671,7 @@ describe("GamesController", () => {
     });
 
     it("should pass user_id to repository", async () => {
-      await controller.router.request("/user-games", {
+      await controller.userGamesRouter.request("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -690,7 +691,7 @@ describe("GamesController", () => {
 
   describe("GET /user-games", () => {
     it("should return 401 when missing auth", async () => {
-      const response = await controller.router.request("/user-games", {
+      const response = await controller.userGamesRouter.request("/", {
         method: "GET",
       });
 
@@ -698,7 +699,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid limit (non-numeric)", async () => {
-      const response = await controller.router.request("/user-games?limit=abc", {
+      const response = await controller.userGamesRouter.request("/?limit=abc", {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -709,7 +710,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid offset (non-numeric)", async () => {
-      const response = await controller.router.request("/user-games?offset=abc", {
+      const response = await controller.userGamesRouter.request("/?offset=abc", {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -720,7 +721,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for limit exceeding maximum", async () => {
-      const response = await controller.router.request("/user-games?limit=600", {
+      const response = await controller.userGamesRouter.request("/?limit=600", {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -731,7 +732,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for negative offset", async () => {
-      const response = await controller.router.request("/user-games?offset=-5", {
+      const response = await controller.userGamesRouter.request("/?offset=-5", {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -744,7 +745,7 @@ describe("GamesController", () => {
 
   describe("GET /user-games/:id", () => {
     it("should get user game entry successfully", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -757,7 +758,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid UUID", async () => {
-      const response = await controller.router.request("/user-games/invalid-uuid", {
+      const response = await controller.userGamesRouter.request("/invalid-uuid", {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -768,7 +769,7 @@ describe("GamesController", () => {
     });
 
     it("should return 401 when missing auth", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "GET",
       });
 
@@ -779,7 +780,7 @@ describe("GamesController", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (userGameRepository.findByIdWithRelations as any).mockResolvedValue(null);
 
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -795,7 +796,7 @@ describe("GamesController", () => {
         createMockUserGameWithRelations({ user_id: "other-user-id" })
       );
 
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "GET",
         headers: {
           Authorization: "Bearer token",
@@ -808,7 +809,7 @@ describe("GamesController", () => {
 
   describe("PATCH /user-games/:id", () => {
     it("should update user game with owned field", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -823,7 +824,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 when no fields provided", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -836,7 +837,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid owned value", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -849,7 +850,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid progress (negative)", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -862,7 +863,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid progress (over 100)", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -875,7 +876,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid rating (negative)", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -888,7 +889,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid rating (over 10)", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -901,7 +902,7 @@ describe("GamesController", () => {
     });
 
     it("should return 401 when missing auth", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -916,7 +917,7 @@ describe("GamesController", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (userGameRepository.update as any).mockRejectedValue(new NotFoundError("User game"));
 
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -934,7 +935,7 @@ describe("GamesController", () => {
         new ConflictError("Could not update user game")
       );
 
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -947,7 +948,7 @@ describe("GamesController", () => {
     });
 
     it("should pass userId to update method", async () => {
-      await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -963,7 +964,7 @@ describe("GamesController", () => {
     });
 
     it("should pass purchased_date as Date when provided", async () => {
-      await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -981,7 +982,7 @@ describe("GamesController", () => {
 
   describe("DELETE /user-games/:id", () => {
     it("should delete user game successfully with 204", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "DELETE",
         headers: {
           Authorization: "Bearer token",
@@ -994,7 +995,7 @@ describe("GamesController", () => {
     });
 
     it("should return 400 for invalid UUID", async () => {
-      const response = await controller.router.request("/user-games/invalid-uuid", {
+      const response = await controller.userGamesRouter.request("/invalid-uuid", {
         method: "DELETE",
         headers: {
           Authorization: "Bearer token",
@@ -1005,7 +1006,7 @@ describe("GamesController", () => {
     });
 
     it("should return 401 when missing auth", async () => {
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "DELETE",
       });
 
@@ -1016,7 +1017,7 @@ describe("GamesController", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (userGameRepository.delete as any).mockRejectedValue(new NotFoundError("User game"));
 
-      const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      const response = await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "DELETE",
         headers: {
           Authorization: "Bearer token",
@@ -1027,7 +1028,7 @@ describe("GamesController", () => {
     });
 
     it("should pass userId to delete method", async () => {
-      await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+      await controller.userGamesRouter.request(`/${USER_GAME_ID}`, {
         method: "DELETE",
         headers: {
           Authorization: "Bearer token",

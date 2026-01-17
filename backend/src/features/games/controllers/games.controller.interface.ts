@@ -25,4 +25,9 @@ export interface IGamesController {
    * Hono router with OpenAPI support for games routes
    */
   router: OpenAPIHono<GamesEnv>;
+
+  /**
+   * Hono router with OpenAPI support for user-games routes
+   */
+  userGamesRouter: OpenAPIHono<GamesEnv>;
 }

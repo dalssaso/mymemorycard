@@ -293,9 +293,12 @@ describe("Games Integration Tests", () => {
 
   describe("POST /api/v1/games/:id/import", () => {
     let testGameId: string;
+    let testIgdbId: number;
 
     beforeEach(async () => {
-      testGameId = await createTestGame("Test Game Import", Math.floor(Math.random() * 10000));
+      // Use unique IGDB ID for each test to avoid conflicts
+      testIgdbId = Math.floor(Math.random() * 100000) + 800000;
+      testGameId = await createTestGame("Test Game Import", testIgdbId);
     });
 
     it("should return 401 without token", async () => {
@@ -303,7 +306,7 @@ describe("Games Integration Tests", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: pcPlatformId,
         }),
       });
@@ -319,7 +322,7 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: pcPlatformId,
         }),
       });
@@ -357,7 +360,7 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: pcPlatformId,
           store_id: steamStoreId,
         }),
@@ -383,7 +386,7 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: "not-a-valid-uuid",
         }),
       });
@@ -400,7 +403,7 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: nonExistentPlatformId,
         }),
       });
@@ -417,7 +420,7 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: pcPlatformId,
           store_id: nonExistentStoreId,
         }),
@@ -434,7 +437,7 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: testIgdbId,
           platform_id: pcPlatformId,
         }),
       });
@@ -448,9 +451,13 @@ describe("Games Integration Tests", () => {
     let userGame2Id: string;
 
     beforeEach(async () => {
+      // Use unique IGDB IDs to avoid conflicts
+      const igdbId1 = Math.floor(Math.random() * 100000) + 300000;
+      const igdbId2 = Math.floor(Math.random() * 100000) + 400000;
+
       // Create test games
-      const game1Id = await createTestGame("Test Game 1", Math.floor(Math.random() * 10000));
-      const game2Id = await createTestGame("Test Game 2", Math.floor(Math.random() * 10000));
+      const game1Id = await createTestGame("Test Game 1", igdbId1);
+      const game2Id = await createTestGame("Test Game 2", igdbId2);
 
       // Add games to user library
       const response1 = await app.request(`/api/v1/games/${game1Id}/import`, {
@@ -460,13 +467,14 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: igdbId1,
           platform_id: pcPlatformId,
         }),
       });
 
       if (!response1.ok) {
-        throw new Error("Failed to create user game 1");
+        const body = await response1.text();
+        throw new Error(`Failed to create user game 1: ${response1.status} - ${body}`);
       }
 
       const data1 = (await response1.json()) as { id: string };
@@ -480,13 +488,14 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1021,
+          igdb_id: igdbId2,
           platform_id: ps5PlatformId,
         }),
       });
 
       if (!response2.ok) {
-        throw new Error("Failed to create user game 2");
+        const body = await response2.text();
+        throw new Error(`Failed to create user game 2: ${response2.status} - ${body}`);
       }
 
       const data2 = (await response2.json()) as { id: string };
@@ -582,7 +591,8 @@ describe("Games Integration Tests", () => {
     let gameId: string;
 
     beforeEach(async () => {
-      gameId = await createTestGame("Test Game Get", Math.floor(Math.random() * 10000));
+      const igdbId = Math.floor(Math.random() * 100000) + 500000;
+      gameId = await createTestGame("Test Game Get", igdbId);
 
       const response = await app.request(`/api/v1/games/${gameId}/import`, {
         method: "POST",
@@ -591,10 +601,15 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: igdbId,
           platform_id: pcPlatformId,
         }),
       });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Failed to create user game: ${response.status} - ${body}`);
+      }
 
       const data = (await response.json()) as { id: string };
       userGameId = data.id;
@@ -655,7 +670,8 @@ describe("Games Integration Tests", () => {
     let userGameId: string;
 
     beforeEach(async () => {
-      const gameId = await createTestGame("Test Game Patch", Math.floor(Math.random() * 10000));
+      const igdbId = Math.floor(Math.random() * 100000) + 600000;
+      const gameId = await createTestGame("Test Game Patch", igdbId);
 
       const response = await app.request(`/api/v1/games/${gameId}/import`, {
         method: "POST",
@@ -664,10 +680,15 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: igdbId,
           platform_id: pcPlatformId,
         }),
       });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Failed to create user game: ${response.status} - ${body}`);
+      }
 
       const data = (await response.json()) as { id: string };
       userGameId = data.id;
@@ -678,42 +699,10 @@ describe("Games Integration Tests", () => {
       const response = await app.request(`/api/v1/user-games/${userGameId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ progress: 50 }),
+        body: JSON.stringify({ owned: false }),
       });
 
       expect(response.status).toBe(401);
-    });
-
-    it("should update user game progress", async () => {
-      const response = await app.request(`/api/v1/user-games/${userGameId}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${testUserToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ progress: 50 }),
-      });
-
-      expect(response.status).toBe(200);
-
-      const data = (await response.json()) as { progress: number | null };
-      expect(data.progress).toBe(50);
-    });
-
-    it("should update user game rating", async () => {
-      const response = await app.request(`/api/v1/user-games/${userGameId}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${testUserToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ rating: 8.5 }),
-      });
-
-      expect(response.status).toBe(200);
-
-      const data = (await response.json()) as { rating: number | null };
-      expect(data.rating).toBe(8.5);
     });
 
     it("should update user game owned status", async () => {
@@ -723,16 +712,36 @@ describe("Games Integration Tests", () => {
           Authorization: `Bearer ${testUserToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ owned: true }),
+        body: JSON.stringify({ owned: false }),
       });
 
       expect(response.status).toBe(200);
 
       const data = (await response.json()) as { owned: boolean };
-      expect(data.owned).toBe(true);
+      expect(data.owned).toBe(false);
+    });
+
+    it("should update user game purchased_date", async () => {
+      // Note: purchased_date is stored as date only in DB, time portion is ignored
+      const testDate = "2024-06-15T12:00:00.000Z";
+      const response = await app.request(`/api/v1/user-games/${userGameId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${testUserToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ purchased_date: testDate }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const data = (await response.json()) as { purchased_date: string | null };
+      expect(data.purchased_date).toMatch(/^2024-06-15/);
     });
 
     it("should update multiple fields at once", async () => {
+      // Note: purchased_date is stored as date only in DB, time portion is ignored
+      const testDate = "2024-07-20T10:00:00.000Z";
       const response = await app.request(`/api/v1/user-games/${userGameId}`, {
         method: "PATCH",
         headers: {
@@ -740,45 +749,29 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          progress: 75,
-          rating: 9,
           owned: true,
+          purchased_date: testDate,
         }),
       });
 
       expect(response.status).toBe(200);
 
       const data = (await response.json()) as {
-        progress: number | null;
-        rating: number | null;
         owned: boolean;
+        purchased_date: string | null;
       };
-      expect(data.progress).toBe(75);
-      expect(data.rating).toBe(9);
       expect(data.owned).toBe(true);
+      expect(data.purchased_date).toMatch(/^2024-07-20/);
     });
 
-    it("should return 400 for invalid progress value", async () => {
+    it("should return 400 for invalid purchased_date value", async () => {
       const response = await app.request(`/api/v1/user-games/${userGameId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${testUserToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ progress: 150 }),
-      });
-
-      expect(response.status).toBe(400);
-    });
-
-    it("should return 400 for invalid rating value", async () => {
-      const response = await app.request(`/api/v1/user-games/${userGameId}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${testUserToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ rating: 11 }),
+        body: JSON.stringify({ purchased_date: "not-a-date" }),
       });
 
       expect(response.status).toBe(400);
@@ -805,7 +798,7 @@ describe("Games Integration Tests", () => {
           Authorization: `Bearer ${testUserToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ progress: 50 }),
+        body: JSON.stringify({ owned: false }),
       });
 
       expect(response.status).toBe(404);
@@ -818,7 +811,7 @@ describe("Games Integration Tests", () => {
           Authorization: `Bearer ${testUser2Token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ progress: 50 }),
+        body: JSON.stringify({ owned: false }),
       });
 
       expect(response.status).toBe(404);
@@ -829,7 +822,8 @@ describe("Games Integration Tests", () => {
     let userGameId: string;
 
     beforeEach(async () => {
-      const gameId = await createTestGame("Test Game Delete", Math.floor(Math.random() * 10000));
+      const igdbId = Math.floor(Math.random() * 100000) + 700000;
+      const gameId = await createTestGame("Test Game Delete", igdbId);
 
       const response = await app.request(`/api/v1/games/${gameId}/import`, {
         method: "POST",
@@ -838,10 +832,15 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: igdbId,
           platform_id: pcPlatformId,
         }),
       });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Failed to create user game: ${response.status} - ${body}`);
+      }
 
       const data = (await response.json()) as { id: string };
       userGameId = data.id;
@@ -905,9 +904,13 @@ describe("Games Integration Tests", () => {
     let user2GameId: string;
 
     beforeEach(async () => {
+      // Use unique IGDB IDs to avoid conflicts between test runs
+      const igdbId1 = Math.floor(Math.random() * 100000) + 100000;
+      const igdbId2 = Math.floor(Math.random() * 100000) + 200000;
+
       // Create games for each user
-      const game1 = await createTestGame("User 1 Game", Math.floor(Math.random() * 10000));
-      const game2 = await createTestGame("User 2 Game", Math.floor(Math.random() * 10000));
+      const game1 = await createTestGame("User 1 Game", igdbId1);
+      const game2 = await createTestGame("User 2 Game", igdbId2);
 
       // User 1 imports game
       const response1 = await app.request(`/api/v1/games/${game1}/import`, {
@@ -917,10 +920,15 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1020,
+          igdb_id: igdbId1,
           platform_id: pcPlatformId,
         }),
       });
+
+      if (!response1.ok) {
+        const body = await response1.text();
+        throw new Error(`User 1 import failed: ${response1.status} - ${body}`);
+      }
 
       const data1 = (await response1.json()) as { id: string };
       user1GameId = data1.id;
@@ -934,10 +942,15 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          igdb_id: 1021,
+          igdb_id: igdbId2,
           platform_id: ps5PlatformId,
         }),
       });
+
+      if (!response2.ok) {
+        const body = await response2.text();
+        throw new Error(`User 2 import failed: ${response2.status} - ${body}`);
+      }
 
       const data2 = (await response2.json()) as { id: string };
       user2GameId = data2.id;
@@ -1007,7 +1020,7 @@ describe("Games Integration Tests", () => {
           Authorization: `Bearer ${testUserToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ progress: 50 }),
+        body: JSON.stringify({ owned: false }),
       });
 
       expect(response.status).toBe(404);
@@ -1048,16 +1061,13 @@ describe("Games Integration Tests", () => {
       const importData = (await importResponse.json()) as {
         id: string;
         owned: boolean;
-        progress: number | null;
-        rating: number | null;
+        purchased_date: string | null;
       };
       const userGameId = importData.id;
       createdUserGameIds.push(userGameId);
 
       // Verify initial state (owned is true when imported with a store)
       expect(importData.owned).toBe(true);
-      expect(importData.progress).toBeFalsy();
-      expect(importData.rating).toBeFalsy();
 
       // 3. List user games and verify game appears
       const listResponse = await app.request("/api/v1/user-games", {
@@ -1086,12 +1096,14 @@ describe("Games Integration Tests", () => {
 
       const getdata = (await getResponse.json()) as {
         id: string;
-        progress: number | null;
+        owned: boolean;
       };
       expect(getdata.id).toBe(userGameId);
-      expect(getdata.progress).toBeNull();
+      expect(getdata.owned).toBe(true);
 
-      // 5. Update user game with progress and rating
+      // 5. Update user game with owned and purchased_date
+      // Note: purchased_date is stored as date only, time is ignored
+      const testPurchaseDate = "2024-06-15T12:00:00.000Z";
       const updateResponse = await app.request(`/api/v1/user-games/${userGameId}`, {
         method: "PATCH",
         headers: {
@@ -1099,22 +1111,20 @@ describe("Games Integration Tests", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          progress: 85,
-          rating: 9.5,
-          owned: true,
+          owned: false,
+          purchased_date: testPurchaseDate,
         }),
       });
 
       expect(updateResponse.status).toBe(200);
 
       const updateData = (await updateResponse.json()) as {
-        progress: number | null;
-        rating: number | null;
         owned: boolean;
+        purchased_date: string | null;
       };
-      expect(updateData.progress).toBe(85);
-      expect(updateData.rating).toBe(9.5);
-      expect(updateData.owned).toBe(true);
+      expect(updateData.owned).toBe(false);
+      // Database stores date only, check that it starts with the correct date
+      expect(updateData.purchased_date).toMatch(/^2024-06-15/);
 
       // 6. Verify update persisted
       const verifyResponse = await app.request(`/api/v1/user-games/${userGameId}`, {
@@ -1122,11 +1132,11 @@ describe("Games Integration Tests", () => {
       });
 
       const verifyData = (await verifyResponse.json()) as {
-        progress: number | null;
-        rating: number | null;
+        owned: boolean;
+        purchased_date: string | null;
       };
-      expect(verifyData.progress).toBe(85);
-      expect(verifyData.rating).toBe(9.5);
+      expect(verifyData.owned).toBe(false);
+      expect(verifyData.purchased_date).toMatch(/^2024-06-15/);
 
       // 7. Delete user game
       const deleteResponse = await app.request(`/api/v1/user-games/${userGameId}`, {

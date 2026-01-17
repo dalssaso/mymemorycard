@@ -45,6 +45,7 @@ import type { GamesEnv, IGamesController } from "./games.controller.interface";
 @injectable()
 export class GamesController implements IGamesController {
   readonly router: OpenAPIHono<GamesEnv>;
+  readonly userGamesRouter: OpenAPIHono<GamesEnv>;
 
   private logger: Logger;
 
@@ -59,6 +60,7 @@ export class GamesController implements IGamesController {
   ) {
     this.logger = parentLogger.child("GamesController");
     this.router = new OpenAPIHono<GamesEnv>();
+    this.userGamesRouter = new OpenAPIHono<GamesEnv>();
 
     this.registerRoutes();
   }
@@ -345,10 +347,10 @@ export class GamesController implements IGamesController {
       return c.json({ game }, 200);
     });
 
-    // POST /user-games - Add game to user library
+    // POST / - Add game to user library (mounted at /user-games)
     const createUserGameRoute = createRoute({
       method: "post",
-      path: "/user-games",
+      path: "/",
       tags: ["user-games"],
       security: [{ bearerAuth: [] }],
       request: {
@@ -396,8 +398,8 @@ export class GamesController implements IGamesController {
       },
     });
 
-    this.router.use("/user-games", authMiddleware);
-    this.router.openapi(createUserGameRoute, async (c) => {
+    this.userGamesRouter.use("/", authMiddleware);
+    this.userGamesRouter.openapi(createUserGameRoute, async (c) => {
       this.logger.debug("POST /user-games");
       const body = c.req.valid("json") as UserGameCreateRequestDto;
       const userId = c.get("user").id;
@@ -421,10 +423,10 @@ export class GamesController implements IGamesController {
       return c.json(userGameWithRelations, 200);
     });
 
-    // GET /user-games - List user's games
+    // GET / - List user's games (mounted at /user-games)
     const listUserGamesRoute = createRoute({
       method: "get",
-      path: "/user-games",
+      path: "/",
       tags: ["user-games"],
       security: [{ bearerAuth: [] }],
       request: {
@@ -480,8 +482,8 @@ export class GamesController implements IGamesController {
       },
     });
 
-    this.router.use("/user-games", authMiddleware);
-    this.router.openapi(listUserGamesRoute, async (c) => {
+    this.userGamesRouter.use("/", authMiddleware);
+    this.userGamesRouter.openapi(listUserGamesRoute, async (c) => {
       this.logger.debug("GET /user-games");
       const query = c.req.valid("query") as {
         limit: number;
@@ -498,10 +500,10 @@ export class GamesController implements IGamesController {
       return c.json({ user_games: userGames }, 200);
     });
 
-    // GET /user-games/:id - Get user game entry
+    // GET /:id - Get user game entry (mounted at /user-games)
     const getUserGameRoute = createRoute({
       method: "get",
-      path: "/user-games/:id",
+      path: "/:id",
       tags: ["user-games"],
       security: [{ bearerAuth: [] }],
       request: {
@@ -543,8 +545,8 @@ export class GamesController implements IGamesController {
       },
     });
 
-    this.router.use("/user-games/:id", authMiddleware);
-    this.router.openapi(getUserGameRoute, async (c) => {
+    this.userGamesRouter.use("/:id", authMiddleware);
+    this.userGamesRouter.openapi(getUserGameRoute, async (c) => {
       this.logger.debug("GET /user-games/:id");
       const params = c.req.valid("param") as UserGameIdParamsDto;
       const userId = c.get("user").id;
@@ -558,10 +560,10 @@ export class GamesController implements IGamesController {
       return c.json(userGame, 200);
     });
 
-    // PATCH /user-games/:id - Update user game
+    // PATCH /:id - Update user game (mounted at /user-games)
     const updateUserGameRoute = createRoute({
       method: "patch",
-      path: "/user-games/:id",
+      path: "/:id",
       tags: ["user-games"],
       security: [{ bearerAuth: [] }],
       request: {
@@ -618,8 +620,8 @@ export class GamesController implements IGamesController {
       },
     });
 
-    this.router.use("/user-games/:id", authMiddleware);
-    this.router.openapi(updateUserGameRoute, async (c) => {
+    this.userGamesRouter.use("/:id", authMiddleware);
+    this.userGamesRouter.openapi(updateUserGameRoute, async (c) => {
       this.logger.debug("PATCH /user-games/:id");
       const params = c.req.valid("param") as UserGameIdParamsDto;
       const body = c.req.valid("json") as UserGameUpdateRequestDto;
@@ -640,10 +642,10 @@ export class GamesController implements IGamesController {
       return c.json(userGame, 200);
     });
 
-    // DELETE /user-games/:id - Remove game from user library
+    // DELETE /:id - Remove game from user library (mounted at /user-games)
     const deleteUserGameRoute = createRoute({
       method: "delete",
-      path: "/user-games/:id",
+      path: "/:id",
       tags: ["user-games"],
       security: [{ bearerAuth: [] }],
       request: {
@@ -672,8 +674,8 @@ export class GamesController implements IGamesController {
       },
     });
 
-    this.router.use("/user-games/:id", authMiddleware);
-    this.router.openapi(deleteUserGameRoute, async (c) => {
+    this.userGamesRouter.use("/:id", authMiddleware);
+    this.userGamesRouter.openapi(deleteUserGameRoute, async (c) => {
       this.logger.debug("DELETE /user-games/:id");
       const params = c.req.valid("param") as UserGameIdParamsDto;
       const userId = c.get("user").id;
