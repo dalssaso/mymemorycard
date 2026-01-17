@@ -1,15 +1,15 @@
-import { injectable, inject } from "tsyringe"
-import { and, eq, sql } from "drizzle-orm"
+import { injectable, inject } from "tsyringe";
+import { and, eq, sql } from "drizzle-orm";
 
-import { DATABASE_TOKEN } from "@/container/tokens"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
-import { userGameProgress, userGameCustomFields } from "@/db/schema"
-import type { GameStatus } from "../dtos/user-game-progress.dto"
+import { DATABASE_TOKEN } from "@/container/tokens";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { userGameProgress, userGameCustomFields } from "@/db/schema";
+import type { GameStatus } from "../dtos/user-game-progress.dto";
 import type {
   IUserGameProgressRepository,
   UserGameProgress,
   UserGameCustomFields,
-} from "./user-game-progress.repository.interface"
+} from "./user-game-progress.repository.interface";
 
 /**
  * PostgreSQL implementation of the UserGameProgressRepository interface using Drizzle ORM.
@@ -37,9 +37,9 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
         eq(userGameProgress.gameId, gameId),
         eq(userGameProgress.platformId, platformId)
       ),
-    })
+    });
 
-    return result ? this.mapToUserGameProgress(result) : null
+    return result ? this.mapToUserGameProgress(result) : null;
   }
 
   /**
@@ -55,19 +55,19 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
     platformId: string,
     status: GameStatus
   ): Promise<void> {
-    const now = new Date()
+    const now = new Date();
     const updateData: Record<string, unknown> = {
       status,
-    }
+    };
 
     // Set startedAt when status is "playing" (preserve existing value if already set)
     if (status === "playing") {
-      updateData.startedAt = sql`COALESCE(${userGameProgress.startedAt}, ${now})`
+      updateData.startedAt = sql`COALESCE(${userGameProgress.startedAt}, ${now})`;
     }
 
     // Set completedAt when status is "finished" or "completed" (preserve existing value if already set)
     if (status === "finished" || status === "completed") {
-      updateData.completedAt = sql`COALESCE(${userGameProgress.completedAt}, ${now})`
+      updateData.completedAt = sql`COALESCE(${userGameProgress.completedAt}, ${now})`;
     }
 
     await this.db
@@ -83,7 +83,7 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
       .onConflictDoUpdate({
         target: [userGameProgress.userId, userGameProgress.gameId, userGameProgress.platformId],
         set: updateData,
-      })
+      });
   }
 
   /**
@@ -110,7 +110,7 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
       .onConflictDoUpdate({
         target: [userGameProgress.userId, userGameProgress.gameId, userGameProgress.platformId],
         set: { userRating: rating },
-      })
+      });
   }
 
   /**
@@ -137,7 +137,7 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
       .onConflictDoUpdate({
         target: [userGameProgress.userId, userGameProgress.gameId, userGameProgress.platformId],
         set: { notes },
-      })
+      });
   }
 
   /**
@@ -164,7 +164,7 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
       .onConflictDoUpdate({
         target: [userGameProgress.userId, userGameProgress.gameId, userGameProgress.platformId],
         set: { isFavorite },
-      })
+      });
   }
 
   /**
@@ -185,9 +185,9 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
         eq(userGameCustomFields.gameId, gameId),
         eq(userGameCustomFields.platformId, platformId)
       ),
-    })
+    });
 
-    return result ? this.mapToUserGameCustomFields(result) : null
+    return result ? this.mapToUserGameCustomFields(result) : null;
   }
 
   /**
@@ -203,16 +203,16 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
     platformId: string,
     fields: { completion_percentage?: number; difficulty_rating?: number }
   ): Promise<void> {
-    const now = new Date()
+    const now = new Date();
     const updateData: Record<string, unknown> = {
       updatedAt: now,
-    }
+    };
 
     if (fields.completion_percentage !== undefined) {
-      updateData.completionPercentage = fields.completion_percentage
+      updateData.completionPercentage = fields.completion_percentage;
     }
     if (fields.difficulty_rating !== undefined) {
-      updateData.difficultyRating = fields.difficulty_rating
+      updateData.difficultyRating = fields.difficulty_rating;
     }
 
     await this.db
@@ -232,7 +232,7 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
           userGameCustomFields.platformId,
         ],
         set: updateData,
-      })
+      });
   }
 
   private mapToUserGameProgress(row: Record<string, unknown>): UserGameProgress {
@@ -246,7 +246,7 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
       is_favorite: (row.isFavorite as boolean) ?? false,
       started_at: this.ensureDate(row.startedAt),
       completed_at: this.ensureDate(row.completedAt),
-    }
+    };
   }
 
   private mapToUserGameCustomFields(row: Record<string, unknown>): UserGameCustomFields {
@@ -257,13 +257,13 @@ export class UserGameProgressRepository implements IUserGameProgressRepository {
       completion_percentage: (row.completionPercentage as number) ?? null,
       difficulty_rating: (row.difficultyRating as number) ?? null,
       updated_at: this.ensureDate(row.updatedAt),
-    }
+    };
   }
 
   private ensureDate(value: unknown): Date | null {
-    if (!value) return null
-    if (value instanceof Date) return value
-    if (typeof value === "string") return new Date(value)
-    return null
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === "string") return new Date(value);
+    return null;
   }
 }

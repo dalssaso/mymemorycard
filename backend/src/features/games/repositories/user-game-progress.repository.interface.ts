@@ -1,30 +1,30 @@
-import type { GameStatus } from "../dtos/user-game-progress.dto"
+import type { GameStatus } from "../dtos/user-game-progress.dto";
 
 /**
  * User game progress record from database
  */
 export interface UserGameProgress {
-  user_id: string
-  game_id: string
-  platform_id: string
-  status: GameStatus | null
-  user_rating: number | null
-  notes: string | null
-  is_favorite: boolean
-  started_at: Date | null
-  completed_at: Date | null
+  user_id: string;
+  game_id: string;
+  platform_id: string;
+  status: GameStatus | null;
+  user_rating: number | null;
+  notes: string | null;
+  is_favorite: boolean;
+  started_at: Date | null;
+  completed_at: Date | null;
 }
 
 /**
  * User game custom fields record from database
  */
 export interface UserGameCustomFields {
-  user_id: string
-  game_id: string
-  platform_id: string
-  completion_percentage: number | null
-  difficulty_rating: number | null
-  updated_at: Date | null
+  user_id: string;
+  game_id: string;
+  platform_id: string;
+  completion_percentage: number | null;
+  difficulty_rating: number | null;
+  updated_at: Date | null;
 }
 
 /**
@@ -42,7 +42,7 @@ export interface IUserGameProgressRepository {
     userId: string,
     gameId: string,
     platformId: string
-  ): Promise<UserGameProgress | null>
+  ): Promise<UserGameProgress | null>;
 
   /**
    * Update the status for a game on a specific platform
@@ -56,7 +56,7 @@ export interface IUserGameProgressRepository {
     gameId: string,
     platformId: string,
     status: GameStatus
-  ): Promise<void>
+  ): Promise<void>;
 
   /**
    * Update the user rating for a game on a specific platform
@@ -65,12 +65,7 @@ export interface IUserGameProgressRepository {
    * @param platformId - Platform ID
    * @param rating - New rating (1-10)
    */
-  updateRating(
-    userId: string,
-    gameId: string,
-    platformId: string,
-    rating: number
-  ): Promise<void>
+  updateRating(userId: string, gameId: string, platformId: string, rating: number): Promise<void>;
 
   /**
    * Update notes for a game on a specific platform
@@ -79,12 +74,7 @@ export interface IUserGameProgressRepository {
    * @param platformId - Platform ID
    * @param notes - New notes
    */
-  updateNotes(
-    userId: string,
-    gameId: string,
-    platformId: string,
-    notes: string
-  ): Promise<void>
+  updateNotes(userId: string, gameId: string, platformId: string, notes: string): Promise<void>;
 
   /**
    * Update favorite status for a game on a specific platform
@@ -98,7 +88,7 @@ export interface IUserGameProgressRepository {
     gameId: string,
     platformId: string,
     isFavorite: boolean
-  ): Promise<void>
+  ): Promise<void>;
 
   /**
    * Get custom fields for a game on a specific platform
@@ -111,7 +101,7 @@ export interface IUserGameProgressRepository {
     userId: string,
     gameId: string,
     platformId: string
-  ): Promise<UserGameCustomFields | null>
+  ): Promise<UserGameCustomFields | null>;
 
   /**
    * Update custom fields for a game on a specific platform
@@ -125,5 +115,5 @@ export interface IUserGameProgressRepository {
     gameId: string,
     platformId: string,
     fields: { completion_percentage?: number; difficulty_rating?: number }
-  ): Promise<void>
+  ): Promise<void>;
 }
