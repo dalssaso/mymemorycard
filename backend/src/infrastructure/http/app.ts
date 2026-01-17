@@ -92,7 +92,9 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   app.route("/api/v1/admin", adminController.router);
 
   // Credentials routes (DI-based)
-  const credentialController = container.resolve<ICredentialController>(CREDENTIAL_CONTROLLER_TOKEN);
+  const credentialController = container.resolve<ICredentialController>(
+    CREDENTIAL_CONTROLLER_TOKEN
+  );
   app.route("/api/v1/credentials", credentialController.router);
 
   // Legacy routes proxy (for gradual migration)
