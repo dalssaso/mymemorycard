@@ -6,6 +6,7 @@ export const AUTH_CONTROLLER_TOKEN = "IAuthController";
 export const AUTH_SERVICE_TOKEN = "IAuthService";
 export const CONFIG_TOKEN = "IConfig";
 export const DATABASE_TOKEN = "Database";
+export const REDIS_CONNECTION_TOKEN = "IRedisConnection";
 export const PASSWORD_HASHER_TOKEN = "IPasswordHasher";
 export const PLATFORM_CONTROLLER_TOKEN = "IPlatformController";
 export const PLATFORM_REPOSITORY_TOKEN = "IPlatformRepository";
