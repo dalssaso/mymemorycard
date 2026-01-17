@@ -1,14 +1,14 @@
-import { z } from "zod"
+import { z } from "zod";
 
 /**
  * Service enum schema.
  */
-export const ApiServiceSchema = z.enum(["igdb", "steam", "retroachievements", "rawg"])
+export const ApiServiceSchema = z.enum(["igdb", "steam", "retroachievements", "rawg"]);
 
 /**
  * Credential type enum schema.
  */
-export const CredentialTypeSchema = z.enum(["twitch_oauth", "steam_openid", "api_key"])
+export const CredentialTypeSchema = z.enum(["twitch_oauth", "steam_openid", "api_key"]);
 
 /**
  * Twitch OAuth credentials schema (for IGDB).
@@ -16,7 +16,7 @@ export const CredentialTypeSchema = z.enum(["twitch_oauth", "steam_openid", "api
 export const TwitchOAuthCredentialsSchema = z.object({
   client_id: z.string().min(1, "Client ID is required"),
   client_secret: z.string().min(1, "Client secret is required"),
-})
+});
 
 /**
  * API key credentials schema (for RetroAchievements, RAWG).
@@ -24,7 +24,7 @@ export const TwitchOAuthCredentialsSchema = z.object({
 export const ApiKeyCredentialsSchema = z.object({
   username: z.string().optional(),
   api_key: z.string().min(1, "API key is required"),
-})
+});
 
 /**
  * Steam OpenID credentials schema.
@@ -32,7 +32,7 @@ export const ApiKeyCredentialsSchema = z.object({
 export const SteamOpenIdCredentialsSchema = z.object({
   steam_id: z.string().min(1, "Steam ID is required"),
   display_name: z.string().optional(),
-})
+});
 
 /**
  * Request schema for saving credentials.
@@ -58,9 +58,9 @@ export const SaveCredentialRequestSchema = z
         client_secret: "your-twitch-client-secret",
       },
     },
-  })
+  });
 
-export type SaveCredentialRequest = z.infer<typeof SaveCredentialRequestSchema>
+export type SaveCredentialRequest = z.infer<typeof SaveCredentialRequestSchema>;
 
 /**
  * Request schema for validating credentials.
@@ -75,18 +75,18 @@ export const ValidateCredentialRequestSchema = z
     example: {
       service: "igdb",
     },
-  })
+  });
 
-export type ValidateCredentialRequest = z.infer<typeof ValidateCredentialRequestSchema>
+export type ValidateCredentialRequest = z.infer<typeof ValidateCredentialRequestSchema>;
 
 /**
  * Service parameter schema for delete endpoint.
  */
 export const ServiceParamSchema = z.object({
   service: ApiServiceSchema,
-})
+});
 
-export type ServiceParam = z.infer<typeof ServiceParamSchema>
+export type ServiceParam = z.infer<typeof ServiceParamSchema>;
 
 /**
  * Single credential status response.
@@ -108,9 +108,9 @@ export const CredentialStatusSchema = z
       token_expires_at: "2026-03-16T12:00:00.000Z",
       last_validated_at: "2026-01-16T12:00:00.000Z",
     },
-  })
+  });
 
-export type CredentialStatusDto = z.infer<typeof CredentialStatusSchema>
+export type CredentialStatusDto = z.infer<typeof CredentialStatusSchema>;
 
 /**
  * List credentials response.
@@ -121,9 +121,9 @@ export const CredentialListResponseSchema = z
   })
   .openapi("CredentialListResponse", {
     description: "List of all credential statuses for the user",
-  })
+  });
 
-export type CredentialListResponse = z.infer<typeof CredentialListResponseSchema>
+export type CredentialListResponse = z.infer<typeof CredentialListResponseSchema>;
 
 /**
  * Save credential response.
@@ -143,9 +143,9 @@ export const CredentialSaveResponseSchema = z
       is_active: true,
       message: "Credentials saved for igdb. Please validate to confirm they work.",
     },
-  })
+  });
 
-export type CredentialSaveResponse = z.infer<typeof CredentialSaveResponseSchema>
+export type CredentialSaveResponse = z.infer<typeof CredentialSaveResponseSchema>;
 
 /**
  * Validate credential response.
@@ -167,6 +167,6 @@ export const CredentialValidateResponseSchema = z
       token_expires_at: "2026-03-16T12:00:00.000Z",
       message: "Credentials for igdb validated successfully.",
     },
-  })
+  });
 
-export type CredentialValidateResponse = z.infer<typeof CredentialValidateResponseSchema>
+export type CredentialValidateResponse = z.infer<typeof CredentialValidateResponseSchema>;

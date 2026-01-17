@@ -1,12 +1,12 @@
-import { injectable, inject } from "tsyringe"
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
+import { injectable, inject } from "tsyringe";
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 
-import { CREDENTIAL_SERVICE_TOKEN } from "@/container/tokens"
-import { Logger } from "@/infrastructure/logging/logger"
-import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
-import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto"
-import type { ICredentialService } from "../services/credential.service.interface"
-import type { ICredentialController, CredentialEnv } from "./credential.controller.interface"
+import { CREDENTIAL_SERVICE_TOKEN } from "@/container/tokens";
+import { Logger } from "@/infrastructure/logging/logger";
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
+import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
+import type { ICredentialService } from "../services/credential.service.interface";
+import type { ICredentialController, CredentialEnv } from "./credential.controller.interface";
 import {
   SaveCredentialRequestSchema,
   ValidateCredentialRequestSchema,
@@ -14,30 +14,30 @@ import {
   CredentialListResponseSchema,
   CredentialSaveResponseSchema,
   CredentialValidateResponseSchema,
-} from "../dtos/credentials.dto"
+} from "../dtos/credentials.dto";
 
 /**
  * Controller for credential management routes.
  */
 @injectable()
 export class CredentialController implements ICredentialController {
-  readonly router: OpenAPIHono<CredentialEnv>
+  readonly router: OpenAPIHono<CredentialEnv>;
 
-  private logger: Logger
+  private logger: Logger;
 
   constructor(
     @inject(CREDENTIAL_SERVICE_TOKEN)
     private service: ICredentialService,
     @inject(Logger) parentLogger: Logger
   ) {
-    this.logger = parentLogger.child("CredentialController")
-    this.router = new OpenAPIHono<CredentialEnv>()
+    this.logger = parentLogger.child("CredentialController");
+    this.router = new OpenAPIHono<CredentialEnv>();
 
-    this.registerRoutes()
+    this.registerRoutes();
   }
 
   private registerRoutes(): void {
-    const authMiddleware = createAuthMiddleware()
+    const authMiddleware = createAuthMiddleware();
 
     // GET /credentials - List all credentials status
     const listRoute = createRoute({
@@ -65,17 +65,17 @@ export class CredentialController implements ICredentialController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
-    this.router.use("/", authMiddleware)
+    this.router.use("/", authMiddleware);
     this.router.openapi(listRoute, async (c) => {
-      this.logger.debug("GET /credentials")
-      const user = c.get("user")
+      this.logger.debug("GET /credentials");
+      const user = c.get("user");
 
-      const result = await this.service.listCredentials(user.id)
+      const result = await this.service.listCredentials(user.id);
 
-      return c.json(result, 200)
-    })
+      return c.json(result, 200);
+    });
 
     // POST /credentials - Save credentials
     const saveRoute = createRoute({
@@ -121,21 +121,21 @@ export class CredentialController implements ICredentialController {
           description: "Unauthorized",
         },
       },
-    })
+    });
 
     this.router.openapi(saveRoute, async (c) => {
-      this.logger.debug("POST /credentials")
-      const user = c.get("user")
-      const body = c.req.valid("json")
+      this.logger.debug("POST /credentials");
+      const user = c.get("user");
+      const body = c.req.valid("json");
 
       const result = await this.service.saveCredentials(user.id, {
         service: body.service,
         credential_type: body.credential_type,
         credentials: body.credentials,
-      })
+      });
 
-      return c.json(result, 201)
-    })
+      return c.json(result, 201);
+    });
 
     // POST /credentials/validate - Validate credentials
     const validateRoute = createRoute({
@@ -189,18 +189,18 @@ export class CredentialController implements ICredentialController {
           description: "Credentials not found",
         },
       },
-    })
+    });
 
-    this.router.use("/validate", authMiddleware)
+    this.router.use("/validate", authMiddleware);
     this.router.openapi(validateRoute, async (c) => {
-      this.logger.debug("POST /credentials/validate")
-      const user = c.get("user")
-      const body = c.req.valid("json")
+      this.logger.debug("POST /credentials/validate");
+      const user = c.get("user");
+      const body = c.req.valid("json");
 
-      const result = await this.service.validateCredentials(user.id, body.service)
+      const result = await this.service.validateCredentials(user.id, body.service);
 
-      return c.json(result, 200)
-    })
+      return c.json(result, 200);
+    });
 
     // DELETE /credentials/:service - Delete credentials
     const deleteRoute = createRoute({
@@ -234,17 +234,17 @@ export class CredentialController implements ICredentialController {
           description: "Credentials not found",
         },
       },
-    })
+    });
 
-    this.router.use("/:service", authMiddleware)
+    this.router.use("/:service", authMiddleware);
     this.router.openapi(deleteRoute, async (c) => {
-      this.logger.debug("DELETE /credentials/:service")
-      const user = c.get("user")
-      const { service } = c.req.valid("param")
+      this.logger.debug("DELETE /credentials/:service");
+      const user = c.get("user");
+      const { service } = c.req.valid("param");
 
-      await this.service.deleteCredentials(user.id, service)
+      await this.service.deleteCredentials(user.id, service);
 
-      return c.body(null, 204)
-    })
+      return c.body(null, 204);
+    });
   }
 }
