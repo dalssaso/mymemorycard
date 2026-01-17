@@ -11,7 +11,6 @@ import { CONFIG_TOKEN, REDIS_CONNECTION_TOKEN } from "@/container/tokens";
 
 // Import legacy routes (registers them with the old router)
 import "@/routes/import";
-import "@/routes/games";
 import "@/routes/collections";
 import "@/routes/api-stats";
 import "@/routes/admin";
