@@ -27,9 +27,7 @@ export function useCredentials(): UseQueryResult<CredentialListResponse> {
     queryKey: ["credentials"],
     queryFn: async () => {
       const data = await CredentialsService.list();
-      if (data.services) {
-        setCredentials(data.services as CredentialStatus[]);
-      }
+      setCredentials(data.services);
       return data;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes

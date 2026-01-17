@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { mockGame, mockGamesListResponse } from "@/test/mocks/games";
@@ -275,6 +275,8 @@ describe("useSearchGames", () => {
   });
 
   it("should search after debounce delay elapses", async () => {
+    vi.useFakeTimers();
+
     const mockSearchResults = {
       games: [
         { igdb_id: 1234, name: "The Legend of Zelda", cover_art_url: null },
@@ -283,12 +285,22 @@ describe("useSearchGames", () => {
     };
     mockSearch.mockResolvedValue(mockSearchResults);
 
-    // Use a short debounce delay for test speed
     const { result } = renderHook(() => useSearchGames("zelda", 50), {
       wrapper: createWrapper(queryClient),
     });
 
-    // Wait for debounce and search to complete
+    // Advance timers to trigger debounce and flush pending promises
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50);
+    });
+
+    // Wait for search to complete (React Query async)
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+
+    vi.useRealTimers();
+
     await waitFor(() => {
       expect(result.current.results).toHaveLength(2);
     });

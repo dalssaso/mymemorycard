@@ -97,8 +97,8 @@ export interface CredentialStatus {
   service: "igdb" | "steam" | "retroachievements" | "rawg";
   is_active: boolean;
   has_valid_token: boolean;
-  token_expires_at?: string;
-  last_validated_at?: string;
+  token_expires_at: string | null;
+  last_validated_at: string | null;
 }
 
 /**
