@@ -11,6 +11,8 @@ import {
   CREDENTIAL_SERVICE_TOKEN,
   DATABASE_TOKEN,
   ENCRYPTION_SERVICE_TOKEN,
+  IGDB_CACHE_TOKEN,
+  IGDB_SERVICE_TOKEN,
   PASSWORD_HASHER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
   PLATFORM_REPOSITORY_TOKEN,
@@ -112,6 +114,11 @@ import type { ICredentialService, IEncryptionService } from "@/features/credenti
 import { CredentialController } from "@/features/credentials/controllers/credential.controller";
 import type { ICredentialController } from "@/features/credentials/controllers/credential.controller.interface";
 
+// IGDB Integration
+import { IgdbCache, IgdbService } from "@/integrations/igdb";
+import type { IIgdbService } from "@/integrations/igdb";
+import redisClient from "@/services/redis";
+
 /**
  * Register all dependencies for the application.
  * Called once at application startup.
@@ -212,6 +219,12 @@ export function registerDependencies(): void {
     CREDENTIAL_CONTROLLER_TOKEN,
     CredentialController
   );
+
+  // IGDB Integration
+  container.register<IgdbCache>(IGDB_CACHE_TOKEN, {
+    useFactory: () => new IgdbCache(redisClient),
+  });
+  container.registerSingleton<IIgdbService>(IGDB_SERVICE_TOKEN, IgdbService);
 }
 
 /**

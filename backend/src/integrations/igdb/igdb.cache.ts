@@ -1,5 +1,3 @@
-import type { RedisClientType } from "redis";
-
 import type { IgdbGame, IgdbPlatform } from "./igdb.types";
 
 /**
@@ -13,10 +11,19 @@ const CACHE_TTL = {
 } as const;
 
 /**
+ * Minimal Redis client interface for cache operations.
+ */
+interface RedisClient {
+  get(key: string): Promise<string | null>;
+  setEx(key: string, seconds: number, value: string): Promise<string>;
+  del(key: string | string[]): Promise<number>;
+}
+
+/**
  * Redis cache utilities for IGDB API responses.
  */
 export class IgdbCache {
-  constructor(private redis: RedisClientType) {}
+  constructor(private redis: RedisClient) {}
 
   /**
    * Get cached search results.
