@@ -9,7 +9,12 @@ import type { AdminSetting, AdminSettingsResponse } from "@/features/admin/types
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { IPasswordHasher } from "@/features/auth/services/password-hasher.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
+import type {
+  IUserCredentialRepository,
+  UpsertCredentialData,
+} from "@/features/credentials/repositories/user-credential.repository.interface";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
+import type { ApiService, UserApiCredential } from "@/features/credentials/types";
 import type { IPreferencesRepository } from "@/features/preferences/repositories/preferences.repository.interface";
 import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
@@ -209,6 +214,70 @@ export function createMockEncryptionService(
   return {
     encrypt: mock().mockReturnValue("encrypted-data-base64"),
     decrypt: mock().mockReturnValue({ decrypted: "data" }),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock user credential repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IUserCredentialRepository.
+ *
+ * @example
+ * ```typescript
+ * import { createMockUserCredentialRepository } from "@/tests/helpers/repository.mocks";
+ *
+ * const mockRepo = createMockUserCredentialRepository();
+ * const credentials = await mockRepo.findByUser("user-id");
+ * // credentials === []
+ *
+ * // Override specific methods:
+ * const customMock = createMockUserCredentialRepository({
+ *   findByUserAndService: mock().mockResolvedValue({ id: "cred-1", ... }),
+ * });
+ * ```
+ */
+export function createMockUserCredentialRepository(
+  overrides?: Partial<IUserCredentialRepository>
+): IUserCredentialRepository {
+  const defaultCredential: UserApiCredential = {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    userId: "test-user-id",
+    service: "igdb" as ApiService,
+    credentialType: "twitch_oauth",
+    encryptedCredentials: "encrypted-data",
+    isActive: true,
+    hasValidToken: false,
+    tokenExpiresAt: null,
+    lastValidatedAt: null,
+    createdAt: new Date("2026-01-16T10:00:00Z"),
+    updatedAt: new Date("2026-01-16T10:00:00Z"),
+  };
+
+  return {
+    findByUserAndService: mock().mockResolvedValue(null),
+    findByUser: mock().mockResolvedValue([]),
+    upsert: mock().mockImplementation(async (userId: string, data: UpsertCredentialData) => ({
+      ...defaultCredential,
+      userId,
+      service: data.service,
+      credentialType: data.credentialType,
+      encryptedCredentials: data.encryptedCredentials,
+      isActive: data.isActive ?? true,
+      hasValidToken: data.hasValidToken ?? false,
+      tokenExpiresAt: data.tokenExpiresAt ?? null,
+    })),
+    delete: mock().mockResolvedValue(undefined),
+    updateValidationStatus: mock().mockImplementation(
+      async (userId: string, service: ApiService, hasValidToken: boolean) => ({
+        ...defaultCredential,
+        userId,
+        service,
+        hasValidToken,
+        lastValidatedAt: new Date(),
+      })
+    ),
     ...overrides,
   };
 }

@@ -7,6 +7,8 @@ import {
   AUTH_CONTROLLER_TOKEN,
   AUTH_SERVICE_TOKEN,
   CONFIG_TOKEN,
+  CREDENTIAL_CONTROLLER_TOKEN,
+  CREDENTIAL_SERVICE_TOKEN,
   DATABASE_TOKEN,
   ENCRYPTION_SERVICE_TOKEN,
   PASSWORD_HASHER_TOKEN,
@@ -17,10 +19,11 @@ import {
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
   TOKEN_SERVICE_TOKEN,
-  USER_REPOSITORY_TOKEN,
+  USER_CREDENTIAL_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
   USER_PLATFORMS_REPOSITORY_TOKEN,
   USER_PLATFORMS_SERVICE_TOKEN,
+  USER_REPOSITORY_TOKEN,
 } from "@/container/tokens";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
@@ -97,9 +100,17 @@ import type { IAdminService } from "@/features/admin/services/admin.service.inte
 import { AdminController } from "@/features/admin/controllers/admin.controller";
 import type { IAdminController } from "@/features/admin/controllers/admin.controller.interface";
 
+// Credentials - Repositories
+import { PostgresUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository";
+import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface";
+
 // Credentials - Services
-import { EncryptionService } from "@/features/credentials";
-import type { IEncryptionService } from "@/features/credentials";
+import { CredentialService, EncryptionService } from "@/features/credentials";
+import type { ICredentialService, IEncryptionService } from "@/features/credentials";
+
+// Credentials - Controllers
+import { CredentialController } from "@/features/credentials/controllers/credential.controller";
+import type { ICredentialController } from "@/features/credentials/controllers/credential.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -186,8 +197,21 @@ export function registerDependencies(): void {
   // Admin Domain - Controllers
   container.registerSingleton<IAdminController>(ADMIN_CONTROLLER_TOKEN, AdminController);
 
+  // Credentials Domain - Repositories
+  container.registerSingleton<IUserCredentialRepository>(
+    USER_CREDENTIAL_REPOSITORY_TOKEN,
+    PostgresUserCredentialRepository
+  );
+
   // Credentials Domain - Services
   container.registerSingleton<IEncryptionService>(ENCRYPTION_SERVICE_TOKEN, EncryptionService);
+  container.registerSingleton<ICredentialService>(CREDENTIAL_SERVICE_TOKEN, CredentialService);
+
+  // Credentials Domain - Controllers
+  container.registerSingleton<ICredentialController>(
+    CREDENTIAL_CONTROLLER_TOKEN,
+    CredentialController
+  );
 }
 
 /**
