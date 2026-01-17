@@ -25,8 +25,6 @@ interface SuggestedStore {
 
 /** Props for the PlatformStoreSelector component */
 interface PlatformStoreSelectorProps {
-  /** IGDB game ID for the game being imported */
-  igdbId: number;
   /** Available platforms from IGDB for this game */
   platforms: IgdbPlatform[];
   /** Suggested stores from IGDB websites */
@@ -47,12 +45,20 @@ export function PlatformStoreSelector({
   const [selectedPlatformId, setSelectedPlatformId] = useState<string>("");
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
 
-  const { data: platformsData, isLoading: platformsLoading } = useQuery({
+  const {
+    data: platformsData,
+    isLoading: platformsLoading,
+    isError: platformsError,
+  } = useQuery({
     queryKey: ["platforms"],
     queryFn: () => PlatformsService.list(),
   });
 
-  const { data: storesData, isLoading: storesLoading } = useQuery({
+  const {
+    data: storesData,
+    isLoading: storesLoading,
+    isError: storesError,
+  } = useQuery({
     queryKey: ["stores"],
     queryFn: () => StoresService.list(),
   });
@@ -73,7 +79,7 @@ export function PlatformStoreSelector({
 
     const suggestedSlugs = new Set(suggestedStores.map((s) => s.slug));
     return storesData.stores.filter(
-      (s) => suggestedSlugs.has(s.name) && s.platform_family === selectedPlatform.platform_family
+      (s) => suggestedSlugs.has(s.slug) && s.platform_family === selectedPlatform.platform_family
     );
   }, [storesData, selectedPlatformId, availablePlatforms, suggestedStores]);
 
@@ -104,6 +110,14 @@ export function PlatformStoreSelector({
             ))}
           </SelectContent>
         </Select>
+
+        {platformsError && (
+          <p className="mt-2 text-xs text-red-400">Failed to load platforms. Please try again.</p>
+        )}
+
+        {!platformsLoading && !platformsError && availablePlatforms.length === 0 && (
+          <p className="mt-2 text-xs text-amber-400">No platforms available for this game.</p>
+        )}
       </div>
 
       <div>
@@ -127,7 +141,11 @@ export function PlatformStoreSelector({
           </SelectContent>
         </Select>
 
-        {selectedPlatformId && availableStores.length === 0 && !storesLoading && (
+        {storesError && (
+          <p className="mt-2 text-xs text-red-400">Failed to load stores. Please try again.</p>
+        )}
+
+        {selectedPlatformId && availableStores.length === 0 && !storesLoading && !storesError && (
           <p className="mt-2 text-xs text-amber-400">
             No stores available for this platform. Please select a different platform.
           </p>

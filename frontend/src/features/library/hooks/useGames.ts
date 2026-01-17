@@ -9,6 +9,7 @@ import {
   GamesService,
   type Game,
   type GamesListResponse,
+  type ImportGameRequest,
   type UpdateGameRequest,
 } from "@/shared/api/services";
 
@@ -99,6 +100,22 @@ export function useDeleteGame(): UseMutationResult<void, Error, string, unknown>
 
   return useMutation({
     mutationFn: (id: string) => GamesService.delete(id),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+}
+
+/**
+ * Mutation to import game from IGDB to user's library.
+ *
+ * @returns TanStack Mutation hook for creating/importing games
+ */
+export function useCreateGame(): UseMutationResult<Game, Error, ImportGameRequest, unknown> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ImportGameRequest) => GamesService.create(payload),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
     },

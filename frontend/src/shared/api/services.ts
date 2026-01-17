@@ -16,6 +16,18 @@ export interface SearchGamesResponse {
   games: GameSearchResult[];
 }
 
+/** Platform info from IGDB search */
+export interface IgdbPlatformInfo {
+  igdb_platform_id: number;
+  name: string;
+}
+
+/** Store suggestion from IGDB websites */
+export interface IgdbStoreInfo {
+  slug: string;
+  display_name: string;
+}
+
 /**
  * Game search result from IGDB
  */
@@ -24,7 +36,8 @@ export interface GameSearchResult {
   name: string;
   cover_art_url: string | null;
   release_date: string | null;
-  platforms: string[];
+  platforms: IgdbPlatformInfo[];
+  stores: IgdbStoreInfo[];
 }
 
 /**

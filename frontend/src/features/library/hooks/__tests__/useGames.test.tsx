@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { useGames, useGame, useUpdateGame, useDeleteGame } from "../useGames";
+import { useGames, useGame, useUpdateGame, useDeleteGame, useCreateGame } from "../useGames";
 import { useSearchGames } from "../useSearchGames";
 
 vi.mock("@/shared/api/services", () => ({
@@ -33,6 +33,12 @@ vi.mock("@/shared/api/services", () => ({
       status: "completed",
     }),
     delete: vi.fn().mockResolvedValue(undefined),
+    create: vi.fn().mockResolvedValue({
+      id: "game-new",
+      igdb_id: 99999,
+      name: "Imported Game",
+      status: null,
+    }),
     search: vi.fn().mockResolvedValue({
       games: [{ igdb_id: 123, name: "Search Result" }],
     }),
@@ -153,6 +159,47 @@ describe("useDeleteGame", () => {
 
     expect(result.current.mutate).toBeDefined();
     expect(result.current.mutateAsync).toBeDefined();
+  });
+});
+
+describe("useCreateGame", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = createTestQueryClient();
+    vi.clearAllMocks();
+  });
+
+  it("should return mutation function", () => {
+    const { result } = renderHook(() => useCreateGame(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    expect(result.current.mutate).toBeDefined();
+    expect(result.current.mutateAsync).toBeDefined();
+  });
+
+  it("should call GamesService.create on mutation", async () => {
+    const { GamesService } = await import("@/shared/api/services");
+    const { result } = renderHook(() => useCreateGame(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    result.current.mutate({
+      igdb_id: 99999,
+      platform_id: "platform-1",
+      store_id: "store-1",
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(GamesService.create).toHaveBeenCalledWith({
+      igdb_id: 99999,
+      platform_id: "platform-1",
+      store_id: "store-1",
+    });
   });
 });
 

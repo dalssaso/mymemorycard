@@ -1,8 +1,8 @@
 import { createFileRoute, redirect, lazyRouteComponent } from "@tanstack/react-router";
-import { userPlatformsAPI } from "@/lib/api";
+import { CredentialsService } from "@/shared/api/services";
 
-const Import = lazyRouteComponent(() =>
-  import("@/pages/Import").then((module) => ({ default: module.Import }))
+const ImportIGDB = lazyRouteComponent(() =>
+  import("@/pages/ImportIGDB").then((module) => ({ default: module.ImportIGDB }))
 );
 
 export const Route = createFileRoute("/import")({
@@ -11,14 +11,11 @@ export const Route = createFileRoute("/import")({
       throw redirect({ to: "/login" });
     }
   },
-  component: Import,
+  component: ImportIGDB,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData({
-      queryKey: ["user-platforms"],
-      queryFn: async () => {
-        const response = await userPlatformsAPI.getAll();
-        return response.data;
-      },
+      queryKey: ["credentials"],
+      queryFn: () => CredentialsService.list(),
     });
   },
 });

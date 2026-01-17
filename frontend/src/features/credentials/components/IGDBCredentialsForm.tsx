@@ -31,12 +31,12 @@ export function IGDBCredentialsForm(): JSX.Element {
       },
       {
         onSuccess: () => {
-          setSaveStatus("success")
-          setClientId("")
-          setClientSecret("")
+          setSaveStatus("success");
+          setClientId("");
+          setClientSecret("");
         },
         onError: () => {
-          setSaveStatus("error")
+          setSaveStatus("error");
         },
       }
     );

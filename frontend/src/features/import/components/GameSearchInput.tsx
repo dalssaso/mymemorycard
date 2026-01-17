@@ -82,10 +82,10 @@ export function GameSearchInput({ onSelect }: GameSearchInputProps): JSX.Element
                   <div className="mt-1 flex flex-wrap gap-1">
                     {game.platforms.slice(0, 3).map((platform) => (
                       <span
-                        key={platform}
+                        key={platform.igdb_platform_id}
                         className="rounded bg-slate-700 px-2 py-0.5 text-xs text-slate-300"
                       >
-                        {platform}
+                        {platform.name}
                       </span>
                     ))}
                   </div>
