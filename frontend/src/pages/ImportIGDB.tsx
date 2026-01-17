@@ -1,38 +1,38 @@
-import { useEffect, useState } from "react"
-import { Link, useNavigate } from "@tanstack/react-router"
-import { useCredentials } from "@/features/credentials/hooks/useCredentials"
-import { useCreateGame } from "@/features/library/hooks/useGames"
-import { GameSearchInput } from "@/features/import/components/GameSearchInput"
-import { PlatformStoreSelector } from "@/features/import/components/PlatformStoreSelector"
-import { useCredentialsStore } from "@/shared/stores/credentialsStore"
-import { Button } from "@/components/ui/button"
-import type { GameSearchResult } from "@/shared/api/services"
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useCredentials } from "@/features/credentials/hooks/useCredentials";
+import { useCreateGame } from "@/features/library/hooks/useGames";
+import { GameSearchInput } from "@/features/import/components/GameSearchInput";
+import { PlatformStoreSelector } from "@/features/import/components/PlatformStoreSelector";
+import { useCredentialsStore } from "@/shared/stores/credentialsStore";
+import { Button } from "@/components/ui/button";
+import type { GameSearchResult } from "@/shared/api/services";
 
 /**
  * Game import flow page combining IGDB search, platform selection, and import.
  * Only accessible after IGDB credentials are configured.
  */
 export function ImportIGDB(): JSX.Element {
-  const [selectedGame, setSelectedGame] = useState<GameSearchResult | null>(null)
-  const [importSuccess, setImportSuccess] = useState<string | null>(null)
-  const { data: credentialsData } = useCredentials()
-  const hasIgdbCredentials = useCredentialsStore((s) => s.hasIgdbCredentials())
-  const isIgdbTokenExpired = useCredentialsStore((s) => s.isIgdbTokenExpired())
-  const navigate = useNavigate()
-  const importGame = useCreateGame()
+  const [selectedGame, setSelectedGame] = useState<GameSearchResult | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const { data: credentialsData } = useCredentials();
+  const hasIgdbCredentials = useCredentialsStore((s) => s.hasIgdbCredentials());
+  const isIgdbTokenExpired = useCredentialsStore((s) => s.isIgdbTokenExpired());
+  const navigate = useNavigate();
+  const importGame = useCreateGame();
 
-  const igdbCredential = credentialsData?.services?.find((c) => c.service === "igdb")
+  const igdbCredential = credentialsData?.services?.find((c) => c.service === "igdb");
 
   // Navigate to library after successful import with cleanup to prevent memory leaks
   useEffect(() => {
-    if (!importSuccess) return
+    if (!importSuccess) return;
 
     const timer = setTimeout(() => {
-      navigate({ to: "/library" })
-    }, 1500)
+      navigate({ to: "/library" });
+    }, 1500);
 
-    return () => clearTimeout(timer)
-  }, [importSuccess, navigate])
+    return () => clearTimeout(timer);
+  }, [importSuccess, navigate]);
 
   // Show credential setup message if IGDB is not configured
   if (!hasIgdbCredentials || !igdbCredential?.is_active) {
@@ -55,16 +55,16 @@ export function ImportIGDB(): JSX.Element {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   const handleGameSelect = (game: GameSearchResult): void => {
-    setSelectedGame(game)
-    setImportSuccess(null)
-  }
+    setSelectedGame(game);
+    setImportSuccess(null);
+  };
 
   const handleImport = (platformId: string, storeId: string): void => {
-    if (!selectedGame) return
+    if (!selectedGame) return;
 
     importGame.mutate(
       {
@@ -74,17 +74,17 @@ export function ImportIGDB(): JSX.Element {
       },
       {
         onSuccess: (game) => {
-          setImportSuccess(game.name)
-          setSelectedGame(null)
+          setImportSuccess(game.name);
+          setSelectedGame(null);
         },
       }
-    )
-  }
+    );
+  };
 
   const handleClearSelection = (): void => {
-    setSelectedGame(null)
-    setImportSuccess(null)
-  }
+    setSelectedGame(null);
+    setImportSuccess(null);
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8">
@@ -107,7 +107,7 @@ export function ImportIGDB(): JSX.Element {
       </div>
 
       {selectedGame && (
-        <div className="space-y-4 rounded-lg border border-border bg-surface/50 p-6">
+        <div className="bg-surface/50 space-y-4 rounded-lg border border-border p-6">
           <div className="flex gap-4">
             {selectedGame.cover_art_url && (
               <img
@@ -167,12 +167,7 @@ export function ImportIGDB(): JSX.Element {
               className="self-start text-text-muted hover:text-text-primary"
               aria-label="Clear selection"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -205,5 +200,5 @@ export function ImportIGDB(): JSX.Element {
         </div>
       )}
     </div>
-  )
+  );
 }
