@@ -1,9 +1,24 @@
 import { injectable, inject } from "tsyringe";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
-import { games, platforms, stores, userGames } from "@/db/schema";
+import {
+  collectionGames,
+  collections,
+  completionLogs,
+  games,
+  platforms,
+  playSessions,
+  stores,
+  userGameAdditions,
+  userGameCustomFields,
+  userGameDisplayEditions,
+  userGameEditions,
+  userGameProgress,
+  userGames,
+  userPlaytime,
+} from "@/db/schema";
 import { ConflictError, NotFoundError } from "@/shared/errors/base";
 import type { UserGame, UserGameWithRelations } from "../types";
 import type { IUserGameRepository } from "./user-game.repository.interface";
@@ -243,21 +258,142 @@ export class UserGameRepository implements IUserGameRepository {
   }
 
   /**
-   * Delete a user game entry.
+   * Delete a user game entry and all related data.
+   * Cascades deletion to play sessions, completion logs, playtime, progress,
+   * custom fields, display editions, edition ownership, DLC ownership, and
+   * removes from collections if no other platforms remain.
    * @param id - User game ID
    * @param userId - User ID (for auth check)
    * @returns true if deleted
    * @throws {NotFoundError} If not found or access denied
    */
   async delete(id: string, userId: string): Promise<boolean> {
-    const result = await this.db
-      .delete(userGames)
-      .where(and(eq(userGames.id, id), eq(userGames.userId, userId)))
-      .returning();
+    // 1. Get the user game first to retrieve gameId and platformId
+    const userGame = await this.db.query.userGames.findFirst({
+      where: and(eq(userGames.id, id), eq(userGames.userId, userId)),
+    });
 
-    if (result.length === 0) {
-      throw new NotFoundError(`User game ${id} not found`);
+    if (!userGame) {
+      throw new NotFoundError("User game", id);
     }
+
+    const gameId = userGame.gameId;
+    const platformId = userGame.platformId;
+
+    // 2. Delete in transaction for atomicity
+    await this.db.transaction(async (tx) => {
+      // Delete play sessions
+      await tx
+        .delete(playSessions)
+        .where(
+          and(
+            eq(playSessions.userId, userId),
+            eq(playSessions.gameId, gameId),
+            eq(playSessions.platformId, platformId)
+          )
+        );
+
+      // Delete completion logs
+      await tx
+        .delete(completionLogs)
+        .where(
+          and(
+            eq(completionLogs.userId, userId),
+            eq(completionLogs.gameId, gameId),
+            eq(completionLogs.platformId, platformId)
+          )
+        );
+
+      // Delete user playtime
+      await tx
+        .delete(userPlaytime)
+        .where(
+          and(
+            eq(userPlaytime.userId, userId),
+            eq(userPlaytime.gameId, gameId),
+            eq(userPlaytime.platformId, platformId)
+          )
+        );
+
+      // Delete user game progress
+      await tx
+        .delete(userGameProgress)
+        .where(
+          and(
+            eq(userGameProgress.userId, userId),
+            eq(userGameProgress.gameId, gameId),
+            eq(userGameProgress.platformId, platformId)
+          )
+        );
+
+      // Delete custom fields
+      await tx
+        .delete(userGameCustomFields)
+        .where(
+          and(
+            eq(userGameCustomFields.userId, userId),
+            eq(userGameCustomFields.gameId, gameId),
+            eq(userGameCustomFields.platformId, platformId)
+          )
+        );
+
+      // Delete display edition preferences
+      await tx
+        .delete(userGameDisplayEditions)
+        .where(
+          and(
+            eq(userGameDisplayEditions.userId, userId),
+            eq(userGameDisplayEditions.gameId, gameId),
+            eq(userGameDisplayEditions.platformId, platformId)
+          )
+        );
+
+      // Delete edition ownership
+      await tx
+        .delete(userGameEditions)
+        .where(
+          and(
+            eq(userGameEditions.userId, userId),
+            eq(userGameEditions.gameId, gameId),
+            eq(userGameEditions.platformId, platformId)
+          )
+        );
+
+      // Delete DLC ownership
+      await tx
+        .delete(userGameAdditions)
+        .where(
+          and(
+            eq(userGameAdditions.userId, userId),
+            eq(userGameAdditions.gameId, gameId),
+            eq(userGameAdditions.platformId, platformId)
+          )
+        );
+
+      // Delete the user_games entry
+      await tx.delete(userGames).where(and(eq(userGames.id, id), eq(userGames.userId, userId)));
+
+      // Check if user still owns the game on any other platform
+      const remaining = await tx.query.userGames.findMany({
+        where: and(eq(userGames.userId, userId), eq(userGames.gameId, gameId)),
+      });
+
+      // Remove from collections if no platforms remain
+      if (remaining.length === 0) {
+        const userCollections = await tx.query.collections.findMany({
+          where: eq(collections.userId, userId),
+          columns: { id: true },
+        });
+        const collectionIds = userCollections.map((c) => c.id);
+        if (collectionIds.length > 0) {
+          await tx
+            .delete(collectionGames)
+            .where(
+              and(eq(collectionGames.gameId, gameId), inArray(collectionGames.collectionId, collectionIds))
+            );
+        }
+      }
+    });
 
     return true;
   }
