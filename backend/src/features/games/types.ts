@@ -6,37 +6,37 @@ export interface Game {
   /** Unique identifier for the game */
   id: string;
   /** IGDB platform identifier, null if not synced from IGDB */
-  igdbId: number | null;
+  igdb_id: number | null;
   /** RAWG platform identifier, null if not synced from RAWG */
-  rawgId: number | null;
+  rawg_id: number | null;
   /** Game title */
   name: string;
   /** URL-friendly slug for the game */
   slug: string | null;
   /** Game release date */
-  releaseDate: Date | null;
+  release_date: Date | null;
   /** Full game description or synopsis */
   description: string | null;
   /** URL to cover art image */
-  coverArtUrl: string | null;
+  cover_art_url: string | null;
   /** URL to background image */
-  backgroundImageUrl: string | null;
+  background_image_url: string | null;
   /** Metacritic score (0-100) */
-  metacriticScore: number | null;
+  metacritic_score: number | null;
   /** OpenCritic score (0-100) */
-  opencriticScore: number | null;
+  opencritic_score: number | null;
   /** ESRB rating (E, E10+, T, M, AO) */
-  esrbRating: string | null;
+  esrb_rating: string | null;
   /** Name of game series if applicable */
-  seriesName: string | null;
+  series_name: string | null;
   /** Expected playtime in hours */
-  expectedPlaytime: number | null;
+  expected_playtime: number | null;
   /** Source of metadata (igdb, rawg, or manual) */
-  metadataSource: "igdb" | "rawg" | "manual";
+  metadata_source: "igdb" | "rawg" | "manual";
   /** Timestamp when game was added to system */
-  createdAt: Date;
+  created_at: Date;
   /** Timestamp when game metadata was last updated */
-  updatedAt: Date;
+  updated_at: Date;
 }
 
 /**
@@ -47,23 +47,23 @@ export interface UserGame {
   /** Unique identifier for the user game entry */
   id: string;
   /** ID of the user who owns the game */
-  userId: string;
+  user_id: string;
   /** ID of the game */
-  gameId: string;
+  game_id: string;
   /** ID of the platform this entry is for */
-  platformId: string;
+  platform_id: string;
   /** ID of the store where purchased, null if not purchased */
-  storeId: string | null;
+  store_id: string | null;
   /** Platform-specific game identifier (e.g., Steam App ID) */
-  platformGameId: string | null;
+  platform_game_id: string | null;
   /** Whether the user owns this game on this platform */
   owned: boolean;
   /** Date when user purchased the game */
-  purchasedDate: Date | null;
+  purchased_date: Date | null;
   /** Source of import if applicable (steam, rawg, etc.) */
-  importSource: string | null;
+  import_source: string | null;
   /** Timestamp when entry was created */
-  createdAt: Date;
+  created_at: Date;
 }
 
 /**
@@ -75,13 +75,13 @@ export interface GameWithRelations extends Game {
   platforms: Array<{
     id: string;
     name: string;
-    igdbPlatformId: number | null;
+    igdb_platform_id: number | null;
   }>;
   /** Array of stores selling this game */
   stores?: Array<{
     id: string;
     slug: string;
-    displayName: string;
+    display_name: string;
   }>;
 }
 
@@ -93,7 +93,7 @@ export interface Platform {
   /** Unique identifier for the platform */
   id: string;
   /** IGDB platform identifier */
-  igdbPlatformId: number | null;
+  igdb_platform_id: number | null;
   /** Platform display name */
   name: string;
   /** Short abbreviation (e.g., PS5, PC) */
@@ -101,11 +101,11 @@ export interface Platform {
   /** URL-friendly slug */
   slug: string | null;
   /** Platform family grouping (console, handheld, pc) */
-  platformFamily: string | null;
+  platform_family: string | null;
   /** Primary color for UI representation (hex format) */
-  colorPrimary: string;
+  color_primary: string;
   /** Timestamp when platform was added to system */
-  createdAt: Date;
+  created_at: Date | null;
 }
 
 /**
@@ -118,25 +118,25 @@ export interface Store {
   /** URL-friendly slug (e.g., 'steam', 'gog', 'playstation-store') */
   slug: string;
   /** Human-readable display name */
-  displayName: string;
+  display_name: string;
   /** Store type: digital (Steam, GOG) or physical (GameStop) */
-  storeType: "digital" | "physical";
+  store_type: "digital" | "physical";
   /** Platform family this store is associated with */
-  platformFamily: string | null;
+  platform_family: string | null;
   /** Primary color for UI representation (hex format) */
-  colorPrimary: string;
+  color_primary: string;
   /** Official website URL */
-  websiteUrl: string | null;
+  website_url: string | null;
   /** URL to store icon/logo */
-  iconUrl: string | null;
+  icon_url: string | null;
   /** Whether store supports achievement tracking */
-  supportsAchievements: boolean;
+  supports_achievements: boolean;
   /** Whether store supports library sync */
-  supportsLibrarySync: boolean;
+  supports_library_sync: boolean;
   /** IGDB website category identifier */
-  igdbWebsiteCategory: number | null;
+  igdb_website_category: number | null;
   /** Display order in UI lists */
-  sortOrder: number;
+  sort_order: number;
   /** Timestamp when store was added to system */
-  createdAt: Date;
+  created_at: Date;
 }
