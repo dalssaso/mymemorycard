@@ -88,6 +88,8 @@ export interface Store {
   id: string;
   name: string;
   slug: string;
+  display_name: string;
+  platform_family: string | null;
   icon_url: string | null;
 }
 
