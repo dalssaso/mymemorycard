@@ -1,9 +1,4 @@
-import type {
-  IgdbGame,
-  IgdbPlatform,
-  IgdbFranchise,
-  IgdbTokenResponse,
-} from "@/integrations/igdb"
+import type { IgdbGame, IgdbPlatform, IgdbFranchise, IgdbTokenResponse } from "@/integrations/igdb";
 
 /**
  * Test fixture for IGDB token response.
@@ -12,7 +7,7 @@ export const IGDB_TOKEN_FIXTURE: IgdbTokenResponse = {
   access_token: "test-access-token-12345",
   expires_in: 5184000, // 60 days in seconds
   token_type: "bearer",
-}
+};
 
 /**
  * Test fixture for a basic IGDB game.
@@ -48,7 +43,7 @@ export const IGDB_GAME_FIXTURE: IgdbGame = {
     { id: 2, category: 13, url: "https://store.steampowered.com/app/292030" },
     { id: 3, category: 17, url: "https://www.gog.com/game/the_witcher_3_wild_hunt" },
   ],
-}
+};
 
 /**
  * Test fixture for IGDB game search results (minimal).
@@ -70,7 +65,7 @@ export const IGDB_SEARCH_RESULTS_FIXTURE: IgdbGame[] = [
     platforms: [{ id: 6, name: "PC (Microsoft Windows)", abbreviation: "PC" }],
     franchises: [{ id: 452, name: "The Witcher" }],
   },
-]
+];
 
 /**
  * Test fixture for IGDB platform.
@@ -82,7 +77,7 @@ export const IGDB_PLATFORM_FIXTURE: IgdbPlatform = {
   slug: "win",
   platform_family: { id: 1, name: "PC" },
   generation: undefined,
-}
+};
 
 /**
  * Test fixture for IGDB franchise.
@@ -92,7 +87,7 @@ export const IGDB_FRANCHISE_FIXTURE: IgdbFranchise = {
   name: "The Witcher",
   slug: "the-witcher",
   games: [12345, 1942, 20],
-}
+};
 
 /**
  * Test fixture for IGDB API error response.
@@ -100,7 +95,7 @@ export const IGDB_FRANCHISE_FIXTURE: IgdbFranchise = {
 export const IGDB_ERROR_FIXTURE = {
   status: 401,
   message: "Invalid or expired access token",
-}
+};
 
 /**
  * Create a custom IGDB game fixture with overrides.
@@ -109,7 +104,7 @@ export const IGDB_ERROR_FIXTURE = {
  * @returns New IgdbGame with overrides applied
  */
 export function createIgdbGameFixture(overrides?: Partial<IgdbGame>): IgdbGame {
-  return { ...IGDB_GAME_FIXTURE, ...overrides }
+  return { ...IGDB_GAME_FIXTURE, ...overrides };
 }
 
 /**
@@ -119,5 +114,5 @@ export function createIgdbGameFixture(overrides?: Partial<IgdbGame>): IgdbGame {
  * @returns New IgdbPlatform with overrides applied
  */
 export function createIgdbPlatformFixture(overrides?: Partial<IgdbPlatform>): IgdbPlatform {
-  return { ...IGDB_PLATFORM_FIXTURE, ...overrides }
+  return { ...IGDB_PLATFORM_FIXTURE, ...overrides };
 }

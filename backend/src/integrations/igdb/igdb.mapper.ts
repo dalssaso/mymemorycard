@@ -4,57 +4,57 @@ import {
   type IgdbGame,
   type IgdbPlatform,
   type IgdbWebsite,
-} from "./igdb.types"
+} from "./igdb.types";
 
 /**
  * Game search result mapped from IGDB.
  */
 export interface GameSearchResult {
-  igdb_id: number
-  name: string
-  cover_url: string | null
+  igdb_id: number;
+  name: string;
+  cover_url: string | null;
   platforms: Array<{
-    igdb_platform_id: number
-    name: string
-    abbreviation: string | null
-  }>
-  franchise: string | null
-  stores: Array<{ slug: string; url: string }>
+    igdb_platform_id: number;
+    name: string;
+    abbreviation: string | null;
+  }>;
+  franchise: string | null;
+  stores: Array<{ slug: string; url: string }>;
 }
 
 /**
  * Game details mapped from IGDB.
  */
 export interface GameDetails {
-  igdb_id: number
-  name: string
-  slug: string
-  summary: string | null
-  storyline: string | null
-  cover_url: string | null
-  release_date: string | null
-  rating: number | null
-  genres: string[]
-  themes: string[]
-  game_modes: string[]
+  igdb_id: number;
+  name: string;
+  slug: string;
+  summary: string | null;
+  storyline: string | null;
+  cover_url: string | null;
+  release_date: string | null;
+  rating: number | null;
+  genres: string[];
+  themes: string[];
+  game_modes: string[];
   platforms: Array<{
-    igdb_platform_id: number
-    name: string
-    abbreviation: string | null
-  }>
-  franchise: string | null
-  stores: Array<{ slug: string; url: string }>
+    igdb_platform_id: number;
+    name: string;
+    abbreviation: string | null;
+  }>;
+  franchise: string | null;
+  stores: Array<{ slug: string; url: string }>;
 }
 
 /**
  * Platform mapped from IGDB.
  */
 export interface PlatformFromIgdb {
-  igdb_platform_id: number
-  name: string
-  abbreviation: string | null
-  slug: string
-  platform_family: string | null
+  igdb_platform_id: number;
+  name: string;
+  abbreviation: string | null;
+  slug: string;
+  platform_family: string | null;
 }
 
 /**
@@ -75,7 +75,7 @@ export function mapIgdbGameToSearchResult(game: IgdbGame): GameSearchResult {
     })),
     franchise: game.franchises?.[0]?.name ?? null,
     stores: extractStoresFromWebsites(game.websites),
-  }
+  };
 }
 
 /**
@@ -106,7 +106,7 @@ export function mapIgdbGameToGameDetails(game: IgdbGame): GameDetails {
     })),
     franchise: game.franchises?.[0]?.name ?? null,
     stores: extractStoresFromWebsites(game.websites),
-  }
+  };
 }
 
 /**
@@ -122,7 +122,7 @@ export function mapIgdbPlatformToPlatform(platform: IgdbPlatform): PlatformFromI
     abbreviation: platform.abbreviation ?? null,
     slug: platform.slug,
     platform_family: platform.platform_family?.name ?? null,
-  }
+  };
 }
 
 /**
@@ -134,12 +134,12 @@ export function mapIgdbPlatformToPlatform(platform: IgdbPlatform): PlatformFromI
 export function extractStoresFromWebsites(
   websites?: IgdbWebsite[]
 ): Array<{ slug: string; url: string }> {
-  if (!websites) return []
+  if (!websites) return [];
 
   return websites
     .filter((w) => IGDB_WEBSITE_CATEGORY_TO_STORE[w.category])
     .map((w) => ({
       slug: IGDB_WEBSITE_CATEGORY_TO_STORE[w.category],
       url: w.url,
-    }))
+    }));
 }

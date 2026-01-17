@@ -20,7 +20,11 @@ import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
 import type { MetricsService } from "@/infrastructure/metrics/metrics";
 import type { IIgdbService } from "@/integrations/igdb";
-import { mapIgdbGameToSearchResult, mapIgdbGameToGameDetails, mapIgdbPlatformToPlatform } from "@/integrations/igdb";
+import {
+  mapIgdbGameToSearchResult,
+  mapIgdbGameToGameDetails,
+  mapIgdbPlatformToPlatform,
+} from "@/integrations/igdb";
 import {
   IGDB_TOKEN_FIXTURE,
   IGDB_SEARCH_RESULTS_FIXTURE,
