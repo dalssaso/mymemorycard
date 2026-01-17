@@ -1,1 +1,1 @@
-export { adaptGameResponse, adaptGamesListResponse, type AdaptedGame } from './games'
+export { adaptGameResponse, adaptGamesListResponse, type AdaptedGame } from "./games";

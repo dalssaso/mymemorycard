@@ -3,13 +3,13 @@
  * Used during migration from legacy camelCase endpoints to DI snake_case endpoints.
  */
 export interface AdaptedGame {
-  id: string
-  name: string
-  cover_art_url: string | null
-  platform_id: string | null
-  store_id: string | null
-  igdb_id: number | null
-  metadata_source: string | undefined
+  id: string;
+  name: string;
+  cover_art_url: string | null;
+  platform_id: string | null;
+  store_id: string | null;
+  igdb_id: number | null;
+  metadata_source: string | undefined;
 }
 
 /**
@@ -28,7 +28,7 @@ export function adaptGameResponse(legacyGame: Record<string, unknown>): AdaptedG
     store_id: (legacyGame.storeId as string | null | undefined) ?? null,
     igdb_id: (legacyGame.igdbId as number | null | undefined) ?? null,
     metadata_source: legacyGame.metadataSource as string | undefined,
-  }
+  };
 }
 
 /**
@@ -38,5 +38,5 @@ export function adaptGameResponse(legacyGame: Record<string, unknown>): AdaptedG
  * @returns Array of normalized game objects with snake_case fields
  */
 export function adaptGamesListResponse(legacyGames: Record<string, unknown>[]): AdaptedGame[] {
-  return legacyGames.map(adaptGameResponse)
+  return legacyGames.map(adaptGameResponse);
 }
