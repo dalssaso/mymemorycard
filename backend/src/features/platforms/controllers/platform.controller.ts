@@ -58,6 +58,7 @@ export class PlatformController implements IPlatformController {
 
     this.router.use("/", authMiddleware);
     this.router.openapi(listRoute, async (c) => {
+      this.logger.debug("GET /platforms");
       const result = await this.platformService.list();
       return c.json(result, 200);
     });
@@ -88,6 +89,7 @@ export class PlatformController implements IPlatformController {
 
     this.router.use("/:id", authMiddleware);
     this.router.openapi(getRoute, async (c) => {
+      this.logger.debug("GET /platforms/:id");
       const params = c.req.valid("param");
       const result = await this.platformService.getById(params.id);
       return c.json(result, 200);
