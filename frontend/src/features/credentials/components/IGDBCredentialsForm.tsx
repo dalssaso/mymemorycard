@@ -43,7 +43,7 @@ export function IGDBCredentialsForm(): JSX.Element {
   };
 
   return (
-    <div className="space-y-6 rounded-lg border border-border bg-surface/50 p-6">
+    <div className="bg-surface/50 space-y-6 rounded-lg border border-border p-6">
       <div>
         <h3 className="text-lg font-semibold text-text-primary">IGDB Credentials</h3>
         <p className="text-sm text-text-secondary">
@@ -52,7 +52,7 @@ export function IGDBCredentialsForm(): JSX.Element {
             href="https://api.igdb.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent hover:text-accent/80"
+            className="hover:text-accent/80 text-accent"
           >
             IGDB API console
           </a>
@@ -98,13 +98,13 @@ export function IGDBCredentialsForm(): JSX.Element {
       </div>
 
       {saveStatus === "error" && (
-        <div className="rounded bg-destructive/30 p-3 text-sm text-destructive">
+        <div className="bg-destructive/30 rounded p-3 text-sm text-destructive">
           Failed to save credentials. Please check your ID and secret.
         </div>
       )}
 
       {saveStatus === "success" && (
-        <div className="rounded bg-status-playing/30 p-3 text-sm text-status-playing">
+        <div className="bg-status-playing/30 rounded p-3 text-sm text-status-playing">
           Credentials saved successfully!
         </div>
       )}
