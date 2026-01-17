@@ -35,11 +35,11 @@ export class RedisConnection implements IRedisConnection {
   async getClient(): Promise<RedisClientType> {
     // Short-circuit if shutdown is in progress
     if (this.closing) {
-      return Promise.reject(new Error("Redis client is closing"));
+      throw new Error("Redis client is closing");
     }
 
-    // Return existing client only if not closing
-    if (this.client && !this.closing) {
+    // Return existing client
+    if (this.client) {
       return this.client;
     }
 
