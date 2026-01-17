@@ -1097,10 +1097,64 @@ describe("Games Integration Tests", () => {
         expect(response.status).toBe(401);
       });
 
+      it("should update status to playing and set startedAt", async () => {
+        const response = await app.request(
+          `/api/v1/user-games/${progressGameId}/platforms/${progressPlatformId}/status`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${testUserToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status: "playing" }),
+          }
+        );
+
+        expect(response.status).toBe(200);
+
+        const data = (await response.json()) as { success: boolean };
+        expect(data.success).toBe(true);
+      });
+
+      it("should update status to finished and set completedAt", async () => {
+        const response = await app.request(
+          `/api/v1/user-games/${progressGameId}/platforms/${progressPlatformId}/status`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${testUserToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status: "finished" }),
+          }
+        );
+
+        expect(response.status).toBe(200);
+
+        const data = (await response.json()) as { success: boolean };
+        expect(data.success).toBe(true);
+      });
+
+      it("should update status to completed", async () => {
+        const response = await app.request(
+          `/api/v1/user-games/${progressGameId}/platforms/${progressPlatformId}/status`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${testUserToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status: "completed" }),
+          }
+        );
+
+        expect(response.status).toBe(200);
+
+        const data = (await response.json()) as { success: boolean };
+        expect(data.success).toBe(true);
+      });
+
       it("should update status to dropped", async () => {
-        // Note: Using "dropped" status because "playing"/"finished"/"completed" have a bug
-        // in the repository where the sql template serializes dates incorrectly.
-        // This test verifies the endpoint works correctly with a simple status change.
         const response = await app.request(
           `/api/v1/user-games/${progressGameId}/platforms/${progressPlatformId}/status`,
           {
