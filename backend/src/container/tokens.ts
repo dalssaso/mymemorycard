@@ -20,3 +20,4 @@ export const PREFERENCES_SERVICE_TOKEN = "IPreferencesService";
 export const PREFERENCES_CONTROLLER_TOKEN = "IPreferencesController";
 export const USER_CREDENTIAL_REPOSITORY_TOKEN = "IUserCredentialRepository";
 export const CREDENTIAL_SERVICE_TOKEN = "ICredentialService";
+export const CREDENTIAL_CONTROLLER_TOKEN = "ICredentialController";
