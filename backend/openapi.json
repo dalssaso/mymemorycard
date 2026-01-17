@@ -1521,6 +1521,7 @@
           }
         },
         "additionalProperties": false,
+        "minProperties": 1,
         "description": "Request body for updating custom progress fields",
         "example": {
           "completion_percentage": 75.5,
