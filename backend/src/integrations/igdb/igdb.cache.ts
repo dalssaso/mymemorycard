@@ -30,17 +30,37 @@ function normalizeQuery(query: string): string {
 /**
  * Minimal Redis client interface for cache operations.
  */
-interface RedisClient {
+export interface RedisClient {
   get(key: string): Promise<string | null>;
   setEx(key: string, seconds: number, value: string): Promise<string>;
   del(key: string | string[]): Promise<number>;
 }
 
 /**
+ * Factory function type for lazy Redis client resolution.
+ */
+export type RedisClientFactory = () => Promise<RedisClient>;
+
+/**
  * Redis cache utilities for IGDB API responses.
+ * Supports lazy Redis client initialization to avoid connection during OpenAPI generation.
  */
 export class IgdbCache {
-  constructor(private redis: RedisClient) {}
+  private redisClient: RedisClient | null = null;
+  private redisFactory: RedisClientFactory | null = null;
+
+  /**
+   * Create an IgdbCache instance.
+   *
+   * @param redisOrFactory - Either a Redis client directly, or a factory function for lazy loading
+   */
+  constructor(redisOrFactory: RedisClient | RedisClientFactory) {
+    if (typeof redisOrFactory === "function") {
+      this.redisFactory = redisOrFactory;
+    } else {
+      this.redisClient = redisOrFactory;
+    }
+  }
 
   /**
    * Get cached search results.
@@ -50,8 +70,9 @@ export class IgdbCache {
    */
   async getCachedSearch(query: string): Promise<IgdbGame[] | null> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:search:${normalizeQuery(query)}`;
-      const cached = await this.redis.get(key);
+      const cached = await redis.get(key);
       return cached ? (JSON.parse(cached) as IgdbGame[]) : null;
     } catch {
       return null;
@@ -66,8 +87,9 @@ export class IgdbCache {
    */
   async cacheSearch(query: string, games: IgdbGame[]): Promise<void> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:search:${normalizeQuery(query)}`;
-      await this.redis.setEx(key, CACHE_TTL.search, JSON.stringify(games));
+      await redis.setEx(key, CACHE_TTL.search, JSON.stringify(games));
     } catch {
       // Ignore cache errors - continue without caching
     }
@@ -81,8 +103,9 @@ export class IgdbCache {
    */
   async getCachedGameDetails(igdbId: number): Promise<IgdbGame | null> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:game:${igdbId}`;
-      const cached = await this.redis.get(key);
+      const cached = await redis.get(key);
       return cached ? (JSON.parse(cached) as IgdbGame) : null;
     } catch {
       return null;
@@ -97,8 +120,9 @@ export class IgdbCache {
    */
   async cacheGameDetails(igdbId: number, game: IgdbGame): Promise<void> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:game:${igdbId}`;
-      await this.redis.setEx(key, CACHE_TTL.gameDetails, JSON.stringify(game));
+      await redis.setEx(key, CACHE_TTL.gameDetails, JSON.stringify(game));
     } catch {
       // Ignore cache errors
     }
@@ -112,8 +136,9 @@ export class IgdbCache {
    */
   async getCachedPlatform(igdbId: number): Promise<IgdbPlatform | null> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:platform:${igdbId}`;
-      const cached = await this.redis.get(key);
+      const cached = await redis.get(key);
       return cached ? (JSON.parse(cached) as IgdbPlatform) : null;
     } catch {
       return null;
@@ -128,8 +153,9 @@ export class IgdbCache {
    */
   async cachePlatform(igdbId: number, platform: IgdbPlatform): Promise<void> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:platform:${igdbId}`;
-      await this.redis.setEx(key, CACHE_TTL.platform, JSON.stringify(platform));
+      await redis.setEx(key, CACHE_TTL.platform, JSON.stringify(platform));
     } catch {
       // Ignore cache errors
     }
@@ -143,8 +169,9 @@ export class IgdbCache {
    */
   async getCachedToken(userId: string): Promise<string | null> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:token:${userId}`;
-      return await this.redis.get(key);
+      return await redis.get(key);
     } catch {
       return null;
     }
@@ -159,12 +186,13 @@ export class IgdbCache {
    */
   async cacheToken(userId: string, token: string, expiresIn: number): Promise<void> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:token:${userId}`;
       // Cache for slightly less than expiry to ensure refresh before actual expiration
       // Ensure TTL is always positive (minimum 1 second)
       const candidate = expiresIn - TOKEN_EXPIRY_BUFFER;
       const ttl = candidate > 0 ? Math.min(candidate, CACHE_TTL.token) : Math.max(1, expiresIn);
-      await this.redis.setEx(key, ttl, token);
+      await redis.setEx(key, ttl, token);
     } catch {
       // Ignore cache errors
     }
@@ -177,10 +205,25 @@ export class IgdbCache {
    */
   async invalidateToken(userId: string): Promise<void> {
     try {
+      const redis = await this.getRedis();
       const key = `igdb:token:${userId}`;
-      await this.redis.del(key);
+      await redis.del(key);
     } catch {
       // Ignore cache errors
     }
+  }
+
+  /**
+   * Get the Redis client, resolving lazily if needed.
+   */
+  private async getRedis(): Promise<RedisClient> {
+    if (this.redisClient) {
+      return this.redisClient;
+    }
+    if (this.redisFactory) {
+      this.redisClient = await this.redisFactory();
+      return this.redisClient;
+    }
+    throw new Error("No Redis client or factory provided");
   }
 }

@@ -1,2 +1,2 @@
-export { RedisConnection } from "./connection"
-export type { IRedisConnection } from "./connection.interface"
+export { RedisConnection } from "./connection";
+export type { IRedisConnection } from "./connection.interface";
