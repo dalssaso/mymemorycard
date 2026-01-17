@@ -245,6 +245,14 @@ export class GamesController implements IGamesController {
           },
           description: "IGDB credentials not configured for user",
         },
+        409: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Conflict - user already owns this game on this platform",
+        },
       },
     });
 
@@ -391,6 +399,14 @@ export class GamesController implements IGamesController {
             },
           },
           description: "Platform or store not found",
+        },
+        409: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Conflict - user already owns this game on this platform",
         },
       },
     });

@@ -225,8 +225,16 @@ export class UserGameRepository implements IUserGameRepository {
       if (error instanceof NotFoundError) {
         throw error;
       }
-      const err = error as { code?: string; cause?: { code?: string } };
-      const isUniqueViolation = err.code === "23505" || err.cause?.code === "23505";
+      const err = error as {
+        code?: string;
+        message?: string;
+        cause?: { code?: string; message?: string };
+      };
+      const isUniqueViolation =
+        err.code === "23505" ||
+        err.cause?.code === "23505" ||
+        err.message?.includes("23505") ||
+        err.cause?.message?.includes("23505");
       if (isUniqueViolation) {
         throw new ConflictError(`User already owns game on this platform`);
       }

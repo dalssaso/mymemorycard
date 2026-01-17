@@ -2388,6 +2388,16 @@
               }
             }
           },
+          "409": {
+            "description": "Conflict - user already owns this game on this platform",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
             "description": "IGDB credentials not configured for user",
             "content": {
@@ -2537,6 +2547,16 @@
           },
           "404": {
             "description": "Platform or store not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - user already owns this game on this platform",
             "content": {
               "application/json": {
                 "schema": {
