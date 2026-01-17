@@ -120,11 +120,15 @@ export function PlatformStoreSelector({
         </Select>
 
         {platformsError && (
-          <p className="mt-2 text-xs text-destructive">Failed to load platforms. Please try again.</p>
+          <p className="mt-2 text-xs text-destructive">
+            Failed to load platforms. Please try again.
+          </p>
         )}
 
         {!platformsLoading && !platformsError && availablePlatforms.length === 0 && (
-          <p className="mt-2 text-xs text-muted-foreground">No platforms available for this game.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            No platforms available for this game.
+          </p>
         )}
       </div>
 

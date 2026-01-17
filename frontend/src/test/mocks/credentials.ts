@@ -1,14 +1,14 @@
-import { vi } from "vitest"
+import { vi } from "vitest";
 
 /**
  * Mock configuration for useSaveCredentials hook
  */
 export interface MockSaveCredentialsConfig {
-  mutate?: ReturnType<typeof vi.fn>
-  isPending?: boolean
-  isSuccess?: boolean
-  isError?: boolean
-  error?: Error | null
+  mutate?: ReturnType<typeof vi.fn>;
+  isPending?: boolean;
+  isSuccess?: boolean;
+  isError?: boolean;
+  error?: Error | null;
 }
 
 /**
@@ -20,7 +20,7 @@ export const defaultMockSaveCredentials: Required<MockSaveCredentialsConfig> = {
   isSuccess: false,
   isError: false,
   error: null,
-}
+};
 
 /**
  * Creates a mock implementation for useSaveCredentials that can be customized.
@@ -36,7 +36,7 @@ export function createMockSaveCredentials(
     ...defaultMockSaveCredentials,
     mutate: config.mutate ?? vi.fn(),
     ...config,
-  }
+  };
 }
 
 /**
@@ -54,10 +54,10 @@ export function createMockSaveCredentials(
  * }))
  * ```
  */
-export function setupUseSaveCredentialsMock(
-  config: MockSaveCredentialsConfig = {}
-): { useSaveCredentials: ReturnType<typeof vi.fn> } {
+export function setupUseSaveCredentialsMock(config: MockSaveCredentialsConfig = {}): {
+  useSaveCredentials: ReturnType<typeof vi.fn>;
+} {
   return {
     useSaveCredentials: vi.fn(() => createMockSaveCredentials(config)),
-  }
+  };
 }

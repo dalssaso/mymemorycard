@@ -69,8 +69,8 @@ export function IGDBCredentialsForm(): JSX.Element {
             type="password"
             value={clientId}
             onChange={(e) => {
-              setClientId(e.target.value)
-              setSaveStatus("idle")
+              setClientId(e.target.value);
+              setSaveStatus("idle");
             }}
             placeholder="your-client-id"
             className="mt-2 bg-slate-900 text-white placeholder-slate-500"
@@ -87,8 +87,8 @@ export function IGDBCredentialsForm(): JSX.Element {
             type="password"
             value={clientSecret}
             onChange={(e) => {
-              setClientSecret(e.target.value)
-              setSaveStatus("idle")
+              setClientSecret(e.target.value);
+              setSaveStatus("idle");
             }}
             placeholder="your-client-secret"
             className="mt-2 bg-slate-900 text-white placeholder-slate-500"

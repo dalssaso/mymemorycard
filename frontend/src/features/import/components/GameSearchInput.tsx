@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react"
-import { useSearchGames } from "@/features/library/hooks/useSearchGames"
-import { Input } from "@/components/ui/input"
-import type { GameSearchResult } from "@/shared/api/services"
+import { useState, useCallback } from "react";
+import { useSearchGames } from "@/features/library/hooks/useSearchGames";
+import { Input } from "@/components/ui/input";
+import type { GameSearchResult } from "@/shared/api/services";
 
 /** Props for the GameSearchInput component */
 interface GameSearchInputProps {
   /** Callback when a game is selected from search results */
-  onSelect: (game: GameSearchResult) => void
+  onSelect: (game: GameSearchResult) => void;
 }
 
 /**
@@ -14,19 +14,19 @@ interface GameSearchInputProps {
  * Shows loading spinner while searching and displays results in a dropdown.
  */
 export function GameSearchInput({ onSelect }: GameSearchInputProps): JSX.Element {
-  const [query, setQuery] = useState("")
-  const [isOpen, setIsOpen] = useState(false)
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
-  const { results, isLoading, isError } = useSearchGames(query, 300)
+  const { results, isLoading, isError } = useSearchGames(query, 300);
 
   const handleSelect = useCallback(
     (game: GameSearchResult): void => {
-      onSelect(game)
-      setQuery("")
-      setIsOpen(false)
+      onSelect(game);
+      setQuery("");
+      setIsOpen(false);
     },
     [onSelect]
-  )
+  );
 
   return (
     <div className="relative w-full">
@@ -35,8 +35,8 @@ export function GameSearchInput({ onSelect }: GameSearchInputProps): JSX.Element
           type="text"
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value)
-            setIsOpen(true)
+            setQuery(e.target.value);
+            setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search games..."
@@ -51,7 +51,7 @@ export function GameSearchInput({ onSelect }: GameSearchInputProps): JSX.Element
       </div>
 
       {isError && (
-        <div className="absolute inset-x-0 top-full mt-1 rounded border border-destructive bg-destructive/30 p-2 text-sm text-destructive">
+        <div className="bg-destructive/30 absolute inset-x-0 top-full mt-1 rounded border border-destructive p-2 text-sm text-destructive">
           Failed to search. Please try again.
         </div>
       )}
@@ -102,5 +102,5 @@ export function GameSearchInput({ onSelect }: GameSearchInputProps): JSX.Element
         </div>
       )}
     </div>
-  )
+  );
 }

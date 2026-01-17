@@ -110,9 +110,9 @@ const createWrapper = (
   queryClient: QueryClient
 ): (({ children }: { children: ReactNode }) => JSX.Element) => {
   return function Wrapper({ children }: { children: ReactNode }): JSX.Element {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  }
-}
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  };
+};
 
 describe("Settings Page - Credentials Section", () => {
   let queryClient: QueryClient;
