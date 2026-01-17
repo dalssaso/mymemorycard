@@ -1,5 +1,5 @@
 import { injectable, inject } from "tsyringe";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
@@ -116,6 +116,7 @@ export class UserGameRepository implements IUserGameRepository {
       .innerJoin(platforms, eq(userGames.platformId, platforms.id))
       .leftJoin(stores, eq(userGames.storeId, stores.id))
       .where(eq(userGames.userId, userId))
+      .orderBy(desc(userGames.createdAt))
       .offset(skip)
       .limit(take);
 

@@ -253,6 +253,11 @@ export function mockSelectJoinResult<T>(mockDb: DrizzleDB, result: T[]): void {
               offset: mock().mockReturnValue({
                 limit: mock().mockResolvedValue(result),
               }),
+              orderBy: mock().mockReturnValue({
+                offset: mock().mockReturnValue({
+                  limit: mock().mockResolvedValue(result),
+                }),
+              }),
             }),
           }),
         }),
