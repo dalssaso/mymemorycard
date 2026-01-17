@@ -389,7 +389,10 @@ export class UserGameRepository implements IUserGameRepository {
           await tx
             .delete(collectionGames)
             .where(
-              and(eq(collectionGames.gameId, gameId), inArray(collectionGames.collectionId, collectionIds))
+              and(
+                eq(collectionGames.gameId, gameId),
+                inArray(collectionGames.collectionId, collectionIds)
+              )
             );
         }
       }
