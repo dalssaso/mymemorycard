@@ -14,7 +14,7 @@ const CACHE_TTL = {
  * Buffer time to subtract from token expiry (in seconds).
  * Ensures token is refreshed before actual expiration.
  */
-const TOKEN_EXPIRY_BUFFER = 300;
+export const TOKEN_EXPIRY_BUFFER = 300;
 
 /**
  * Normalize a search query for consistent cache keys.

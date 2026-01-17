@@ -44,17 +44,11 @@ export class RedisConnection implements IRedisConnection {
     const connectPromise = this.connect();
     this.connecting = connectPromise;
 
-    connectPromise
-      .catch(() => {
-        // Clean up partially-created client on failure
-        if (this.client) {
-          this.client.quit().catch(() => {
-            // Ignore cleanup errors
-          });
-          this.client = null;
-        }
-      })
-      .finally(() => {
+    connectPromise.catch(() => {
+      // Connection failed - error will be thrown to caller
+      // Note: this.client is only assigned after successful connect(),
+      // so no cleanup needed here
+    }).finally(() => {
         // Clear connecting only if it still equals this promise (allows retry)
         if (this.connecting === connectPromise) {
           this.connecting = null;
@@ -138,7 +132,13 @@ export class RedisConnection implements IRedisConnection {
 
     // If close() was called while connecting, shut down immediately
     if (this.closing) {
-      await client.quit();
+      try {
+        await client.quit();
+      } catch (quitError) {
+        // Log but don't let quit error mask the intended error
+        const message = quitError instanceof Error ? quitError.message : String(quitError);
+        this.logger.debug("Error during cleanup quit", message);
+      }
       throw new Error("Connection closed during connect");
     }
 

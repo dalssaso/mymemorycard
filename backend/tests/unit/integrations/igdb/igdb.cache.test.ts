@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, mock } from "bun:test";
 import "reflect-metadata";
 
-import { IgdbCache } from "@/integrations/igdb/igdb.cache";
+import { IgdbCache, TOKEN_EXPIRY_BUFFER } from "@/integrations/igdb/igdb.cache";
 import type { IgdbGame } from "@/integrations/igdb/igdb.types";
 
 describe("IgdbCache", () => {
@@ -169,8 +169,8 @@ describe("IgdbCache", () => {
     });
 
     it("should skip caching when expiresIn is less than or equal to buffer", async () => {
-      // When expiresIn (200) <= buffer (300), should skip caching entirely
-      await cache.cacheToken("user-123", "test-token", 200);
+      // When expiresIn <= TOKEN_EXPIRY_BUFFER, should skip caching entirely
+      await cache.cacheToken("user-123", "test-token", TOKEN_EXPIRY_BUFFER);
 
       expect(mockRedis.setEx).not.toHaveBeenCalled();
     });
