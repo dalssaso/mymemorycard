@@ -1521,12 +1521,134 @@
           }
         },
         "additionalProperties": false,
-        "minProperties": 1,
         "description": "Request body for updating custom progress fields",
         "example": {
           "completion_percentage": 75.5,
           "difficulty_rating": 7
         }
+      },
+      "StoreListResponse": {
+        "type": "object",
+        "properties": {
+          "stores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Store"
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "stores"
+        ]
+      },
+      "Store": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Store unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-friendly store identifier",
+            "example": "steam"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Human-readable store name",
+            "example": "Steam"
+          },
+          "store_type": {
+            "type": "string",
+            "enum": [
+              "digital",
+              "physical"
+            ],
+            "description": "Store type classification",
+            "example": "digital"
+          },
+          "platform_family": {
+            "type": "string",
+            "nullable": true,
+            "description": "Associated platform family",
+            "example": "PC"
+          },
+          "color_primary": {
+            "type": "string",
+            "description": "Brand color in hex format",
+            "example": "#171A21"
+          },
+          "website_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "Official website URL",
+            "example": "https://store.steampowered.com"
+          },
+          "icon_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "Store icon/logo URL",
+            "example": "https://example.com/steam-icon.png"
+          },
+          "supports_achievements": {
+            "type": "boolean",
+            "description": "Whether store supports achievement tracking",
+            "example": true
+          },
+          "supports_library_sync": {
+            "type": "boolean",
+            "description": "Whether store supports library sync",
+            "example": true
+          },
+          "igdb_website_category": {
+            "type": "integer",
+            "nullable": true,
+            "description": "IGDB website category identifier",
+            "example": 1
+          },
+          "sort_order": {
+            "type": "integer",
+            "description": "Display order in UI lists",
+            "example": 1
+          },
+          "created_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Creation timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "display_name",
+          "store_type",
+          "platform_family",
+          "color_primary",
+          "website_url",
+          "icon_url",
+          "supports_achievements",
+          "supports_library_sync",
+          "igdb_website_category",
+          "sort_order",
+          "created_at"
+        ]
+      },
+      "StoreResponse": {
+        "type": "object",
+        "properties": {
+          "store": {
+            "$ref": "#/components/schemas/Store"
+          }
+        },
+        "required": [
+          "store"
+        ]
       }
     },
     "parameters": {},
@@ -3458,6 +3580,98 @@
           },
           "404": {
             "description": "Game not found in user library",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stores": {
+      "get": {
+        "tags": [
+          "stores"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List stores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stores/{id}": {
+      "get": {
+        "tags": [
+          "stores"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Store unique identifier",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "required": true,
+            "description": "Store unique identifier",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Store not found",
             "content": {
               "application/json": {
                 "schema": {
