@@ -1,7 +1,12 @@
 import { inject, injectable } from "tsyringe";
 
-import { ENCRYPTION_SERVICE_TOKEN, USER_CREDENTIAL_REPOSITORY_TOKEN } from "@/container/tokens";
+import {
+  ENCRYPTION_SERVICE_TOKEN,
+  IGDB_SERVICE_TOKEN,
+  USER_CREDENTIAL_REPOSITORY_TOKEN,
+} from "@/container/tokens";
 import { Logger } from "@/infrastructure/logging/logger";
+import type { IIgdbService } from "@/integrations/igdb";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 
 import type { ApiService, UserApiCredential } from "../types";
@@ -29,6 +34,8 @@ export class CredentialService implements ICredentialService {
     private repository: IUserCredentialRepository,
     @inject(ENCRYPTION_SERVICE_TOKEN)
     private encryption: IEncryptionService,
+    @inject(IGDB_SERVICE_TOKEN)
+    private igdbService: IIgdbService,
     @inject(Logger) parentLogger: Logger
   ) {
     this.logger = parentLogger.child("CredentialService");
@@ -109,8 +116,8 @@ export class CredentialService implements ICredentialService {
     // Decrypt to verify we can read the credentials
     const decrypted = this.decryptCredentials(credential);
 
-    // Placeholder validation - actual API calls added in B3/B7
-    const isValid = this.performValidation(service, decrypted);
+    // Perform actual API validation for the service
+    const isValid = await this.performValidation(service, decrypted);
 
     // Calculate token expiry for OAuth-based services only when validation succeeds
     // Twitch tokens expire in ~60 days
@@ -210,15 +217,27 @@ export class CredentialService implements ICredentialService {
   }
 
   /**
-   * Placeholder validation - actual API calls added in B3/B7.
-   * For now, validates that credentials can be decrypted and have required fields.
+   * Perform actual API validation for the service.
    *
-   * @param _service - API service (unused in placeholder)
+   * @param service - API service to validate
    * @param decrypted - Decrypted credential data
-   * @returns True if credentials appear valid
+   * @returns True if credentials are valid
    */
-  private performValidation(_service: ApiService, decrypted: unknown): boolean {
-    // Basic structure check - actual API validation in B3/B7
+  private async performValidation(service: ApiService, decrypted: unknown): Promise<boolean> {
+    if (service === "igdb") {
+      try {
+        const creds = decrypted as TwitchOAuthCredentials;
+        await this.igdbService.authenticate({
+          client_id: creds.client_id,
+          client_secret: creds.client_secret,
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    // Other services validated in future phases (B7)
     if (!decrypted || typeof decrypted !== "object") {
       return false;
     }
