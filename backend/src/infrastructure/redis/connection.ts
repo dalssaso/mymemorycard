@@ -20,6 +20,14 @@ export class RedisConnection implements IRedisConnection {
   private readonly logger: Logger;
   private readonly redisUrl: string;
 
+  /**
+   * Create a new RedisConnection instance with injected dependencies.
+   * Initializes redisUrl, shouldSkipConnect flag, and a child logger for Redis operations.
+   *
+   * @public
+   * @param config - Application configuration injected via CONFIG_TOKEN
+   * @param logger - Logger instance for Redis connection logging
+   */
   constructor(@inject(CONFIG_TOKEN) config: IConfig, @inject(Logger) logger: Logger) {
     this.redisUrl = config.redis.url;
     this.shouldSkipConnect = config.skipRedisConnect;
