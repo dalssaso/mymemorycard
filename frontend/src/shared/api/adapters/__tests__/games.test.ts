@@ -59,6 +59,48 @@ describe("Games Adapters", () => {
       expect(result.store_id).toBeNull();
       expect(result.igdb_id).toBeNull();
     });
+
+    it("should return object with all required keys", () => {
+      const legacyGame = {
+        id: "game-1",
+        name: "Test Game",
+      };
+
+      const result = adaptGameResponse(legacyGame);
+
+      const requiredKeys = [
+        "id",
+        "name",
+        "cover_art_url",
+        "platform_id",
+        "store_id",
+        "igdb_id",
+        "metadata_source",
+      ];
+      expect(Object.keys(result).sort()).toEqual(requiredKeys.sort());
+    });
+
+    it("should ensure string types for id and name", () => {
+      const legacyGame = {
+        id: "game-1",
+        name: "Test Game",
+      };
+
+      const result = adaptGameResponse(legacyGame);
+
+      expect(typeof result.id).toBe("string");
+      expect(typeof result.name).toBe("string");
+    });
+
+    it("should ensure igdb_id is number or null", () => {
+      const withId = adaptGameResponse({ id: "1", name: "Test", igdbId: 123 });
+      const withNull = adaptGameResponse({ id: "1", name: "Test", igdbId: null });
+      const withUndefined = adaptGameResponse({ id: "1", name: "Test" });
+
+      expect(typeof withId.igdb_id).toBe("number");
+      expect(withNull.igdb_id).toBeNull();
+      expect(withUndefined.igdb_id).toBeNull();
+    });
   });
 
   describe("adaptGamesListResponse", () => {
