@@ -268,20 +268,19 @@ export class UserGameRepository implements IUserGameRepository {
    * @throws {NotFoundError} If not found or access denied
    */
   async delete(id: string, userId: string): Promise<boolean> {
-    // 1. Get the user game first to retrieve gameId and platformId
-    const userGame = await this.db.query.userGames.findFirst({
-      where: and(eq(userGames.id, id), eq(userGames.userId, userId)),
-    });
-
-    if (!userGame) {
-      throw new NotFoundError("User game", id);
-    }
-
-    const gameId = userGame.gameId;
-    const platformId = userGame.platformId;
-
-    // 2. Delete in transaction for atomicity
+    // Delete in transaction for atomicity (including initial read to prevent TOCTOU)
     await this.db.transaction(async (tx) => {
+      // 1. Get the user game inside transaction to retrieve gameId and platformId
+      const userGame = await tx.query.userGames.findFirst({
+        where: and(eq(userGames.id, id), eq(userGames.userId, userId)),
+      });
+
+      if (!userGame) {
+        throw new NotFoundError("User game", id);
+      }
+
+      const gameId = userGame.gameId;
+      const platformId = userGame.platformId;
       // Delete play sessions
       await tx
         .delete(playSessions)
