@@ -28,14 +28,14 @@ export interface IUserGameRepository {
    * @throws {ConflictError} If entry already exists
    */
   create(data: {
-    userId: string;
-    gameId: string;
-    platformId: string;
-    storeId?: string;
-    platformGameId?: string;
+    user_id: string;
+    game_id: string;
+    platform_id: string;
+    store_id?: string;
+    platform_game_id?: string;
     owned?: boolean;
-    purchasedDate?: Date;
-    importSource?: string;
+    purchased_date?: Date;
+    import_source?: string;
   }): Promise<UserGame>;
 
   /**

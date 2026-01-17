@@ -57,27 +57,27 @@ export class UserGameRepository implements IUserGameRepository {
    * @throws {ConflictError} If entry already exists
    */
   async create(data: {
-    userId: string;
-    gameId: string;
-    platformId: string;
-    storeId?: string;
-    platformGameId?: string;
+    user_id: string;
+    game_id: string;
+    platform_id: string;
+    store_id?: string;
+    platform_game_id?: string;
     owned?: boolean;
-    purchasedDate?: Date;
-    importSource?: string;
+    purchased_date?: Date;
+    import_source?: string;
   }): Promise<UserGame> {
     try {
       const [created] = await this.db
         .insert(userGames)
         .values({
-          userId: data.userId,
-          gameId: data.gameId,
-          platformId: data.platformId,
-          storeId: data.storeId,
-          platformGameId: data.platformGameId,
+          userId: data.user_id,
+          gameId: data.game_id,
+          platformId: data.platform_id,
+          storeId: data.store_id,
+          platformGameId: data.platform_game_id,
           owned: data.owned ?? true,
-          purchasedDate: data.purchasedDate ? this.formatDateForDb(data.purchasedDate) : null,
-          importSource: data.importSource,
+          purchasedDate: data.purchased_date ? this.formatDateForDb(data.purchased_date) : null,
+          importSource: data.import_source,
         })
         .returning();
 
@@ -94,7 +94,7 @@ export class UserGameRepository implements IUserGameRepository {
         (typeof err.message === "string" && err.message.includes("23505"));
 
       if (isUniqueViolation) {
-        throw new ConflictError(`User already owns game on platform ${data.platformId}`);
+        throw new ConflictError(`User already owns game on platform ${data.platform_id}`);
       }
       throw error;
     }
