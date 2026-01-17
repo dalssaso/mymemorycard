@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import { platforms } from "@/db/schema";
+import { ConflictError } from "@/shared/errors/base";
 import type { IPlatformRepository } from "./platform.repository.interface";
 import type { Platform } from "../types";
 
@@ -40,32 +41,54 @@ export class PlatformRepository implements IPlatformRepository {
    * @param name - Platform name
    * @param data - Additional platform data (abbreviation, slug, platform_family, color_primary)
    * @returns Platform (created or existing)
+   * @throws {ConflictError} If insert fails due to concurrent creation
    */
   async getOrCreate(
     igdbPlatformId: number,
     name: string,
     data?: Partial<Omit<Platform, "id" | "created_at">>
   ): Promise<Platform> {
-    // Try to find existing platform by IGDB ID
-    const existing = await this.findByIgdbId(igdbPlatformId);
-    if (existing) {
-      return existing;
-    }
+    return this.db.transaction(async (tx) => {
+      // Check for existing platform within transaction
+      const existing = await tx.query.platforms.findFirst({
+        where: eq(platforms.igdbPlatformId, igdbPlatformId),
+      });
 
-    // Create new platform
-    const result = await this.db
-      .insert(platforms)
-      .values({
-        igdbPlatformId,
-        name,
-        abbreviation: data?.abbreviation,
-        slug: data?.slug,
-        platformFamily: data?.platform_family,
-        colorPrimary: data?.color_primary || "#6B7280",
-      })
-      .returning();
+      if (existing) {
+        return this.mapToPlatform(existing);
+      }
 
-    return this.mapToPlatform(result[0]);
+      // Create new platform
+      try {
+        const result = await tx
+          .insert(platforms)
+          .values({
+            igdbPlatformId,
+            name,
+            abbreviation: data?.abbreviation,
+            slug: data?.slug,
+            platformFamily: data?.platform_family,
+            colorPrimary: data?.color_primary || "#6B7280",
+          })
+          .returning();
+
+        return this.mapToPlatform(result[0]);
+      } catch (error) {
+        const err = error as { code?: string; cause?: { code?: string } };
+        const isUniqueViolation = err.code === "23505" || err.cause?.code === "23505";
+        if (isUniqueViolation) {
+          // Concurrent insert happened, query the existing row
+          const existingRow = await tx.query.platforms.findFirst({
+            where: eq(platforms.igdbPlatformId, igdbPlatformId),
+          });
+          if (existingRow) {
+            return this.mapToPlatform(existingRow);
+          }
+          throw new ConflictError(`Platform with IGDB ID ${igdbPlatformId} already exists`);
+        }
+        throw error;
+      }
+    });
   }
 
   /**

@@ -21,7 +21,6 @@ import {
   GAME_ID_PARAMS_SCHEMA,
   type GameSearchRequestDto,
   type GameImportRequestDto,
-  type GameUpdateRequestDto,
   type GameIdParamsDto,
 } from "../dtos/game.dto";
 import {
@@ -190,13 +189,13 @@ export class GamesController implements IGamesController {
     });
 
     // POST /games/:id/import - Import game to user library
+    // Note: The :id param is part of the URL structure but the import uses igdb_id from body
     const importGameRoute = createRoute({
       method: "post",
       path: "/:id/import",
       tags: ["games"],
       security: [{ bearerAuth: [] }],
       request: {
-        params: GAME_ID_PARAMS_SCHEMA,
         body: {
           content: {
             "application/json": {
@@ -252,7 +251,6 @@ export class GamesController implements IGamesController {
     this.router.use("/:id/import", authMiddleware);
     this.router.openapi(importGameRoute, async (c) => {
       this.logger.debug("POST /games/:id/import");
-      const _params = c.req.valid("param") as GameIdParamsDto;
       const body = c.req.valid("json") as GameImportRequestDto;
       const userId = c.get("user").id;
 
@@ -339,7 +337,6 @@ export class GamesController implements IGamesController {
     this.router.openapi(updateMetadataRoute, async (c) => {
       this.logger.debug("POST /games/:id/metadata");
       const params = c.req.valid("param") as GameIdParamsDto;
-      const _body = c.req.valid("json") as GameUpdateRequestDto;
       const userId = c.get("user").id;
 
       const game = await this.gameMetadataService.updateGameMetadata(params.id, userId);

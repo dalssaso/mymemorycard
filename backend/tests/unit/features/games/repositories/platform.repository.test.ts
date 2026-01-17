@@ -3,7 +3,11 @@ import "reflect-metadata";
 
 import { PlatformRepository } from "@/features/games/repositories/platform.repository";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
-import { createMockDrizzleDB, mockInsertResult } from "@/tests/helpers/drizzle.mocks";
+import {
+  createMockDrizzleDB,
+  mockInsertResult,
+  mockTransaction,
+} from "@/tests/helpers/drizzle.mocks";
 
 describe("PlatformRepository", () => {
   let repository: PlatformRepository;
@@ -132,6 +136,7 @@ describe("PlatformRepository", () => {
         value: mockQuery,
         writable: true,
       });
+      mockTransaction(mockDb);
 
       const result = await repository.getOrCreate(48, "PlayStation 4");
 
@@ -162,6 +167,7 @@ describe("PlatformRepository", () => {
         writable: true,
       });
       mockInsertResult(mockDb, [newPlatform]);
+      mockTransaction(mockDb);
 
       const result = await repository.getOrCreate(200, "Xbox Series X");
 
@@ -191,6 +197,7 @@ describe("PlatformRepository", () => {
         writable: true,
       });
       mockInsertResult(mockDb, [platformWithData]);
+      mockTransaction(mockDb);
 
       const result = await repository.getOrCreate(130, "Nintendo Switch", {
         abbreviation: "Switch",
@@ -225,6 +232,7 @@ describe("PlatformRepository", () => {
         writable: true,
       });
       mockInsertResult(mockDb, [platformDefaultColor]);
+      mockTransaction(mockDb);
 
       const result = await repository.getOrCreate(300, "Unknown Platform");
 

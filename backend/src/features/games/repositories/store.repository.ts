@@ -80,7 +80,7 @@ export class StoreRepository implements IStoreRepository {
       supports_library_sync: Boolean(row.supportsLibrarySync),
       igdb_website_category: (row.igdbWebsiteCategory as number) || null,
       sort_order: (row.sortOrder as number) || 0,
-      created_at: this.ensureDate(row.createdAt) || new Date(),
+      created_at: this.ensureDate(row.createdAt),
     };
   }
 

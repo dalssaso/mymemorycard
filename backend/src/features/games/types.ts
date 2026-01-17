@@ -162,6 +162,6 @@ export interface Store {
   igdb_website_category: number | null;
   /** Display order in UI lists */
   sort_order: number;
-  /** Timestamp when store was added to system */
-  created_at: Date;
+  /** Timestamp when store was added to system (null if missing from DB) */
+  created_at: Date | null;
 }

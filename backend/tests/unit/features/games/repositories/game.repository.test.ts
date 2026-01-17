@@ -364,17 +364,10 @@ describe("GameRepository", () => {
     });
 
     it("throws NotFoundError when game does not exist", async () => {
-      const mockQuery = {
-        games: {
-          findFirst: async () => null,
-        },
-      };
-      Object.defineProperty(mockDb, "query", {
-        value: mockQuery,
-        writable: true,
-      });
+      // Mock update returning empty array (no matching row)
+      mockUpdateResult(mockDb, []);
 
-      expect(repository.update("non-existent", { name: "New Name" })).rejects.toThrow(
+      await expect(repository.update("non-existent", { name: "New Name" })).rejects.toThrow(
         NotFoundError
       );
     });

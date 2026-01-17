@@ -251,8 +251,8 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("witcher", testUserId)).rejects.toThrow(ValidationError);
-      expect(service.searchGames("witcher", testUserId)).rejects.toThrow(
+      await expect(service.searchGames("witcher", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("witcher", testUserId)).rejects.toThrow(
         "User does not have valid IGDB credentials"
       );
     });
@@ -263,14 +263,14 @@ describe("GameMetadataService", () => {
       });
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("witcher", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("witcher", testUserId)).rejects.toThrow(ValidationError);
     });
 
     it("should throw ValidationError on credential service error", async () => {
       const listCredentialsMock = mock().mockRejectedValue(new Error("Credential service error"));
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("witcher", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("witcher", testUserId)).rejects.toThrow(ValidationError);
     });
   });
 
@@ -299,8 +299,8 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.getGameDetails(1296, testUserId)).rejects.toThrow(ValidationError);
-      expect(service.getGameDetails(1296, testUserId)).rejects.toThrow(
+      await expect(service.getGameDetails(1296, testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.getGameDetails(1296, testUserId)).rejects.toThrow(
         "User does not have valid IGDB credentials"
       );
     });
@@ -309,7 +309,7 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockRejectedValue(new Error("Network error"));
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.getGameDetails(1296, testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.getGameDetails(1296, testUserId)).rejects.toThrow(ValidationError);
     });
   });
 
@@ -399,7 +399,9 @@ describe("GameMetadataService", () => {
       const getGameDetailsMock = mock().mockResolvedValue(null);
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.importGame(999999, testUserId, testPlatformId)).rejects.toThrow(NotFoundError);
+      await expect(service.importGame(999999, testUserId, testPlatformId)).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should throw NotFoundError when platform not found", async () => {
@@ -409,7 +411,9 @@ describe("GameMetadataService", () => {
       Object.assign(platformRepository, { findById: findPlatformMock });
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.importGame(1296, testUserId, "invalid-id")).rejects.toThrow(NotFoundError);
+      await expect(service.importGame(1296, testUserId, "invalid-id")).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should throw NotFoundError when store not found", async () => {
@@ -421,16 +425,18 @@ describe("GameMetadataService", () => {
       Object.assign(storeRepository, { findById: findStoreMock });
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.importGame(1296, testUserId, testPlatformId, "invalid-store")).rejects.toThrow(
-        NotFoundError
-      );
+      await expect(
+        service.importGame(1296, testUserId, testPlatformId, "invalid-store")
+      ).rejects.toThrow(NotFoundError);
     });
 
     it("should throw ValidationError when user has no credentials", async () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.importGame(1296, testUserId, testPlatformId)).rejects.toThrow(ValidationError);
+      await expect(service.importGame(1296, testUserId, testPlatformId)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should handle game with storyline as description", async () => {
@@ -490,7 +496,9 @@ describe("GameMetadataService", () => {
       const findByIdMock = mock().mockResolvedValue(null);
       Object.assign(gameRepository, { findById: findByIdMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(NotFoundError);
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should throw NotFoundError when user doesn't own the game", async () => {
@@ -500,7 +508,9 @@ describe("GameMetadataService", () => {
       Object.assign(gameRepository, { findById: findByIdMock });
       Object.assign(userGameRepository, { getByGameForUser: getByGameForUserMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(NotFoundError);
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should throw ValidationError when game has no IGDB ID", async () => {
@@ -511,8 +521,10 @@ describe("GameMetadataService", () => {
       Object.assign(gameRepository, { findById: findByIdMock });
       Object.assign(userGameRepository, { getByGameForUser: getByGameForUserMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(ValidationError);
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
+        ValidationError
+      );
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
         "Cannot update game metadata: game not from IGDB"
       );
     });
@@ -526,14 +538,18 @@ describe("GameMetadataService", () => {
       Object.assign(userGameRepository, { getByGameForUser: getByGameForUserMock });
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(NotFoundError);
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should throw ValidationError when user has no credentials", async () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(
+        ValidationError
+      );
     });
 
     it("should update all metadata fields", async () => {
@@ -602,15 +618,15 @@ describe("GameMetadataService", () => {
       const getPlatformMock = mock().mockResolvedValue(null);
       Object.assign(igdbService, { getPlatform: getPlatformMock });
 
-      expect(service.getOrCreatePlatform(999, testUserId)).rejects.toThrow(NotFoundError);
+      await expect(service.getOrCreatePlatform(999, testUserId)).rejects.toThrow(NotFoundError);
     });
 
     it("should throw ValidationError when user has no credentials", async () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.getOrCreatePlatform(6, testUserId)).rejects.toThrow(ValidationError);
-      expect(service.getOrCreatePlatform(6, testUserId)).rejects.toThrow(
+      await expect(service.getOrCreatePlatform(6, testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.getOrCreatePlatform(6, testUserId)).rejects.toThrow(
         "User does not have valid IGDB credentials"
       );
     });
@@ -619,7 +635,7 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockRejectedValue(new Error("Service error"));
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.getOrCreatePlatform(6, testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.getOrCreatePlatform(6, testUserId)).rejects.toThrow(ValidationError);
     });
 
     it("should pass platform data with default color to repository", async () => {
@@ -645,7 +661,7 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", testUserId)).rejects.toThrow();
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow();
 
       expect(igdbService.searchGames).not.toHaveBeenCalled();
     });
@@ -664,7 +680,7 @@ describe("GameMetadataService", () => {
       });
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
     });
 
     it("should require active token for credentials to be valid", async () => {
@@ -681,7 +697,7 @@ describe("GameMetadataService", () => {
       });
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
     });
 
     it("should require valid token for credentials", async () => {
@@ -698,7 +714,7 @@ describe("GameMetadataService", () => {
       });
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
     });
   });
 
@@ -713,7 +729,9 @@ describe("GameMetadataService", () => {
       Object.assign(platformRepository, { findById: findPlatformMock });
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.importGame(1296, testUserId, "invalid-id")).rejects.toThrow(NotFoundError);
+      await expect(service.importGame(1296, testUserId, "invalid-id")).rejects.toThrow(
+        NotFoundError
+      );
 
       expect(userGameRepository.create).not.toHaveBeenCalled();
     });
@@ -730,9 +748,9 @@ describe("GameMetadataService", () => {
       Object.assign(storeRepository, { findById: findStoreMock });
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.importGame(1296, testUserId, testPlatformId, "invalid-store")).rejects.toThrow(
-        NotFoundError
-      );
+      await expect(
+        service.importGame(1296, testUserId, testPlatformId, "invalid-store")
+      ).rejects.toThrow(NotFoundError);
 
       expect(userGameRepository.create).not.toHaveBeenCalled();
     });
@@ -761,15 +779,15 @@ describe("GameMetadataService", () => {
       const findByIdMock = mock().mockRejectedValue(error);
       Object.assign(gameRepository, { findById: findByIdMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(error);
+      await expect(service.updateGameMetadata(testGameId, testUserId)).rejects.toThrow(error);
     });
 
     it("should wrap credential service errors as ValidationError", async () => {
       const listCredentialsMock = mock().mockRejectedValue(new Error("Network timeout"));
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
-      expect(service.searchGames("test", testUserId)).rejects.toThrow(
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow(ValidationError);
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow(
         "Failed to validate IGDB credentials"
       );
     });
@@ -779,7 +797,7 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockRejectedValue(validationError);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", testUserId)).rejects.toThrow(validationError);
+      await expect(service.searchGames("test", testUserId)).rejects.toThrow(validationError);
     });
   });
 
@@ -792,7 +810,9 @@ describe("GameMetadataService", () => {
       Object.assign(gameRepository, { findById: findByIdMock });
       Object.assign(userGameRepository, { getByGameForUser: getByGameForUserMock });
 
-      expect(service.updateGameMetadata(testGameId, anotherUserId)).rejects.toThrow(NotFoundError);
+      await expect(service.updateGameMetadata(testGameId, anotherUserId)).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("should allow update when user owns at least one entry for game", async () => {
@@ -805,7 +825,7 @@ describe("GameMetadataService", () => {
       Object.assign(userGameRepository, { getByGameForUser: getByGameForUserMock });
       Object.assign(igdbService, { getGameDetails: getGameDetailsMock });
 
-      expect(service.updateGameMetadata(testGameId, testUserId)).resolves.toBeDefined();
+      await expect(service.updateGameMetadata(testGameId, testUserId)).resolves.toBeDefined();
     });
 
     it("should use user ID from parameter for credential lookup", async () => {
@@ -813,7 +833,7 @@ describe("GameMetadataService", () => {
       const listCredentialsMock = mock().mockResolvedValue(invalidCredentials);
       Object.assign(credentialService, { listCredentials: listCredentialsMock });
 
-      expect(service.searchGames("test", differentUserId)).rejects.toThrow();
+      await expect(service.searchGames("test", differentUserId)).rejects.toThrow();
 
       expect(credentialService.listCredentials).toHaveBeenCalledWith(differentUserId);
     });

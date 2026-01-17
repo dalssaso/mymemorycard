@@ -186,40 +186,52 @@ export class UserGameRepository implements IUserGameRepository {
    * @param data - Partial data
    * @returns Updated user game
    * @throws {NotFoundError} If not found or access denied
+   * @throws {ConflictError} If unique constraint violation
    */
   async update(
     id: string,
     userId: string,
     data: Partial<Omit<UserGame, "id" | "user_id" | "created_at">>
   ): Promise<UserGame> {
-    const existing = await this.findById(id);
-    if (!existing || existing.user_id !== userId) {
-      throw new NotFoundError(`User game ${id} not found`);
+    try {
+      const result = await this.db
+        .update(userGames)
+        .set({
+          ...(data.game_id !== undefined && { gameId: data.game_id }),
+          ...(data.platform_id !== undefined && {
+            platformId: data.platform_id,
+          }),
+          ...(data.store_id !== undefined && { storeId: data.store_id }),
+          ...(data.platform_game_id !== undefined && {
+            platformGameId: data.platform_game_id,
+          }),
+          ...(data.owned !== undefined && { owned: data.owned }),
+          ...(data.purchased_date !== undefined && {
+            purchasedDate: data.purchased_date ? this.formatDateForDb(data.purchased_date) : null,
+          }),
+          ...(data.import_source !== undefined && {
+            importSource: data.import_source,
+          }),
+        })
+        .where(and(eq(userGames.id, id), eq(userGames.userId, userId)))
+        .returning();
+
+      if (result.length === 0) {
+        throw new NotFoundError(`User game ${id} not found`);
+      }
+
+      return this.mapToUserGame(result[0]);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      const err = error as { code?: string; cause?: { code?: string } };
+      const isUniqueViolation = err.code === "23505" || err.cause?.code === "23505";
+      if (isUniqueViolation) {
+        throw new ConflictError(`User already owns game on this platform`);
+      }
+      throw error;
     }
-
-    const result = await this.db
-      .update(userGames)
-      .set({
-        ...(data.game_id !== undefined && { gameId: data.game_id }),
-        ...(data.platform_id !== undefined && {
-          platformId: data.platform_id,
-        }),
-        ...(data.store_id !== undefined && { storeId: data.store_id }),
-        ...(data.platform_game_id !== undefined && {
-          platformGameId: data.platform_game_id,
-        }),
-        ...(data.owned !== undefined && { owned: data.owned }),
-        ...(data.purchased_date !== undefined && {
-          purchasedDate: data.purchased_date ? this.formatDateForDb(data.purchased_date) : null,
-        }),
-        ...(data.import_source !== undefined && {
-          importSource: data.import_source,
-        }),
-      })
-      .where(eq(userGames.id, id))
-      .returning();
-
-    return this.mapToUserGame(result[0]);
   }
 
   /**

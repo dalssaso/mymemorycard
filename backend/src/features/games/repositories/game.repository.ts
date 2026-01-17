@@ -114,56 +114,65 @@ export class GameRepository implements IGameRepository {
    * @param data - Partial game data
    * @returns Updated game
    * @throws {NotFoundError} If game not found
+   * @throws {ConflictError} If unique constraint violation
    */
   async update(
     id: string,
     data: Partial<Omit<Game, "id" | "created_at" | "updated_at">>
   ): Promise<Game> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      throw new NotFoundError("Game", id);
+    try {
+      const result = await this.db
+        .update(games)
+        .set({
+          ...(data.igdb_id !== undefined && { igdbId: data.igdb_id }),
+          ...(data.rawg_id !== undefined && { rawgId: data.rawg_id }),
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.slug !== undefined && { slug: data.slug }),
+          ...(data.release_date !== undefined && {
+            releaseDate: data.release_date ? this.formatDateForDb(data.release_date) : null,
+          }),
+          ...(data.description !== undefined && { description: data.description }),
+          ...(data.cover_art_url !== undefined && {
+            coverArtUrl: data.cover_art_url,
+          }),
+          ...(data.background_image_url !== undefined && {
+            backgroundImageUrl: data.background_image_url,
+          }),
+          ...(data.metacritic_score !== undefined && {
+            metacriticScore: data.metacritic_score,
+          }),
+          ...(data.opencritic_score !== undefined && {
+            opencriticScore: data.opencritic_score,
+          }),
+          ...(data.esrb_rating !== undefined && {
+            esrbRating: data.esrb_rating,
+          }),
+          ...(data.series_name !== undefined && {
+            seriesName: data.series_name,
+          }),
+          ...(data.expected_playtime !== undefined && {
+            expectedPlaytime: data.expected_playtime,
+          }),
+          ...(data.metadata_source !== undefined && {
+            metadataSource: data.metadata_source,
+          }),
+        })
+        .where(eq(games.id, id))
+        .returning();
+
+      if (result.length === 0) {
+        throw new NotFoundError("Game", id);
+      }
+
+      return this.mapToGame(result[0]);
+    } catch (error) {
+      const err = error as { code?: string; cause?: { code?: string } };
+      const isUniqueViolation = err.code === "23505" || err.cause?.code === "23505";
+      if (isUniqueViolation) {
+        throw new ConflictError(`Game with this IGDB ID already exists`);
+      }
+      throw error;
     }
-
-    const result = await this.db
-      .update(games)
-      .set({
-        ...(data.igdb_id !== undefined && { igdbId: data.igdb_id }),
-        ...(data.rawg_id !== undefined && { rawgId: data.rawg_id }),
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.slug !== undefined && { slug: data.slug }),
-        ...(data.release_date !== undefined && {
-          releaseDate: data.release_date ? this.formatDateForDb(data.release_date) : null,
-        }),
-        ...(data.description !== undefined && { description: data.description }),
-        ...(data.cover_art_url !== undefined && {
-          coverArtUrl: data.cover_art_url,
-        }),
-        ...(data.background_image_url !== undefined && {
-          backgroundImageUrl: data.background_image_url,
-        }),
-        ...(data.metacritic_score !== undefined && {
-          metacriticScore: data.metacritic_score,
-        }),
-        ...(data.opencritic_score !== undefined && {
-          opencriticScore: data.opencritic_score,
-        }),
-        ...(data.esrb_rating !== undefined && {
-          esrbRating: data.esrb_rating,
-        }),
-        ...(data.series_name !== undefined && {
-          seriesName: data.series_name,
-        }),
-        ...(data.expected_playtime !== undefined && {
-          expectedPlaytime: data.expected_playtime,
-        }),
-        ...(data.metadata_source !== undefined && {
-          metadataSource: data.metadata_source,
-        }),
-      })
-      .where(eq(games.id, id))
-      .returning();
-
-    return this.mapToGame(result[0]);
   }
 
   /**

@@ -410,48 +410,22 @@ describe("UserGameRepository", () => {
     });
 
     it("throws NotFoundError when entry not found", async () => {
-      const mockQuery = {
-        userGames: {
-          findFirst: async () => null,
-        },
-      };
-      Object.defineProperty(mockDb, "query", {
-        value: mockQuery,
-        writable: true,
-      });
+      // Mock update returning empty array (no matching row - entry doesn't exist)
+      mockUpdateResult(mockDb, []);
 
-      expect(repository.update("ug-nonexistent", "user-auth", { owned: false })).rejects.toThrow(
-        NotFoundError
-      );
+      await expect(
+        repository.update("ug-nonexistent", "user-auth", { owned: false })
+      ).rejects.toThrow(NotFoundError);
     });
 
     it("throws NotFoundError when user does not own entry (cross-user access)", async () => {
-      const existingEntry = {
-        id: "ug-cross-user",
-        userId: "user-owner",
-        gameId: "game-123",
-        platformId: "platform-456",
-        storeId: null,
-        platformGameId: null,
-        owned: true,
-        purchasedDate: null,
-        importSource: null,
-        createdAt: new Date(),
-      };
+      // Mock update returning empty array (no matching row - user doesn't own it)
+      // The WHERE clause includes both id AND userId, so cross-user access returns no rows
+      mockUpdateResult(mockDb, []);
 
-      const mockQuery = {
-        userGames: {
-          findFirst: async () => existingEntry,
-        },
-      };
-      Object.defineProperty(mockDb, "query", {
-        value: mockQuery,
-        writable: true,
-      });
-
-      expect(repository.update("ug-cross-user", "user-attacker", { owned: false })).rejects.toThrow(
-        NotFoundError
-      );
+      await expect(
+        repository.update("ug-cross-user", "user-attacker", { owned: false })
+      ).rejects.toThrow(NotFoundError);
     });
 
     it("updates multiple fields on user game entry", async () => {
@@ -539,7 +513,9 @@ describe("UserGameRepository", () => {
         writable: true,
       });
 
-      expect(repository.delete("ug-nonexistent-del", "user-del")).rejects.toThrow(NotFoundError);
+      await expect(repository.delete("ug-nonexistent-del", "user-del")).rejects.toThrow(
+        NotFoundError
+      );
     });
 
     it("throws NotFoundError on cross-user delete attempt", async () => {
@@ -566,7 +542,9 @@ describe("UserGameRepository", () => {
         writable: true,
       });
 
-      expect(repository.delete("ug-cross-del", "user-attacker")).rejects.toThrow(NotFoundError);
+      await expect(repository.delete("ug-cross-del", "user-attacker")).rejects.toThrow(
+        NotFoundError
+      );
     });
   });
 

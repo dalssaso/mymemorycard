@@ -293,3 +293,18 @@ export function mockUpdateError(mockDb: DrizzleDB, error: Error): void {
   });
   Object.defineProperty(mockDb, "update", { value: updateMock, writable: true });
 }
+
+/**
+ * Mock a transaction that passes a transaction context to the callback.
+ * The transaction context has the same mocked query and insert methods as the db.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param txContext - Optional custom transaction context (defaults to using mockDb itself).
+ */
+export function mockTransaction(mockDb: DrizzleDB, txContext?: Partial<DrizzleDB>): void {
+  const transactionMock = mock().mockImplementation(async (callback: (tx: unknown) => unknown) => {
+    const tx = txContext ?? mockDb;
+    return callback(tx);
+  });
+  Object.defineProperty(mockDb, "transaction", { value: transactionMock, writable: true });
+}
