@@ -31,6 +31,7 @@ describe("IgdbCache", () => {
     it("should return null when cache miss", async () => {
       const result = await cache.getCachedSearch("test query");
       expect(result).toBeNull();
+      // Key is normalized (trimmed, lowercase, collapsed whitespace)
       expect(mockRedis.get).toHaveBeenCalledWith("igdb:search:test query");
     });
 
@@ -47,11 +48,31 @@ describe("IgdbCache", () => {
       const result = await cache.getCachedSearch("test query");
       expect(result).toBeNull();
     });
+
+    it("should normalize query with extra whitespace", async () => {
+      await cache.getCachedSearch("  Test   Query  ");
+      expect(mockRedis.get).toHaveBeenCalledWith("igdb:search:test query");
+    });
+
+    it("should normalize query with uppercase", async () => {
+      await cache.getCachedSearch("TEST QUERY");
+      expect(mockRedis.get).toHaveBeenCalledWith("igdb:search:test query");
+    });
   });
 
   describe("cacheSearch", () => {
     it("should cache search results with TTL", async () => {
       await cache.cacheSearch("test query", [testGame]);
+
+      expect(mockRedis.setEx).toHaveBeenCalledWith(
+        "igdb:search:test query",
+        expect.any(Number),
+        JSON.stringify([testGame])
+      );
+    });
+
+    it("should use normalized query key matching getCachedSearch", async () => {
+      await cache.cacheSearch("  Test   Query  ", [testGame]);
 
       expect(mockRedis.setEx).toHaveBeenCalledWith(
         "igdb:search:test query",
@@ -92,6 +113,73 @@ describe("IgdbCache", () => {
     it("should use correct key pattern", async () => {
       await cache.getCachedPlatform(6);
       expect(mockRedis.get).toHaveBeenCalledWith("igdb:platform:6");
+    });
+  });
+
+  describe("getCachedToken", () => {
+    it("should return null when cache miss", async () => {
+      const result = await cache.getCachedToken("user-123");
+      expect(result).toBeNull();
+      expect(mockRedis.get).toHaveBeenCalledWith("igdb:token:user-123");
+    });
+
+    it("should return token on cache hit", async () => {
+      mockRedis.get = mock().mockResolvedValue("test-access-token");
+
+      const result = await cache.getCachedToken("user-123");
+      expect(result).toBe("test-access-token");
+    });
+
+    it("should return null on Redis error", async () => {
+      mockRedis.get = mock().mockRejectedValue(new Error("Redis error"));
+
+      const result = await cache.getCachedToken("user-123");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("cacheToken", () => {
+    it("should cache token with TTL based on expiry minus buffer", async () => {
+      await cache.cacheToken("user-123", "test-token", 5184000);
+
+      expect(mockRedis.setEx).toHaveBeenCalledWith(
+        "igdb:token:user-123",
+        expect.any(Number),
+        "test-token"
+      );
+
+      // TTL should be less than expiresIn due to buffer
+      const actualTtl = mockRedis.setEx.mock.calls[0][1] as number;
+      expect(actualTtl).toBeLessThan(5184000);
+      expect(actualTtl).toBeGreaterThan(0);
+    });
+
+    it("should use minimum TTL when expiresIn is less than or equal to buffer", async () => {
+      // When expiresIn (200) <= buffer (300), should use Math.max(1, expiresIn) = 200
+      await cache.cacheToken("user-123", "test-token", 200);
+
+      expect(mockRedis.setEx).toHaveBeenCalledWith("igdb:token:user-123", 200, "test-token");
+    });
+
+    it("should not throw on Redis error", async () => {
+      mockRedis.setEx = mock().mockRejectedValue(new Error("Redis error"));
+
+      const result = await cache.cacheToken("user-123", "test-token", 5184000);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("invalidateToken", () => {
+    it("should delete token from cache", async () => {
+      await cache.invalidateToken("user-123");
+      expect(mockRedis.del).toHaveBeenCalledWith("igdb:token:user-123");
+    });
+
+    it("should not throw on Redis error", async () => {
+      mockRedis.del = mock().mockRejectedValue(new Error("Redis error"));
+
+      const result = await cache.invalidateToken("user-123");
+      expect(result).toBeUndefined();
     });
   });
 

@@ -8,6 +8,7 @@ import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { users, userApiCredentials } from "@/db/schema";
 import type { IIgdbService } from "@/integrations/igdb";
 import { IGDB_SERVICE_TOKEN } from "@/container/tokens";
+import { NotFoundError } from "@/shared/errors/base";
 
 describe("IGDB Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -143,14 +144,24 @@ describe("IGDB Integration Tests", () => {
         }),
       });
 
+      if (!registerResponse.ok) {
+        const errorBody = await registerResponse.text();
+        throw new Error(`Failed to register test user: ${registerResponse.status} - ${errorBody}`);
+      }
+
       const registerData = (await registerResponse.json()) as {
         user: { id: string };
       };
+
+      if (!registerData.user?.id) {
+        throw new Error("Registration response missing user.id field");
+      }
+
       const noCredUserId = registerData.user.id;
       createdUserIds.push(noCredUserId);
 
-      // Attempt to search without credentials
-      await expect(igdbService.searchGames("witcher", noCredUserId)).rejects.toThrow();
+      // Attempt to search without credentials - should throw NotFoundError
+      await expect(igdbService.searchGames("witcher", noCredUserId)).rejects.toThrow(NotFoundError);
     });
   });
 });

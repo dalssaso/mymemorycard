@@ -1,19 +1,30 @@
-/**
- * Queue-based rate limiter for IGDB API.
- * Enforces 4 requests per second (250ms minimum interval).
- */
-export class IgdbRateLimiter {
-  private queue: Array<() => Promise<void>> = [];
-  private processing = false;
-  private lastRequestTime = 0;
-  private readonly minInterval = 250; // 4 req/sec = 250ms
+import { injectable } from "tsyringe";
 
+/**
+ * Interface for rate limiter to allow mocking in tests.
+ */
+export interface IRateLimiter {
   /**
    * Schedule an async function to be executed respecting rate limits.
    *
    * @param fn - Async function to execute
    * @returns Promise resolving to the function result
    */
+  schedule<T>(fn: () => Promise<T>): Promise<T>;
+}
+
+/**
+ * Queue-based rate limiter for IGDB API.
+ * Enforces 4 requests per second (250ms minimum interval).
+ */
+@injectable()
+export class IgdbRateLimiter implements IRateLimiter {
+  private queue: Array<() => Promise<void>> = [];
+  private processing = false;
+  private lastRequestTime = 0;
+  private readonly minInterval = 250; // 4 req/sec = 250ms
+
+  /** @inheritdoc */
   async schedule<T>(fn: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
       this.queue.push(async () => {

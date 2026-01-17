@@ -90,9 +90,17 @@ export const IGDB_FRANCHISE_FIXTURE: IgdbFranchise = {
 };
 
 /**
+ * IGDB API error response structure.
+ */
+interface IgdbErrorResponse {
+  status: number;
+  message: string;
+}
+
+/**
  * Test fixture for IGDB API error response.
  */
-export const IGDB_ERROR_FIXTURE = {
+export const IGDB_ERROR_FIXTURE: IgdbErrorResponse = {
   status: 401,
   message: "Invalid or expired access token",
 };

@@ -3,6 +3,7 @@ import { inject, injectable } from "tsyringe";
 import {
   ENCRYPTION_SERVICE_TOKEN,
   IGDB_CACHE_TOKEN,
+  IGDB_RATE_LIMITER_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
 } from "@/container/tokens";
 import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface";
@@ -19,7 +20,7 @@ import {
   type GameSearchResult,
   type PlatformFromIgdb,
 } from "./igdb.mapper";
-import { IgdbRateLimiter } from "./igdb.rate-limiter";
+import type { IRateLimiter } from "./igdb.rate-limiter";
 import type { IgdbFranchise, IgdbGame, IgdbPlatform, IgdbTokenResponse } from "./igdb.types";
 import type { IgdbCredentials, IgdbToken, IIgdbService } from "./igdb.service.interface";
 
@@ -27,12 +28,28 @@ const IGDB_API_BASE = "https://api.igdb.com/v4";
 const TWITCH_AUTH_URL = "https://id.twitch.tv/oauth2/token";
 
 /**
+ * Buffer time to subtract from token expiry (in seconds).
+ * Ensures token is refreshed before actual expiration.
+ */
+const TOKEN_EXPIRY_BUFFER = 60;
+
+/**
+ * Escape a query string for safe use in APICalypse queries.
+ * Escapes backslashes and double quotes.
+ *
+ * @param query - Raw user query
+ * @returns Escaped query string safe for IGDB
+ */
+function escapeQuery(query: string): string {
+  return query.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/**
  * IGDB API service with rate limiting and caching.
  */
 @injectable()
 export class IgdbService implements IIgdbService {
   private logger: Logger;
-  private rateLimiter: IgdbRateLimiter;
 
   constructor(
     @inject(USER_CREDENTIAL_REPOSITORY_TOKEN)
@@ -40,10 +57,10 @@ export class IgdbService implements IIgdbService {
     @inject(ENCRYPTION_SERVICE_TOKEN)
     private encryption: IEncryptionService,
     @inject(Logger) parentLogger: Logger,
-    @inject(IGDB_CACHE_TOKEN) private cache: IgdbCache
+    @inject(IGDB_CACHE_TOKEN) private cache: IgdbCache,
+    @inject(IGDB_RATE_LIMITER_TOKEN) private rateLimiter: IRateLimiter
   ) {
     this.logger = parentLogger.child("IgdbService");
-    this.rateLimiter = new IgdbRateLimiter();
   }
 
   /**
@@ -99,8 +116,10 @@ export class IgdbService implements IIgdbService {
 
     const { clientId, token } = await this.getCredentialsAndToken(userId);
 
+    // Escape query to prevent APICalypse injection
+    const escapedQuery = escapeQuery(query);
     const body = `
-      search "${query}";
+      search "${escapedQuery}";
       fields name, slug, cover.image_id, platforms.id, platforms.name, platforms.abbreviation,
              franchises.id, franchises.name, websites.category, websites.url;
       where category = 0;
@@ -219,18 +238,45 @@ export class IgdbService implements IIgdbService {
 
     this.logger.debug(`Getting platforms: ${igdbIds.join(", ")}`);
 
+    // Check cache for each platform and collect uncached IDs
+    const results: PlatformFromIgdb[] = [];
+    const uncachedIds: number[] = [];
+
+    for (const id of igdbIds) {
+      const cached = await this.cache.getCachedPlatform(id);
+      if (cached) {
+        results.push(mapIgdbPlatformToPlatform(cached));
+      } else {
+        uncachedIds.push(id);
+      }
+    }
+
+    // If all platforms were cached, return immediately
+    if (uncachedIds.length === 0) {
+      this.logger.debug(`All ${igdbIds.length} platforms found in cache`);
+      return results;
+    }
+
+    this.logger.debug(`Fetching ${uncachedIds.length} uncached platforms`);
+
     const { clientId, token } = await this.getCredentialsAndToken(userId);
 
     const body = `
       fields name, abbreviation, slug, platform_family.id, platform_family.name;
-      where id = (${igdbIds.join(",")});
+      where id = (${uncachedIds.join(",")});
     `;
 
     const platforms = await this.rateLimiter.schedule(async () => {
       return this.makeRequest<IgdbPlatform[]>("/platforms", clientId, token, body);
     });
 
-    return platforms.map(mapIgdbPlatformToPlatform);
+    // Cache fetched platforms and add to results
+    for (const platform of platforms) {
+      await this.cache.cachePlatform(platform.id, platform);
+      results.push(mapIgdbPlatformToPlatform(platform));
+    }
+
+    return results;
   }
 
   /**
@@ -289,8 +335,9 @@ export class IgdbService implements IIgdbService {
     // Obtain new token
     const tokenResult = await this.authenticate(decrypted);
 
-    // Cache the token
-    await this.cache.cacheToken(userId, tokenResult.access_token, tokenResult.expires_in);
+    // Cache the token with buffer to ensure refresh before actual expiration
+    const cacheTtl = Math.max(1, tokenResult.expires_in - TOKEN_EXPIRY_BUFFER);
+    await this.cache.cacheToken(userId, tokenResult.access_token, cacheTtl);
 
     return { clientId: decrypted.client_id, token: tokenResult.access_token };
   }

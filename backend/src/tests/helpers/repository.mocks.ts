@@ -3,6 +3,8 @@ import { mock } from "bun:test";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { type users } from "@/db/schema";
+import { IgdbCache } from "@/integrations/igdb/igdb.cache";
+import type { IRateLimiter } from "@/integrations/igdb/igdb.rate-limiter";
 import type { IAdminRepository } from "@/features/admin/repositories/admin.repository.interface";
 import type { IAdminService } from "@/features/admin/services/admin.service.interface";
 import type { AdminSetting, AdminSettingsResponse } from "@/features/admin/types";
@@ -326,5 +328,47 @@ export function createMockIgdbService(overrides?: Partial<IIgdbService>): IIgdbS
     getPlatforms: mock().mockResolvedValue([mapIgdbPlatformToPlatform(IGDB_PLATFORM_FIXTURE)]),
     getFranchise: mock().mockResolvedValue(IGDB_FRANCHISE_FIXTURE),
     ...overrides,
+  };
+}
+
+/**
+ * Create a mock IGDB cache with a mock Redis client.
+ *
+ * @returns IgdbCache instance with mocked Redis
+ *
+ * @example
+ * ```typescript
+ * import { createMockIgdbCache } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockCache = createMockIgdbCache()
+ * await mockCache.getCachedSearch("test")
+ * ```
+ */
+export function createMockIgdbCache(): IgdbCache {
+  const mockRedis = {
+    get: mock().mockResolvedValue(null),
+    setEx: mock().mockResolvedValue("OK"),
+    del: mock().mockResolvedValue(1),
+  };
+  return new IgdbCache(mockRedis as never);
+}
+
+/**
+ * Create a mock rate limiter that executes functions immediately.
+ *
+ * @returns Mocked IRateLimiter
+ *
+ * @example
+ * ```typescript
+ * import { createMockRateLimiter } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockRateLimiter = createMockRateLimiter()
+ * const result = await mockRateLimiter.schedule(async () => "result")
+ * // Executes immediately without rate limiting
+ * ```
+ */
+export function createMockRateLimiter(): IRateLimiter {
+  return {
+    schedule: mock().mockImplementation(async <T>(fn: () => Promise<T>) => fn()),
   };
 }

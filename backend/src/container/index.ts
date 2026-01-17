@@ -12,6 +12,7 @@ import {
   DATABASE_TOKEN,
   ENCRYPTION_SERVICE_TOKEN,
   IGDB_CACHE_TOKEN,
+  IGDB_RATE_LIMITER_TOKEN,
   IGDB_SERVICE_TOKEN,
   PASSWORD_HASHER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
@@ -115,8 +116,8 @@ import { CredentialController } from "@/features/credentials/controllers/credent
 import type { ICredentialController } from "@/features/credentials/controllers/credential.controller.interface";
 
 // IGDB Integration
-import { IgdbCache, IgdbService } from "@/integrations/igdb";
-import type { IIgdbService } from "@/integrations/igdb";
+import { IgdbCache, IgdbRateLimiter, IgdbService } from "@/integrations/igdb";
+import type { IIgdbService, IRateLimiter } from "@/integrations/igdb";
 
 /**
  * Register all dependencies for the application.
@@ -220,12 +221,20 @@ export function registerDependencies(): void {
   );
 
   // IGDB Integration
+  // Rate limiter is a singleton to maintain consistent rate limiting across all requests
+  container.registerSingleton<IRateLimiter>(IGDB_RATE_LIMITER_TOKEN, IgdbRateLimiter);
+
   // Note: Redis client is imported lazily to avoid connection during OpenAPI generation
+  // Using singleton pattern to ensure consistent cache instance across all consumers
+  let igdbCacheInstance: IgdbCache | null = null;
   container.register<IgdbCache>(IGDB_CACHE_TOKEN, {
     useFactory: () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const redisClient = require("@/services/redis").default;
-      return new IgdbCache(redisClient);
+      if (!igdbCacheInstance) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const redisClient = require("@/services/redis").default;
+        igdbCacheInstance = new IgdbCache(redisClient);
+      }
+      return igdbCacheInstance;
     },
   });
   container.registerSingleton<IIgdbService>(IGDB_SERVICE_TOKEN, IgdbService);

@@ -232,7 +232,8 @@ export class CredentialService implements ICredentialService {
           client_secret: creds.client_secret,
         });
         return true;
-      } catch {
+      } catch (error) {
+        this.logger.debug(`IGDB credential validation failed: ${error}`);
         return false;
       }
     }

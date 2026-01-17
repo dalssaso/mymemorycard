@@ -4,9 +4,10 @@ import "reflect-metadata";
 import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { UserApiCredential } from "@/features/credentials/types";
-import { IgdbCache } from "@/integrations/igdb/igdb.cache";
+import type { IgdbCache } from "@/integrations/igdb/igdb.cache";
 import { IgdbService } from "@/integrations/igdb/igdb.service";
 import type { IIgdbService } from "@/integrations/igdb/igdb.service.interface";
+import type { IRateLimiter } from "@/integrations/igdb/igdb.rate-limiter";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 import {
   IGDB_GAME_FIXTURE,
@@ -17,7 +18,9 @@ import {
 } from "@/tests/helpers/igdb.fixtures";
 import {
   createMockEncryptionService,
+  createMockIgdbCache,
   createMockLogger,
+  createMockRateLimiter,
   createMockUserCredentialRepository,
 } from "@/tests/helpers/repository.mocks";
 
@@ -26,6 +29,7 @@ describe("IgdbService", () => {
   let mockRepository: IUserCredentialRepository;
   let mockEncryption: IEncryptionService;
   let mockCache: IgdbCache;
+  let mockRateLimiter: IRateLimiter;
   let mockFetch: ReturnType<typeof mock>;
   let originalFetch: typeof globalThis.fetch;
 
@@ -49,27 +53,25 @@ describe("IgdbService", () => {
     client_secret: "test-client-secret",
   };
 
-  function createMockCache(): IgdbCache {
-    const mockRedis = {
-      get: mock().mockResolvedValue(null),
-      setEx: mock().mockResolvedValue("OK"),
-      del: mock().mockResolvedValue(1),
-    };
-    return new IgdbCache(mockRedis as never);
-  }
-
   beforeEach(() => {
     mockRepository = createMockUserCredentialRepository();
     mockEncryption = createMockEncryptionService();
     mockEncryption.decrypt = mock().mockReturnValue(decryptedCredentials);
-    mockCache = createMockCache();
+    mockCache = createMockIgdbCache();
+    mockRateLimiter = createMockRateLimiter();
 
     // Store original fetch and replace with mock
     originalFetch = globalThis.fetch;
     mockFetch = mock();
     globalThis.fetch = mockFetch as unknown as typeof fetch;
 
-    service = new IgdbService(mockRepository, mockEncryption, createMockLogger(), mockCache);
+    service = new IgdbService(
+      mockRepository,
+      mockEncryption,
+      createMockLogger(),
+      mockCache,
+      mockRateLimiter
+    );
   });
 
   afterEach(() => {

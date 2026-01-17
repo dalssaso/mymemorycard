@@ -11,6 +11,23 @@ const CACHE_TTL = {
 } as const;
 
 /**
+ * Buffer time to subtract from token expiry (in seconds).
+ * Ensures token is refreshed before actual expiration.
+ */
+const TOKEN_EXPIRY_BUFFER = 300;
+
+/**
+ * Normalize a search query for consistent cache keys.
+ * Trims whitespace, collapses repeated spaces, and lowercases.
+ *
+ * @param query - Raw search query
+ * @returns Normalized query string
+ */
+function normalizeQuery(query: string): string {
+  return query.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/**
  * Minimal Redis client interface for cache operations.
  */
 interface RedisClient {
@@ -33,7 +50,7 @@ export class IgdbCache {
    */
   async getCachedSearch(query: string): Promise<IgdbGame[] | null> {
     try {
-      const key = `igdb:search:${query}`;
+      const key = `igdb:search:${normalizeQuery(query)}`;
       const cached = await this.redis.get(key);
       return cached ? (JSON.parse(cached) as IgdbGame[]) : null;
     } catch {
@@ -49,7 +66,7 @@ export class IgdbCache {
    */
   async cacheSearch(query: string, games: IgdbGame[]): Promise<void> {
     try {
-      const key = `igdb:search:${query}`;
+      const key = `igdb:search:${normalizeQuery(query)}`;
       await this.redis.setEx(key, CACHE_TTL.search, JSON.stringify(games));
     } catch {
       // Ignore cache errors - continue without caching
@@ -143,8 +160,10 @@ export class IgdbCache {
   async cacheToken(userId: string, token: string, expiresIn: number): Promise<void> {
     try {
       const key = `igdb:token:${userId}`;
-      // Cache for slightly less than expiry to ensure refresh
-      const ttl = Math.min(expiresIn - 300, CACHE_TTL.token);
+      // Cache for slightly less than expiry to ensure refresh before actual expiration
+      // Ensure TTL is always positive (minimum 1 second)
+      const candidate = expiresIn - TOKEN_EXPIRY_BUFFER;
+      const ttl = candidate > 0 ? Math.min(candidate, CACHE_TTL.token) : Math.max(1, expiresIn);
       await this.redis.setEx(key, ttl, token);
     } catch {
       // Ignore cache errors

@@ -183,7 +183,8 @@ export type IgdbGameStatus =
   | 4 // early_access
   | 5 // offline
   | 6 // cancelled
-  | 7; // rumored
+  | 7 // rumored
+  | 8; // delisted
 
 /**
  * IGDB Twitch OAuth token response.

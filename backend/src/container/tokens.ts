@@ -23,3 +23,4 @@ export const CREDENTIAL_SERVICE_TOKEN = "ICredentialService";
 export const CREDENTIAL_CONTROLLER_TOKEN = "ICredentialController";
 export const IGDB_SERVICE_TOKEN = "IIgdbService";
 export const IGDB_CACHE_TOKEN = "IgdbCache";
+export const IGDB_RATE_LIMITER_TOKEN = "IRateLimiter";
