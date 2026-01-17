@@ -29,6 +29,7 @@ import {
   STORE_REPOSITORY_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
+  USER_GAME_PROGRESS_REPOSITORY_TOKEN,
   USER_GAME_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
   USER_PLATFORMS_REPOSITORY_TOKEN,
@@ -137,6 +138,8 @@ import { PlatformRepository as GamesPlatformRepository } from "@/features/games/
 import type { IPlatformRepository as IGamesPlatformRepository } from "@/features/games/repositories/platform.repository.interface";
 import { StoreRepository } from "@/features/games/repositories/store.repository";
 import type { IStoreRepository } from "@/features/games/repositories/store.repository.interface";
+import { UserGameProgressRepository } from "@/features/games/repositories/user-game-progress.repository";
+import type { IUserGameProgressRepository } from "@/features/games/repositories/user-game-progress.repository.interface";
 
 // Games - Services
 import { GameMetadataService } from "@/features/games/services/game-metadata.service";
@@ -273,6 +276,10 @@ export function registerDependencies(): void {
     GamesPlatformRepository
   );
   container.registerSingleton<IStoreRepository>(STORE_REPOSITORY_TOKEN, StoreRepository);
+  container.registerSingleton<IUserGameProgressRepository>(
+    USER_GAME_PROGRESS_REPOSITORY_TOKEN,
+    UserGameProgressRepository
+  );
 
   // Games Domain - Services
   container.registerSingleton<IGameMetadataService>(
