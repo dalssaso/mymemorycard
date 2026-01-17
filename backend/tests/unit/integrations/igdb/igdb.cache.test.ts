@@ -7,11 +7,8 @@ import type { IgdbGame } from "@/integrations/igdb/igdb.types";
 /**
  * Create a mock Redis client for testing.
  */
-function createMockRedis(): {
-  get: ReturnType<typeof mock>;
-  setEx: ReturnType<typeof mock>;
-  del: ReturnType<typeof mock>;
-} {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function createMockRedis() {
   return {
     get: mock().mockResolvedValue(null),
     setEx: mock().mockResolvedValue("OK"),

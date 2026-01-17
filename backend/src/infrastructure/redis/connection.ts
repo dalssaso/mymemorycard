@@ -30,9 +30,16 @@ export class RedisConnection implements IRedisConnection {
    * Get or create the Redis client.
    * Lazily connects on first access.
    * Returns same client instance on subsequent calls.
+   * Rejects if shutdown is in progress.
    */
   async getClient(): Promise<RedisClientType> {
-    if (this.client) {
+    // Short-circuit if shutdown is in progress
+    if (this.closing) {
+      return Promise.reject(new Error("Redis client is closing"));
+    }
+
+    // Return existing client only if not closing
+    if (this.client && !this.closing) {
       return this.client;
     }
 
