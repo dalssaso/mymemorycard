@@ -24,8 +24,15 @@ vi.mock("../generated", () => ({
     mockDeleteApiV1CredentialsByService(...args),
 }));
 
+import { AxiosError } from "axios";
 import { apiClient } from "../client";
-import { CredentialsService, GamesService, PlatformsService, StoresService } from "../services";
+import {
+  CredentialsService,
+  GamesService,
+  normalizeApiError,
+  PlatformsService,
+  StoresService,
+} from "../services";
 
 describe("API Services", () => {
   beforeEach(() => {
@@ -228,5 +235,64 @@ describe("API Services", () => {
         expect(result).toEqual(mockResponse.data);
       });
     });
+  });
+});
+
+describe("normalizeApiError", () => {
+  it("should normalize Axios error with ErrorResponse data", () => {
+    const axiosError = new AxiosError("Request failed");
+    axiosError.response = {
+      status: 400,
+      statusText: "Bad Request",
+      headers: {},
+      config: { headers: {} } as AxiosError["response"] extends { config: infer C } ? C : never,
+      data: {
+        error: "Validation failed",
+        code: "VALIDATION_ERROR",
+        details: { field: "name" },
+        request_id: "req-123",
+      },
+    };
+
+    const result = normalizeApiError(axiosError);
+
+    expect(result.name).toBe("ApiError");
+    expect(result.message).toBe("Validation failed");
+    expect(result.status).toBe(400);
+    expect(result.code).toBe("VALIDATION_ERROR");
+    expect(result.details).toEqual({ field: "name" });
+    expect(result.requestId).toBe("req-123");
+  });
+
+  it("should normalize Axios error without response data", () => {
+    const axiosError = new AxiosError("Network Error");
+
+    const result = normalizeApiError(axiosError);
+
+    expect(result.name).toBe("ApiError");
+    expect(result.message).toBe("Network Error");
+    expect(result.status).toBeNull();
+    expect(result.code).toBeNull();
+    expect(result.details).toBeNull();
+    expect(result.requestId).toBeNull();
+  });
+
+  it("should normalize generic Error", () => {
+    const error = new Error("Something went wrong");
+
+    const result = normalizeApiError(error);
+
+    expect(result.name).toBe("ApiError");
+    expect(result.message).toBe("Something went wrong");
+    expect(result.status).toBeNull();
+    expect(result.code).toBeNull();
+  });
+
+  it("should handle unknown error types", () => {
+    const result = normalizeApiError("string error");
+
+    expect(result.name).toBe("ApiError");
+    expect(result.message).toBe("An unexpected error occurred");
+    expect(result.status).toBeNull();
   });
 });

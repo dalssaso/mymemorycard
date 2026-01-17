@@ -1,3 +1,4 @@
+import axios from "axios";
 import type { AxiosResponse } from "axios";
 import { apiClient } from "./client";
 import {
@@ -10,10 +11,60 @@ import type {
   CredentialListResponse,
   CredentialSaveResponse,
   CredentialValidateResponse,
+  ErrorResponse,
   PlatformListResponse,
   PlatformResponse,
   SaveCredentialRequest,
 } from "./generated";
+
+/**
+ * Normalized API error with consistent structure.
+ */
+export interface NormalizedApiError extends Error {
+  status: number | null;
+  code: string | null;
+  details: Record<string, unknown> | null;
+  requestId: string | null;
+}
+
+/**
+ * Normalizes API errors from Axios or SDK calls into a consistent format.
+ * Extracts error message, status code, and additional details from the response.
+ *
+ * @param error - The error to normalize
+ * @returns Normalized error with consistent structure
+ */
+export function normalizeApiError(error: unknown): NormalizedApiError {
+  let message = "An unexpected error occurred";
+  let status: number | null = null;
+  let code: string | null = null;
+  let details: Record<string, unknown> | null = null;
+  let requestId: string | null = null;
+
+  if (axios.isAxiosError(error)) {
+    status = error.response?.status ?? null;
+    const data = error.response?.data as ErrorResponse | undefined;
+    if (data) {
+      message = data.error || error.message;
+      code = data.code ?? null;
+      details = data.details ?? null;
+      requestId = data.request_id ?? null;
+    } else {
+      message = error.message;
+    }
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  const normalizedError = new Error(message) as NormalizedApiError;
+  normalizedError.name = "ApiError";
+  normalizedError.status = status;
+  normalizedError.code = code;
+  normalizedError.details = details;
+  normalizedError.requestId = requestId;
+
+  return normalizedError;
+}
 
 /**
  * Response from games search endpoint
