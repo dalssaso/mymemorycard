@@ -8,115 +8,115 @@
  * IGDB game response from /games endpoint.
  */
 export interface IgdbGame {
-  id: number
-  name: string
-  slug: string
-  summary?: string
-  storyline?: string
-  cover?: IgdbCover
-  platforms?: IgdbPlatformRef[]
-  genres?: IgdbGenre[]
-  themes?: IgdbTheme[]
-  game_modes?: IgdbGameMode[]
-  player_perspectives?: IgdbPlayerPerspective[]
-  franchises?: IgdbFranchiseRef[]
-  websites?: IgdbWebsite[]
-  release_dates?: IgdbReleaseDate[]
-  first_release_date?: number
-  aggregated_rating?: number
-  aggregated_rating_count?: number
-  total_rating?: number
-  total_rating_count?: number
-  category?: IgdbGameCategory
-  status?: IgdbGameStatus
+  id: number;
+  name: string;
+  slug: string;
+  summary?: string;
+  storyline?: string;
+  cover?: IgdbCover;
+  platforms?: IgdbPlatformRef[];
+  genres?: IgdbGenre[];
+  themes?: IgdbTheme[];
+  game_modes?: IgdbGameMode[];
+  player_perspectives?: IgdbPlayerPerspective[];
+  franchises?: IgdbFranchiseRef[];
+  websites?: IgdbWebsite[];
+  release_dates?: IgdbReleaseDate[];
+  first_release_date?: number;
+  aggregated_rating?: number;
+  aggregated_rating_count?: number;
+  total_rating?: number;
+  total_rating_count?: number;
+  category?: IgdbGameCategory;
+  status?: IgdbGameStatus;
 }
 
 /**
  * IGDB cover image reference.
  */
 export interface IgdbCover {
-  id: number
-  image_id: string
-  url?: string
-  width?: number
-  height?: number
+  id: number;
+  image_id: string;
+  url?: string;
+  width?: number;
+  height?: number;
 }
 
 /**
  * IGDB platform reference (embedded in game).
  */
 export interface IgdbPlatformRef {
-  id: number
-  name?: string
-  abbreviation?: string
-  slug?: string
+  id: number;
+  name?: string;
+  abbreviation?: string;
+  slug?: string;
 }
 
 /**
  * IGDB platform full response from /platforms endpoint.
  */
 export interface IgdbPlatform {
-  id: number
-  name: string
-  abbreviation?: string
-  slug: string
-  platform_family?: IgdbPlatformFamilyRef
-  generation?: number
-  summary?: string
+  id: number;
+  name: string;
+  abbreviation?: string;
+  slug: string;
+  platform_family?: IgdbPlatformFamilyRef;
+  generation?: number;
+  summary?: string;
 }
 
 /**
  * IGDB platform family reference.
  */
 export interface IgdbPlatformFamilyRef {
-  id: number
-  name?: string
-  slug?: string
+  id: number;
+  name?: string;
+  slug?: string;
 }
 
 /**
  * IGDB genre reference.
  */
 export interface IgdbGenre {
-  id: number
-  name: string
-  slug: string
+  id: number;
+  name: string;
+  slug: string;
 }
 
 /**
  * IGDB theme reference.
  */
 export interface IgdbTheme {
-  id: number
-  name: string
-  slug: string
+  id: number;
+  name: string;
+  slug: string;
 }
 
 /**
  * IGDB game mode reference.
  */
 export interface IgdbGameMode {
-  id: number
-  name: string
-  slug: string
+  id: number;
+  name: string;
+  slug: string;
 }
 
 /**
  * IGDB player perspective reference.
  */
 export interface IgdbPlayerPerspective {
-  id: number
-  name: string
-  slug: string
+  id: number;
+  name: string;
+  slug: string;
 }
 
 /**
  * IGDB franchise reference.
  */
 export interface IgdbFranchiseRef {
-  id: number
-  name?: string
-  slug?: string
+  id: number;
+  name?: string;
+  slug?: string;
 }
 
 /**
@@ -126,31 +126,31 @@ export interface IgdbFranchiseRef {
  * 14=reddit, 15=itch, 16=epicgames, 17=gog, 18=discord
  */
 export interface IgdbWebsite {
-  id: number
-  category: number
-  url: string
-  trusted?: boolean
+  id: number;
+  category: number;
+  url: string;
+  trusted?: boolean;
 }
 
 /**
  * IGDB release date reference.
  */
 export interface IgdbReleaseDate {
-  id: number
-  date?: number
-  platform?: IgdbPlatformRef
-  region?: number
-  human?: string
+  id: number;
+  date?: number;
+  platform?: IgdbPlatformRef;
+  region?: number;
+  human?: string;
 }
 
 /**
  * IGDB franchise full response.
  */
 export interface IgdbFranchise {
-  id: number
-  name: string
-  slug: string
-  games?: number[]
+  id: number;
+  name: string;
+  slug: string;
+  games?: number[];
 }
 
 /**
@@ -171,7 +171,7 @@ export type IgdbGameCategory =
   | 11 // port
   | 12 // fork
   | 13 // pack
-  | 14 // update
+  | 14; // update
 
 /**
  * IGDB game status enum.
@@ -183,15 +183,15 @@ export type IgdbGameStatus =
   | 4 // early_access
   | 5 // offline
   | 6 // cancelled
-  | 7 // rumored
+  | 7; // rumored
 
 /**
  * IGDB Twitch OAuth token response.
  */
 export interface IgdbTokenResponse {
-  access_token: string
-  expires_in: number
-  token_type: string
+  access_token: string;
+  expires_in: number;
+  token_type: string;
 }
 
 /**
@@ -201,7 +201,7 @@ export const IGDB_WEBSITE_CATEGORY_TO_STORE: Record<number, string> = {
   13: "steam",
   17: "gog",
   16: "epic",
-}
+};
 
 /**
  * Cover image URL builder for IGDB.
@@ -213,5 +213,5 @@ export function buildCoverUrl(
   imageId: string,
   size: "cover_small" | "cover_big" | "720p" | "1080p" = "cover_big"
 ): string {
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`
+  return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
