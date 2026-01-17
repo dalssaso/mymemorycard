@@ -1,9 +1,29 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeEach, describe, expect, it, mock, type Mock } from "bun:test";
 import "reflect-metadata";
 
 import { UserGameProgressRepository } from "@/features/games/repositories/user-game-progress.repository";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import { createMockDrizzleDB } from "@/tests/helpers/drizzle.mocks";
+
+interface InsertMockResult {
+  mockInsert: Mock<() => unknown>;
+  mockValues: Mock<() => unknown>;
+  mockOnConflictDoUpdate: Mock<() => Promise<void>>;
+}
+
+/**
+ * Creates mock functions for insert().values().onConflictDoUpdate() chain
+ */
+function createInsertMock(): InsertMockResult {
+  const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
+  const mockValues = mock().mockReturnValue({
+    onConflictDoUpdate: mockOnConflictDoUpdate,
+  });
+  const mockInsert = mock().mockReturnValue({
+    values: mockValues,
+  });
+  return { mockInsert, mockValues, mockOnConflictDoUpdate };
+}
 
 describe("UserGameProgressRepository", () => {
   let repository: UserGameProgressRepository;
@@ -100,18 +120,8 @@ describe("UserGameProgressRepository", () => {
 
   describe("updateStatus", () => {
     it("calls insert with upsert for status update", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateStatus("user-id", "game-id", "platform-id", "playing");
 
@@ -121,18 +131,8 @@ describe("UserGameProgressRepository", () => {
     });
 
     it("calls insert with upsert for finished status", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateStatus("user-id", "game-id", "platform-id", "finished");
 
@@ -142,18 +142,8 @@ describe("UserGameProgressRepository", () => {
     });
 
     it("calls insert with upsert for completed status", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateStatus("user-id", "game-id", "platform-id", "completed");
 
@@ -165,18 +155,8 @@ describe("UserGameProgressRepository", () => {
 
   describe("updateRating", () => {
     it("calls insert with upsert for rating update", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateRating("user-id", "game-id", "platform-id", 8);
 
@@ -188,16 +168,8 @@ describe("UserGameProgressRepository", () => {
 
   describe("updateNotes", () => {
     it("calls insert with upsert for notes update", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert,
         writable: true,
       });
 
@@ -211,18 +183,8 @@ describe("UserGameProgressRepository", () => {
 
   describe("updateFavorite", () => {
     it("calls insert with upsert for favorite true", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateFavorite("user-id", "game-id", "platform-id", true);
 
@@ -232,18 +194,8 @@ describe("UserGameProgressRepository", () => {
     });
 
     it("calls insert with upsert for favorite false", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateFavorite("user-id", "game-id", "platform-id", false);
 
@@ -331,18 +283,8 @@ describe("UserGameProgressRepository", () => {
 
   describe("updateCustomFields", () => {
     it("calls insert with upsert for completion percentage", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateCustomFields("user-id", "game-id", "platform-id", {
         completion_percentage: 50,
@@ -354,18 +296,8 @@ describe("UserGameProgressRepository", () => {
     });
 
     it("calls insert with upsert for difficulty rating", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateCustomFields("user-id", "game-id", "platform-id", {
         difficulty_rating: 3,
@@ -377,18 +309,8 @@ describe("UserGameProgressRepository", () => {
     });
 
     it("calls insert with upsert for both fields", async () => {
-      const mockOnConflictDoUpdate = mock().mockResolvedValue(undefined);
-      const mockValues = mock().mockReturnValue({
-        onConflictDoUpdate: mockOnConflictDoUpdate,
-      });
-      const mockInsert = mock().mockReturnValue({
-        values: mockValues,
-      });
-
-      Object.defineProperty(mockDb, "insert", {
-        value: mockInsert,
-        writable: true,
-      });
+      const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateCustomFields("user-id", "game-id", "platform-id", {
         completion_percentage: 100,
