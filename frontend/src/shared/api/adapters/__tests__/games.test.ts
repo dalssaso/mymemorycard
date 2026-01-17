@@ -34,12 +34,16 @@ describe("Games Adapters", () => {
         name: "Test Game",
         coverArtUrl: null,
         platformId: null,
+        storeId: null,
+        igdbId: null,
       };
 
       const result = adaptGameResponse(legacyGame);
 
       expect(result.cover_art_url).toBeNull();
       expect(result.platform_id).toBeNull();
+      expect(result.store_id).toBeNull();
+      expect(result.igdb_id).toBeNull();
     });
 
     it("should handle undefined values gracefully", () => {
@@ -52,6 +56,8 @@ describe("Games Adapters", () => {
 
       expect(result.cover_art_url).toBeNull();
       expect(result.platform_id).toBeNull();
+      expect(result.store_id).toBeNull();
+      expect(result.igdb_id).toBeNull();
     });
   });
 
