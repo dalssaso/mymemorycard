@@ -23,7 +23,6 @@ import "@/routes/ownership";
 import "@/routes/stats";
 import "@/routes/editions";
 import "@/routes/franchises";
-import "@/routes/user-platforms";
 
 async function startServer(): Promise<void> {
   // Run migrations and seed data
