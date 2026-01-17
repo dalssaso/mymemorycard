@@ -66,89 +66,89 @@ const createWrapper = (queryClient: QueryClient) => {
 };
 
 describe("useCredentials", () => {
-  let queryClient: QueryClient
+  let queryClient: QueryClient;
 
   beforeEach(() => {
-    queryClient = createTestQueryClient()
-    vi.clearAllMocks()
-  })
+    queryClient = createTestQueryClient();
+    vi.clearAllMocks();
+  });
 
   it("should fetch credentials list", async () => {
     const { result } = renderHook(() => useCredentials(), {
       wrapper: createWrapper(queryClient),
-    })
+    });
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true)
-    })
+      expect(result.current.isSuccess).toBe(true);
+    });
 
-    expect(result.current.data).toBeDefined()
-  })
-})
+    expect(result.current.data).toBeDefined();
+  });
+});
 
 describe("useCredentialStatus", () => {
-  let queryClient: QueryClient
+  let queryClient: QueryClient;
 
   beforeEach(() => {
-    queryClient = createTestQueryClient()
-    vi.clearAllMocks()
-  })
+    queryClient = createTestQueryClient();
+    vi.clearAllMocks();
+  });
 
   it("should return undefined when no matching credential", () => {
     const { result } = renderHook(() => useCredentialStatus("igdb"), {
       wrapper: createWrapper(queryClient),
-    })
-    expect(result.current).toBeUndefined()
-  })
-})
+    });
+    expect(result.current).toBeUndefined();
+  });
+});
 
 describe("useSaveCredentials", () => {
-  let queryClient: QueryClient
+  let queryClient: QueryClient;
 
   beforeEach(() => {
-    queryClient = createTestQueryClient()
-    vi.clearAllMocks()
-  })
+    queryClient = createTestQueryClient();
+    vi.clearAllMocks();
+  });
 
   it("should return mutation with mutate function", () => {
     const { result } = renderHook(() => useSaveCredentials(), {
       wrapper: createWrapper(queryClient),
-    })
-    expect(result.current.mutate).toBeDefined()
-    expect(typeof result.current.mutate).toBe("function")
-  })
-})
+    });
+    expect(result.current.mutate).toBeDefined();
+    expect(typeof result.current.mutate).toBe("function");
+  });
+});
 
 describe("useValidateCredentials", () => {
-  let queryClient: QueryClient
+  let queryClient: QueryClient;
 
   beforeEach(() => {
-    queryClient = createTestQueryClient()
-    vi.clearAllMocks()
-  })
+    queryClient = createTestQueryClient();
+    vi.clearAllMocks();
+  });
 
   it("should return mutation with mutate function", () => {
     const { result } = renderHook(() => useValidateCredentials(), {
       wrapper: createWrapper(queryClient),
-    })
-    expect(result.current.mutate).toBeDefined()
-    expect(typeof result.current.mutate).toBe("function")
-  })
-})
+    });
+    expect(result.current.mutate).toBeDefined();
+    expect(typeof result.current.mutate).toBe("function");
+  });
+});
 
 describe("useDeleteCredentials", () => {
-  let queryClient: QueryClient
+  let queryClient: QueryClient;
 
   beforeEach(() => {
-    queryClient = createTestQueryClient()
-    vi.clearAllMocks()
-  })
+    queryClient = createTestQueryClient();
+    vi.clearAllMocks();
+  });
 
   it("should return mutation with mutate function", () => {
     const { result } = renderHook(() => useDeleteCredentials(), {
       wrapper: createWrapper(queryClient),
-    })
-    expect(result.current.mutate).toBeDefined()
-    expect(typeof result.current.mutate).toBe("function")
-  })
-})
+    });
+    expect(result.current.mutate).toBeDefined();
+    expect(typeof result.current.mutate).toBe("function");
+  });
+});
