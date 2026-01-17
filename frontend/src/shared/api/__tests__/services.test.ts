@@ -2,11 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createGeneratedApiMocks,
   mockDeleteApiV1CredentialsByService,
+  mockDeleteApiV1UserGamesById,
   mockGetApiV1Credentials,
   mockGetApiV1Platforms,
   mockGetApiV1PlatformsById,
+  mockGetApiV1UserGames,
+  mockGetApiV1UserGamesById,
+  mockPatchApiV1UserGamesById,
   mockPostApiV1Credentials,
   mockPostApiV1CredentialsValidate,
+  mockPostApiV1GamesByIdImport,
+  mockPostApiV1GamesSearch,
 } from "@/test/mocks/api";
 
 // Mock the client module
@@ -39,93 +45,154 @@ describe("API Services", () => {
 
   describe("GamesService", () => {
     describe("search", () => {
-      it("should call GET /games/search with query params", async () => {
-        const mockResponse = { data: { games: [{ igdb_id: 1, name: "Zelda" }] } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call postApiV1GamesSearch SDK function with query", async () => {
+        const mockData = {
+          results: [
+            {
+              igdb_id: 1,
+              name: "Zelda",
+              cover_url: null,
+              platforms: [],
+              franchise: null,
+              stores: [],
+            },
+          ],
+        };
+        mockPostApiV1GamesSearch.mockResolvedValue({ data: mockData });
 
         const result = await GamesService.search({ query: "zelda" });
 
-        expect(apiClient.get).toHaveBeenCalledWith("/games/search", {
-          params: { query: "zelda" },
+        expect(mockPostApiV1GamesSearch).toHaveBeenCalledWith({
+          body: { query: "zelda" },
+          signal: undefined,
+          throwOnError: true,
         });
-        expect(result).toEqual(mockResponse.data);
+        expect(result.games).toHaveLength(1);
+        expect(result.games[0].igdb_id).toBe(1);
       });
     });
 
     describe("list", () => {
-      it("should call GET /games without params when none provided", async () => {
-        const mockResponse = { data: { games: [], total: 0, page: 1, per_page: 20 } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call getApiV1UserGames SDK function", async () => {
+        const mockData = {
+          user_games: [],
+        };
+        mockGetApiV1UserGames.mockResolvedValue({ data: mockData });
 
         const result = await GamesService.list();
 
-        expect(apiClient.get).toHaveBeenCalledWith("/games", {
-          params: undefined,
+        expect(mockGetApiV1UserGames).toHaveBeenCalledWith({
+          query: undefined,
+          throwOnError: true,
         });
-        expect(result).toEqual(mockResponse.data);
+        expect(result.games).toEqual([]);
       });
 
-      it("should call GET /games with optional params", async () => {
-        const mockResponse = { data: { games: [], total: 0, page: 2, per_page: 10 } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should pass filter params to SDK", async () => {
+        const mockData = { user_games: [] };
+        mockGetApiV1UserGames.mockResolvedValue({ data: mockData });
 
-        const result = await GamesService.list({ page: 2, per_page: 10 });
+        await GamesService.list({ status: "playing" });
 
-        expect(apiClient.get).toHaveBeenCalledWith("/games", {
-          params: { page: 2, per_page: 10 },
+        expect(mockGetApiV1UserGames).toHaveBeenCalledWith({
+          query: { status: "playing" },
+          throwOnError: true,
         });
-        expect(result).toEqual(mockResponse.data);
       });
     });
 
     describe("getOne", () => {
-      it("should call GET /games/:id and return game", async () => {
-        const mockGame = { id: "game-123", name: "Test Game" };
-        const mockResponse = { data: { game: mockGame } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call getApiV1UserGamesById SDK function", async () => {
+        const mockData = {
+          id: "game-123",
+          user_id: "user-1",
+          game: { id: "g-1", name: "Test Game", cover_art_url: null },
+          platform: { id: "pc-1", name: "PC", abbreviation: null },
+          store: { id: "steam-1", slug: "steam", display_name: "Steam" },
+          platform_game_id: null,
+          owned: true,
+          purchased_date: null,
+          import_source: null,
+          created_at: "2026-01-01",
+        };
+        mockGetApiV1UserGamesById.mockResolvedValue({ data: mockData });
 
         const result = await GamesService.getOne("game-123");
 
-        expect(apiClient.get).toHaveBeenCalledWith("/games/game-123");
-        expect(result).toEqual(mockGame);
+        expect(mockGetApiV1UserGamesById).toHaveBeenCalledWith({
+          path: { id: "game-123" },
+          throwOnError: true,
+        });
+        expect(result.id).toBe("game-123");
+        expect(result.name).toBe("Test Game");
       });
     });
 
     describe("create", () => {
-      it("should call POST /games with payload and return game", async () => {
-        const payload = { igdb_id: 123, platform_id: "pc-1" };
-        const mockGame = { id: "game-1", name: "Created Game", ...payload };
-        const mockResponse = { data: { game: mockGame } };
-        vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
+      it("should call postApiV1GamesByIdImport SDK function", async () => {
+        const payload = { igdb_id: 123, platform_id: "pc-1", store_id: "steam-1" };
+        const mockData = {
+          id: "game-1",
+          user_id: "user-1",
+          game: { id: "g-1", name: "Created Game", cover_art_url: null },
+          platform: { id: "pc-1", name: "PC", abbreviation: null },
+          store: { id: "steam-1", slug: "steam", display_name: "Steam" },
+          platform_game_id: null,
+          owned: true,
+          purchased_date: null,
+          import_source: null,
+          created_at: "2026-01-01",
+        };
+        mockPostApiV1GamesByIdImport.mockResolvedValue({ data: mockData });
 
         const result = await GamesService.create(payload);
 
-        expect(apiClient.post).toHaveBeenCalledWith("/games", payload);
-        expect(result).toEqual(mockGame);
+        expect(mockPostApiV1GamesByIdImport).toHaveBeenCalledWith({
+          body: payload,
+          throwOnError: true,
+        });
+        expect(result.id).toBe("game-1");
       });
     });
 
     describe("update", () => {
-      it("should call PATCH /games/:id with payload and return updated game", async () => {
+      it("should call patchApiV1UserGamesById SDK function", async () => {
         const payload = { status: "completed", rating: 5 };
-        const mockGame = { id: "game-123", name: "Updated Game", ...payload };
-        const mockResponse = { data: { game: mockGame } };
-        vi.mocked(apiClient.patch).mockResolvedValue(mockResponse);
+        const mockData = {
+          id: "game-123",
+          user_id: "user-1",
+          game: { id: "g-1", name: "Updated Game", cover_art_url: null },
+          platform: { id: "pc-1", name: "PC", abbreviation: null },
+          store: null,
+          platform_game_id: null,
+          owned: true,
+          purchased_date: null,
+          import_source: null,
+          created_at: "2026-01-01",
+        };
+        mockPatchApiV1UserGamesById.mockResolvedValue({ data: mockData });
 
         const result = await GamesService.update("game-123", payload);
 
-        expect(apiClient.patch).toHaveBeenCalledWith("/games/game-123", payload);
-        expect(result).toEqual(mockGame);
+        expect(mockPatchApiV1UserGamesById).toHaveBeenCalledWith({
+          path: { id: "game-123" },
+          body: payload,
+          throwOnError: true,
+        });
+        expect(result.id).toBe("game-123");
       });
     });
 
     describe("delete", () => {
-      it("should call DELETE /games/:id", async () => {
-        vi.mocked(apiClient.delete).mockResolvedValue({});
+      it("should call deleteApiV1UserGamesById SDK function", async () => {
+        mockDeleteApiV1UserGamesById.mockResolvedValue({});
 
         await GamesService.delete("game-123");
 
-        expect(apiClient.delete).toHaveBeenCalledWith("/games/game-123");
+        expect(mockDeleteApiV1UserGamesById).toHaveBeenCalledWith({
+          path: { id: "game-123" },
+          throwOnError: true,
+        });
       });
     });
   });
