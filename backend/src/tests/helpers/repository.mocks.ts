@@ -3,6 +3,7 @@ import { mock } from "bun:test";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { type users } from "@/db/schema";
+import type { IConfig } from "@/infrastructure/config/config.interface";
 import { IgdbCache } from "@/integrations/igdb/igdb.cache";
 import type { IRateLimiter } from "@/integrations/igdb/igdb.rate-limiter";
 import type { IAdminRepository } from "@/features/admin/repositories/admin.repository.interface";
@@ -370,5 +371,41 @@ export function createMockIgdbCache(): IgdbCache {
 export function createMockRateLimiter(): IRateLimiter {
   return {
     schedule: mock().mockImplementation(async <T>(fn: () => Promise<T>) => fn()),
+  };
+}
+
+/**
+ * Create a mock config object with sensible defaults.
+ *
+ * @param overrides - Optional partial overrides for specific fields.
+ * @returns Mocked IConfig.
+ *
+ * @example
+ * ```typescript
+ * import { createMockConfig } from "@/tests/helpers/repository.mocks"
+ *
+ * const config = createMockConfig()
+ * // { database: { url: "..." }, redis: { url: "..." }, ... }
+ *
+ * // Override specific fields:
+ * const customConfig = createMockConfig({
+ *   skipRedisConnect: true,
+ *   isProduction: true,
+ * })
+ * ```
+ */
+export function createMockConfig(overrides?: Partial<IConfig>): IConfig {
+  return {
+    database: { url: "postgresql://test:test@localhost:5432/test" },
+    redis: { url: "redis://localhost:6379" },
+    jwt: { secret: "test-secret", expiresIn: "1h" },
+    rawg: { apiKey: "test-api-key" },
+    encryption: { secret: "test-encryption-secret-32chars!!", salt: "test-salt-16chars" },
+    port: 3000,
+    cors: { origin: undefined, allowedOrigins: [] },
+    bcrypt: { saltRounds: 10 },
+    isProduction: false,
+    skipRedisConnect: false,
+    ...overrides,
   };
 }
