@@ -10,6 +10,13 @@ export const mockPostApiV1CredentialsValidate = vi.fn();
 export const mockDeleteApiV1CredentialsByService = vi.fn();
 export const mockGetApiV1Platforms = vi.fn();
 export const mockGetApiV1PlatformsById = vi.fn();
+export const mockPostApiV1GamesSearch = vi.fn();
+export const mockGetApiV1UserGames = vi.fn();
+export const mockPostApiV1GamesByIdImport = vi.fn();
+export const mockGetApiV1UserGamesById = vi.fn();
+export const mockPatchApiV1UserGamesById = vi.fn();
+export const mockDeleteApiV1UserGamesById = vi.fn();
+export const mockGetApiV1GamesById = vi.fn();
 
 /**
  * Creates the mock implementation object for vi.mock("../generated").
@@ -31,6 +38,13 @@ export function createGeneratedApiMocks(): Record<string, (...args: unknown[]) =
       mockDeleteApiV1CredentialsByService(...args),
     getApiV1Platforms: (...args: unknown[]) => mockGetApiV1Platforms(...args),
     getApiV1PlatformsById: (...args: unknown[]) => mockGetApiV1PlatformsById(...args),
+    postApiV1GamesSearch: (...args: unknown[]) => mockPostApiV1GamesSearch(...args),
+    getApiV1UserGames: (...args: unknown[]) => mockGetApiV1UserGames(...args),
+    postApiV1GamesByIdImport: (...args: unknown[]) => mockPostApiV1GamesByIdImport(...args),
+    getApiV1UserGamesById: (...args: unknown[]) => mockGetApiV1UserGamesById(...args),
+    patchApiV1UserGamesById: (...args: unknown[]) => mockPatchApiV1UserGamesById(...args),
+    deleteApiV1UserGamesById: (...args: unknown[]) => mockDeleteApiV1UserGamesById(...args),
+    getApiV1GamesById: (...args: unknown[]) => mockGetApiV1GamesById(...args),
   };
 }
 
@@ -45,4 +59,11 @@ export function resetApiMocks(): void {
   mockDeleteApiV1CredentialsByService.mockReset();
   mockGetApiV1Platforms.mockReset();
   mockGetApiV1PlatformsById.mockReset();
+  mockPostApiV1GamesSearch.mockReset();
+  mockGetApiV1UserGames.mockReset();
+  mockPostApiV1GamesByIdImport.mockReset();
+  mockGetApiV1UserGamesById.mockReset();
+  mockPatchApiV1UserGamesById.mockReset();
+  mockDeleteApiV1UserGamesById.mockReset();
+  mockGetApiV1GamesById.mockReset();
 }
