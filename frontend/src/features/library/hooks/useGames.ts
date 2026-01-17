@@ -73,8 +73,8 @@ export function useUpdateGame(): UseMutationResult<
       await queryClient.cancelQueries({ queryKey: ["games"] });
       const previous = queryClient.getQueryData<Game>(["games", id]);
       queryClient.setQueryData(["games", id], (old: Game | undefined) => {
-        if (!old) return old
-        return { ...old, ...payload }
+        if (!old) return old;
+        return { ...old, ...payload };
       });
       return { previous };
     },
