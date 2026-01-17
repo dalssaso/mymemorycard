@@ -68,7 +68,10 @@ export function IGDBCredentialsForm(): JSX.Element {
             id="client-id"
             type="password"
             value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
+            onChange={(e) => {
+              setClientId(e.target.value)
+              setSaveStatus("idle")
+            }}
             placeholder="your-client-id"
             className="mt-2 bg-slate-900 text-white placeholder-slate-500"
             autoComplete="off"
@@ -83,7 +86,10 @@ export function IGDBCredentialsForm(): JSX.Element {
             id="client-secret"
             type="password"
             value={clientSecret}
-            onChange={(e) => setClientSecret(e.target.value)}
+            onChange={(e) => {
+              setClientSecret(e.target.value)
+              setSaveStatus("idle")
+            }}
             placeholder="your-client-secret"
             className="mt-2 bg-slate-900 text-white placeholder-slate-500"
             autoComplete="off"
@@ -93,7 +99,7 @@ export function IGDBCredentialsForm(): JSX.Element {
 
       {saveStatus === "error" && (
         <div className="rounded bg-red-900/30 p-3 text-sm text-red-300">
-          Failed to validate credentials. Please check your ID and secret.
+          Failed to save credentials. Please check your ID and secret.
         </div>
       )}
 
