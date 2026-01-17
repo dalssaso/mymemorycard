@@ -637,10 +637,10 @@ export class GamesController implements IGamesController {
         purchased_date: body.purchased_date ? new Date(body.purchased_date) : undefined,
       });
 
-      // Fetch updated record with relations
+      // Fetch updated record with relations and verify ownership
       const userGame = await this.userGameRepository.findByIdWithRelations(params.id);
 
-      if (!userGame) {
+      if (!userGame || userGame.user_id !== userId) {
         throw new NotFoundError("User game");
       }
 
