@@ -1,11 +1,14 @@
 /**
- * RAWG API Service - Achievement Support Only
+ * RAWG API Service
  *
- * This module provides RAWG API integration for achievement data only.
- * Game search and metadata functions have been replaced by IGDB.
+ * Provides RAWG API integration for:
+ * - Achievements: getGameAchievements
+ * - Game Series: getGameSeries, getGameSeriesMembers
+ * - Game Additions (DLC/Editions): getGameAdditions, classifyAddition
+ * - Game Search/Details: searchGames, getGameDetails (legacy routes only)
  *
- * @deprecated for metadata operations - use IGDB service instead.
- * Remaining functions are maintained for legacy routes until full migration.
+ * Note: Primary game metadata now comes from IGDB. These functions are maintained
+ * for legacy routes (import, admin, editions, franchises, additions) until migration.
  */
 interface RAWGGame {
   id: number;
