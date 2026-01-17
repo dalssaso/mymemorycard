@@ -4,6 +4,7 @@ import { container } from "@/container";
 import type { IAdminController } from "@/features/admin/controllers/admin.controller.interface";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 import type { ICredentialController } from "@/features/credentials/controllers/credential.controller.interface";
+import type { IGamesController } from "@/features/games/controllers/games.controller.interface";
 import type { IPlatformController } from "@/features/platforms/controllers/platform.controller.interface";
 import type { IPreferencesController } from "@/features/preferences/controllers/preferences.controller.interface";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
@@ -11,6 +12,7 @@ import {
   ADMIN_CONTROLLER_TOKEN,
   AUTH_CONTROLLER_TOKEN,
   CREDENTIAL_CONTROLLER_TOKEN,
+  GAMES_CONTROLLER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
   PREFERENCES_CONTROLLER_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
@@ -28,6 +30,17 @@ type Variables = {
   requestId: string;
 };
 
+/**
+ * Create and configure the OpenAPIHono application with middleware, health and metrics endpoints, DI-mounted feature routers, a legacy /api/* proxy, and global error handling.
+ *
+ * @returns An OpenAPIHono application instance configured with:
+ * - global middleware: CORS, per-request `requestId`, and metrics collection
+ * - GET /api/health health check endpoint
+ * - GET /metrics metrics endpoint with the registry Content-Type
+ * - DI-mounted routers for auth, platforms, user-platforms, preferences, admin, credentials, games, and user-games
+ * - a catch-all /api/* handler that proxies to the legacy router or returns 404
+ * - a registered global error handler
+ */
 export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   const app = new OpenAPIHono<{ Variables: Variables }>();
 
@@ -96,6 +109,13 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
     CREDENTIAL_CONTROLLER_TOKEN
   );
   app.route("/api/v1/credentials", credentialController.router);
+
+  // Games routes (DI-based)
+  const gamesController = container.resolve<IGamesController>(GAMES_CONTROLLER_TOKEN);
+  app.route("/api/v1/games", gamesController.router);
+
+  // User-Games routes (separate router mounted at /user-games)
+  app.route("/api/v1/user-games", gamesController.userGamesRouter);
 
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)
