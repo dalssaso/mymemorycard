@@ -254,11 +254,15 @@ export const GamesService = {
    *
    * @param payload - Import request with IGDB ID and platform/store
    * @returns Promise resolving to created game
-   * @throws {NormalizedApiError} When the API request fails
+   * @throws {NormalizedApiError} When the API request fails or validation fails
    */
   async create(payload: ImportGameRequest): Promise<Game> {
     if (!payload.platform_id) {
-      throw new Error("platform_id is required for game import");
+      const validationError = new Error("platform_id is required for game import");
+      const normalized = normalizeApiError(validationError);
+      normalized.status = 400;
+      normalized.code = "VALIDATION_ERROR";
+      throw normalized;
     }
     try {
       const response = await postApiV1GamesByIdImport({

@@ -25,9 +25,24 @@ export const mockDeleteApiV1UserGamesById: SdkMockFn = vi.fn();
 export const mockGetApiV1GamesById: SdkMockFn = vi.fn();
 
 /**
- * Return type for createGeneratedApiMocks with proper MockInstance typing.
+ * Single source of truth mapping SDK function names to mock functions.
+ * Adding a new mock only requires updating this object.
  */
-type GeneratedApiMocks = Record<string, SdkMockFn>;
+const ALL_API_MOCKS: Record<string, SdkMockFn> = {
+  getApiV1Credentials: mockGetApiV1Credentials,
+  postApiV1Credentials: mockPostApiV1Credentials,
+  postApiV1CredentialsValidate: mockPostApiV1CredentialsValidate,
+  deleteApiV1CredentialsByService: mockDeleteApiV1CredentialsByService,
+  getApiV1Platforms: mockGetApiV1Platforms,
+  getApiV1PlatformsById: mockGetApiV1PlatformsById,
+  postApiV1GamesSearch: mockPostApiV1GamesSearch,
+  getApiV1UserGames: mockGetApiV1UserGames,
+  postApiV1GamesByIdImport: mockPostApiV1GamesByIdImport,
+  getApiV1UserGamesById: mockGetApiV1UserGamesById,
+  patchApiV1UserGamesById: mockPatchApiV1UserGamesById,
+  deleteApiV1UserGamesById: mockDeleteApiV1UserGamesById,
+  getApiV1GamesById: mockGetApiV1GamesById,
+};
 
 /**
  * Creates the mock implementation object for vi.mock("../generated").
@@ -40,22 +55,8 @@ type GeneratedApiMocks = Record<string, SdkMockFn>;
  * vi.mock("../generated", () => createGeneratedApiMocks())
  * ```
  */
-export function createGeneratedApiMocks(): GeneratedApiMocks {
-  return {
-    getApiV1Credentials: mockGetApiV1Credentials,
-    postApiV1Credentials: mockPostApiV1Credentials,
-    postApiV1CredentialsValidate: mockPostApiV1CredentialsValidate,
-    deleteApiV1CredentialsByService: mockDeleteApiV1CredentialsByService,
-    getApiV1Platforms: mockGetApiV1Platforms,
-    getApiV1PlatformsById: mockGetApiV1PlatformsById,
-    postApiV1GamesSearch: mockPostApiV1GamesSearch,
-    getApiV1UserGames: mockGetApiV1UserGames,
-    postApiV1GamesByIdImport: mockPostApiV1GamesByIdImport,
-    getApiV1UserGamesById: mockGetApiV1UserGamesById,
-    patchApiV1UserGamesById: mockPatchApiV1UserGamesById,
-    deleteApiV1UserGamesById: mockDeleteApiV1UserGamesById,
-    getApiV1GamesById: mockGetApiV1GamesById,
-  };
+export function createGeneratedApiMocks(): Record<string, SdkMockFn> {
+  return { ...ALL_API_MOCKS };
 }
 
 /**
@@ -63,17 +64,5 @@ export function createGeneratedApiMocks(): GeneratedApiMocks {
  * Call this in beforeEach to ensure clean test isolation.
  */
 export function resetApiMocks(): void {
-  mockGetApiV1Credentials.mockReset();
-  mockPostApiV1Credentials.mockReset();
-  mockPostApiV1CredentialsValidate.mockReset();
-  mockDeleteApiV1CredentialsByService.mockReset();
-  mockGetApiV1Platforms.mockReset();
-  mockGetApiV1PlatformsById.mockReset();
-  mockPostApiV1GamesSearch.mockReset();
-  mockGetApiV1UserGames.mockReset();
-  mockPostApiV1GamesByIdImport.mockReset();
-  mockGetApiV1UserGamesById.mockReset();
-  mockPatchApiV1UserGamesById.mockReset();
-  mockDeleteApiV1UserGamesById.mockReset();
-  mockGetApiV1GamesById.mockReset();
+  Object.values(ALL_API_MOCKS).forEach((mock) => mock.mockReset());
 }

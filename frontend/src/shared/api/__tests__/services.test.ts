@@ -28,7 +28,7 @@ vi.mock("../client", () => ({
 // Mock the generated SDK functions using shared helper
 vi.mock("../generated", () => createGeneratedApiMocks());
 
-import { AxiosError } from "axios";
+import { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { apiClient } from "../client";
 import {
   CredentialsService,
@@ -352,7 +352,7 @@ describe("normalizeApiError", () => {
       status: 400,
       statusText: "Bad Request",
       headers: {},
-      config: { headers: {} } as AxiosError["response"] extends { config: infer C } ? C : never,
+      config: {} as InternalAxiosRequestConfig,
       data: {
         error: "Validation failed",
         code: "VALIDATION_ERROR",
