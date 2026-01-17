@@ -125,6 +125,30 @@ describe("CredentialService", () => {
       ).rejects.toThrow(ValidationError);
     });
 
+    it("should save RetroAchievements credentials with only api_key (username optional)", async () => {
+      const result = await service.saveCredentials(testUserId, {
+        service: "retroachievements",
+        credential_type: "api_key",
+        credentials: {
+          api_key: "test-api-key",
+        },
+      });
+
+      expect(result.service).toBe("retroachievements");
+      expect(result.credential_type).toBe("api_key");
+      expect(result.is_active).toBe(true);
+    });
+
+    it("should throw ValidationError for RetroAchievements missing api_key", async () => {
+      await expect(
+        service.saveCredentials(testUserId, {
+          service: "retroachievements",
+          credential_type: "api_key",
+          credentials: { username: "testuser" } as never,
+        })
+      ).rejects.toThrow(ValidationError);
+    });
+
     it("should save Steam credentials with encryption", async () => {
       const result = await service.saveCredentials(testUserId, {
         service: "steam",

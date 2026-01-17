@@ -249,3 +249,20 @@ export function mockUpdateResult<T>(mockDb: DrizzleDB, result: T[]): void {
   });
   Object.defineProperty(mockDb, "update", { value: updateMock, writable: true });
 }
+
+/**
+ * Mock a failed update().set().where().returning() chain.
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param error - Error to reject with.
+ */
+export function mockUpdateError(mockDb: DrizzleDB, error: Error): void {
+  const updateMock = mock().mockReturnValue({
+    set: mock().mockReturnValue({
+      where: mock().mockReturnValue({
+        returning: mock().mockRejectedValue(error),
+      }),
+    }),
+  });
+  Object.defineProperty(mockDb, "update", { value: updateMock, writable: true });
+}
