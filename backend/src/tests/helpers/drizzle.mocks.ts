@@ -234,11 +234,12 @@ export function mockDeleteError(mockDb: DrizzleDB, error: Error): void {
 }
 
 /**
- * Mock a successful select().from().innerJoin().innerJoin().leftJoin().where().limit() chain.
- * Used for queries that join multiple tables (e.g., userGames with games, platforms, stores).
+ * Configure mockDb.select to resolve a multi-join query chain and return the provided rows.
  *
- * @param mockDb - Mocked Drizzle DB instance.
- * @param result - Result rows to resolve.
+ * Used for queries that join multiple tables (for example: userGames joined with games, platforms, and stores).
+ *
+ * @param mockDb - The mocked Drizzle DB instance whose `select` method will be stubbed.
+ * @param result - The rows that the mocked query chain will resolve to.
  */
 export function mockSelectJoinResult<T>(mockDb: DrizzleDB, result: T[]): void {
   const selectMock = mockDb.select as ReturnType<typeof mock>;
