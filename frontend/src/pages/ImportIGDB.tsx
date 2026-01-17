@@ -55,7 +55,7 @@ export function ImportIGDB(): JSX.Element {
   if (isCredentialsError) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <div className="max-w-md rounded-lg border border-destructive bg-destructive/30 p-6">
+        <div className="bg-destructive/30 max-w-md rounded-lg border border-destructive p-6">
           <h2 className="text-lg font-semibold text-destructive">Failed to Load Credentials</h2>
           <p className="mt-2 text-sm text-destructive-foreground">
             {credentialsError?.message || "An error occurred while loading credentials."}
@@ -72,7 +72,7 @@ export function ImportIGDB(): JSX.Element {
   if (!hasIgdbCredentials || !igdbCredential?.is_active) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
-        <div className="max-w-md rounded-lg border border-status-completed bg-status-completed/30 p-6">
+        <div className="bg-status-completed/30 max-w-md rounded-lg border border-status-completed p-6">
           <h2 className="text-lg font-semibold text-status-completed">IGDB Credentials Required</h2>
           <p className="mt-2 text-sm text-foreground">
             Please configure your IGDB credentials in Settings before importing games.
@@ -130,7 +130,7 @@ export function ImportIGDB(): JSX.Element {
       </div>
 
       {importSuccess && (
-        <div className="rounded-lg bg-status-playing/30 p-4 text-status-playing">
+        <div className="bg-status-playing/30 rounded-lg p-4 text-status-playing">
           Successfully imported {importSuccess}! Redirecting to library...
         </div>
       )}
@@ -185,7 +185,7 @@ export function ImportIGDB(): JSX.Element {
                       {selectedGame.stores.map((s) => (
                         <span
                           key={s.slug}
-                          className="rounded bg-accent/50 px-3 py-1 text-sm text-accent"
+                          className="bg-accent/50 rounded px-3 py-1 text-sm text-accent"
                         >
                           {s.display_name}
                         </span>
@@ -228,15 +228,13 @@ export function ImportIGDB(): JSX.Element {
           </div>
 
           {importGame.isError && (
-            <div className="rounded bg-destructive/30 p-3 text-sm text-destructive">
+            <div className="bg-destructive/30 rounded p-3 text-sm text-destructive">
               Failed to import game. Please try again.
             </div>
           )}
 
           {importGame.isPending && (
-            <div className="rounded bg-accent/30 p-3 text-sm text-accent">
-              Importing game...
-            </div>
+            <div className="bg-accent/30 rounded p-3 text-sm text-accent">Importing game...</div>
           )}
         </div>
       )}
