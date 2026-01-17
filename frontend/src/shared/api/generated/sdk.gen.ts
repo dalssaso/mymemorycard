@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteApiV1UserPlatformsByIdData, DeleteApiV1UserPlatformsByIdErrors, DeleteApiV1UserPlatformsByIdResponses, GetApiV1AdminSettingsData, GetApiV1AdminSettingsErrors, GetApiV1AdminSettingsResponses, GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, GetApiV1PreferencesData, GetApiV1PreferencesErrors, GetApiV1PreferencesResponses, GetApiV1UserPlatformsData, GetApiV1UserPlatformsErrors, GetApiV1UserPlatformsResponses, PatchApiV1AdminSettingsData, PatchApiV1AdminSettingsErrors, PatchApiV1AdminSettingsResponses, PatchApiV1PreferencesData, PatchApiV1PreferencesErrors, PatchApiV1PreferencesResponses, PatchApiV1UserPlatformsByIdData, PatchApiV1UserPlatformsByIdErrors, PatchApiV1UserPlatformsByIdResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses, PostApiV1UserPlatformsData, PostApiV1UserPlatformsErrors, PostApiV1UserPlatformsResponses } from './types.gen';
+import type { DeleteApiV1CredentialsByServiceData, DeleteApiV1CredentialsByServiceErrors, DeleteApiV1CredentialsByServiceResponses, DeleteApiV1UserPlatformsByIdData, DeleteApiV1UserPlatformsByIdErrors, DeleteApiV1UserPlatformsByIdResponses, GetApiV1AdminSettingsData, GetApiV1AdminSettingsErrors, GetApiV1AdminSettingsResponses, GetApiV1AuthMeData, GetApiV1AuthMeErrors, GetApiV1AuthMeResponses, GetApiV1CredentialsData, GetApiV1CredentialsErrors, GetApiV1CredentialsResponses, GetApiV1PlatformsByIdData, GetApiV1PlatformsByIdErrors, GetApiV1PlatformsByIdResponses, GetApiV1PlatformsData, GetApiV1PlatformsErrors, GetApiV1PlatformsResponses, GetApiV1PreferencesData, GetApiV1PreferencesErrors, GetApiV1PreferencesResponses, GetApiV1UserPlatformsData, GetApiV1UserPlatformsErrors, GetApiV1UserPlatformsResponses, PatchApiV1AdminSettingsData, PatchApiV1AdminSettingsErrors, PatchApiV1AdminSettingsResponses, PatchApiV1PreferencesData, PatchApiV1PreferencesErrors, PatchApiV1PreferencesResponses, PatchApiV1UserPlatformsByIdData, PatchApiV1UserPlatformsByIdErrors, PatchApiV1UserPlatformsByIdResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses, PostApiV1CredentialsData, PostApiV1CredentialsErrors, PostApiV1CredentialsResponses, PostApiV1CredentialsValidateData, PostApiV1CredentialsValidateErrors, PostApiV1CredentialsValidateResponses, PostApiV1UserPlatformsData, PostApiV1UserPlatformsErrors, PostApiV1UserPlatformsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -128,4 +128,59 @@ export const patchApiV1AdminSettings = <ThrowOnError extends boolean = false>(op
         'Content-Type': 'application/json',
         ...options?.headers
     }
+});
+
+/**
+ * List credential statuses
+ *
+ * Get the status of all stored API credentials for the authenticated user.
+ */
+export const getApiV1Credentials = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1CredentialsData, ThrowOnError>) => (options?.client ?? client).get<GetApiV1CredentialsResponses, GetApiV1CredentialsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/credentials',
+    ...options
+});
+
+/**
+ * Save API credentials
+ *
+ * Save or update API credentials for a service. Credentials are encrypted before storage.
+ */
+export const postApiV1Credentials = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1CredentialsData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1CredentialsResponses, PostApiV1CredentialsErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/credentials',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+/**
+ * Validate stored credentials
+ *
+ * Validate stored credentials by attempting authentication with the external service.
+ */
+export const postApiV1CredentialsValidate = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1CredentialsValidateData, ThrowOnError>) => (options?.client ?? client).post<PostApiV1CredentialsValidateResponses, PostApiV1CredentialsValidateErrors, ThrowOnError>({
+    responseType: 'json',
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/credentials/validate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+/**
+ * Delete credentials
+ *
+ * Delete stored credentials for a specific service.
+ */
+export const deleteApiV1CredentialsByService = <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1CredentialsByServiceData, ThrowOnError>) => (options.client ?? client).delete<DeleteApiV1CredentialsByServiceResponses, DeleteApiV1CredentialsByServiceErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/credentials/{service}',
+    ...options
 });

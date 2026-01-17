@@ -189,6 +189,77 @@ export type UpdateAdminSettingsRequest = {
     };
 };
 
+/**
+ * List of all credential statuses for the user
+ */
+export type CredentialListResponse = {
+    services: Array<CredentialStatus>;
+};
+
+/**
+ * Status of a single API credential
+ */
+export type CredentialStatus = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    is_active: boolean;
+    has_valid_token: boolean;
+    token_expires_at: string | null;
+    last_validated_at: string | null;
+};
+
+/**
+ * Response after saving credentials
+ */
+export type CredentialSaveResponse = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    credential_type: 'twitch_oauth' | 'steam_openid' | 'api_key';
+    is_active: boolean;
+    message: string;
+};
+
+/**
+ * Request to save API credentials for a service
+ */
+export type SaveCredentialRequest = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+} & ({
+    credential_type: 'twitch_oauth';
+    credentials: {
+        client_id: string;
+        client_secret: string;
+    };
+} | {
+    credential_type: 'api_key';
+    credentials: {
+        username?: string;
+        api_key: string;
+    };
+} | {
+    credential_type: 'steam_openid';
+    credentials: {
+        steam_id: string;
+        display_name?: string;
+    };
+});
+
+/**
+ * Response after validating credentials
+ */
+export type CredentialValidateResponse = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    valid: boolean;
+    has_valid_token: boolean;
+    token_expires_at: string | null;
+    message: string;
+};
+
+/**
+ * Request to validate stored credentials
+ */
+export type ValidateCredentialRequest = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+};
+
 export type PostApiV1AuthRegisterData = {
     body?: RegisterRequest;
     path?: never;
@@ -558,3 +629,121 @@ export type PatchApiV1AdminSettingsResponses = {
 };
 
 export type PatchApiV1AdminSettingsResponse = PatchApiV1AdminSettingsResponses[keyof PatchApiV1AdminSettingsResponses];
+
+export type GetApiV1CredentialsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/credentials';
+};
+
+export type GetApiV1CredentialsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1CredentialsError = GetApiV1CredentialsErrors[keyof GetApiV1CredentialsErrors];
+
+export type GetApiV1CredentialsResponses = {
+    /**
+     * List of credential statuses
+     */
+    200: CredentialListResponse;
+};
+
+export type GetApiV1CredentialsResponse = GetApiV1CredentialsResponses[keyof GetApiV1CredentialsResponses];
+
+export type PostApiV1CredentialsData = {
+    body?: SaveCredentialRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/credentials';
+};
+
+export type PostApiV1CredentialsErrors = {
+    /**
+     * Bad Request - validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type PostApiV1CredentialsError = PostApiV1CredentialsErrors[keyof PostApiV1CredentialsErrors];
+
+export type PostApiV1CredentialsResponses = {
+    /**
+     * Credentials saved successfully
+     */
+    201: CredentialSaveResponse;
+};
+
+export type PostApiV1CredentialsResponse = PostApiV1CredentialsResponses[keyof PostApiV1CredentialsResponses];
+
+export type PostApiV1CredentialsValidateData = {
+    body?: ValidateCredentialRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/credentials/validate';
+};
+
+export type PostApiV1CredentialsValidateErrors = {
+    /**
+     * Bad Request - validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Credentials not found
+     */
+    404: ErrorResponse;
+};
+
+export type PostApiV1CredentialsValidateError = PostApiV1CredentialsValidateErrors[keyof PostApiV1CredentialsValidateErrors];
+
+export type PostApiV1CredentialsValidateResponses = {
+    /**
+     * Validation result
+     */
+    200: CredentialValidateResponse;
+};
+
+export type PostApiV1CredentialsValidateResponse = PostApiV1CredentialsValidateResponses[keyof PostApiV1CredentialsValidateResponses];
+
+export type DeleteApiV1CredentialsByServiceData = {
+    body?: never;
+    path: {
+        service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    };
+    query?: never;
+    url: '/api/v1/credentials/{service}';
+};
+
+export type DeleteApiV1CredentialsByServiceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Credentials not found
+     */
+    404: ErrorResponse;
+};
+
+export type DeleteApiV1CredentialsByServiceError = DeleteApiV1CredentialsByServiceErrors[keyof DeleteApiV1CredentialsByServiceErrors];
+
+export type DeleteApiV1CredentialsByServiceResponses = {
+    /**
+     * Credentials deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiV1CredentialsByServiceResponse = DeleteApiV1CredentialsByServiceResponses[keyof DeleteApiV1CredentialsByServiceResponses];

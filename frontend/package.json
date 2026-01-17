@@ -19,7 +19,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore",
-    "generate:api": "openapi-ts --input ../backend/openapi.json --output src/shared/api/generated --client @hey-api/client-axios"
+    "generate:api": "openapi-ts",
+    "prebuild": "npm run generate:api"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -59,7 +60,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@hey-api/openapi-ts": "0.90.3",
+    "@hey-api/openapi-ts": "^0.90.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
