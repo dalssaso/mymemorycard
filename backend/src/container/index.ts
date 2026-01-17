@@ -117,7 +117,6 @@ import type { ICredentialController } from "@/features/credentials/controllers/c
 // IGDB Integration
 import { IgdbCache, IgdbService } from "@/integrations/igdb";
 import type { IIgdbService } from "@/integrations/igdb";
-import redisClient from "@/services/redis";
 
 /**
  * Register all dependencies for the application.
@@ -221,8 +220,13 @@ export function registerDependencies(): void {
   );
 
   // IGDB Integration
+  // Note: Redis client is imported lazily to avoid connection during OpenAPI generation
   container.register<IgdbCache>(IGDB_CACHE_TOKEN, {
-    useFactory: () => new IgdbCache(redisClient),
+    useFactory: () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const redisClient = require("@/services/redis").default;
+      return new IgdbCache(redisClient);
+    },
   });
   container.registerSingleton<IIgdbService>(IGDB_SERVICE_TOKEN, IgdbService);
 }
