@@ -4,16 +4,17 @@ import { BackButton, PageLayout } from "@/components/layout";
 import { Button, Card, TextDisplay } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/contexts/ThemeContext";
+import { IGDBCredentialsForm } from "@/features/credentials/components";
+import {
+  useCredentials,
+  useDeleteCredentials,
+  useValidateCredentials,
+} from "@/features/credentials/hooks";
+import { useUserPreferences, type UserPreferences } from "@/hooks/useUserPreferences";
 import { preferencesAPI } from "@/lib/api";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useCredentialsStore } from "@/shared/stores/credentialsStore";
 
 type Theme = "light" | "dark" | "auto";
-
-interface UserPreferences {
-  default_view: "grid" | "table";
-  items_per_page: number;
-  theme: Theme;
-}
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const THEME_OPTIONS: Array<{ value: Theme; label: string; description: string }> = [
@@ -22,13 +23,24 @@ const THEME_OPTIONS: Array<{ value: Theme; label: string; description: string }>
   { value: "auto", label: "Auto", description: "Match system preference" },
 ];
 
-export function Settings() {
+/**
+ * Settings page component for managing user preferences and API credentials.
+ * Displays sections for library view, items per page, theme, and IGDB credentials.
+ */
+export function Settings(): JSX.Element {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { theme, setTheme } = useTheme();
   const [isUpdatingTheme, setIsUpdatingTheme] = useState(false);
 
   const { data, isLoading } = useUserPreferences();
+
+  // Credentials hooks
+  useCredentials();
+  const deleteCredentials = useDeleteCredentials();
+  const validateCredentials = useValidateCredentials();
+  const hasIgdbCredentials = useCredentialsStore((s) => s.hasIgdbCredentials());
+  const isIgdbTokenExpired = useCredentialsStore((s) => s.isIgdbTokenExpired());
 
   const updateMutation = useMutation({
     mutationFn: (prefs: Partial<UserPreferences>) => preferencesAPI.update(prefs),
@@ -55,7 +67,7 @@ export function Settings() {
     updateMutation.mutate({ items_per_page: size });
   };
 
-  const handleThemeChange = async (nextTheme: Theme) => {
+  const handleThemeChange = async (nextTheme: Theme): Promise<void> => {
     if (isUpdatingTheme || nextTheme === theme) {
       return;
     }
@@ -64,6 +76,28 @@ export function Settings() {
     await setTheme(nextTheme);
     setIsUpdatingTheme(false);
     showToast("Theme updated", "success");
+  };
+
+  const handleRefreshCredentials = (): void => {
+    validateCredentials.mutate("igdb", {
+      onSuccess: () => {
+        showToast("Credentials refreshed successfully", "success");
+      },
+      onError: () => {
+        showToast("Failed to refresh credentials", "error");
+      },
+    });
+  };
+
+  const handleRemoveCredentials = (): void => {
+    deleteCredentials.mutate("igdb", {
+      onSuccess: () => {
+        showToast("Credentials removed", "success");
+      },
+      onError: () => {
+        showToast("Failed to remove credentials", "error");
+      },
+    });
   };
 
   if (isLoading) {
@@ -226,6 +260,66 @@ export function Settings() {
                   <div className="text-xs text-text-muted">{option.description}</div>
                 </Button>
               ))}
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-8">
+            <TextDisplay as="h2" size="xl" weight="semibold" variant="primary">
+              API Credentials
+            </TextDisplay>
+            <TextDisplay variant="secondary" size="sm" className="mb-4 mt-2">
+              Configure credentials for external game database services.
+            </TextDisplay>
+
+            <div className="space-y-4">
+              <div className="rounded-lg border border-border bg-surface p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <TextDisplay weight="medium">IGDB</TextDisplay>
+                    {hasIgdbCredentials ? (
+                      isIgdbTokenExpired ? (
+                        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-500">
+                          Expired
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-500">
+                          Active
+                        </span>
+                      )
+                    ) : (
+                      <span className="bg-text-muted/20 rounded-full px-2 py-0.5 text-xs font-medium text-text-muted">
+                        Not configured
+                      </span>
+                    )}
+                  </div>
+                  {hasIgdbCredentials && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRefreshCredentials}
+                        disabled={validateCredentials.isPending}
+                      >
+                        {validateCredentials.isPending ? "Refreshing..." : "Refresh"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveCredentials}
+                        disabled={deleteCredentials.isPending}
+                        className="text-red-500 hover:bg-red-500/10 hover:text-red-500"
+                      >
+                        {deleteCredentials.isPending ? "Removing..." : "Remove"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {!hasIgdbCredentials && (
+                  <div className="mt-4">
+                    <IGDBCredentialsForm />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </Card>

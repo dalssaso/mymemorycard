@@ -1,5 +1,6 @@
 import { createFileRoute, redirect, lazyRouteComponent } from "@tanstack/react-router";
 import { preferencesAPI } from "@/lib/api";
+import { CredentialsService } from "@/shared/api/services";
 
 const Settings = lazyRouteComponent(() =>
   import("@/pages/Settings").then((module) => ({ default: module.Settings }))
@@ -13,12 +14,18 @@ export const Route = createFileRoute("/settings")({
   },
   component: Settings,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData({
-      queryKey: ["preferences"],
-      queryFn: async () => {
-        const response = await preferencesAPI.get();
-        return response.data;
-      },
-    });
+    await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["preferences"],
+        queryFn: async () => {
+          const response = await preferencesAPI.get();
+          return response.data;
+        },
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["credentials"],
+        queryFn: () => CredentialsService.list(),
+      }),
+    ]);
   },
 });
