@@ -15,7 +15,13 @@ import type { GameSearchResult } from "@/shared/api/services";
 export function ImportIGDB(): JSX.Element {
   const [selectedGame, setSelectedGame] = useState<GameSearchResult | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
-  const { data: credentialsData, isLoading: isCredentialsLoading } = useCredentials();
+  const {
+    data: credentialsData,
+    isLoading: isCredentialsLoading,
+    isError: isCredentialsError,
+    error: credentialsError,
+    refetch: refetchCredentials,
+  } = useCredentials();
   const hasIgdbCredentialsFn = useCredentialsStore((s) => s.hasIgdbCredentials);
   const isIgdbTokenExpiredFn = useCredentialsStore((s) => s.isIgdbTokenExpired);
   const hasIgdbCredentials = hasIgdbCredentialsFn();
@@ -41,6 +47,23 @@ export function ImportIGDB(): JSX.Element {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
         <div className="text-text-secondary">Loading credentials...</div>
+      </div>
+    );
+  }
+
+  // Show error state if credentials fetch failed
+  if (isCredentialsError) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4">
+        <div className="max-w-md rounded-lg border border-red-700 bg-red-900/30 p-6">
+          <h2 className="text-lg font-semibold text-red-300">Failed to Load Credentials</h2>
+          <p className="mt-2 text-sm text-red-100">
+            {credentialsError?.message || "An error occurred while loading credentials."}
+          </p>
+          <Button onClick={() => refetchCredentials()} className="mt-4">
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }

@@ -3,6 +3,8 @@ import {
   createGeneratedApiMocks,
   mockDeleteApiV1CredentialsByService,
   mockGetApiV1Credentials,
+  mockGetApiV1Platforms,
+  mockGetApiV1PlatformsById,
   mockPostApiV1Credentials,
   mockPostApiV1CredentialsValidate,
 } from "@/test/mocks/api";
@@ -195,26 +197,29 @@ describe("API Services", () => {
 
   describe("PlatformsService", () => {
     describe("list", () => {
-      it("should call GET /platforms", async () => {
-        const mockResponse = { data: { platforms: [] } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call getApiV1Platforms SDK function", async () => {
+        const mockData = { platforms: [] };
+        mockGetApiV1Platforms.mockResolvedValue({ data: mockData });
 
         const result = await PlatformsService.list();
 
-        expect(apiClient.get).toHaveBeenCalledWith("/platforms");
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGetApiV1Platforms).toHaveBeenCalledWith({ throwOnError: true });
+        expect(result).toEqual(mockData);
       });
     });
 
     describe("getOne", () => {
-      it("should call GET /platforms/:id", async () => {
-        const mockResponse = { data: { id: "platform-1", name: "PC" } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call getApiV1PlatformsById SDK function", async () => {
+        const mockData = { id: "platform-1", name: "PC" };
+        mockGetApiV1PlatformsById.mockResolvedValue({ data: mockData });
 
         const result = await PlatformsService.getOne("platform-1");
 
-        expect(apiClient.get).toHaveBeenCalledWith("/platforms/platform-1");
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGetApiV1PlatformsById).toHaveBeenCalledWith({
+          path: { id: "platform-1" },
+          throwOnError: true,
+        });
+        expect(result).toEqual(mockData);
       });
     });
   });

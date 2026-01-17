@@ -39,10 +39,10 @@ export function useCredentials(): UseQueryResult<CredentialListResponse> {
 /**
  * Get specific credential status from the store.
  *
- * @param service - Service name to lookup
+ * @param service - Service identifier to lookup
  * @returns Credential status or undefined
  */
-export function useCredentialStatus(service: string): CredentialStatus | undefined {
+export function useCredentialStatus(service: CredentialService): CredentialStatus | undefined {
   const credentials = useCredentialsStore((s) => s.credentials);
   return credentials.find((c) => c.service === service);
 }

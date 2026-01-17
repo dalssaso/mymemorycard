@@ -8,6 +8,8 @@ export const mockGetApiV1Credentials = vi.fn();
 export const mockPostApiV1Credentials = vi.fn();
 export const mockPostApiV1CredentialsValidate = vi.fn();
 export const mockDeleteApiV1CredentialsByService = vi.fn();
+export const mockGetApiV1Platforms = vi.fn();
+export const mockGetApiV1PlatformsById = vi.fn();
 
 /**
  * Creates the mock implementation object for vi.mock("../generated").
@@ -27,6 +29,8 @@ export function createGeneratedApiMocks(): Record<string, (...args: unknown[]) =
     postApiV1CredentialsValidate: (...args: unknown[]) => mockPostApiV1CredentialsValidate(...args),
     deleteApiV1CredentialsByService: (...args: unknown[]) =>
       mockDeleteApiV1CredentialsByService(...args),
+    getApiV1Platforms: (...args: unknown[]) => mockGetApiV1Platforms(...args),
+    getApiV1PlatformsById: (...args: unknown[]) => mockGetApiV1PlatformsById(...args),
   };
 }
 
@@ -39,4 +43,6 @@ export function resetApiMocks(): void {
   mockPostApiV1Credentials.mockReset();
   mockPostApiV1CredentialsValidate.mockReset();
   mockDeleteApiV1CredentialsByService.mockReset();
+  mockGetApiV1Platforms.mockReset();
+  mockGetApiV1PlatformsById.mockReset();
 }

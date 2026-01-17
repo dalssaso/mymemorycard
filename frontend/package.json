@@ -19,8 +19,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\" --ignore-path .prettierignore",
-    "generate:api": "openapi-ts",
-    "prebuild": "npm run generate:api"
+    "generate:api": "openapi-ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

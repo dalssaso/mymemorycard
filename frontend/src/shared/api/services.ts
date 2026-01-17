@@ -4,6 +4,8 @@ import { apiClient } from "./client";
 import {
   deleteApiV1CredentialsByService,
   getApiV1Credentials,
+  getApiV1Platforms,
+  getApiV1PlatformsById,
   postApiV1Credentials,
   postApiV1CredentialsValidate,
 } from "./generated";
@@ -16,7 +18,12 @@ import type {
   PlatformResponse,
   SaveCredentialRequest,
 } from "./generated";
-import type { GameSearchResult, IgdbPlatformInfo, IgdbStoreInfo } from "@/shared/types";
+import type {
+  CredentialService,
+  GameSearchResult,
+  IgdbPlatformInfo,
+  IgdbStoreInfo,
+} from "@/shared/types";
 
 // Re-export canonical types for backwards compatibility
 export type { GameSearchResult, IgdbPlatformInfo, IgdbStoreInfo };
@@ -222,8 +229,6 @@ export const GamesService = {
   },
 };
 
-type CredentialService = "igdb" | "steam" | "retroachievements" | "rawg";
-
 /**
  * Credentials API service for IGDB/Steam/RetroAchievements setup.
  * Provides methods for managing API credentials for external services.
@@ -289,7 +294,7 @@ export const PlatformsService = {
    * @returns Promise resolving to platforms list
    */
   async list(): Promise<PlatformListResponse> {
-    const response: AxiosResponse<PlatformListResponse> = await apiClient.get("/platforms");
+    const response = await getApiV1Platforms({ throwOnError: true });
     return response.data;
   },
 
@@ -300,7 +305,7 @@ export const PlatformsService = {
    * @returns Promise resolving to platform details
    */
   async getOne(id: string): Promise<PlatformResponse> {
-    const response: AxiosResponse<PlatformResponse> = await apiClient.get(`/platforms/${id}`);
+    const response = await getApiV1PlatformsById({ path: { id }, throwOnError: true });
     return response.data;
   },
 };

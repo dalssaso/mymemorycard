@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { mockGame, mockGamesListResponse } from "@/test/mocks/games";
 import { useGames, useGame, useUpdateGame, useDeleteGame, useCreateGame } from "../useGames";
 import { useSearchGames } from "../useSearchGames";
 
@@ -38,20 +39,6 @@ const createWrapper = (
   return function Wrapper({ children }: { children: ReactNode }): JSX.Element {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
-};
-
-const mockGame = {
-  id: "game-1",
-  igdb_id: 12345,
-  name: "Test Game",
-  status: "playing",
-};
-
-const mockGamesListResponse = {
-  games: [mockGame],
-  total: 1,
-  page: 1,
-  per_page: 20,
 };
 
 describe("useGames", () => {
