@@ -18,7 +18,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 // Mock layout components to avoid LayoutProvider requirement
 vi.mock("@/components/layout", () => ({
-  BackButton: vi.fn(() => <button>Back</button>),
+  BackButton: vi.fn(() => <button type="button">Back</button>),
   PageLayout: vi.fn(({ children }: { children: ReactNode }) => <div>{children}</div>),
 }));
 
@@ -106,11 +106,13 @@ const createTestQueryClient = (): QueryClient =>
     },
   });
 
-const createWrapper = (queryClient: QueryClient) => {
-  return function Wrapper({ children }: { children: ReactNode }): ReactNode {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  };
-};
+const createWrapper = (
+  queryClient: QueryClient
+): (({ children }: { children: ReactNode }) => JSX.Element) => {
+  return function Wrapper({ children }: { children: ReactNode }): JSX.Element {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  }
+}
 
 describe("Settings Page - Credentials Section", () => {
   let queryClient: QueryClient;

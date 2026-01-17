@@ -39,8 +39,10 @@ export function Settings(): JSX.Element {
   useCredentials();
   const deleteCredentials = useDeleteCredentials();
   const validateCredentials = useValidateCredentials();
-  const hasIgdbCredentials = useCredentialsStore((s) => s.hasIgdbCredentials());
-  const isIgdbTokenExpired = useCredentialsStore((s) => s.isIgdbTokenExpired());
+  const hasIgdbCredentialsFn = useCredentialsStore((s) => s.hasIgdbCredentials);
+  const isIgdbTokenExpiredFn = useCredentialsStore((s) => s.isIgdbTokenExpired);
+  const hasIgdbCredentials = hasIgdbCredentialsFn();
+  const isIgdbTokenExpired = isIgdbTokenExpiredFn();
 
   const updateMutation = useMutation({
     mutationFn: (prefs: Partial<UserPreferences>) => preferencesAPI.update(prefs),

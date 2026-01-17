@@ -16,8 +16,10 @@ export function ImportIGDB(): JSX.Element {
   const [selectedGame, setSelectedGame] = useState<GameSearchResult | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const { data: credentialsData } = useCredentials();
-  const hasIgdbCredentials = useCredentialsStore((s) => s.hasIgdbCredentials());
-  const isIgdbTokenExpired = useCredentialsStore((s) => s.isIgdbTokenExpired());
+  const hasIgdbCredentialsFn = useCredentialsStore((s) => s.hasIgdbCredentials);
+  const isIgdbTokenExpiredFn = useCredentialsStore((s) => s.isIgdbTokenExpired);
+  const hasIgdbCredentials = hasIgdbCredentialsFn();
+  const isIgdbTokenExpired = isIgdbTokenExpiredFn();
   const navigate = useNavigate();
   const importGame = useCreateGame();
 
@@ -163,11 +165,18 @@ export function ImportIGDB(): JSX.Element {
             </div>
 
             <button
+              type="button"
               onClick={handleClearSelection}
               className="self-start text-text-muted hover:text-text-primary"
               aria-label="Clear selection"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
