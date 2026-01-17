@@ -1,5 +1,11 @@
 import type { AxiosResponse } from "axios";
 import { apiClient } from "./client";
+import {
+  deleteApiV1CredentialsByService,
+  getApiV1Credentials,
+  postApiV1Credentials,
+  postApiV1CredentialsValidate,
+} from "./generated";
 import type {
   CredentialListResponse,
   CredentialSaveResponse,
@@ -185,6 +191,8 @@ export const GamesService = {
   },
 };
 
+type CredentialService = "igdb" | "steam" | "retroachievements" | "rawg";
+
 /**
  * Credentials API service for IGDB/Steam/RetroAchievements setup.
  * Provides methods for managing API credentials for external services.
@@ -196,7 +204,7 @@ export const CredentialsService = {
    * @returns Promise resolving to credential status list
    */
   async list(): Promise<CredentialListResponse> {
-    const response: AxiosResponse<CredentialListResponse> = await apiClient.get("/credentials");
+    const response = await getApiV1Credentials({ throwOnError: true });
     return response.data;
   },
 
@@ -207,10 +215,7 @@ export const CredentialsService = {
    * @returns Promise resolving to save confirmation
    */
   async create(payload: SaveCredentialRequest): Promise<CredentialSaveResponse> {
-    const response: AxiosResponse<CredentialSaveResponse> = await apiClient.post(
-      "/credentials",
-      payload
-    );
+    const response = await postApiV1Credentials({ body: payload, throwOnError: true });
     return response.data;
   },
 
@@ -221,10 +226,10 @@ export const CredentialsService = {
    * @returns Promise resolving to validation result
    */
   async validate(service: string): Promise<CredentialValidateResponse> {
-    const response: AxiosResponse<CredentialValidateResponse> = await apiClient.post(
-      "/credentials/validate",
-      { service }
-    );
+    const response = await postApiV1CredentialsValidate({
+      body: { service: service as CredentialService },
+      throwOnError: true,
+    });
     return response.data;
   },
 
@@ -235,7 +240,10 @@ export const CredentialsService = {
    * @returns Promise resolving when deletion completes
    */
   async delete(service: string): Promise<void> {
-    await apiClient.delete(`/credentials/${service}`);
+    await deleteApiV1CredentialsByService({
+      path: { service: service as CredentialService },
+      throwOnError: true,
+    });
   },
 };
 

@@ -10,6 +10,20 @@ vi.mock("../client", () => ({
   },
 }));
 
+// Mock the generated SDK functions
+const mockGetApiV1Credentials = vi.fn();
+const mockPostApiV1Credentials = vi.fn();
+const mockPostApiV1CredentialsValidate = vi.fn();
+const mockDeleteApiV1CredentialsByService = vi.fn();
+
+vi.mock("../generated", () => ({
+  getApiV1Credentials: (...args: unknown[]) => mockGetApiV1Credentials(...args),
+  postApiV1Credentials: (...args: unknown[]) => mockPostApiV1Credentials(...args),
+  postApiV1CredentialsValidate: (...args: unknown[]) => mockPostApiV1CredentialsValidate(...args),
+  deleteApiV1CredentialsByService: (...args: unknown[]) =>
+    mockDeleteApiV1CredentialsByService(...args),
+}));
+
 import { apiClient } from "../client";
 import { CredentialsService, GamesService, PlatformsService, StoresService } from "../services";
 
@@ -113,19 +127,19 @@ describe("API Services", () => {
 
   describe("CredentialsService", () => {
     describe("list", () => {
-      it("should call GET /credentials", async () => {
-        const mockResponse = { data: { credentials: [] } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call getApiV1Credentials SDK function", async () => {
+        const mockData = { services: [] };
+        mockGetApiV1Credentials.mockResolvedValue({ data: mockData });
 
         const result = await CredentialsService.list();
 
-        expect(apiClient.get).toHaveBeenCalledWith("/credentials");
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGetApiV1Credentials).toHaveBeenCalledWith({ throwOnError: true });
+        expect(result).toEqual(mockData);
       });
     });
 
     describe("create", () => {
-      it("should call POST /credentials with payload", async () => {
+      it("should call postApiV1Credentials SDK function with payload", async () => {
         const payload = {
           service: "igdb" as const,
           credential_type: "twitch_oauth" as const,
@@ -134,35 +148,44 @@ describe("API Services", () => {
             client_secret: "test-secret",
           },
         };
-        const mockResponse = { data: { service: "igdb", is_active: true, message: "Saved" } };
-        vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
+        const mockData = { service: "igdb", is_active: true, message: "Saved" };
+        mockPostApiV1Credentials.mockResolvedValue({ data: mockData });
 
         const result = await CredentialsService.create(payload);
 
-        expect(apiClient.post).toHaveBeenCalledWith("/credentials", payload);
-        expect(result).toEqual(mockResponse.data);
+        expect(mockPostApiV1Credentials).toHaveBeenCalledWith({
+          body: payload,
+          throwOnError: true,
+        });
+        expect(result).toEqual(mockData);
       });
     });
 
     describe("validate", () => {
-      it("should call POST /credentials/validate with service", async () => {
-        const mockResponse = { data: { valid: true } };
-        vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
+      it("should call postApiV1CredentialsValidate SDK function with service", async () => {
+        const mockData = { valid: true };
+        mockPostApiV1CredentialsValidate.mockResolvedValue({ data: mockData });
 
         const result = await CredentialsService.validate("igdb");
 
-        expect(apiClient.post).toHaveBeenCalledWith("/credentials/validate", { service: "igdb" });
-        expect(result).toEqual(mockResponse.data);
+        expect(mockPostApiV1CredentialsValidate).toHaveBeenCalledWith({
+          body: { service: "igdb" },
+          throwOnError: true,
+        });
+        expect(result).toEqual(mockData);
       });
     });
 
     describe("delete", () => {
-      it("should call DELETE /credentials/:service", async () => {
-        vi.mocked(apiClient.delete).mockResolvedValue({});
+      it("should call deleteApiV1CredentialsByService SDK function", async () => {
+        mockDeleteApiV1CredentialsByService.mockResolvedValue({});
 
         await CredentialsService.delete("igdb");
 
-        expect(apiClient.delete).toHaveBeenCalledWith("/credentials/igdb");
+        expect(mockDeleteApiV1CredentialsByService).toHaveBeenCalledWith({
+          path: { service: "igdb" },
+          throwOnError: true,
+        });
       });
     });
   });
