@@ -58,7 +58,7 @@ export class GameRepository implements IGameRepository {
           rawgId: data.rawg_id,
           name: data.name,
           slug: data.slug,
-          releaseDate: data.release_date ? this.formatDateForDb(data.release_date) : undefined,
+          releaseDate: data.release_date ? this.formatDateForDb(data.release_date) : null,
           description: data.description,
           coverArtUrl: data.cover_art_url,
           backgroundImageUrl: data.background_image_url,
@@ -175,7 +175,7 @@ export class GameRepository implements IGameRepository {
       rawg_id: (row.rawgId as number) || null,
       name: row.name as string,
       slug: (row.slug as string) || null,
-      release_date: row.releaseDate ? this.parseDate(row.releaseDate as string) : null,
+      release_date: this.ensureDate(row.releaseDate),
       description: (row.description as string) || null,
       cover_art_url: (row.coverArtUrl as string) || null,
       background_image_url: (row.backgroundImageUrl as string) || null,
@@ -185,16 +185,19 @@ export class GameRepository implements IGameRepository {
       series_name: (row.seriesName as string) || null,
       expected_playtime: (row.expectedPlaytime as number) || null,
       metadata_source: row.metadataSource as "igdb" | "rawg" | "manual",
-      created_at: row.createdAt as Date,
-      updated_at: row.updatedAt as Date,
+      created_at: this.ensureDate(row.createdAt) as Date,
+      updated_at: this.ensureDate(row.updatedAt) as Date,
     };
+  }
+
+  private ensureDate(value: unknown): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === "string") return new Date(`${value}T00:00:00Z`);
+    return null;
   }
 
   private formatDateForDb(date: Date): string {
     return date.toISOString().split("T")[0];
-  }
-
-  private parseDate(dateStr: string): Date {
-    return new Date(`${dateStr}T00:00:00Z`);
   }
 }
