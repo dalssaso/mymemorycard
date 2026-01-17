@@ -21,6 +21,7 @@ import {
   PREFERENCES_CONTROLLER_TOKEN,
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
+  REDIS_CONNECTION_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
@@ -30,6 +31,8 @@ import {
 } from "@/container/tokens";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { RedisConnection } from "@/infrastructure/redis/connection";
+import type { IRedisConnection } from "@/infrastructure/redis/connection.interface";
 
 // Config
 import { Config } from "@/infrastructure/config/config";
@@ -135,6 +138,9 @@ export function registerDependencies(): void {
     useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
 
+  // Redis Connection - Singleton with lazy connection support
+  container.registerSingleton<IRedisConnection>(REDIS_CONNECTION_TOKEN, RedisConnection);
+
   // Logger singleton - optional context parameter handled by constructor
   container.registerSingleton(Logger);
   container.registerSingleton(MetricsService);
@@ -224,17 +230,13 @@ export function registerDependencies(): void {
   // Rate limiter is a singleton to maintain consistent rate limiting across all requests
   container.registerSingleton<IRateLimiter>(IGDB_RATE_LIMITER_TOKEN, IgdbRateLimiter);
 
-  // Note: Redis client is imported lazily to avoid connection during OpenAPI generation
-  // Using singleton pattern to ensure consistent cache instance across all consumers
-  let igdbCacheInstance: IgdbCache | null = null;
+  // IGDB Cache - Uses RedisConnection for Redis access
   container.register<IgdbCache>(IGDB_CACHE_TOKEN, {
-    useFactory: () => {
-      if (!igdbCacheInstance) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const redisClient = require("@/services/redis").default;
-        igdbCacheInstance = new IgdbCache(redisClient);
-      }
-      return igdbCacheInstance;
+    useFactory: (c) => {
+      const redisConnection = c.resolve<IRedisConnection>(REDIS_CONNECTION_TOKEN);
+      const redisFactory = async (): ReturnType<IRedisConnection["getClient"]> =>
+        redisConnection.getClient();
+      return new IgdbCache(redisFactory);
     },
   });
   container.registerSingleton<IIgdbService>(IGDB_SERVICE_TOKEN, IgdbService);
