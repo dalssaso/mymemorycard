@@ -11,6 +11,9 @@ import {
   CREDENTIAL_SERVICE_TOKEN,
   DATABASE_TOKEN,
   ENCRYPTION_SERVICE_TOKEN,
+  IGDB_CACHE_TOKEN,
+  IGDB_RATE_LIMITER_TOKEN,
+  IGDB_SERVICE_TOKEN,
   PASSWORD_HASHER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
   PLATFORM_REPOSITORY_TOKEN,
@@ -18,6 +21,7 @@ import {
   PREFERENCES_CONTROLLER_TOKEN,
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
+  REDIS_CONNECTION_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
@@ -27,6 +31,8 @@ import {
 } from "@/container/tokens";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { RedisConnection } from "@/infrastructure/redis/connection";
+import type { IRedisConnection } from "@/infrastructure/redis/connection.interface";
 
 // Config
 import { Config } from "@/infrastructure/config/config";
@@ -112,6 +118,10 @@ import type { ICredentialService, IEncryptionService } from "@/features/credenti
 import { CredentialController } from "@/features/credentials/controllers/credential.controller";
 import type { ICredentialController } from "@/features/credentials/controllers/credential.controller.interface";
 
+// IGDB Integration
+import { IgdbCache, IgdbRateLimiter, IgdbService } from "@/integrations/igdb";
+import type { IIgdbService, IRateLimiter } from "@/integrations/igdb";
+
 /**
  * Register all dependencies for the application.
  * Called once at application startup.
@@ -127,6 +137,9 @@ export function registerDependencies(): void {
   container.register<DrizzleDB>(DATABASE_TOKEN, {
     useFactory: (container) => container.resolve(DatabaseConnection).db,
   });
+
+  // Redis Connection - Singleton with lazy connection support
+  container.registerSingleton<IRedisConnection>(REDIS_CONNECTION_TOKEN, RedisConnection);
 
   // Logger singleton - optional context parameter handled by constructor
   container.registerSingleton(Logger);
@@ -212,6 +225,21 @@ export function registerDependencies(): void {
     CREDENTIAL_CONTROLLER_TOKEN,
     CredentialController
   );
+
+  // IGDB Integration
+  // Rate limiter is a singleton to maintain consistent rate limiting across all requests
+  container.registerSingleton<IRateLimiter>(IGDB_RATE_LIMITER_TOKEN, IgdbRateLimiter);
+
+  // IGDB Cache - Uses RedisConnection for Redis access
+  container.register<IgdbCache>(IGDB_CACHE_TOKEN, {
+    useFactory: (c) => {
+      const redisConnection = c.resolve<IRedisConnection>(REDIS_CONNECTION_TOKEN);
+      const redisFactory = async (): ReturnType<IRedisConnection["getClient"]> =>
+        redisConnection.getClient();
+      return new IgdbCache(redisFactory);
+    },
+  });
+  container.registerSingleton<IIgdbService>(IGDB_SERVICE_TOKEN, IgdbService);
 }
 
 /**

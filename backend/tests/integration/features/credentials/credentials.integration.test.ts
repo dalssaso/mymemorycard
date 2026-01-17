@@ -2,9 +2,11 @@ import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import "reflect-metadata";
 import { inArray } from "drizzle-orm";
 import { registerDependencies, resetContainer, container } from "@/container";
+import { IGDB_SERVICE_TOKEN } from "@/container/tokens";
 import { createHonoApp } from "@/infrastructure/http/app";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
 import { users, userApiCredentials } from "@/db/schema";
+import { createMockIgdbService } from "@/tests/helpers/repository.mocks";
 
 describe("Credentials Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -15,6 +17,11 @@ describe("Credentials Integration Tests", () => {
 
   beforeAll(async () => {
     registerDependencies();
+
+    // Override IGDB service with mock for credential validation tests
+    // Real IGDB authentication would fail with fake test credentials
+    container.registerInstance(IGDB_SERVICE_TOKEN, createMockIgdbService());
+
     app = createHonoApp();
     dbConnection = container.resolve(DatabaseConnection);
 

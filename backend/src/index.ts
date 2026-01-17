@@ -5,9 +5,9 @@ import { runMigrations, closeMigrationConnection } from "@/db";
 import { seedPlatforms } from "@/db/seed";
 import { initializeEncryptionKey } from "@/lib/encryption";
 import type { IConfig } from "@/infrastructure/config/config.interface";
+import type { IRedisConnection } from "@/infrastructure/redis/connection.interface";
 import { DatabaseConnection } from "@/infrastructure/database/connection";
-import redisClient from "@/services/redis";
-import { CONFIG_TOKEN } from "@/container/tokens";
+import { CONFIG_TOKEN, REDIS_CONNECTION_TOKEN } from "@/container/tokens";
 
 // Import legacy routes (registers them with the old router)
 import "@/routes/import";
@@ -68,7 +68,8 @@ async function startServer(): Promise<void> {
         await dbConnection.close();
 
         // Close Redis connection
-        await redisClient.quit();
+        const redisConnection = container.resolve<IRedisConnection>(REDIS_CONNECTION_TOKEN);
+        await redisConnection.close();
       })();
 
       // Create timeout promise that rejects after SHUTDOWN_TIMEOUT

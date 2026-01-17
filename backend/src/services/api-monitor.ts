@@ -1,3 +1,7 @@
+/**
+ * @deprecated This module uses legacy Redis import.
+ * Should be migrated to DI when these routes are migrated.
+ */
 import redisClient from "./redis";
 
 const COUNTER_KEY = "rawg:request_count";

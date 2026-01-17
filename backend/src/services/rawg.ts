@@ -1,3 +1,7 @@
+/**
+ * @deprecated This module uses legacy Redis import.
+ * Should be migrated to DI when these routes are migrated.
+ */
 interface RAWGGame {
   id: number;
   name: string;

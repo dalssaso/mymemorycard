@@ -3,6 +3,9 @@ import { mock } from "bun:test";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { type users } from "@/db/schema";
+import type { IConfig } from "@/infrastructure/config/config.interface";
+import { IgdbCache } from "@/integrations/igdb/igdb.cache";
+import type { IRateLimiter } from "@/integrations/igdb/igdb.rate-limiter";
 import type { IAdminRepository } from "@/features/admin/repositories/admin.repository.interface";
 import type { IAdminService } from "@/features/admin/services/admin.service.interface";
 import type { AdminSetting, AdminSettingsResponse } from "@/features/admin/types";
@@ -19,6 +22,19 @@ import type { IPreferencesRepository } from "@/features/preferences/repositories
 import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
 import type { MetricsService } from "@/infrastructure/metrics/metrics";
+import type { IIgdbService } from "@/integrations/igdb";
+import {
+  mapIgdbGameToSearchResult,
+  mapIgdbGameToGameDetails,
+  mapIgdbPlatformToPlatform,
+} from "@/integrations/igdb";
+import {
+  IGDB_TOKEN_FIXTURE,
+  IGDB_SEARCH_RESULTS_FIXTURE,
+  IGDB_GAME_FIXTURE,
+  IGDB_PLATFORM_FIXTURE,
+  IGDB_FRANCHISE_FIXTURE,
+} from "@/tests/helpers/igdb.fixtures";
 
 type User = InferSelectModel<typeof users>;
 
@@ -278,6 +294,118 @@ export function createMockUserCredentialRepository(
         lastValidatedAt: new Date(),
       })
     ),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock IGDB service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IIgdbService.
+ *
+ * @example
+ * ```typescript
+ * import { createMockIgdbService } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockIgdb = createMockIgdbService()
+ * const results = await mockIgdb.searchGames("witcher", "user-id")
+ * // returns mapped search results from fixtures
+ *
+ * // Override specific methods:
+ * const customMock = createMockIgdbService({
+ *   searchGames: mock().mockResolvedValue([]),
+ * })
+ * ```
+ */
+export function createMockIgdbService(overrides?: Partial<IIgdbService>): IIgdbService {
+  return {
+    authenticate: mock().mockResolvedValue(IGDB_TOKEN_FIXTURE),
+    searchGames: mock().mockResolvedValue(
+      IGDB_SEARCH_RESULTS_FIXTURE.map(mapIgdbGameToSearchResult)
+    ),
+    getGameDetails: mock().mockResolvedValue(mapIgdbGameToGameDetails(IGDB_GAME_FIXTURE)),
+    getPlatform: mock().mockResolvedValue(mapIgdbPlatformToPlatform(IGDB_PLATFORM_FIXTURE)),
+    getPlatforms: mock().mockResolvedValue([mapIgdbPlatformToPlatform(IGDB_PLATFORM_FIXTURE)]),
+    getFranchise: mock().mockResolvedValue(IGDB_FRANCHISE_FIXTURE),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock IGDB cache with a mock Redis client.
+ *
+ * @returns IgdbCache instance with mocked Redis
+ *
+ * @example
+ * ```typescript
+ * import { createMockIgdbCache } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockCache = createMockIgdbCache()
+ * await mockCache.getCachedSearch("test")
+ * ```
+ */
+export function createMockIgdbCache(): IgdbCache {
+  const mockRedis = {
+    get: mock().mockResolvedValue(null),
+    setEx: mock().mockResolvedValue("OK"),
+    del: mock().mockResolvedValue(1),
+  };
+  return new IgdbCache(mockRedis as never);
+}
+
+/**
+ * Create a mock rate limiter that executes functions immediately.
+ *
+ * @returns Mocked IRateLimiter
+ *
+ * @example
+ * ```typescript
+ * import { createMockRateLimiter } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockRateLimiter = createMockRateLimiter()
+ * const result = await mockRateLimiter.schedule(async () => "result")
+ * // Executes immediately without rate limiting
+ * ```
+ */
+export function createMockRateLimiter(): IRateLimiter {
+  return {
+    schedule: mock().mockImplementation(async <T>(fn: () => Promise<T>) => fn()),
+  };
+}
+
+/**
+ * Create a mock config object with sensible defaults.
+ *
+ * @param overrides - Optional partial overrides for specific fields.
+ * @returns Mocked IConfig.
+ *
+ * @example
+ * ```typescript
+ * import { createMockConfig } from "@/tests/helpers/repository.mocks"
+ *
+ * const config = createMockConfig()
+ * // { database: { url: "..." }, redis: { url: "..." }, ... }
+ *
+ * // Override specific fields:
+ * const customConfig = createMockConfig({
+ *   skipRedisConnect: true,
+ *   isProduction: true,
+ * })
+ * ```
+ */
+export function createMockConfig(overrides?: Partial<IConfig>): IConfig {
+  return {
+    database: { url: "postgresql://test:test@localhost:5432/test" },
+    redis: { url: "redis://localhost:6379" },
+    jwt: { secret: "test-secret", expiresIn: "1h" },
+    rawg: { apiKey: "test-api-key" },
+    encryption: { secret: "test-encryption-secret-32chars!!", salt: "test-salt-16chars" },
+    port: 3000,
+    cors: { origin: undefined, allowedOrigins: [] },
+    bcrypt: { saltRounds: 10 },
+    isProduction: false,
+    skipRedisConnect: false,
     ...overrides,
   };
 }

@@ -6,10 +6,12 @@ import type { ICredentialService } from "@/features/credentials/services/credent
 import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { UserApiCredential } from "@/features/credentials/types";
+import type { IIgdbService } from "@/integrations/igdb";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 import {
   createMockLogger,
   createMockEncryptionService,
+  createMockIgdbService,
   createMockUserCredentialRepository,
 } from "@/tests/helpers/repository.mocks";
 
@@ -17,6 +19,7 @@ describe("CredentialService", () => {
   let service: ICredentialService;
   let mockRepository: IUserCredentialRepository;
   let mockEncryption: IEncryptionService;
+  let mockIgdbService: IIgdbService;
 
   const testUserId = "user-uuid-001";
   const testCredential: UserApiCredential = {
@@ -36,7 +39,13 @@ describe("CredentialService", () => {
   beforeEach(() => {
     mockRepository = createMockUserCredentialRepository();
     mockEncryption = createMockEncryptionService();
-    service = new CredentialService(mockRepository, mockEncryption, createMockLogger());
+    mockIgdbService = createMockIgdbService();
+    service = new CredentialService(
+      mockRepository,
+      mockEncryption,
+      mockIgdbService,
+      createMockLogger()
+    );
   });
 
   describe("listCredentials", () => {
@@ -251,6 +260,32 @@ describe("CredentialService", () => {
       await expect(service.validateCredentials(testUserId, "igdb")).rejects.toThrow(
         ValidationError
       );
+    });
+
+    it("should validate IGDB credentials by calling authenticate", async () => {
+      mockRepository.findByUserAndService = mock().mockResolvedValue(testCredential);
+      mockEncryption.decrypt = mock().mockReturnValue({
+        client_id: "test",
+        client_secret: "test",
+      });
+
+      const result = await service.validateCredentials(testUserId, "igdb");
+
+      expect(result.valid).toBe(true);
+      expect(mockIgdbService.authenticate).toHaveBeenCalled();
+    });
+
+    it("should return invalid when IGDB authentication fails", async () => {
+      mockRepository.findByUserAndService = mock().mockResolvedValue(testCredential);
+      mockEncryption.decrypt = mock().mockReturnValue({
+        client_id: "test",
+        client_secret: "test",
+      });
+      mockIgdbService.authenticate = mock().mockRejectedValue(new Error("Auth failed"));
+
+      const result = await service.validateCredentials(testUserId, "igdb");
+
+      expect(result.valid).toBe(false);
     });
   });
 
