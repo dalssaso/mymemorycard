@@ -1,0 +1,1 @@
+ALTER TABLE "games" ADD CONSTRAINT "games_igdb_id_unique" UNIQUE("igdb_id");

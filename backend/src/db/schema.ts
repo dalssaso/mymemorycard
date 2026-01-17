@@ -77,7 +77,7 @@ export const games = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     rawgId: integer("rawg_id").unique(),
-    igdbId: integer("igdb_id"),
+    igdbId: integer("igdb_id").unique(),
     metadataSource: metadataSourceEnum("metadata_source").default("igdb"),
     name: text("name").notNull(),
     slug: text("slug"),
