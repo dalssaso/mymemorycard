@@ -25,3 +25,7 @@ export const CREDENTIAL_CONTROLLER_TOKEN = "ICredentialController";
 export const IGDB_SERVICE_TOKEN = "IIgdbService";
 export const IGDB_CACHE_TOKEN = "IgdbCache";
 export const IGDB_RATE_LIMITER_TOKEN = "IRateLimiter";
+export const GAME_REPOSITORY_TOKEN = "IGameRepository";
+export const USER_GAME_REPOSITORY_TOKEN = "IUserGameRepository";
+export const STORE_REPOSITORY_TOKEN = "IStoreRepository";
+export const GAME_METADATA_SERVICE_TOKEN = "IGameMetadataService";
