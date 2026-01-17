@@ -3,9 +3,9 @@ import { and, eq, sql } from "drizzle-orm";
 
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
-import { userGames } from "@/db/schema";
+import { games, platforms, stores, userGames } from "@/db/schema";
 import { ConflictError, NotFoundError } from "@/shared/errors/base";
-import type { UserGame } from "../types";
+import type { UserGame, UserGameWithRelations } from "../types";
 import type { IUserGameRepository } from "./user-game.repository.interface";
 
 /**
@@ -26,6 +26,85 @@ export class UserGameRepository implements IUserGameRepository {
       where: eq(userGames.id, id),
     });
     return result ? this.mapToUserGame(result) : null;
+  }
+
+  /**
+   * Find a user game entry by ID with related game, platform, and store.
+   * @param id - User game ID
+   * @returns User game with relations or null
+   */
+  async findByIdWithRelations(id: string): Promise<UserGameWithRelations | null> {
+    const result = await this.db
+      .select({
+        id: userGames.id,
+        userId: userGames.userId,
+        gameId: userGames.gameId,
+        platformId: userGames.platformId,
+        storeId: userGames.storeId,
+        platformGameId: userGames.platformGameId,
+        owned: userGames.owned,
+        purchasedDate: userGames.purchasedDate,
+        importSource: userGames.importSource,
+        createdAt: userGames.createdAt,
+        gameName: games.name,
+        gameCoverArtUrl: games.coverArtUrl,
+        platformName: platforms.name,
+        platformAbbreviation: platforms.abbreviation,
+        storeSlug: stores.slug,
+        storeDisplayName: stores.displayName,
+      })
+      .from(userGames)
+      .innerJoin(games, eq(userGames.gameId, games.id))
+      .innerJoin(platforms, eq(userGames.platformId, platforms.id))
+      .leftJoin(stores, eq(userGames.storeId, stores.id))
+      .where(eq(userGames.id, id))
+      .limit(1);
+
+    if (result.length === 0) return null;
+
+    return this.mapToUserGameWithRelations(result[0]);
+  }
+
+  /**
+   * List user game entries for a user with relations.
+   * @param userId - User ID
+   * @param skip - Pagination offset
+   * @param take - Pagination limit
+   * @returns Array of user games with relations
+   */
+  async listByUserWithRelations(
+    userId: string,
+    skip = 0,
+    take = 50
+  ): Promise<UserGameWithRelations[]> {
+    const results = await this.db
+      .select({
+        id: userGames.id,
+        userId: userGames.userId,
+        gameId: userGames.gameId,
+        platformId: userGames.platformId,
+        storeId: userGames.storeId,
+        platformGameId: userGames.platformGameId,
+        owned: userGames.owned,
+        purchasedDate: userGames.purchasedDate,
+        importSource: userGames.importSource,
+        createdAt: userGames.createdAt,
+        gameName: games.name,
+        gameCoverArtUrl: games.coverArtUrl,
+        platformName: platforms.name,
+        platformAbbreviation: platforms.abbreviation,
+        storeSlug: stores.slug,
+        storeDisplayName: stores.displayName,
+      })
+      .from(userGames)
+      .innerJoin(games, eq(userGames.gameId, games.id))
+      .innerJoin(platforms, eq(userGames.platformId, platforms.id))
+      .leftJoin(stores, eq(userGames.storeId, stores.id))
+      .where(eq(userGames.userId, userId))
+      .offset(skip)
+      .limit(take);
+
+    return results.map((row) => this.mapToUserGameWithRelations(row));
   }
 
   /**
@@ -227,6 +306,30 @@ export class UserGameRepository implements IUserGameRepository {
       purchased_date: this.ensureDate(row.purchasedDate),
       import_source: (row.importSource as string) || null,
       created_at: this.ensureDate(row.createdAt) as Date,
+    };
+  }
+
+  private mapToUserGameWithRelations(row: Record<string, unknown>): UserGameWithRelations {
+    const base = this.mapToUserGame(row);
+    return {
+      ...base,
+      game: {
+        id: row.gameId as string,
+        name: row.gameName as string,
+        cover_art_url: (row.gameCoverArtUrl as string) || null,
+      },
+      platform: {
+        id: row.platformId as string,
+        name: row.platformName as string,
+        abbreviation: (row.platformAbbreviation as string) || null,
+      },
+      store: row.storeId
+        ? {
+            id: row.storeId as string,
+            slug: row.storeSlug as string,
+            display_name: row.storeDisplayName as string,
+          }
+        : null,
     };
   }
 

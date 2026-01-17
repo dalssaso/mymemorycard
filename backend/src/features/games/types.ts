@@ -67,6 +67,31 @@ export interface UserGame {
 }
 
 /**
+ * User game entry with related game, platform, and store information.
+ * Used for API responses that need nested relationship data.
+ */
+export interface UserGameWithRelations extends UserGame {
+  /** Game information */
+  game: {
+    id: string;
+    name: string;
+    cover_art_url: string | null;
+  };
+  /** Platform information */
+  platform: {
+    id: string;
+    name: string;
+    abbreviation: string | null;
+  };
+  /** Store information (null if not purchased from a store) */
+  store: {
+    id: string;
+    slug: string;
+    display_name: string;
+  } | null;
+}
+
+/**
  * Game with related platform and store information.
  * Combines game metadata with its available platforms and stores.
  */

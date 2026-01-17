@@ -9,6 +9,7 @@ import {
   mockDeleteResult,
   mockInsertError,
   mockInsertResult,
+  mockSelectJoinResult,
   mockUpdateResult,
 } from "@/tests/helpers/drizzle.mocks";
 
@@ -68,6 +69,150 @@ describe("UserGameRepository", () => {
       expect(result?.id).toBe("ug-123");
       expect(result?.user_id).toBe("user-123");
       expect(result?.game_id).toBe("game-456");
+    });
+  });
+
+  describe("findByIdWithRelations", () => {
+    it("returns user game with relations when found", async () => {
+      const joinResultRow = {
+        id: "ug-rel-1",
+        userId: "user-rel",
+        gameId: "game-rel",
+        platformId: "platform-rel",
+        storeId: "store-rel",
+        platformGameId: "steam-123",
+        owned: true,
+        purchasedDate: "2024-06-15",
+        importSource: "steam",
+        createdAt: new Date("2024-06-15"),
+        gameName: "Test Game",
+        gameCoverArtUrl: "https://example.com/cover.jpg",
+        platformName: "PC",
+        platformAbbreviation: "PC",
+        storeSlug: "steam",
+        storeDisplayName: "Steam",
+      };
+
+      mockSelectJoinResult(mockDb, [joinResultRow]);
+
+      const result = await repository.findByIdWithRelations("ug-rel-1");
+
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe("ug-rel-1");
+      expect(result?.user_id).toBe("user-rel");
+      expect(result?.game.id).toBe("game-rel");
+      expect(result?.game.name).toBe("Test Game");
+      expect(result?.game.cover_art_url).toBe("https://example.com/cover.jpg");
+      expect(result?.platform.id).toBe("platform-rel");
+      expect(result?.platform.name).toBe("PC");
+      expect(result?.platform.abbreviation).toBe("PC");
+      expect(result?.store?.id).toBe("store-rel");
+      expect(result?.store?.slug).toBe("steam");
+      expect(result?.store?.display_name).toBe("Steam");
+    });
+
+    it("returns null when user game not found", async () => {
+      mockSelectJoinResult(mockDb, []);
+
+      const result = await repository.findByIdWithRelations("non-existent-id");
+
+      expect(result).toBeNull();
+    });
+
+    it("handles null store when no store associated", async () => {
+      const joinResultRow = {
+        id: "ug-no-store",
+        userId: "user-no-store",
+        gameId: "game-no-store",
+        platformId: "platform-no-store",
+        storeId: null,
+        platformGameId: null,
+        owned: true,
+        purchasedDate: null,
+        importSource: null,
+        createdAt: new Date("2024-06-15"),
+        gameName: "Another Game",
+        gameCoverArtUrl: null,
+        platformName: "PlayStation 5",
+        platformAbbreviation: "PS5",
+        storeSlug: null,
+        storeDisplayName: null,
+      };
+
+      mockSelectJoinResult(mockDb, [joinResultRow]);
+
+      const result = await repository.findByIdWithRelations("ug-no-store");
+
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe("ug-no-store");
+      expect(result?.store).toBeNull();
+      expect(result?.game.cover_art_url).toBeNull();
+      expect(result?.platform.abbreviation).toBe("PS5");
+    });
+  });
+
+  describe("listByUserWithRelations", () => {
+    it("returns array of user games with relations", async () => {
+      const joinResultRows = [
+        {
+          id: "ug-list-rel-1",
+          userId: "user-list-rel",
+          gameId: "game-1",
+          platformId: "platform-1",
+          storeId: "store-1",
+          platformGameId: "steam-111",
+          owned: true,
+          purchasedDate: "2024-01-01",
+          importSource: "steam",
+          createdAt: new Date("2024-01-01"),
+          gameName: "Game One",
+          gameCoverArtUrl: "https://example.com/one.jpg",
+          platformName: "PC",
+          platformAbbreviation: "PC",
+          storeSlug: "steam",
+          storeDisplayName: "Steam",
+        },
+        {
+          id: "ug-list-rel-2",
+          userId: "user-list-rel",
+          gameId: "game-2",
+          platformId: "platform-2",
+          storeId: null,
+          platformGameId: null,
+          owned: true,
+          purchasedDate: null,
+          importSource: null,
+          createdAt: new Date("2024-02-01"),
+          gameName: "Game Two",
+          gameCoverArtUrl: null,
+          platformName: "PlayStation 5",
+          platformAbbreviation: "PS5",
+          storeSlug: null,
+          storeDisplayName: null,
+        },
+      ];
+
+      mockSelectJoinResult(mockDb, joinResultRows);
+
+      const result = await repository.listByUserWithRelations("user-list-rel");
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe("ug-list-rel-1");
+      expect(result[0].game.name).toBe("Game One");
+      expect(result[0].platform.name).toBe("PC");
+      expect(result[0].store?.slug).toBe("steam");
+      expect(result[1].id).toBe("ug-list-rel-2");
+      expect(result[1].game.name).toBe("Game Two");
+      expect(result[1].platform.abbreviation).toBe("PS5");
+      expect(result[1].store).toBeNull();
+    });
+
+    it("returns empty array when user has no games", async () => {
+      mockSelectJoinResult(mockDb, []);
+
+      const result = await repository.listByUserWithRelations("user-no-games");
+
+      expect(result).toHaveLength(0);
     });
   });
 

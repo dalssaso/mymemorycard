@@ -234,6 +234,33 @@ export function mockDeleteError(mockDb: DrizzleDB, error: Error): void {
 }
 
 /**
+ * Mock a successful select().from().innerJoin().innerJoin().leftJoin().where().limit() chain.
+ * Used for queries that join multiple tables (e.g., userGames with games, platforms, stores).
+ *
+ * @param mockDb - Mocked Drizzle DB instance.
+ * @param result - Result rows to resolve.
+ */
+export function mockSelectJoinResult<T>(mockDb: DrizzleDB, result: T[]): void {
+  const selectMock = mockDb.select as ReturnType<typeof mock>;
+  selectMock.mockReturnValue({
+    from: mock().mockReturnValue({
+      innerJoin: mock().mockReturnValue({
+        innerJoin: mock().mockReturnValue({
+          leftJoin: mock().mockReturnValue({
+            where: mock().mockReturnValue({
+              limit: mock().mockResolvedValue(result),
+              offset: mock().mockReturnValue({
+                limit: mock().mockResolvedValue(result),
+              }),
+            }),
+          }),
+        }),
+      }),
+    }),
+  });
+}
+
+/**
  * Mock a successful update().set().where().returning() chain.
  *
  * @param mockDb - Mocked Drizzle DB instance.

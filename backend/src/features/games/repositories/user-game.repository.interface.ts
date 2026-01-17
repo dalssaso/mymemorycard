@@ -1,4 +1,4 @@
-import type { UserGame } from "../types";
+import type { UserGame, UserGameWithRelations } from "../types";
 
 export interface IUserGameRepository {
   /**
@@ -7,6 +7,26 @@ export interface IUserGameRepository {
    * @returns User game or null
    */
   findById(id: string): Promise<UserGame | null>;
+
+  /**
+   * Find a user game entry by ID with related game, platform, and store.
+   * @param id - User game ID
+   * @returns User game with relations or null
+   */
+  findByIdWithRelations(id: string): Promise<UserGameWithRelations | null>;
+
+  /**
+   * List user game entries for a user with relations.
+   * @param userId - User ID
+   * @param skip - Pagination offset
+   * @param take - Pagination limit
+   * @returns Array of user games with relations
+   */
+  listByUserWithRelations(
+    userId: string,
+    skip?: number,
+    take?: number
+  ): Promise<UserGameWithRelations[]>;
 
   /**
    * Find a user game by user, game, and platform.

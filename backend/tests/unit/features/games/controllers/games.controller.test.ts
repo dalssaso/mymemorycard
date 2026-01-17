@@ -127,6 +127,8 @@ describe("GamesController", () => {
 
     userGameRepository = {
       findById: mock().mockResolvedValue(createMockUserGame()),
+      findByIdWithRelations: mock().mockResolvedValue(null),
+      listByUserWithRelations: mock().mockResolvedValue([]),
       findByUserGamePlatform: mock().mockResolvedValue(null),
       create: mock().mockResolvedValue(createMockUserGame()),
       update: mock().mockResolvedValue(createMockUserGame()),
