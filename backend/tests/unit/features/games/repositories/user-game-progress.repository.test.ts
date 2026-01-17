@@ -169,9 +169,7 @@ describe("UserGameProgressRepository", () => {
   describe("updateNotes", () => {
     it("calls insert with upsert for notes update", async () => {
       const { mockInsert, mockValues, mockOnConflictDoUpdate } = createInsertMock();
-      Object.defineProperty(mockDb, "insert", { value: mockInsert,
-        writable: true,
-      });
+      Object.defineProperty(mockDb, "insert", { value: mockInsert, writable: true });
 
       await repository.updateNotes("user-id", "game-id", "platform-id", "Great game!");
 

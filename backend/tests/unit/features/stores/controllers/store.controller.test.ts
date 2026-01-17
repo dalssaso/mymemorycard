@@ -1,13 +1,13 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test"
-import "reflect-metadata"
+import { beforeEach, describe, expect, it, mock } from "bun:test";
+import "reflect-metadata";
 
-import { StoreController } from "@/features/stores/controllers/store.controller"
-import type { IStoreService } from "@/features/stores/services/store.service.interface"
-import { createMockLogger } from "@/tests/helpers/repository.mocks"
+import { StoreController } from "@/features/stores/controllers/store.controller";
+import type { IStoreService } from "@/features/stores/services/store.service.interface";
+import { createMockLogger } from "@/tests/helpers/repository.mocks";
 
 describe("StoreController", () => {
-  let controller: StoreController
-  let mockService: IStoreService
+  let controller: StoreController;
+  let mockService: IStoreService;
 
   beforeEach(() => {
     mockService = {
@@ -47,24 +47,24 @@ describe("StoreController", () => {
           created_at: "2024-01-01T00:00:00.000Z",
         },
       }),
-    }
+    };
 
-    controller = new StoreController(mockService, createMockLogger())
-  })
+    controller = new StoreController(mockService, createMockLogger());
+  });
 
   it("creates router with registered routes", () => {
-    expect(controller.router).toBeDefined()
-  })
+    expect(controller.router).toBeDefined();
+  });
 
   it("has list route registered", () => {
-    const routes = controller.router.routes
-    const listRoute = routes.find((r) => r.method === "GET" && r.path === "/")
-    expect(listRoute).toBeDefined()
-  })
+    const routes = controller.router.routes;
+    const listRoute = routes.find((r) => r.method === "GET" && r.path === "/");
+    expect(listRoute).toBeDefined();
+  });
 
   it("has get by id route registered", () => {
-    const routes = controller.router.routes
-    const getRoute = routes.find((r) => r.method === "GET" && r.path === "/:id")
-    expect(getRoute).toBeDefined()
-  })
-})
+    const routes = controller.router.routes;
+    const getRoute = routes.find((r) => r.method === "GET" && r.path === "/:id");
+    expect(getRoute).toBeDefined();
+  });
+});

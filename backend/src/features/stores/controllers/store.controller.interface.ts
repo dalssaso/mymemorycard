@@ -1,13 +1,13 @@
-import type { OpenAPIHono } from "@hono/zod-openapi"
-import type { User } from "@/types"
+import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { User } from "@/types";
 
 export type StoreVariables = {
-  user: User
-}
+  user: User;
+};
 
 export type StoreEnv = {
-  Variables: StoreVariables
-}
+  Variables: StoreVariables;
+};
 
 /**
  * Interface for StoreController
@@ -19,5 +19,5 @@ export interface IStoreController {
    * - GET / - List stores
    * - GET /:id - Get store
    */
-  router: OpenAPIHono<StoreEnv>
+  router: OpenAPIHono<StoreEnv>;
 }
