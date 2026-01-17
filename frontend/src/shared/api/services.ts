@@ -118,9 +118,11 @@ export const GamesService = {
    * @param params.query - Search query string
    * @returns Promise resolving to search results
    */
-  async search(params: { query: string }): Promise<SearchGamesResponse> {
+  async search(params: { query: string; signal?: AbortSignal }): Promise<SearchGamesResponse> {
+    const { signal, ...queryParams } = params;
     const response: AxiosResponse<SearchGamesResponse> = await apiClient.get("/games/search", {
-      params,
+      params: queryParams,
+      signal,
     });
     return response.data;
   },

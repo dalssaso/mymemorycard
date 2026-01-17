@@ -47,7 +47,10 @@ export function useSearchGames(query: string, debounceMs = 300): UseSearchGamesR
       }
 
       abortControllerRef.current = new AbortController();
-      return GamesService.search({ query: debouncedQuery });
+      return GamesService.search({
+        query: debouncedQuery,
+        signal: abortControllerRef.current.signal,
+      });
     },
     enabled: debouncedQuery.length > 0,
     staleTime: 5 * 60 * 1000,
