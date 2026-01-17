@@ -7,4 +7,4 @@ export type {
   Store,
   CredentialStatus,
   CredentialService,
-} from './games'
+} from "./games";
