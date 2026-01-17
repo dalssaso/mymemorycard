@@ -116,30 +116,42 @@ export const UPDATE_FAVORITE_REQUEST_SCHEMA = z
 export type UpdateFavoriteRequestDto = z.infer<typeof UPDATE_FAVORITE_REQUEST_SCHEMA>;
 
 /**
+ * Shared shape for custom fields (completion percentage, difficulty rating)
+ */
+const CUSTOM_FIELDS_SHAPE = {
+  completion_percentage: z
+    .number()
+    .min(0, "Completion percentage must be at least 0")
+    .max(100, "Completion percentage cannot exceed 100")
+    .optional(),
+  difficulty_rating: z
+    .number()
+    .int("Difficulty rating must be an integer")
+    .min(1, "Difficulty rating must be at least 1")
+    .max(10, "Difficulty rating cannot exceed 10")
+    .optional(),
+};
+
+/**
+ * Refinement to ensure at least one custom field is provided
+ */
+const atLeastOneFieldRefinement = (data: {
+  completion_percentage?: number;
+  difficulty_rating?: number;
+}): boolean => data.completion_percentage !== undefined || data.difficulty_rating !== undefined;
+
+/**
  * Schema for updating custom fields (completion percentage, difficulty rating)
  */
 export const UPDATE_CUSTOM_FIELDS_REQUEST_SCHEMA = z
   .object({
     platform_id: z.string().uuid("Invalid platform ID"),
-    completion_percentage: z
-      .number()
-      .min(0, "Completion percentage must be at least 0")
-      .max(100, "Completion percentage cannot exceed 100")
-      .optional(),
-    difficulty_rating: z
-      .number()
-      .int("Difficulty rating must be an integer")
-      .min(1, "Difficulty rating must be at least 1")
-      .max(10, "Difficulty rating cannot exceed 10")
-      .optional(),
+    ...CUSTOM_FIELDS_SHAPE,
   })
   .strict()
-  .refine(
-    (data) => data.completion_percentage !== undefined || data.difficulty_rating !== undefined,
-    {
-      message: "At least one field must be provided",
-    }
-  )
+  .refine(atLeastOneFieldRefinement, {
+    message: "At least one field must be provided",
+  })
   .openapi("UpdateCustomFieldsRequest", {
     description: "Request to update custom progress fields",
     example: {
@@ -158,26 +170,11 @@ export type UpdateCustomFieldsRequestDto = z.infer<typeof UPDATE_CUSTOM_FIELDS_R
  * Schema for updating custom fields body (without platform_id since it's in path)
  */
 export const UPDATE_CUSTOM_FIELDS_BODY_SCHEMA = z
-  .object({
-    completion_percentage: z
-      .number()
-      .min(0, "Completion percentage must be at least 0")
-      .max(100, "Completion percentage cannot exceed 100")
-      .optional(),
-    difficulty_rating: z
-      .number()
-      .int("Difficulty rating must be an integer")
-      .min(1, "Difficulty rating must be at least 1")
-      .max(10, "Difficulty rating cannot exceed 10")
-      .optional(),
-  })
+  .object(CUSTOM_FIELDS_SHAPE)
   .strict()
-  .refine(
-    (data) => data.completion_percentage !== undefined || data.difficulty_rating !== undefined,
-    {
-      message: "At least one field must be provided",
-    }
-  )
+  .refine(atLeastOneFieldRefinement, {
+    message: "At least one field must be provided",
+  })
   .openapi("UpdateCustomFieldsBody", {
     description: "Request body for updating custom progress fields",
     example: {
