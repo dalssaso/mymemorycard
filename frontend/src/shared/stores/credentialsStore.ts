@@ -46,24 +46,26 @@ export const useCredentialsStore = create<CredentialsStore>()(
     (set, get) => ({
       credentials: [],
 
-      setCredentials: (credentials) => set({ credentials }),
+      setCredentials: (credentials: CredentialStatus[]): void => {
+        set({ credentials });
+      },
 
-      hasIgdbCredentials: () => {
+      hasIgdbCredentials: (): boolean => {
         const igdb = get().credentials.find((c) => c.service === "igdb");
         return igdb?.is_active ?? false;
       },
 
-      hasSteamCredentials: () => {
+      hasSteamCredentials: (): boolean => {
         const steam = get().credentials.find((c) => c.service === "steam");
         return steam?.is_active ?? false;
       },
 
-      hasRetroAchievementsCredentials: () => {
+      hasRetroAchievementsCredentials: (): boolean => {
         const retro = get().credentials.find((c) => c.service === "retroachievements");
         return retro?.is_active ?? false;
       },
 
-      isIgdbTokenExpired: () => {
+      isIgdbTokenExpired: (): boolean => {
         const igdb = get().credentials.find((c) => c.service === "igdb");
         if (!igdb?.token_expires_at) return false;
         return new Date(igdb.token_expires_at) < new Date();
