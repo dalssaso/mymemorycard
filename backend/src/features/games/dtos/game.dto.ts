@@ -68,15 +68,11 @@ export const GAME_UPDATE_REQUEST_SCHEMA = z.object({}).strict().openapi("GameUpd
 export type GameUpdateRequestDto = z.infer<typeof GAME_UPDATE_REQUEST_SCHEMA>;
 
 /**
- * Schema for game search result
+ * Schema for game search result - matches IGDB mapper output
  */
 export const GAME_SEARCH_RESULT_SCHEMA = z
   .object({
-    id: z.string().uuid().openapi({
-      description: "Game unique identifier",
-      example: "550e8400-e29b-41d4-a716-446655440000",
-    }),
-    igdb_id: z.number().int().nullable().openapi({
+    igdb_id: z.number().int().openapi({
       description: "IGDB game identifier",
       example: 1020,
     }),
@@ -84,17 +80,9 @@ export const GAME_SEARCH_RESULT_SCHEMA = z
       description: "Game title",
       example: "The Legend of Zelda: Breath of the Wild",
     }),
-    slug: z.string().nullable().openapi({
-      description: "URL-friendly game identifier",
-      example: "the-legend-of-zelda-breath-of-the-wild",
-    }),
-    cover_art_url: z.string().url().nullable().openapi({
+    cover_url: z.string().url().nullable().openapi({
       description: "URL to cover art image",
       example: "https://images.igdb.com/igdb/image/upload/...",
-    }),
-    release_date: z.string().datetime().nullable().openapi({
-      description: "Game release date",
-      example: "2017-03-03T00:00:00.000Z",
     }),
     platforms: z
       .array(
@@ -138,7 +126,7 @@ export const GAME_SEARCH_RESULT_SCHEMA = z
       }),
   })
   .openapi("GameSearchResult", {
-    description: "Game search result",
+    description: "Game search result from IGDB",
   });
 
 /**

@@ -30,31 +30,17 @@ export type UserGameCreateRequestDto = z.infer<typeof USER_GAME_CREATE_REQUEST_S
 export const USER_GAME_UPDATE_REQUEST_SCHEMA = z
   .object({
     owned: z.boolean().optional(),
-    progress: z
-      .number()
-      .int()
-      .min(0, "Progress must be at least 0")
-      .max(100, "Progress cannot exceed 100")
-      .optional(),
-    rating: z
-      .number()
-      .min(0, "Rating must be at least 0")
-      .max(10, "Rating cannot exceed 10")
-      .optional(),
+    purchased_date: z.string().datetime().optional(),
   })
   .strict()
-  .refine(
-    (data) => data.owned !== undefined || data.progress !== undefined || data.rating !== undefined,
-    {
-      message: "At least one field must be provided",
-    }
-  )
+  .refine((data) => data.owned !== undefined || data.purchased_date !== undefined, {
+    message: "At least one field must be provided",
+  })
   .openapi("UserGameUpdateRequest", {
     description: "Request to update a user game entry",
     example: {
       owned: true,
-      progress: 75,
-      rating: 9.5,
+      purchased_date: "2024-01-15T12:00:00.000Z",
     },
   });
 
@@ -153,14 +139,6 @@ export const USER_GAME_RESPONSE_SCHEMA = z
     import_source: z.string().nullable().openapi({
       description: "Source of import if applicable (steam, rawg, etc.)",
       example: "steam",
-    }),
-    progress: z.number().min(0).max(100).nullable().openapi({
-      description: "Game completion progress percentage (0-100)",
-      example: 75,
-    }),
-    rating: z.number().min(0).max(10).nullable().openapi({
-      description: "User rating for the game (0-10)",
-      example: 9,
     }),
     created_at: z.string().datetime().openapi({
       description: "Timestamp when entry was created",

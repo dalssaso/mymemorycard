@@ -125,8 +125,7 @@ export class GamesController implements IGamesController {
 
       const results = await this.gameMetadataService.searchGames(body.query, userId, body.limit);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return c.json({ results } as any, 200);
+      return c.json({ results }, 200);
     });
 
     // GET /games/:id - Get game details
@@ -251,7 +250,7 @@ export class GamesController implements IGamesController {
     this.router.use("/:id/import", authMiddleware);
     this.router.openapi(importGameRoute, async (c) => {
       this.logger.debug("POST /games/:id/import");
-      void (c.req.valid("param") as GameIdParamsDto);
+      const _params = c.req.valid("param") as GameIdParamsDto;
       const body = c.req.valid("json") as GameImportRequestDto;
       const userId = c.get("user").id;
 
@@ -262,8 +261,16 @@ export class GamesController implements IGamesController {
         body.store_id
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return c.json(userGame as any, 200);
+      // Fetch with relations for response
+      const userGameWithRelations = await this.userGameRepository.findByIdWithRelations(
+        userGame.id
+      );
+
+      if (!userGameWithRelations) {
+        throw new NotFoundError("User game");
+      }
+
+      return c.json(userGameWithRelations, 200);
     });
 
     // POST /games/:id/metadata - Update game metadata from IGDB
@@ -330,7 +337,7 @@ export class GamesController implements IGamesController {
     this.router.openapi(updateMetadataRoute, async (c) => {
       this.logger.debug("POST /games/:id/metadata");
       const params = c.req.valid("param") as GameIdParamsDto;
-      void (c.req.valid("json") as GameUpdateRequestDto);
+      const _body = c.req.valid("json") as GameUpdateRequestDto;
       const userId = c.get("user").id;
 
       const game = await this.gameMetadataService.updateGameMetadata(params.id, userId);
@@ -402,8 +409,16 @@ export class GamesController implements IGamesController {
         store_id: body.store_id,
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return c.json(userGame as any, 200);
+      // Fetch with relations for response
+      const userGameWithRelations = await this.userGameRepository.findByIdWithRelations(
+        userGame.id
+      );
+
+      if (!userGameWithRelations) {
+        throw new NotFoundError("User game");
+      }
+
+      return c.json(userGameWithRelations, 200);
     });
 
     // GET /user-games - List user's games
@@ -474,10 +489,13 @@ export class GamesController implements IGamesController {
       };
       const userId = c.get("user").id;
 
-      const userGames = await this.userGameRepository.listByUser(userId, query.offset, query.limit);
+      const userGames = await this.userGameRepository.listByUserWithRelations(
+        userId,
+        query.offset,
+        query.limit
+      );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return c.json({ user_games: userGames } as any, 200);
+      return c.json({ user_games: userGames }, 200);
     });
 
     // GET /user-games/:id - Get user game entry
@@ -531,14 +549,13 @@ export class GamesController implements IGamesController {
       const params = c.req.valid("param") as UserGameIdParamsDto;
       const userId = c.get("user").id;
 
-      const userGame = await this.userGameRepository.findById(params.id);
+      const userGame = await this.userGameRepository.findByIdWithRelations(params.id);
 
       if (!userGame || userGame.user_id !== userId) {
         throw new NotFoundError("User game");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return c.json(userGame as any, 200);
+      return c.json(userGame, 200);
     });
 
     // PATCH /user-games/:id - Update user game
@@ -608,12 +625,19 @@ export class GamesController implements IGamesController {
       const body = c.req.valid("json") as UserGameUpdateRequestDto;
       const userId = c.get("user").id;
 
-      const userGame = await this.userGameRepository.update(params.id, userId, {
+      await this.userGameRepository.update(params.id, userId, {
         owned: body.owned,
+        purchased_date: body.purchased_date ? new Date(body.purchased_date) : undefined,
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return c.json(userGame as any, 200);
+      // Fetch updated record with relations
+      const userGame = await this.userGameRepository.findByIdWithRelations(params.id);
+
+      if (!userGame) {
+        throw new NotFoundError("User game");
+      }
+
+      return c.json(userGame, 200);
     });
 
     // DELETE /user-games/:id - Remove game from user library

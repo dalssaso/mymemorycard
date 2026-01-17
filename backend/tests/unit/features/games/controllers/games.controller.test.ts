@@ -5,7 +5,7 @@ import { GamesController } from "@/features/games/controllers/games.controller";
 import type { IGameMetadataService } from "@/features/games/services/game-metadata.service.interface";
 import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
 import type { IUserGameRepository } from "@/features/games/repositories/user-game.repository.interface";
-import type { Game, UserGame } from "@/features/games/types";
+import type { Game, UserGame, UserGameWithRelations } from "@/features/games/types";
 import { createMockLogger } from "@/tests/helpers/repository.mocks";
 import { container, resetContainer } from "@/container";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
@@ -61,6 +61,30 @@ function createMockUserGame(overrides?: Partial<UserGame>): UserGame {
     purchased_date: new Date("2024-01-01"),
     import_source: "steam",
     created_at: new Date("2024-01-15"),
+    ...overrides,
+  };
+}
+
+function createMockUserGameWithRelations(
+  overrides?: Partial<UserGameWithRelations>
+): UserGameWithRelations {
+  return {
+    ...createMockUserGame(),
+    game: {
+      id: GAME_ID,
+      name: "The Legend of Zelda: Breath of the Wild",
+      cover_art_url: "https://images.igdb.com/igdb/image/upload/...",
+    },
+    platform: {
+      id: PLATFORM_ID,
+      name: "PC (Windows)",
+      abbreviation: "PC",
+    },
+    store: {
+      id: STORE_ID,
+      slug: "steam",
+      display_name: "Steam",
+    },
     ...overrides,
   };
 }
@@ -127,8 +151,8 @@ describe("GamesController", () => {
 
     userGameRepository = {
       findById: mock().mockResolvedValue(createMockUserGame()),
-      findByIdWithRelations: mock().mockResolvedValue(null),
-      listByUserWithRelations: mock().mockResolvedValue([]),
+      findByIdWithRelations: mock().mockResolvedValue(createMockUserGameWithRelations()),
+      listByUserWithRelations: mock().mockResolvedValue([createMockUserGameWithRelations()]),
       findByUserGamePlatform: mock().mockResolvedValue(null),
       create: mock().mockResolvedValue(createMockUserGame()),
       update: mock().mockResolvedValue(createMockUserGame()),
@@ -728,7 +752,7 @@ describe("GamesController", () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as UserGame;
+      const data = (await response.json()) as UserGameWithRelations;
       expect(data.id).toBe(USER_GAME_ID);
     });
 
@@ -753,7 +777,7 @@ describe("GamesController", () => {
 
     it("should return 404 when user game not found", async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (userGameRepository.findById as any).mockResolvedValue(null);
+      (userGameRepository.findByIdWithRelations as any).mockResolvedValue(null);
 
       const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
         method: "GET",
@@ -767,8 +791,8 @@ describe("GamesController", () => {
 
     it("should return 404 for cross-user access (not 403)", async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (userGameRepository.findById as any).mockResolvedValue(
-        createMockUserGame({ user_id: "other-user-id" })
+      (userGameRepository.findByIdWithRelations as any).mockResolvedValue(
+        createMockUserGameWithRelations({ user_id: "other-user-id" })
       );
 
       const response = await controller.router.request(`/user-games/${USER_GAME_ID}`, {
@@ -794,7 +818,7 @@ describe("GamesController", () => {
       });
 
       expect(response.status).toBe(200);
-      const data = (await response.json()) as UserGame;
+      const data = (await response.json()) as UserGameWithRelations;
       expect(data.id).toBe(USER_GAME_ID);
     });
 
@@ -934,6 +958,23 @@ describe("GamesController", () => {
 
       expect(userGameRepository.update).toHaveBeenCalledWith(USER_GAME_ID, USER_ID, {
         owned: true,
+        purchased_date: undefined,
+      });
+    });
+
+    it("should pass purchased_date as Date when provided", async () => {
+      await controller.router.request(`/user-games/${USER_GAME_ID}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer token",
+        },
+        body: JSON.stringify({ purchased_date: "2024-01-15T12:00:00.000Z" }),
+      });
+
+      expect(userGameRepository.update).toHaveBeenCalledWith(USER_GAME_ID, USER_ID, {
+        owned: undefined,
+        purchased_date: new Date("2024-01-15T12:00:00.000Z"),
       });
     });
   });
