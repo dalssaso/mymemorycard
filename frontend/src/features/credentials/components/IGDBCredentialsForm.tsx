@@ -43,16 +43,16 @@ export function IGDBCredentialsForm(): JSX.Element {
   };
 
   return (
-    <div className="space-y-6 rounded-lg border border-slate-700 bg-slate-800/50 p-6">
+    <div className="space-y-6 rounded-lg border border-border bg-surface/50 p-6">
       <div>
-        <h3 className="text-lg font-semibold text-white">IGDB Credentials</h3>
-        <p className="text-sm text-slate-400">
+        <h3 className="text-lg font-semibold text-text-primary">IGDB Credentials</h3>
+        <p className="text-sm text-text-secondary">
           Required for game search and metadata. Get your credentials from the{" "}
           <a
             href="https://api.igdb.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300"
+            className="text-accent hover:text-accent/80"
           >
             IGDB API console
           </a>
@@ -61,7 +61,7 @@ export function IGDBCredentialsForm(): JSX.Element {
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="client-id" className="text-slate-300">
+          <Label htmlFor="client-id" className="text-text-primary">
             Twitch Client ID
           </Label>
           <Input
@@ -73,13 +73,13 @@ export function IGDBCredentialsForm(): JSX.Element {
               setSaveStatus("idle");
             }}
             placeholder="your-client-id"
-            className="mt-2 bg-slate-900 text-white placeholder-slate-500"
+            className="mt-2 bg-base text-text-primary placeholder:text-text-muted"
             autoComplete="off"
           />
         </div>
 
         <div>
-          <Label htmlFor="client-secret" className="text-slate-300">
+          <Label htmlFor="client-secret" className="text-text-primary">
             Twitch Client Secret
           </Label>
           <Input
@@ -91,20 +91,20 @@ export function IGDBCredentialsForm(): JSX.Element {
               setSaveStatus("idle");
             }}
             placeholder="your-client-secret"
-            className="mt-2 bg-slate-900 text-white placeholder-slate-500"
+            className="mt-2 bg-base text-text-primary placeholder:text-text-muted"
             autoComplete="off"
           />
         </div>
       </div>
 
       {saveStatus === "error" && (
-        <div className="rounded bg-red-900/30 p-3 text-sm text-red-300">
+        <div className="rounded bg-destructive/30 p-3 text-sm text-destructive">
           Failed to save credentials. Please check your ID and secret.
         </div>
       )}
 
       {saveStatus === "success" && (
-        <div className="rounded bg-green-900/30 p-3 text-sm text-green-300">
+        <div className="rounded bg-status-playing/30 p-3 text-sm text-status-playing">
           Credentials saved successfully!
         </div>
       )}
