@@ -11,6 +11,11 @@ import type { Game } from "../types";
 export class GameRepository implements IGameRepository {
   constructor(@inject(DATABASE_TOKEN) private db: DrizzleDB) {}
 
+  /**
+   * Find a game by ID.
+   * @param id - Game ID (UUID)
+   * @returns Game or null if not found
+   */
   async findById(id: string): Promise<Game | null> {
     const result = await this.db.query.games.findFirst({
       where: eq(games.id, id),
@@ -18,6 +23,11 @@ export class GameRepository implements IGameRepository {
     return result ? this.mapToGame(result) : null;
   }
 
+  /**
+   * Find a game by IGDB ID.
+   * @param igdb_id - IGDB game ID
+   * @returns Game or null if not found
+   */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   async findByIgdbId(igdb_id: number): Promise<Game | null> {
     const result = await this.db.query.games.findFirst({
@@ -26,6 +36,11 @@ export class GameRepository implements IGameRepository {
     return result ? this.mapToGame(result) : null;
   }
 
+  /**
+   * Find a game by RAWG ID.
+   * @param rawg_id - RAWG game ID
+   * @returns Game or null if not found
+   */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   async findByRawgId(rawg_id: number): Promise<Game | null> {
     const result = await this.db.query.games.findFirst({
@@ -34,6 +49,12 @@ export class GameRepository implements IGameRepository {
     return result ? this.mapToGame(result) : null;
   }
 
+  /**
+   * Create a new game.
+   * @param data - Game creation data
+   * @returns Created game
+   * @throws {ConflictError} If game with same IGDB/RAWG ID exists
+   */
   async create(data: {
     igdb_id?: number;
     rawg_id?: number;
@@ -87,6 +108,13 @@ export class GameRepository implements IGameRepository {
     }
   }
 
+  /**
+   * Update an existing game.
+   * @param id - Game ID
+   * @param data - Partial game data
+   * @returns Updated game
+   * @throws {NotFoundError} If game not found
+   */
   async update(
     id: string,
     data: Partial<Omit<Game, "id" | "created_at" | "updated_at">>
@@ -138,12 +166,23 @@ export class GameRepository implements IGameRepository {
     return this.mapToGame(result[0]);
   }
 
+  /**
+   * Delete a game.
+   * @param id - Game ID
+   * @returns true if deleted, false if not found
+   */
   async delete(id: string): Promise<boolean> {
     const result = await this.db.delete(games).where(eq(games.id, id)).returning();
 
     return result.length > 0;
   }
 
+  /**
+   * Search games by name (partial match).
+   * @param query - Search query
+   * @param limit - Max results (default 50)
+   * @returns Array of matching games
+   */
   async search(query: string, limit = 50): Promise<Game[]> {
     const results = await this.db.query.games.findMany({
       where: ilike(games.name, `%${query}%`),
@@ -152,6 +191,12 @@ export class GameRepository implements IGameRepository {
     return results.map((row) => this.mapToGame(row));
   }
 
+  /**
+   * List all games with pagination.
+   * @param skip - Number of records to skip
+   * @param take - Number of records to return
+   * @returns Array of games
+   */
   async list(skip = 0, take = 50): Promise<Game[]> {
     const results = await this.db.query.games.findMany({
       offset: skip,
@@ -160,6 +205,10 @@ export class GameRepository implements IGameRepository {
     return results.map((row) => this.mapToGame(row));
   }
 
+  /**
+   * Get total count of games.
+   * @returns Total game count
+   */
   async count(): Promise<number> {
     const result = await this.db
       .select({ count: sql<number>`cast(count(*) as integer)` })
