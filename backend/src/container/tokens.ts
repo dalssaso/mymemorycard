@@ -32,3 +32,5 @@ export const STORE_REPOSITORY_TOKEN = "IStoreRepository";
 export const GAME_METADATA_SERVICE_TOKEN = "IGameMetadataService";
 export const GAMES_CONTROLLER_TOKEN = "IGamesController";
 export const USER_GAME_PROGRESS_REPOSITORY_TOKEN = "IUserGameProgressRepository";
+export const STORE_SERVICE_TOKEN = "IStoreService";
+export const STORE_CONTROLLER_TOKEN = "IStoreController";
