@@ -154,11 +154,11 @@ describe("IgdbCache", () => {
       expect(actualTtl).toBeGreaterThan(0);
     });
 
-    it("should use minimum TTL when expiresIn is less than or equal to buffer", async () => {
-      // When expiresIn (200) <= buffer (300), should use Math.max(1, expiresIn) = 200
+    it("should skip caching when expiresIn is less than or equal to buffer", async () => {
+      // When expiresIn (200) <= buffer (300), should skip caching entirely
       await cache.cacheToken("user-123", "test-token", 200);
 
-      expect(mockRedis.setEx).toHaveBeenCalledWith("igdb:token:user-123", 200, "test-token");
+      expect(mockRedis.setEx).not.toHaveBeenCalled();
     });
 
     it("should not throw on Redis error", async () => {

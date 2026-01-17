@@ -40,8 +40,27 @@ export class RedisConnection implements IRedisConnection {
       return this.connecting;
     }
 
-    this.connecting = this.connect();
-    return this.connecting;
+    const connectPromise = this.connect();
+    this.connecting = connectPromise;
+
+    connectPromise
+      .catch(() => {
+        // Clean up partially-created client on failure
+        if (this.client) {
+          this.client.quit().catch(() => {
+            // Ignore cleanup errors
+          });
+          this.client = null;
+        }
+      })
+      .finally(() => {
+        // Clear connecting only if it still equals this promise (allows retry)
+        if (this.connecting === connectPromise) {
+          this.connecting = null;
+        }
+      });
+
+    return connectPromise;
   }
 
   /**
@@ -97,7 +116,6 @@ export class RedisConnection implements IRedisConnection {
     }
 
     this.client = client as RedisClientType;
-    this.connecting = null;
     return this.client;
   }
 }

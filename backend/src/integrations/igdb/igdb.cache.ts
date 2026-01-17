@@ -48,6 +48,7 @@ export type RedisClientFactory = () => Promise<RedisClient>;
 export class IgdbCache {
   private redisClient: RedisClient | null = null;
   private redisFactory: RedisClientFactory | null = null;
+  private redisClientPromise: Promise<RedisClient> | null = null;
 
   /**
    * Create an IgdbCache instance.
@@ -179,19 +180,23 @@ export class IgdbCache {
 
   /**
    * Cache access token.
+   * Skips caching if token expires too soon to be useful.
    *
    * @param userId - User ID
    * @param token - Access token
    * @param expiresIn - Token TTL in seconds
    */
   async cacheToken(userId: string, token: string, expiresIn: number): Promise<void> {
+    // Skip caching if token expires too soon to be useful
+    if (expiresIn <= TOKEN_EXPIRY_BUFFER) {
+      return;
+    }
+
     try {
       const redis = await this.getRedis();
       const key = `igdb:token:${userId}`;
       // Cache for slightly less than expiry to ensure refresh before actual expiration
-      // Ensure TTL is always positive (minimum 1 second)
-      const candidate = expiresIn - TOKEN_EXPIRY_BUFFER;
-      const ttl = candidate > 0 ? Math.min(candidate, CACHE_TTL.token) : Math.max(1, expiresIn);
+      const ttl = Math.min(expiresIn - TOKEN_EXPIRY_BUFFER, CACHE_TTL.token);
       await redis.setEx(key, ttl, token);
     } catch {
       // Ignore cache errors
@@ -215,15 +220,33 @@ export class IgdbCache {
 
   /**
    * Get the Redis client, resolving lazily if needed.
+   * Prevents race conditions by ensuring only one connection attempt at a time.
    */
   private async getRedis(): Promise<RedisClient> {
     if (this.redisClient) {
       return this.redisClient;
     }
-    if (this.redisFactory) {
-      this.redisClient = await this.redisFactory();
-      return this.redisClient;
+
+    // Return existing pending promise to prevent concurrent factory calls
+    if (this.redisClientPromise) {
+      return this.redisClientPromise;
     }
-    throw new Error("No Redis client or factory provided");
+
+    if (!this.redisFactory) {
+      throw new Error("No Redis client or factory provided");
+    }
+
+    this.redisClientPromise = this.redisFactory()
+      .then((client) => {
+        this.redisClient = client;
+        this.redisClientPromise = null;
+        return client;
+      })
+      .catch((error) => {
+        this.redisClientPromise = null;
+        throw error;
+      });
+
+    return this.redisClientPromise;
   }
 }
