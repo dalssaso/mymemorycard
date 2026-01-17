@@ -124,6 +124,76 @@ describe("CredentialService", () => {
         })
       ).rejects.toThrow(ValidationError);
     });
+
+    it("should save Steam credentials with encryption", async () => {
+      const result = await service.saveCredentials(testUserId, {
+        service: "steam",
+        credential_type: "steam_openid",
+        credentials: {
+          steam_id: "test-steam-id",
+        },
+      });
+
+      expect(result.service).toBe("steam");
+      expect(result.credential_type).toBe("steam_openid");
+      expect(result.is_active).toBe(true);
+      expect(mockEncryption.encrypt).toHaveBeenCalled();
+    });
+
+    it("should throw ValidationError for Steam with wrong credential type", async () => {
+      await expect(
+        service.saveCredentials(testUserId, {
+          service: "steam",
+          credential_type: "api_key",
+          credentials: { api_key: "test" },
+        })
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("should throw ValidationError for Steam missing steam_id", async () => {
+      await expect(
+        service.saveCredentials(testUserId, {
+          service: "steam",
+          credential_type: "steam_openid",
+          credentials: {} as never,
+        })
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("should save RAWG credentials with encryption", async () => {
+      const result = await service.saveCredentials(testUserId, {
+        service: "rawg",
+        credential_type: "api_key",
+        credentials: {
+          api_key: "test-api-key",
+        },
+      });
+
+      expect(result.service).toBe("rawg");
+      expect(result.credential_type).toBe("api_key");
+      expect(result.is_active).toBe(true);
+      expect(mockEncryption.encrypt).toHaveBeenCalled();
+    });
+
+    it("should throw ValidationError for RAWG with wrong credential type", async () => {
+      await expect(
+        service.saveCredentials(testUserId, {
+          service: "rawg",
+          credential_type: "twitch_oauth",
+          credentials: { client_id: "test", client_secret: "test" },
+        })
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("should throw ValidationError for RAWG missing api_key", async () => {
+      await expect(
+        service.saveCredentials(testUserId, {
+          service: "rawg",
+          credential_type: "api_key",
+          credentials: {} as never,
+        })
+      ).rejects.toThrow(ValidationError);
+    });
   });
 
   describe("validateCredentials", () => {

@@ -224,7 +224,7 @@ export function mockDeleteResult<T>(mockDb: DrizzleDB, result: T[]): void {
  * @param mockDb - Mocked Drizzle DB instance.
  * @param error - Error to reject with.
  */
-export function mockDeleteError(mockDb: DrizzleDB, error: unknown): void {
+export function mockDeleteError(mockDb: DrizzleDB, error: Error): void {
   const deleteMock = mock().mockReturnValue({
     where: mock().mockReturnValue({
       returning: mock().mockRejectedValue(error),
