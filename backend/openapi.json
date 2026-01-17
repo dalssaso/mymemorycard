@@ -573,6 +573,261 @@
             "host": "https://analytics.example.com"
           }
         }
+      },
+      "CredentialListResponse": {
+        "type": "object",
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CredentialStatus"
+            },
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "services"
+        ],
+        "description": "List of all credential statuses for the user"
+      },
+      "CredentialStatus": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "steam",
+              "retroachievements",
+              "rawg"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "has_valid_token": {
+            "type": "boolean"
+          },
+          "token_expires_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "last_validated_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "service",
+          "is_active",
+          "has_valid_token",
+          "token_expires_at",
+          "last_validated_at"
+        ],
+        "description": "Status of a single API credential",
+        "example": {
+          "service": "igdb",
+          "is_active": true,
+          "has_valid_token": true,
+          "token_expires_at": "2026-03-16T12:00:00.000Z",
+          "last_validated_at": "2026-01-16T12:00:00.000Z"
+        }
+      },
+      "CredentialSaveResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "steam",
+              "retroachievements",
+              "rawg"
+            ]
+          },
+          "credential_type": {
+            "type": "string",
+            "enum": [
+              "twitch_oauth",
+              "steam_openid",
+              "api_key"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "service",
+          "credential_type",
+          "is_active",
+          "message"
+        ],
+        "description": "Response after saving credentials",
+        "example": {
+          "service": "igdb",
+          "credential_type": "twitch_oauth",
+          "is_active": true,
+          "message": "Credentials saved for igdb. Please validate to confirm they work."
+        }
+      },
+      "SaveCredentialRequest": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "steam",
+              "retroachievements",
+              "rawg"
+            ]
+          },
+          "credential_type": {
+            "type": "string",
+            "enum": [
+              "twitch_oauth",
+              "steam_openid",
+              "api_key"
+            ]
+          },
+          "credentials": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "client_secret"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "api_key": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "api_key"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "steam_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "display_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "steam_id"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "service",
+          "credential_type",
+          "credentials"
+        ],
+        "additionalProperties": false,
+        "description": "Request to save API credentials for a service",
+        "example": {
+          "service": "igdb",
+          "credential_type": "twitch_oauth",
+          "credentials": {
+            "client_id": "your-twitch-client-id",
+            "client_secret": "your-twitch-client-secret"
+          }
+        }
+      },
+      "CredentialValidateResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "steam",
+              "retroachievements",
+              "rawg"
+            ]
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "has_valid_token": {
+            "type": "boolean"
+          },
+          "token_expires_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "service",
+          "valid",
+          "has_valid_token",
+          "token_expires_at",
+          "message"
+        ],
+        "description": "Response after validating credentials",
+        "example": {
+          "service": "igdb",
+          "valid": true,
+          "has_valid_token": true,
+          "token_expires_at": "2026-03-16T12:00:00.000Z",
+          "message": "Credentials for igdb validated successfully."
+        }
+      },
+      "ValidateCredentialRequest": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "steam",
+              "retroachievements",
+              "rawg"
+            ]
+          }
+        },
+        "required": [
+          "service"
+        ],
+        "additionalProperties": false,
+        "description": "Request to validate stored credentials",
+        "example": {
+          "service": "igdb"
+        }
       }
     },
     "parameters": {},
@@ -1171,6 +1426,215 @@
           },
           "403": {
             "description": "Forbidden - admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/credentials": {
+      "get": {
+        "tags": [
+          "credentials"
+        ],
+        "summary": "List credential statuses",
+        "description": "Get the status of all stored API credentials for the authenticated user.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of credential statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "credentials"
+        ],
+        "summary": "Save API credentials",
+        "description": "Save or update API credentials for a service. Credentials are encrypted before storage.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCredentialRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Credentials saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialSaveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/credentials/validate": {
+      "post": {
+        "tags": [
+          "credentials"
+        ],
+        "summary": "Validate stored credentials",
+        "description": "Validate stored credentials by attempting authentication with the external service.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateCredentialRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialValidateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Credentials not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/credentials/{service}": {
+      "delete": {
+        "tags": [
+          "credentials"
+        ],
+        "summary": "Delete credentials",
+        "description": "Delete stored credentials for a specific service.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "igdb",
+                "steam",
+                "retroachievements",
+                "rawg"
+              ]
+            },
+            "required": true,
+            "name": "service",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Credentials deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Credentials not found",
             "content": {
               "application/json": {
                 "schema": {
