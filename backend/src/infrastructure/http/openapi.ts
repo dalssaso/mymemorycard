@@ -12,6 +12,12 @@ const DEFAULT_ENV: ReadonlyArray<readonly [string, string]> = [
   ["SKIP_REDIS_CONNECT", "1"],
 ];
 
+/**
+ * Populate process.env with default values from DEFAULT_ENV where not already set.
+ *
+ * For each `[key, value]` in DEFAULT_ENV, sets `process.env[key]` to `value` when the current
+ * environment variable is missing or empty. Does not overwrite existing non-empty environment values.
+ */
 function applyOpenApiEnvDefaults(): void {
   DEFAULT_ENV.forEach(([key, value]) => {
     if (!process.env[key]) {
@@ -21,7 +27,10 @@ function applyOpenApiEnvDefaults(): void {
 }
 
 /**
- * Converts Hono-style path params (:id) to OpenAPI-style ({id}).
+ * Convert Hono-style path parameter keys (e.g., `:id`) to OpenAPI-style (`{id}`).
+ *
+ * @param paths - Mapping of route path strings to their associated values; keys may contain Hono-style parameters.
+ * @returns A new mapping with the same values but with path keys transformed to OpenAPI parameter syntax.
  */
 function convertPathParams(paths: Record<string, unknown>): Record<string, unknown> {
   const converted: Record<string, unknown> = {};
@@ -33,8 +42,11 @@ function convertPathParams(paths: Record<string, unknown>): Record<string, unkno
 }
 
 /**
- * Builds the OpenAPI document from the DI-backed Hono app.
- * Applies default environment variables to avoid required-config failures.
+ * Constructs the OpenAPI 3.0 document for the application, normalizing path parameter syntax and ensuring a bearerAuth security scheme.
+ *
+ * This function applies default environment variables and registers application dependencies before generating the document.
+ *
+ * @returns The assembled OpenAPIObject representing the API specification
  */
 export function buildOpenApiDocument(): OpenAPIObject {
   applyOpenApiEnvDefaults();

@@ -30,6 +30,17 @@ type Variables = {
   requestId: string;
 };
 
+/**
+ * Create and configure the OpenAPIHono application with middleware, health and metrics endpoints, DI-mounted feature routers, a legacy /api/* proxy, and global error handling.
+ *
+ * @returns An OpenAPIHono application instance configured with:
+ * - global middleware: CORS, per-request `requestId`, and metrics collection
+ * - GET /api/health health check endpoint
+ * - GET /metrics metrics endpoint with the registry Content-Type
+ * - DI-mounted routers for auth, platforms, user-platforms, preferences, admin, credentials, games, and user-games
+ * - a catch-all /api/* handler that proxies to the legacy router or returns 404
+ * - a registered global error handler
+ */
 export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   const app = new OpenAPIHono<{ Variables: Variables }>();
 
