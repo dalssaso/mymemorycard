@@ -2,9 +2,9 @@ import { vi, type MockInstance } from "vitest";
 
 /**
  * Type alias for SDK mock functions.
- * Uses Vitest's MockInstance for proper typing and autocompletion.
+ * Uses Vitest's MockInstance with explicit unknown generics to avoid implicit any.
  */
-type SdkMockFn = MockInstance;
+type SdkMockFn = MockInstance<(...args: unknown[]) => unknown>;
 
 /**
  * Mock functions for the generated API SDK.

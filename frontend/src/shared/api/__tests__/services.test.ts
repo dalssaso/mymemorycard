@@ -178,6 +178,18 @@ describe("API Services", () => {
 
         await expect(GamesService.create(payload)).rejects.toThrow("Conflict");
       });
+
+      it("should throw NormalizedApiError when platform_id is missing", async () => {
+        const payload = { igdb_id: 123 };
+
+        await expect(GamesService.create(payload)).rejects.toMatchObject({
+          name: "ApiError",
+          message: "platform_id is required for game import",
+          status: 400,
+          code: "VALIDATION_ERROR",
+        });
+        expect(mockPostApiV1GamesByIdImport).not.toHaveBeenCalled();
+      });
     });
 
     describe("update", () => {
