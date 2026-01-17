@@ -1,22 +1,33 @@
-import { vi } from "vitest";
+import { vi, type MockInstance } from "vitest";
+
+/**
+ * Type alias for SDK mock functions.
+ * Uses Vitest's MockInstance for proper typing and autocompletion.
+ */
+type SdkMockFn = MockInstance;
 
 /**
  * Mock functions for the generated API SDK.
  * Use these to set up vi.mock for @/shared/api/generated.
  */
-export const mockGetApiV1Credentials = vi.fn();
-export const mockPostApiV1Credentials = vi.fn();
-export const mockPostApiV1CredentialsValidate = vi.fn();
-export const mockDeleteApiV1CredentialsByService = vi.fn();
-export const mockGetApiV1Platforms = vi.fn();
-export const mockGetApiV1PlatformsById = vi.fn();
-export const mockPostApiV1GamesSearch = vi.fn();
-export const mockGetApiV1UserGames = vi.fn();
-export const mockPostApiV1GamesByIdImport = vi.fn();
-export const mockGetApiV1UserGamesById = vi.fn();
-export const mockPatchApiV1UserGamesById = vi.fn();
-export const mockDeleteApiV1UserGamesById = vi.fn();
-export const mockGetApiV1GamesById = vi.fn();
+export const mockGetApiV1Credentials: SdkMockFn = vi.fn();
+export const mockPostApiV1Credentials: SdkMockFn = vi.fn();
+export const mockPostApiV1CredentialsValidate: SdkMockFn = vi.fn();
+export const mockDeleteApiV1CredentialsByService: SdkMockFn = vi.fn();
+export const mockGetApiV1Platforms: SdkMockFn = vi.fn();
+export const mockGetApiV1PlatformsById: SdkMockFn = vi.fn();
+export const mockPostApiV1GamesSearch: SdkMockFn = vi.fn();
+export const mockGetApiV1UserGames: SdkMockFn = vi.fn();
+export const mockPostApiV1GamesByIdImport: SdkMockFn = vi.fn();
+export const mockGetApiV1UserGamesById: SdkMockFn = vi.fn();
+export const mockPatchApiV1UserGamesById: SdkMockFn = vi.fn();
+export const mockDeleteApiV1UserGamesById: SdkMockFn = vi.fn();
+export const mockGetApiV1GamesById: SdkMockFn = vi.fn();
+
+/**
+ * Return type for createGeneratedApiMocks with proper MockInstance typing.
+ */
+type GeneratedApiMocks = Record<string, SdkMockFn>;
 
 /**
  * Creates the mock implementation object for vi.mock("../generated").
@@ -29,22 +40,21 @@ export const mockGetApiV1GamesById = vi.fn();
  * vi.mock("../generated", () => createGeneratedApiMocks())
  * ```
  */
-export function createGeneratedApiMocks(): Record<string, (...args: unknown[]) => unknown> {
+export function createGeneratedApiMocks(): GeneratedApiMocks {
   return {
-    getApiV1Credentials: (...args: unknown[]) => mockGetApiV1Credentials(...args),
-    postApiV1Credentials: (...args: unknown[]) => mockPostApiV1Credentials(...args),
-    postApiV1CredentialsValidate: (...args: unknown[]) => mockPostApiV1CredentialsValidate(...args),
-    deleteApiV1CredentialsByService: (...args: unknown[]) =>
-      mockDeleteApiV1CredentialsByService(...args),
-    getApiV1Platforms: (...args: unknown[]) => mockGetApiV1Platforms(...args),
-    getApiV1PlatformsById: (...args: unknown[]) => mockGetApiV1PlatformsById(...args),
-    postApiV1GamesSearch: (...args: unknown[]) => mockPostApiV1GamesSearch(...args),
-    getApiV1UserGames: (...args: unknown[]) => mockGetApiV1UserGames(...args),
-    postApiV1GamesByIdImport: (...args: unknown[]) => mockPostApiV1GamesByIdImport(...args),
-    getApiV1UserGamesById: (...args: unknown[]) => mockGetApiV1UserGamesById(...args),
-    patchApiV1UserGamesById: (...args: unknown[]) => mockPatchApiV1UserGamesById(...args),
-    deleteApiV1UserGamesById: (...args: unknown[]) => mockDeleteApiV1UserGamesById(...args),
-    getApiV1GamesById: (...args: unknown[]) => mockGetApiV1GamesById(...args),
+    getApiV1Credentials: mockGetApiV1Credentials,
+    postApiV1Credentials: mockPostApiV1Credentials,
+    postApiV1CredentialsValidate: mockPostApiV1CredentialsValidate,
+    deleteApiV1CredentialsByService: mockDeleteApiV1CredentialsByService,
+    getApiV1Platforms: mockGetApiV1Platforms,
+    getApiV1PlatformsById: mockGetApiV1PlatformsById,
+    postApiV1GamesSearch: mockPostApiV1GamesSearch,
+    getApiV1UserGames: mockGetApiV1UserGames,
+    postApiV1GamesByIdImport: mockPostApiV1GamesByIdImport,
+    getApiV1UserGamesById: mockGetApiV1UserGamesById,
+    patchApiV1UserGamesById: mockPatchApiV1UserGamesById,
+    deleteApiV1UserGamesById: mockDeleteApiV1UserGamesById,
+    getApiV1GamesById: mockGetApiV1GamesById,
   };
 }
 

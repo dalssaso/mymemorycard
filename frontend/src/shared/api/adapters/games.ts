@@ -8,6 +8,47 @@ import type { GameSearchResult, IgdbStoreInfo } from "@/shared/types";
 import type { Game } from "../services";
 
 /**
+ * Maps store slugs to human-readable display names.
+ * Keys are lowercase slugs from IGDB, values are display names.
+ */
+const STORE_DISPLAY_NAMES: Record<string, string> = {
+  steam: "Steam",
+  gog: "GOG.com",
+  "epic-games-store": "Epic Games Store",
+  "playstation-store": "PlayStation Store",
+  "xbox-store": "Xbox Store",
+  "nintendo-eshop": "Nintendo eShop",
+  "itch-io": "itch.io",
+  "humble-store": "Humble Store",
+  "amazon-games": "Amazon Games",
+  "microsoft-store": "Microsoft Store",
+  origin: "Origin",
+  uplay: "Ubisoft Connect",
+  "battle-net": "Battle.net",
+  "google-play": "Google Play",
+  "app-store": "App Store",
+};
+
+/**
+ * Gets the human-readable display name for a store slug.
+ * Falls back to capitalizing the slug if not found in the lookup table.
+ *
+ * @param slug - The store slug (lowercase, hyphenated)
+ * @returns Human-readable store display name
+ */
+function getStoreDisplayName(slug: string): string {
+  const displayName = STORE_DISPLAY_NAMES[slug.toLowerCase()];
+  if (displayName) {
+    return displayName;
+  }
+  // Fallback: capitalize each word
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
  * Normalized game object with snake_case fields.
  * Used during migration from legacy camelCase endpoints to DI snake_case endpoints.
  */
@@ -70,7 +111,7 @@ export function adaptSearchResult(sdk: SdkGameSearchResult): GameSearchResult {
     stores: sdk.stores.map(
       (s): IgdbStoreInfo => ({
         slug: s.slug,
-        display_name: s.slug, // Use slug as display_name fallback
+        display_name: getStoreDisplayName(s.slug),
       })
     ),
     franchise: sdk.franchise ?? undefined,
@@ -110,12 +151,13 @@ export function adaptUserGame(sdk: UserGameResponse): Game {
     rating: null, // Not in current SDK response
     notes: null, // Not in current SDK response
     created_at: sdk.created_at,
-    updated_at: sdk.created_at, // SDK only has created_at
+    updated_at: null, // SDK doesn't provide updated_at
   };
 }
 
 /**
  * Adapts SDK user games list to frontend format.
+ * Note: The SDK does not support pagination yet, so has_pagination is false.
  *
  * @param sdk - SDK UserGameListResponse from generated API client
  * @returns Object with games array and pagination metadata
@@ -125,11 +167,13 @@ export function adaptUserGamesListResponse(sdk: UserGameListResponse): {
   total: number;
   page: number;
   per_page: number;
+  has_pagination: boolean;
 } {
   return {
     games: sdk.user_games.map(adaptUserGame),
     total: sdk.user_games.length, // SDK doesn't provide pagination yet
     page: 1,
     per_page: sdk.user_games.length,
+    has_pagination: false, // SDK doesn't support pagination yet
   };
 }

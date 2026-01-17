@@ -23,6 +23,7 @@ import type {
   PlatformListResponse,
   PlatformResponse,
   SaveCredentialRequest,
+  UserGameUpdateRequest,
 } from "./generated";
 import type {
   CredentialService,
@@ -99,6 +100,7 @@ export interface GamesListResponse {
   total: number;
   page: number;
   per_page: number;
+  has_pagination: boolean;
 }
 
 /**
@@ -115,7 +117,7 @@ export interface Game {
   rating: number | null;
   notes: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
 }
 
 /**
@@ -128,7 +130,8 @@ export interface ImportGameRequest {
 }
 
 /**
- * Request to update a game
+ * Request to update a game (frontend-facing interface).
+ * Note: Currently the backend only supports owned and purchased_date fields.
  */
 export interface UpdateGameRequest {
   status?: string;
@@ -136,6 +139,31 @@ export interface UpdateGameRequest {
   notes?: string;
   platform_id?: string;
   store_id?: string;
+  owned?: boolean;
+  purchased_date?: string;
+}
+
+/**
+ * Query parameters for listing games.
+ */
+export type GamesListQueryParams = Record<string, string | number | boolean | undefined>;
+
+/**
+ * Maps frontend UpdateGameRequest to SDK UserGameUpdateRequest.
+ * Only includes fields supported by the backend API.
+ *
+ * @param request - Frontend update request
+ * @returns SDK-compatible update request
+ */
+function mapUpdateGameRequest(request: UpdateGameRequest): UserGameUpdateRequest {
+  const mapped: UserGameUpdateRequest = {};
+  if (request.owned !== undefined) {
+    mapped.owned = request.owned;
+  }
+  if (request.purchased_date !== undefined) {
+    mapped.purchased_date = request.purchased_date;
+  }
+  return mapped;
 }
 
 /**
@@ -168,14 +196,19 @@ export const GamesService = {
    * @param params - Search parameters
    * @param params.query - Search query string
    * @returns Promise resolving to search results
+   * @throws {NormalizedApiError} When the API request fails
    */
   async search(params: { query: string; signal?: AbortSignal }): Promise<SearchGamesResponse> {
-    const response = await postApiV1GamesSearch({
-      body: { query: params.query },
-      signal: params.signal,
-      throwOnError: true,
-    });
-    return adaptSearchResponse(response.data);
+    try {
+      const response = await postApiV1GamesSearch({
+        body: { query: params.query },
+        signal: params.signal,
+        throwOnError: true,
+      });
+      return adaptSearchResponse(response.data);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -183,13 +216,18 @@ export const GamesService = {
    *
    * @param params - Optional filter/pagination parameters
    * @returns Promise resolving to paginated games list
+   * @throws {NormalizedApiError} When the API request fails
    */
-  async list(params?: Record<string, unknown>): Promise<GamesListResponse> {
-    const response = await getApiV1UserGames({
-      query: params as Record<string, string | number | boolean | undefined>,
-      throwOnError: true,
-    });
-    return adaptUserGamesListResponse(response.data);
+  async list(params?: GamesListQueryParams): Promise<GamesListResponse> {
+    try {
+      const response = await getApiV1UserGames({
+        query: params,
+        throwOnError: true,
+      });
+      return adaptUserGamesListResponse(response.data);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -197,13 +235,18 @@ export const GamesService = {
    *
    * @param id - Game unique identifier
    * @returns Promise resolving to game details
+   * @throws {NormalizedApiError} When the API request fails
    */
   async getOne(id: string): Promise<Game> {
-    const response = await getApiV1UserGamesById({
-      path: { id },
-      throwOnError: true,
-    });
-    return adaptUserGame(response.data);
+    try {
+      const response = await getApiV1UserGamesById({
+        path: { id },
+        throwOnError: true,
+      });
+      return adaptUserGame(response.data);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -211,20 +254,25 @@ export const GamesService = {
    *
    * @param payload - Import request with IGDB ID and platform/store
    * @returns Promise resolving to created game
+   * @throws {NormalizedApiError} When the API request fails
    */
   async create(payload: ImportGameRequest): Promise<Game> {
     if (!payload.platform_id) {
       throw new Error("platform_id is required for game import");
     }
-    const response = await postApiV1GamesByIdImport({
-      body: {
-        igdb_id: payload.igdb_id,
-        platform_id: payload.platform_id,
-        store_id: payload.store_id,
-      },
-      throwOnError: true,
-    });
-    return adaptUserGame(response.data);
+    try {
+      const response = await postApiV1GamesByIdImport({
+        body: {
+          igdb_id: payload.igdb_id,
+          platform_id: payload.platform_id,
+          store_id: payload.store_id,
+        },
+        throwOnError: true,
+      });
+      return adaptUserGame(response.data);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -233,15 +281,19 @@ export const GamesService = {
    * @param id - Game unique identifier
    * @param payload - Fields to update
    * @returns Promise resolving to updated game
+   * @throws {NormalizedApiError} When the API request fails
    */
   async update(id: string, payload: UpdateGameRequest): Promise<Game> {
-    const response = await patchApiV1UserGamesById({
-      path: { id },
-      // TODO: Align UpdateGameRequest with UserGameUpdateRequest after backend migration
-      body: payload as unknown as { owned?: boolean; purchased_date?: string },
-      throwOnError: true,
-    });
-    return adaptUserGame(response.data);
+    try {
+      const response = await patchApiV1UserGamesById({
+        path: { id },
+        body: mapUpdateGameRequest(payload),
+        throwOnError: true,
+      });
+      return adaptUserGame(response.data);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -249,12 +301,17 @@ export const GamesService = {
    *
    * @param id - Game unique identifier
    * @returns Promise resolving when deletion completes
+   * @throws {NormalizedApiError} When the API request fails
    */
   async delete(id: string): Promise<void> {
-    await deleteApiV1UserGamesById({
-      path: { id },
-      throwOnError: true,
-    });
+    try {
+      await deleteApiV1UserGamesById({
+        path: { id },
+        throwOnError: true,
+      });
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 };
 
@@ -267,10 +324,15 @@ export const CredentialsService = {
    * Get list of configured credentials with status.
    *
    * @returns Promise resolving to credential status list
+   * @throws {NormalizedApiError} When the API request fails
    */
   async list(): Promise<CredentialListResponse> {
-    const response = await getApiV1Credentials({ throwOnError: true });
-    return response.data;
+    try {
+      const response = await getApiV1Credentials({ throwOnError: true });
+      return response.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -278,10 +340,15 @@ export const CredentialsService = {
    *
    * @param payload - Credential save request with service type and credentials
    * @returns Promise resolving to save confirmation
+   * @throws {NormalizedApiError} When the API request fails
    */
   async create(payload: SaveCredentialRequest): Promise<CredentialSaveResponse> {
-    const response = await postApiV1Credentials({ body: payload, throwOnError: true });
-    return response.data;
+    try {
+      const response = await postApiV1Credentials({ body: payload, throwOnError: true });
+      return response.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -289,13 +356,18 @@ export const CredentialsService = {
    *
    * @param service - Service identifier to validate
    * @returns Promise resolving to validation result
+   * @throws {NormalizedApiError} When the API request fails
    */
   async validate(service: CredentialService): Promise<CredentialValidateResponse> {
-    const response = await postApiV1CredentialsValidate({
-      body: { service },
-      throwOnError: true,
-    });
-    return response.data;
+    try {
+      const response = await postApiV1CredentialsValidate({
+        body: { service },
+        throwOnError: true,
+      });
+      return response.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -303,12 +375,17 @@ export const CredentialsService = {
    *
    * @param service - Service identifier to delete
    * @returns Promise resolving when deletion completes
+   * @throws {NormalizedApiError} When the API request fails
    */
   async delete(service: CredentialService): Promise<void> {
-    await deleteApiV1CredentialsByService({
-      path: { service },
-      throwOnError: true,
-    });
+    try {
+      await deleteApiV1CredentialsByService({
+        path: { service },
+        throwOnError: true,
+      });
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 };
 
@@ -321,10 +398,15 @@ export const PlatformsService = {
    * List all available platforms (IGDB-driven).
    *
    * @returns Promise resolving to platforms list
+   * @throws {NormalizedApiError} When the API request fails
    */
   async list(): Promise<PlatformListResponse> {
-    const response = await getApiV1Platforms({ throwOnError: true });
-    return response.data;
+    try {
+      const response = await getApiV1Platforms({ throwOnError: true });
+      return response.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 
   /**
@@ -332,10 +414,15 @@ export const PlatformsService = {
    *
    * @param id - Platform unique identifier
    * @returns Promise resolving to platform details
+   * @throws {NormalizedApiError} When the API request fails
    */
   async getOne(id: string): Promise<PlatformResponse> {
-    const response = await getApiV1PlatformsById({ path: { id }, throwOnError: true });
-    return response.data;
+    try {
+      const response = await getApiV1PlatformsById({ path: { id }, throwOnError: true });
+      return response.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 };
 
@@ -348,9 +435,14 @@ export const StoresService = {
    * List all available stores.
    *
    * @returns Promise resolving to stores list
+   * @throws {NormalizedApiError} When the API request fails
    */
   async list(): Promise<StoresListResponse> {
-    const response: AxiosResponse<StoresListResponse> = await apiClient.get("/stores");
-    return response.data;
+    try {
+      const response: AxiosResponse<StoresListResponse> = await apiClient.get("/stores");
+      return response.data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   },
 };

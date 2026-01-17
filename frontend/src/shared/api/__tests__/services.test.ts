@@ -70,6 +70,12 @@ describe("API Services", () => {
         expect(result.games).toHaveLength(1);
         expect(result.games[0].igdb_id).toBe(1);
       });
+
+      it("should propagate errors from SDK", async () => {
+        mockPostApiV1GamesSearch.mockRejectedValue(new Error("Search failed"));
+
+        await expect(GamesService.search({ query: "test" })).rejects.toThrow("Search failed");
+      });
     });
 
     describe("list", () => {
@@ -99,6 +105,12 @@ describe("API Services", () => {
           throwOnError: true,
         });
       });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1UserGames.mockRejectedValue(new Error("List failed"));
+
+        await expect(GamesService.list()).rejects.toThrow("List failed");
+      });
     });
 
     describe("getOne", () => {
@@ -125,6 +137,12 @@ describe("API Services", () => {
         });
         expect(result.id).toBe("game-123");
         expect(result.name).toBe("Test Game");
+      });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1UserGamesById.mockRejectedValue(new Error("Game not found"));
+
+        await expect(GamesService.getOne("nonexistent")).rejects.toThrow("Game not found");
       });
     });
 
@@ -153,11 +171,18 @@ describe("API Services", () => {
         });
         expect(result.id).toBe("game-1");
       });
+
+      it("should propagate errors from SDK", async () => {
+        const payload = { igdb_id: 123, platform_id: "pc-1" };
+        mockPostApiV1GamesByIdImport.mockRejectedValue(new Error("Conflict"));
+
+        await expect(GamesService.create(payload)).rejects.toThrow("Conflict");
+      });
     });
 
     describe("update", () => {
       it("should call patchApiV1UserGamesById SDK function", async () => {
-        const payload = { status: "completed", rating: 5 };
+        const payload = { owned: true, purchased_date: "2026-01-15" };
         const mockData = {
           id: "game-123",
           user_id: "user-1",
@@ -166,7 +191,7 @@ describe("API Services", () => {
           store: null,
           platform_game_id: null,
           owned: true,
-          purchased_date: null,
+          purchased_date: "2026-01-15",
           import_source: null,
           created_at: "2026-01-01",
         };
@@ -181,6 +206,14 @@ describe("API Services", () => {
         });
         expect(result.id).toBe("game-123");
       });
+
+      it("should propagate errors from SDK", async () => {
+        mockPatchApiV1UserGamesById.mockRejectedValue(new Error("Update failed"));
+
+        await expect(GamesService.update("game-123", { status: "completed" })).rejects.toThrow(
+          "Update failed"
+        );
+      });
     });
 
     describe("delete", () => {
@@ -193,6 +226,12 @@ describe("API Services", () => {
           path: { id: "game-123" },
           throwOnError: true,
         });
+      });
+
+      it("should propagate errors from SDK", async () => {
+        mockDeleteApiV1UserGamesById.mockRejectedValue(new Error("Delete failed"));
+
+        await expect(GamesService.delete("game-123")).rejects.toThrow("Delete failed");
       });
     });
   });
