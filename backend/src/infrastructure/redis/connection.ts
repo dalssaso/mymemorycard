@@ -16,6 +16,7 @@ export class RedisConnection implements IRedisConnection {
 
   private client: RedisClientType | null = null;
   private connecting: Promise<RedisClientType> | null = null;
+  private closing = false;
   private readonly logger: Logger;
   private readonly redisUrl: string;
 
@@ -85,9 +86,21 @@ export class RedisConnection implements IRedisConnection {
 
   /**
    * Gracefully close the Redis connection.
+   * Handles in-flight connections by waiting for them to complete before closing.
    */
   async close(): Promise<void> {
+    this.closing = true;
+
     try {
+      // Wait for any in-flight connection to complete
+      if (this.connecting) {
+        try {
+          await this.connecting;
+        } catch {
+          // Ignore connection errors during close - we're shutting down anyway
+        }
+      }
+
       if (this.client) {
         await this.client.quit();
         this.client = null;
@@ -97,10 +110,18 @@ export class RedisConnection implements IRedisConnection {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error("Failed to close Redis connection", message);
       throw error;
+    } finally {
+      this.closing = false;
+      this.connecting = null;
     }
   }
 
   private async connect(): Promise<RedisClientType> {
+    // Reject if close() was called
+    if (this.closing) {
+      throw new Error("Connection is closing");
+    }
+
     const client = createClient({ url: this.redisUrl });
 
     client.on("error", (err) => {
@@ -113,6 +134,12 @@ export class RedisConnection implements IRedisConnection {
 
     if (!this.shouldSkipConnect) {
       await client.connect();
+    }
+
+    // If close() was called while connecting, shut down immediately
+    if (this.closing) {
+      await client.quit();
+      throw new Error("Connection closed during connect");
     }
 
     this.client = client as RedisClientType;

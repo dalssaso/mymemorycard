@@ -116,6 +116,20 @@ describe("IgdbCache", () => {
     });
   });
 
+  describe("cachePlatform", () => {
+    it("should cache platform with correct key and TTL", async () => {
+      const testPlatform = { id: 6, name: "PC", slug: "pc" };
+
+      await cache.cachePlatform(6, testPlatform);
+
+      expect(mockRedis.setEx).toHaveBeenCalledWith(
+        "igdb:platform:6",
+        expect.any(Number),
+        JSON.stringify(testPlatform)
+      );
+    });
+  });
+
   describe("getCachedToken", () => {
     it("should return null when cache miss", async () => {
       const result = await cache.getCachedToken("user-123");
