@@ -19,6 +19,15 @@ import type { IPreferencesRepository } from "@/features/preferences/repositories
 import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
 import type { MetricsService } from "@/infrastructure/metrics/metrics";
+import type { IIgdbService } from "@/integrations/igdb";
+import { mapIgdbGameToSearchResult, mapIgdbGameToGameDetails, mapIgdbPlatformToPlatform } from "@/integrations/igdb";
+import {
+  IGDB_TOKEN_FIXTURE,
+  IGDB_SEARCH_RESULTS_FIXTURE,
+  IGDB_GAME_FIXTURE,
+  IGDB_PLATFORM_FIXTURE,
+  IGDB_FRANCHISE_FIXTURE,
+} from "@/tests/helpers/igdb.fixtures";
 
 type User = InferSelectModel<typeof users>;
 
@@ -278,6 +287,40 @@ export function createMockUserCredentialRepository(
         lastValidatedAt: new Date(),
       })
     ),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock IGDB service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IIgdbService.
+ *
+ * @example
+ * ```typescript
+ * import { createMockIgdbService } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockIgdb = createMockIgdbService()
+ * const results = await mockIgdb.searchGames("witcher", "user-id")
+ * // returns mapped search results from fixtures
+ *
+ * // Override specific methods:
+ * const customMock = createMockIgdbService({
+ *   searchGames: mock().mockResolvedValue([]),
+ * })
+ * ```
+ */
+export function createMockIgdbService(overrides?: Partial<IIgdbService>): IIgdbService {
+  return {
+    authenticate: mock().mockResolvedValue(IGDB_TOKEN_FIXTURE),
+    searchGames: mock().mockResolvedValue(
+      IGDB_SEARCH_RESULTS_FIXTURE.map(mapIgdbGameToSearchResult)
+    ),
+    getGameDetails: mock().mockResolvedValue(mapIgdbGameToGameDetails(IGDB_GAME_FIXTURE)),
+    getPlatform: mock().mockResolvedValue(mapIgdbPlatformToPlatform(IGDB_PLATFORM_FIXTURE)),
+    getPlatforms: mock().mockResolvedValue([mapIgdbPlatformToPlatform(IGDB_PLATFORM_FIXTURE)]),
+    getFranchise: mock().mockResolvedValue(IGDB_FRANCHISE_FIXTURE),
     ...overrides,
   };
 }
