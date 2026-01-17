@@ -112,8 +112,9 @@ export class CredentialService implements ICredentialService {
     // Placeholder validation - actual API calls added in B3/B7
     const isValid = this.performValidation(service, decrypted);
 
-    // Calculate token expiry for OAuth-based services (Twitch expires in ~60 days)
-    const tokenExpiresAt = service === "igdb" ? this.calculateTokenExpiry() : null;
+    // Calculate token expiry for OAuth-based services only when validation succeeds
+    // Twitch tokens expire in ~60 days
+    const tokenExpiresAt = isValid && service === "igdb" ? this.calculateTokenExpiry() : null;
 
     await this.repository.updateValidationStatus(userId, service, isValid, tokenExpiresAt);
 
@@ -184,6 +185,10 @@ export class CredentialService implements ICredentialService {
     } else if (service === "steam") {
       if (credential_type !== "steam_openid") {
         throw new ValidationError("Steam requires steam_openid credential type");
+      }
+      const creds = credentials as { steam_id?: string };
+      if (!creds.steam_id) {
+        throw new ValidationError("Steam credentials require steam_id");
       }
     }
   }

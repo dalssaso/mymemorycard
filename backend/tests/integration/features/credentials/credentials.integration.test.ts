@@ -150,7 +150,7 @@ describe("Credentials Integration Tests", () => {
   describe("POST /api/v1/credentials/validate", () => {
     beforeAll(async () => {
       // Ensure credentials exist for validation test
-      await app.request("/api/v1/credentials", {
+      const setupResponse = await app.request("/api/v1/credentials", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${testUserToken}`,
@@ -165,6 +165,18 @@ describe("Credentials Integration Tests", () => {
           },
         }),
       });
+
+      if (!setupResponse.ok) {
+        const errorBody = await setupResponse.text();
+        throw new Error(
+          `Failed to create credentials for validation test: ${setupResponse.status} - ${errorBody}`
+        );
+      }
+
+      const setupData = (await setupResponse.json()) as { service: string };
+      if (!setupData.service) {
+        throw new Error("Credential creation response missing service field");
+      }
     });
 
     it("should validate stored credentials", async () => {
@@ -216,7 +228,7 @@ describe("Credentials Integration Tests", () => {
   describe("DELETE /api/v1/credentials/:service", () => {
     beforeAll(async () => {
       // Ensure credentials exist for deletion test
-      await app.request("/api/v1/credentials", {
+      const setupResponse = await app.request("/api/v1/credentials", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${testUserToken}`,
@@ -228,6 +240,18 @@ describe("Credentials Integration Tests", () => {
           credentials: { api_key: "test-api-key" },
         }),
       });
+
+      if (!setupResponse.ok) {
+        const errorBody = await setupResponse.text();
+        throw new Error(
+          `Failed to create credentials for deletion test: ${setupResponse.status} - ${errorBody}`
+        );
+      }
+
+      const setupData = (await setupResponse.json()) as { service: string };
+      if (!setupData.service) {
+        throw new Error("Credential creation response missing service field");
+      }
     });
 
     it("should delete credentials", async () => {
@@ -284,7 +308,12 @@ describe("Credentials Integration Tests", () => {
         }),
       });
 
-      if (!registerResponse.ok) return;
+      if (!registerResponse.ok) {
+        const errorBody = await registerResponse.text();
+        throw new Error(
+          `Failed to register second user: ${registerResponse.status} - ${errorBody}`
+        );
+      }
 
       const registerData = (await registerResponse.json()) as {
         user: { id: string };
@@ -295,7 +324,7 @@ describe("Credentials Integration Tests", () => {
       createdUserIds.push(secondUserId);
 
       // Create credentials for second user
-      await app.request("/api/v1/credentials", {
+      const credResponse = await app.request("/api/v1/credentials", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${secondUserToken}`,
@@ -307,6 +336,18 @@ describe("Credentials Integration Tests", () => {
           credentials: { username: "test", api_key: "test-key" },
         }),
       });
+
+      if (!credResponse.ok) {
+        const errorBody = await credResponse.text();
+        throw new Error(
+          `Failed to create credentials for second user: ${credResponse.status} - ${errorBody}`
+        );
+      }
+
+      const credData = (await credResponse.json()) as { service: string };
+      if (!credData.service) {
+        throw new Error("Credential creation response missing service field");
+      }
     });
 
     it("should not allow validating another user credentials (returns 404)", async () => {

@@ -8,8 +8,8 @@ import { NotFoundError } from "@/shared/errors/base";
 import {
   createMockDrizzleDB,
   mockDeleteResult,
+  mockSelectResult,
   mockSelectWhereOrderByResult,
-  mockSelectWhereLimitResult,
   mockUpdateResult,
   mockUpsertResult,
 } from "@/tests/helpers/drizzle.mocks";
@@ -40,7 +40,7 @@ describe("PostgresUserCredentialRepository", () => {
 
   describe("findByUserAndService", () => {
     it("returns credential when found", async () => {
-      mockSelectWhereLimitResult(mockDb, [testCredential]);
+      mockSelectResult(mockDb, [testCredential]);
 
       const result = await repository.findByUserAndService(testUserId, "igdb");
 
@@ -48,7 +48,7 @@ describe("PostgresUserCredentialRepository", () => {
     });
 
     it("returns null when not found", async () => {
-      mockSelectWhereLimitResult(mockDb, []);
+      mockSelectResult(mockDb, []);
 
       const result = await repository.findByUserAndService(testUserId, "igdb");
 

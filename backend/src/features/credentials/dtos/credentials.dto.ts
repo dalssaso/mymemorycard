@@ -35,27 +35,46 @@ export const SteamOpenIdCredentialsSchema = z.object({
 });
 
 /**
+ * Discriminated union schemas for credential types.
+ */
+const TwitchOAuthCredentialSchema = z.object({
+  credential_type: z.literal("twitch_oauth"),
+  credentials: TwitchOAuthCredentialsSchema,
+});
+
+const ApiKeyCredentialSchema = z.object({
+  credential_type: z.literal("api_key"),
+  credentials: ApiKeyCredentialsSchema,
+});
+
+const SteamOpenIdCredentialSchema = z.object({
+  credential_type: z.literal("steam_openid"),
+  credentials: SteamOpenIdCredentialsSchema,
+});
+
+/**
  * Request schema for saving credentials.
+ * Uses discriminated union to enforce credential_type matches credentials shape.
  */
 export const SaveCredentialRequestSchema = z
   .object({
     service: ApiServiceSchema,
-    credential_type: CredentialTypeSchema,
-    credentials: z.union([
-      TwitchOAuthCredentialsSchema,
-      ApiKeyCredentialsSchema,
-      SteamOpenIdCredentialsSchema,
-    ]),
   })
-  .strict()
+  .and(
+    z.discriminatedUnion("credential_type", [
+      TwitchOAuthCredentialSchema,
+      ApiKeyCredentialSchema,
+      SteamOpenIdCredentialSchema,
+    ])
+  )
   .openapi("SaveCredentialRequest", {
     description: "Request to save API credentials for a service",
     example: {
       service: "igdb",
       credential_type: "twitch_oauth",
       credentials: {
-        client_id: "your-twitch-client-id",
-        client_secret: "your-twitch-client-secret",
+        client_id: "REPLACE_WITH_CLIENT_ID",
+        client_secret: "REPLACE_WITH_CLIENT_SECRET",
       },
     },
   });

@@ -7,43 +7,15 @@ import type { IUserCredentialRepository } from "@/features/credentials/repositor
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { UserApiCredential } from "@/features/credentials/types";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
-import { createMockLogger, createMockEncryptionService } from "@/tests/helpers/repository.mocks";
-
-const createMockRepository = (): IUserCredentialRepository => ({
-  findByUserAndService: mock().mockResolvedValue(null),
-  findByUser: mock().mockResolvedValue([]),
-  upsert: mock().mockImplementation(async (userId, data) => ({
-    id: "cred-uuid-001",
-    userId,
-    service: data.service,
-    credentialType: data.credentialType,
-    encryptedCredentials: data.encryptedCredentials,
-    isActive: data.isActive ?? true,
-    hasValidToken: data.hasValidToken ?? false,
-    tokenExpiresAt: data.tokenExpiresAt ?? null,
-    lastValidatedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  })),
-  delete: mock().mockResolvedValue(undefined),
-  updateValidationStatus: mock().mockImplementation(async (userId, service, hasValidToken) => ({
-    id: "cred-uuid-001",
-    userId,
-    service,
-    credentialType: "twitch_oauth",
-    encryptedCredentials: "encrypted",
-    isActive: true,
-    hasValidToken,
-    tokenExpiresAt: null,
-    lastValidatedAt: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  })),
-});
+import {
+  createMockLogger,
+  createMockEncryptionService,
+  createMockUserCredentialRepository,
+} from "@/tests/helpers/repository.mocks";
 
 describe("CredentialService", () => {
   let service: ICredentialService;
-  let mockRepository: ReturnType<typeof createMockRepository>;
+  let mockRepository: IUserCredentialRepository;
   let mockEncryption: IEncryptionService;
 
   const testUserId = "user-uuid-001";
@@ -62,7 +34,7 @@ describe("CredentialService", () => {
   };
 
   beforeEach(() => {
-    mockRepository = createMockRepository();
+    mockRepository = createMockUserCredentialRepository();
     mockEncryption = createMockEncryptionService();
     service = new CredentialService(mockRepository, mockEncryption, createMockLogger());
   });

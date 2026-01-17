@@ -677,90 +677,128 @@
         }
       },
       "SaveCredentialRequest": {
-        "type": "object",
-        "properties": {
-          "service": {
-            "type": "string",
-            "enum": [
-              "igdb",
-              "steam",
-              "retroachievements",
-              "rawg"
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": [
+                  "igdb",
+                  "steam",
+                  "retroachievements",
+                  "rawg"
+                ]
+              }
+            },
+            "required": [
+              "service"
             ]
           },
-          "credential_type": {
-            "type": "string",
-            "enum": [
-              "twitch_oauth",
-              "steam_openid",
-              "api_key"
-            ]
-          },
-          "credentials": {
-            "anyOf": [
+          {
+            "oneOf": [
               {
                 "type": "object",
                 "properties": {
-                  "client_id": {
+                  "credential_type": {
                     "type": "string",
-                    "minLength": 1
+                    "enum": [
+                      "twitch_oauth"
+                    ]
                   },
-                  "client_secret": {
-                    "type": "string",
-                    "minLength": 1
+                  "credentials": {
+                    "type": "object",
+                    "properties": {
+                      "client_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "client_id",
+                      "client_secret"
+                    ]
                   }
                 },
                 "required": [
-                  "client_id",
-                  "client_secret"
+                  "credential_type",
+                  "credentials"
                 ]
               },
               {
                 "type": "object",
                 "properties": {
-                  "username": {
-                    "type": "string"
-                  },
-                  "api_key": {
+                  "credential_type": {
                     "type": "string",
-                    "minLength": 1
+                    "enum": [
+                      "api_key"
+                    ]
+                  },
+                  "credentials": {
+                    "type": "object",
+                    "properties": {
+                      "username": {
+                        "type": "string"
+                      },
+                      "api_key": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "api_key"
+                    ]
                   }
                 },
                 "required": [
-                  "api_key"
+                  "credential_type",
+                  "credentials"
                 ]
               },
               {
                 "type": "object",
                 "properties": {
-                  "steam_id": {
+                  "credential_type": {
                     "type": "string",
-                    "minLength": 1
+                    "enum": [
+                      "steam_openid"
+                    ]
                   },
-                  "display_name": {
-                    "type": "string"
+                  "credentials": {
+                    "type": "object",
+                    "properties": {
+                      "steam_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "display_name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "steam_id"
+                    ]
                   }
                 },
                 "required": [
-                  "steam_id"
+                  "credential_type",
+                  "credentials"
                 ]
               }
             ]
           }
-        },
-        "required": [
-          "service",
-          "credential_type",
-          "credentials"
         ],
-        "additionalProperties": false,
         "description": "Request to save API credentials for a service",
         "example": {
           "service": "igdb",
           "credential_type": "twitch_oauth",
           "credentials": {
-            "client_id": "your-twitch-client-id",
-            "client_secret": "your-twitch-client-secret"
+            "client_id": "REPLACE_WITH_CLIENT_ID",
+            "client_secret": "REPLACE_WITH_CLIENT_SECRET"
           }
         }
       },

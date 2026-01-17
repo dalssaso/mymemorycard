@@ -49,21 +49,15 @@ describe("CredentialController", () => {
   });
 
   describe("route registration", () => {
-    it("should have GET / route for listing credentials", () => {
-      // Router configuration test - functional testing in integration
-      expect(controller.router).toBeDefined();
-    });
+    it("should register all required routes", () => {
+      const routes = controller.router.routes.map(
+        (r: { method: string; path: string }) => `${r.method} ${r.path}`
+      );
 
-    it("should have POST / route for saving credentials", () => {
-      expect(controller.router).toBeDefined();
-    });
-
-    it("should have POST /validate route for validation", () => {
-      expect(controller.router).toBeDefined();
-    });
-
-    it("should have DELETE /:service route for deletion", () => {
-      expect(controller.router).toBeDefined();
+      expect(routes).toContain("GET /");
+      expect(routes).toContain("POST /");
+      expect(routes).toContain("POST /validate");
+      expect(routes).toContain("DELETE /:service");
     });
   });
 });
