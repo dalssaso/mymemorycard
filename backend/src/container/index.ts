@@ -11,6 +11,10 @@ import {
   CREDENTIAL_SERVICE_TOKEN,
   DATABASE_TOKEN,
   ENCRYPTION_SERVICE_TOKEN,
+  GAME_METADATA_SERVICE_TOKEN,
+  GAME_REPOSITORY_TOKEN,
+  GAMES_CONTROLLER_TOKEN,
+  GAMES_PLATFORM_REPOSITORY_TOKEN,
   IGDB_CACHE_TOKEN,
   IGDB_RATE_LIMITER_TOKEN,
   IGDB_SERVICE_TOKEN,
@@ -22,8 +26,10 @@ import {
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
   REDIS_CONNECTION_TOKEN,
+  STORE_REPOSITORY_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
+  USER_GAME_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
   USER_PLATFORMS_REPOSITORY_TOKEN,
   USER_PLATFORMS_SERVICE_TOKEN,
@@ -121,6 +127,24 @@ import type { ICredentialController } from "@/features/credentials/controllers/c
 // IGDB Integration
 import { IgdbCache, IgdbRateLimiter, IgdbService } from "@/integrations/igdb";
 import type { IIgdbService, IRateLimiter } from "@/integrations/igdb";
+
+// Games - Repositories
+import { GameRepository } from "@/features/games/repositories/game.repository";
+import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
+import { UserGameRepository } from "@/features/games/repositories/user-game.repository";
+import type { IUserGameRepository } from "@/features/games/repositories/user-game.repository.interface";
+import { PlatformRepository as GamesPlatformRepository } from "@/features/games/repositories/platform.repository";
+import type { IPlatformRepository as IGamesPlatformRepository } from "@/features/games/repositories/platform.repository.interface";
+import { StoreRepository } from "@/features/games/repositories/store.repository";
+import type { IStoreRepository } from "@/features/games/repositories/store.repository.interface";
+
+// Games - Services
+import { GameMetadataService } from "@/features/games/services/game-metadata.service";
+import type { IGameMetadataService } from "@/features/games/services/game-metadata.service.interface";
+
+// Games - Controllers
+import { GamesController } from "@/features/games/controllers/games.controller";
+import type { IGamesController } from "@/features/games/controllers/games.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -240,6 +264,24 @@ export function registerDependencies(): void {
     },
   });
   container.registerSingleton<IIgdbService>(IGDB_SERVICE_TOKEN, IgdbService);
+
+  // Games Domain - Repositories
+  container.registerSingleton<IGameRepository>(GAME_REPOSITORY_TOKEN, GameRepository);
+  container.registerSingleton<IUserGameRepository>(USER_GAME_REPOSITORY_TOKEN, UserGameRepository);
+  container.registerSingleton<IGamesPlatformRepository>(
+    GAMES_PLATFORM_REPOSITORY_TOKEN,
+    GamesPlatformRepository
+  );
+  container.registerSingleton<IStoreRepository>(STORE_REPOSITORY_TOKEN, StoreRepository);
+
+  // Games Domain - Services
+  container.registerSingleton<IGameMetadataService>(
+    GAME_METADATA_SERVICE_TOKEN,
+    GameMetadataService
+  );
+
+  // Games Domain - Controllers
+  container.registerSingleton<IGamesController>(GAMES_CONTROLLER_TOKEN, GamesController);
 }
 
 /**

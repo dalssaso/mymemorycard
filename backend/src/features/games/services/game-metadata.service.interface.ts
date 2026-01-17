@@ -1,4 +1,5 @@
-import type { Game, UserGame } from "../types";
+import type { GameSearchResult, GameDetails } from "@/integrations/igdb/igdb.mapper";
+import type { Game, UserGame, Platform } from "../types";
 
 /**
  * Service for orchestrating game metadata management across IGDB,
@@ -13,7 +14,7 @@ export interface IGameMetadataService {
    * @returns Array of IGDB game search results
    * @throws {ValidationError} If user doesn't have IGDB credentials
    */
-  searchGames(query: string, userId: string, limit?: number): Promise<unknown[]>;
+  searchGames(query: string, userId: string, limit?: number): Promise<GameSearchResult[]>;
 
   /**
    * Get game details from IGDB.
@@ -22,7 +23,7 @@ export interface IGameMetadataService {
    * @returns Detailed game data from IGDB
    * @throws {ValidationError} If user doesn't have IGDB credentials
    */
-  getGameDetails(igdbId: number, userId: string): Promise<unknown>;
+  getGameDetails(igdbId: number, userId: string): Promise<GameDetails | null>;
 
   /**
    * Import a game into user library.
@@ -59,5 +60,5 @@ export interface IGameMetadataService {
    * @returns Platform (created or existing)
    * @throws {ValidationError} If user doesn't have IGDB credentials
    */
-  getOrCreatePlatform(igdbPlatformId: number, userId: string): Promise<unknown>;
+  getOrCreatePlatform(igdbPlatformId: number, userId: string): Promise<Platform>;
 }

@@ -866,6 +866,570 @@
         "example": {
           "service": "igdb"
         }
+      },
+      "GameSearchResultsResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameSearchResult"
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "description": "Game search results"
+      },
+      "GameSearchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Game unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "igdb_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "IGDB game identifier",
+            "example": 1020
+          },
+          "name": {
+            "type": "string",
+            "description": "Game title",
+            "example": "The Legend of Zelda: Breath of the Wild"
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL-friendly game identifier",
+            "example": "the-legend-of-zelda-breath-of-the-wild"
+          },
+          "cover_art_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "URL to cover art image",
+            "example": "https://images.igdb.com/igdb/image/upload/..."
+          },
+          "release_date": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Game release date",
+            "example": "2017-03-03T00:00:00.000Z"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "igdb_platform_id": {
+                  "type": "integer",
+                  "description": "IGDB platform identifier",
+                  "example": 6
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Platform name",
+                  "example": "PC"
+                },
+                "abbreviation": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "Platform abbreviation",
+                  "example": "PC"
+                }
+              },
+              "required": [
+                "igdb_platform_id",
+                "name",
+                "abbreviation"
+              ]
+            },
+            "description": "Available platforms for this game"
+          },
+          "franchise": {
+            "type": "string",
+            "nullable": true,
+            "description": "Game franchise name",
+            "example": "The Legend of Zelda"
+          },
+          "stores": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "description": "Store slug",
+                  "example": "steam"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Store URL for the game",
+                  "example": "https://store.steampowered.com/app/291570"
+                }
+              },
+              "required": [
+                "slug",
+                "url"
+              ]
+            },
+            "description": "Digital stores where game is available"
+          }
+        },
+        "required": [
+          "id",
+          "igdb_id",
+          "name",
+          "slug",
+          "cover_art_url",
+          "release_date",
+          "platforms",
+          "franchise",
+          "stores"
+        ],
+        "description": "Game search result"
+      },
+      "GameSearchRequest": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "description": "Request to search for games",
+        "example": {
+          "query": "The Legend of Zelda",
+          "limit": 20
+        }
+      },
+      "GameResponse": {
+        "type": "object",
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/GameDetails"
+          }
+        },
+        "required": [
+          "game"
+        ],
+        "description": "Full game response"
+      },
+      "GameDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Game unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "igdb_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "IGDB game identifier",
+            "example": 1020
+          },
+          "rawg_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "RAWG game identifier",
+            "example": 3328
+          },
+          "name": {
+            "type": "string",
+            "description": "Game title",
+            "example": "The Legend of Zelda: Breath of the Wild"
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL-friendly game identifier",
+            "example": "the-legend-of-zelda-breath-of-the-wild"
+          },
+          "release_date": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Game release date",
+            "example": "2017-03-03T00:00:00.000Z"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Full game description or synopsis"
+          },
+          "cover_art_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "URL to cover art image"
+          },
+          "background_image_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "URL to background image"
+          },
+          "metacritic_score": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Metacritic score",
+            "example": 97
+          },
+          "opencritic_score": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "OpenCritic score",
+            "example": 96
+          },
+          "esrb_rating": {
+            "type": "string",
+            "nullable": true,
+            "description": "ESRB rating (E, E10+, T, M, AO)",
+            "example": "E10+"
+          },
+          "series_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of game series",
+            "example": "The Legend of Zelda"
+          },
+          "expected_playtime": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Expected playtime in hours",
+            "example": 50
+          },
+          "metadata_source": {
+            "type": "string",
+            "enum": [
+              "igdb",
+              "rawg",
+              "manual"
+            ],
+            "description": "Source of metadata",
+            "example": "igdb"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when game was added"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when game was last updated"
+          }
+        },
+        "required": [
+          "id",
+          "igdb_id",
+          "rawg_id",
+          "name",
+          "slug",
+          "release_date",
+          "description",
+          "cover_art_url",
+          "background_image_url",
+          "metacritic_score",
+          "opencritic_score",
+          "esrb_rating",
+          "series_name",
+          "expected_playtime",
+          "metadata_source",
+          "created_at",
+          "updated_at"
+        ],
+        "description": "Complete game details with metadata"
+      },
+      "UserGameResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User game entry unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440020"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "User unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440030"
+          },
+          "game": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Game unique identifier",
+                "example": "550e8400-e29b-41d4-a716-446655440010"
+              },
+              "name": {
+                "type": "string",
+                "description": "Game title",
+                "example": "The Legend of Zelda: Breath of the Wild"
+              },
+              "cover_art_url": {
+                "type": "string",
+                "nullable": true,
+                "format": "uri",
+                "description": "URL to cover art image"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "cover_art_url"
+            ],
+            "description": "Game information"
+          },
+          "platform": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Platform unique identifier",
+                "example": "550e8400-e29b-41d4-a716-446655440000"
+              },
+              "name": {
+                "type": "string",
+                "description": "Platform name",
+                "example": "Nintendo Switch"
+              },
+              "abbreviation": {
+                "type": "string",
+                "nullable": true,
+                "description": "Platform abbreviation",
+                "example": "Switch"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "abbreviation"
+            ],
+            "description": "Platform information"
+          },
+          "store": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Store unique identifier",
+                "example": "550e8400-e29b-41d4-a716-446655440001"
+              },
+              "slug": {
+                "type": "string",
+                "description": "Store slug",
+                "example": "nintendo-eshop"
+              },
+              "display_name": {
+                "type": "string",
+                "description": "Store display name",
+                "example": "Nintendo eShop"
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "display_name"
+            ],
+            "description": "Store information (null if not purchased from a store)"
+          },
+          "platform_game_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Platform-specific game identifier (e.g., Steam App ID)",
+            "example": "291570"
+          },
+          "owned": {
+            "type": "boolean",
+            "description": "Whether the user owns this game on this platform",
+            "example": true
+          },
+          "purchased_date": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Date when user purchased the game",
+            "example": "2020-01-15T12:00:00.000Z"
+          },
+          "import_source": {
+            "type": "string",
+            "nullable": true,
+            "description": "Source of import if applicable (steam, rawg, etc.)",
+            "example": "steam"
+          },
+          "progress": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Game completion progress percentage (0-100)",
+            "example": 75
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 10,
+            "description": "User rating for the game (0-10)",
+            "example": 9
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when entry was created"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "game",
+          "platform",
+          "store",
+          "platform_game_id",
+          "owned",
+          "purchased_date",
+          "import_source",
+          "progress",
+          "rating",
+          "created_at"
+        ],
+        "description": "User game library entry with related game, platform, and store info"
+      },
+      "GameImportRequest": {
+        "type": "object",
+        "properties": {
+          "igdb_id": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "platform_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "store_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "igdb_id",
+          "platform_id"
+        ],
+        "additionalProperties": false,
+        "description": "Request to import a game from IGDB",
+        "example": {
+          "igdb_id": 1020,
+          "platform_id": "550e8400-e29b-41d4-a716-446655440000",
+          "store_id": "550e8400-e29b-41d4-a716-446655440001"
+        }
+      },
+      "GameUpdateRequest": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "description": "Request to refresh game metadata from IGDB"
+      },
+      "UserGameCreateRequest": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "platform_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "store_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "game_id",
+          "platform_id"
+        ],
+        "additionalProperties": false,
+        "description": "Request to add a game to user library on a platform",
+        "example": {
+          "game_id": "550e8400-e29b-41d4-a716-446655440010",
+          "platform_id": "550e8400-e29b-41d4-a716-446655440000",
+          "store_id": "550e8400-e29b-41d4-a716-446655440001"
+        }
+      },
+      "UserGameListResponse": {
+        "type": "object",
+        "properties": {
+          "user_games": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGameResponse"
+            },
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "user_games"
+        ],
+        "description": "List of user game library entries"
+      },
+      "UserGameUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "owned": {
+            "type": "boolean"
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to update a user game entry",
+        "example": {
+          "owned": true,
+          "progress": 75,
+          "rating": 9.5
+        }
       }
     },
     "parameters": {},
@@ -1673,6 +2237,622 @@
           },
           "404": {
             "description": "Credentials not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/games/search": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game search results returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameSearchResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error in search parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "IGDB credentials not configured for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/games/:id": {
+      "get": {
+        "tags": [
+          "games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Game details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid game ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/games/:id/import": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game imported to user library successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Platform or store not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "IGDB credentials not configured for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/games/:id/metadata": {
+      "post": {
+        "tags": [
+          "games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game metadata updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "IGDB credentials not configured for user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/games/user-games": {
+      "post": {
+        "tags": [
+          "user-games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserGameCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game added to user library successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Platform or store not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "user-games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$",
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$",
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User games retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGameListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/games/user-games/:id": {
+      "get": {
+        "tags": [
+          "user-games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User game entry retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid user game ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User game entry not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "user-games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserGameUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User game updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGameResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User game entry not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - operation failed due to data inconsistency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user-games"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User game entry deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User game entry not found",
             "content": {
               "application/json": {
                 "schema": {

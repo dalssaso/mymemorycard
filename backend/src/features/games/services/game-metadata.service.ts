@@ -3,8 +3,8 @@ import { inject, injectable } from "tsyringe";
 import {
   CREDENTIAL_SERVICE_TOKEN,
   GAME_REPOSITORY_TOKEN,
+  GAMES_PLATFORM_REPOSITORY_TOKEN,
   IGDB_SERVICE_TOKEN,
-  PLATFORM_REPOSITORY_TOKEN,
   STORE_REPOSITORY_TOKEN,
   USER_GAME_REPOSITORY_TOKEN,
 } from "@/container/tokens";
@@ -12,12 +12,13 @@ import { Logger } from "@/infrastructure/logging/logger";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 import type { IIgdbService } from "@/integrations/igdb";
 import type { ICredentialService } from "@/features/credentials/services/credential.service.interface";
+import type { GameSearchResult, GameDetails } from "@/integrations/igdb/igdb.mapper";
 
 import type { IGameRepository } from "../repositories/game.repository.interface";
 import type { IUserGameRepository } from "../repositories/user-game.repository.interface";
 import type { IPlatformRepository } from "../repositories/platform.repository.interface";
 import type { IStoreRepository } from "../repositories/store.repository.interface";
-import type { Game, UserGame } from "../types";
+import type { Game, UserGame, Platform } from "../types";
 import type { IGameMetadataService } from "./game-metadata.service.interface";
 
 /**
@@ -33,7 +34,7 @@ export class GameMetadataService implements IGameMetadataService {
     private gameRepository: IGameRepository,
     @inject(USER_GAME_REPOSITORY_TOKEN)
     private userGameRepository: IUserGameRepository,
-    @inject(PLATFORM_REPOSITORY_TOKEN)
+    @inject(GAMES_PLATFORM_REPOSITORY_TOKEN)
     private platformRepository: IPlatformRepository,
     @inject(STORE_REPOSITORY_TOKEN)
     private storeRepository: IStoreRepository,
@@ -54,7 +55,7 @@ export class GameMetadataService implements IGameMetadataService {
    * @returns Array of IGDB game search results
    * @throws {ValidationError} If user doesn't have IGDB credentials
    */
-  async searchGames(query: string, userId: string, limit = 10): Promise<unknown[]> {
+  async searchGames(query: string, userId: string, limit = 10): Promise<GameSearchResult[]> {
     this.logger.debug(`Searching games: "${query}" for user ${userId}`);
 
     // Verify user has valid IGDB credentials
@@ -70,7 +71,7 @@ export class GameMetadataService implements IGameMetadataService {
    * @returns Detailed game data from IGDB
    * @throws {ValidationError} If user doesn't have IGDB credentials
    */
-  async getGameDetails(igdbId: number, userId: string): Promise<unknown> {
+  async getGameDetails(igdbId: number, userId: string): Promise<GameDetails | null> {
     this.logger.debug(`Getting game details: ${igdbId} for user ${userId}`);
 
     // Verify user has valid IGDB credentials
@@ -210,7 +211,7 @@ export class GameMetadataService implements IGameMetadataService {
    * @returns Platform (created or existing)
    * @throws {ValidationError} If user doesn't have IGDB credentials
    */
-  async getOrCreatePlatform(igdbPlatformId: number, userId: string): Promise<unknown> {
+  async getOrCreatePlatform(igdbPlatformId: number, userId: string): Promise<Platform> {
     this.logger.debug(
       `Getting or creating platform: igdbPlatformId=${igdbPlatformId}, userId=${userId}`
     );

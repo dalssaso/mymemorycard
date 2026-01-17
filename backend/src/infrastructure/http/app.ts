@@ -4,6 +4,7 @@ import { container } from "@/container";
 import type { IAdminController } from "@/features/admin/controllers/admin.controller.interface";
 import type { IAuthController } from "@/features/auth/controllers/auth.controller.interface";
 import type { ICredentialController } from "@/features/credentials/controllers/credential.controller.interface";
+import type { IGamesController } from "@/features/games/controllers/games.controller.interface";
 import type { IPlatformController } from "@/features/platforms/controllers/platform.controller.interface";
 import type { IPreferencesController } from "@/features/preferences/controllers/preferences.controller.interface";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
@@ -11,6 +12,7 @@ import {
   ADMIN_CONTROLLER_TOKEN,
   AUTH_CONTROLLER_TOKEN,
   CREDENTIAL_CONTROLLER_TOKEN,
+  GAMES_CONTROLLER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
   PREFERENCES_CONTROLLER_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
@@ -96,6 +98,10 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
     CREDENTIAL_CONTROLLER_TOKEN
   );
   app.route("/api/v1/credentials", credentialController.router);
+
+  // Games routes (DI-based)
+  const gamesController = container.resolve<IGamesController>(GAMES_CONTROLLER_TOKEN);
+  app.route("/api/v1/games", gamesController.router);
 
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)
