@@ -44,11 +44,13 @@ export class RedisConnection implements IRedisConnection {
     const connectPromise = this.connect();
     this.connecting = connectPromise;
 
-    connectPromise.catch(() => {
-      // Connection failed - error will be thrown to caller
-      // Note: this.client is only assigned after successful connect(),
-      // so no cleanup needed here
-    }).finally(() => {
+    connectPromise
+      .catch(() => {
+        // Connection failed - error will be thrown to caller
+        // Note: this.client is only assigned after successful connect(),
+        // so no cleanup needed here
+      })
+      .finally(() => {
         // Clear connecting only if it still equals this promise (allows retry)
         if (this.connecting === connectPromise) {
           this.connecting = null;

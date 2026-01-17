@@ -28,6 +28,41 @@ function normalizeQuery(query: string): string {
 }
 
 /**
+ * Validate that a parsed value is a valid IgdbGame.
+ * Checks required fields: id (number), name (string), slug (string).
+ */
+function isValidIgdbGame(value: unknown): value is IgdbGame {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as IgdbGame).id === "number" &&
+    typeof (value as IgdbGame).name === "string" &&
+    typeof (value as IgdbGame).slug === "string"
+  );
+}
+
+/**
+ * Validate that a parsed value is an array of valid IgdbGame objects.
+ */
+function isValidIgdbGameArray(value: unknown): value is IgdbGame[] {
+  return Array.isArray(value) && value.every(isValidIgdbGame);
+}
+
+/**
+ * Validate that a parsed value is a valid IgdbPlatform.
+ * Checks required fields: id (number), name (string), slug (string).
+ */
+function isValidIgdbPlatform(value: unknown): value is IgdbPlatform {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as IgdbPlatform).id === "number" &&
+    typeof (value as IgdbPlatform).name === "string" &&
+    typeof (value as IgdbPlatform).slug === "string"
+  );
+}
+
+/**
  * Minimal Redis client interface for cache operations.
  */
 export interface RedisClient {
@@ -74,7 +109,16 @@ export class IgdbCache {
       const redis = await this.getRedis();
       const key = `igdb:search:${normalizeQuery(query)}`;
       const cached = await redis.get(key);
-      return cached ? (JSON.parse(cached) as IgdbGame[]) : null;
+      if (!cached) {
+        return null;
+      }
+      const parsed: unknown = JSON.parse(cached);
+      if (!isValidIgdbGameArray(parsed)) {
+        // Evict corrupted entry
+        await redis.del(key);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -107,7 +151,16 @@ export class IgdbCache {
       const redis = await this.getRedis();
       const key = `igdb:game:${igdbId}`;
       const cached = await redis.get(key);
-      return cached ? (JSON.parse(cached) as IgdbGame) : null;
+      if (!cached) {
+        return null;
+      }
+      const parsed: unknown = JSON.parse(cached);
+      if (!isValidIgdbGame(parsed)) {
+        // Evict corrupted entry
+        await redis.del(key);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -140,7 +193,16 @@ export class IgdbCache {
       const redis = await this.getRedis();
       const key = `igdb:platform:${igdbId}`;
       const cached = await redis.get(key);
-      return cached ? (JSON.parse(cached) as IgdbPlatform) : null;
+      if (!cached) {
+        return null;
+      }
+      const parsed: unknown = JSON.parse(cached);
+      if (!isValidIgdbPlatform(parsed)) {
+        // Evict corrupted entry
+        await redis.del(key);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }

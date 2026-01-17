@@ -4,26 +4,33 @@ import "reflect-metadata";
 import { IgdbCache, TOKEN_EXPIRY_BUFFER } from "@/integrations/igdb/igdb.cache";
 import type { IgdbGame } from "@/integrations/igdb/igdb.types";
 
+/**
+ * Create a mock Redis client for testing.
+ */
+function createMockRedis(): {
+  get: ReturnType<typeof mock>;
+  setEx: ReturnType<typeof mock>;
+  del: ReturnType<typeof mock>;
+} {
+  return {
+    get: mock().mockResolvedValue(null),
+    setEx: mock().mockResolvedValue("OK"),
+    del: mock().mockResolvedValue(1),
+  };
+}
+
+const testGame: IgdbGame = {
+  id: 12345,
+  name: "Test Game",
+  slug: "test-game",
+};
+
 describe("IgdbCache", () => {
   let cache: IgdbCache;
-  let mockRedis: {
-    get: ReturnType<typeof mock>;
-    setEx: ReturnType<typeof mock>;
-    del: ReturnType<typeof mock>;
-  };
-
-  const testGame: IgdbGame = {
-    id: 12345,
-    name: "Test Game",
-    slug: "test-game",
-  };
+  let mockRedis: ReturnType<typeof createMockRedis>;
 
   beforeEach(() => {
-    mockRedis = {
-      get: mock().mockResolvedValue(null),
-      setEx: mock().mockResolvedValue("OK"),
-      del: mock().mockResolvedValue(1),
-    };
+    mockRedis = createMockRedis();
     cache = new IgdbCache(mockRedis as never);
   });
 
