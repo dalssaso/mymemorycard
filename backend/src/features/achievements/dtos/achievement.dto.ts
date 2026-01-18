@@ -29,7 +29,7 @@ const ACHIEVEMENT_ITEM_SCHEMA = z
       description: "Achievement icon URL",
       example: "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/570/ach.jpg",
     }),
-    rarity_percentage: z.number().nullable().openapi({
+    rarity_percentage: z.number().min(0).max(100).nullable().openapi({
       description: "Global unlock percentage",
       example: 15.5,
     }),
@@ -82,8 +82,8 @@ export type AchievementResponseDto = z.infer<typeof ACHIEVEMENT_RESPONSE_SCHEMA>
  */
 export const ACHIEVEMENT_SYNC_REQUEST_SCHEMA = z
   .object({
-    game_id: z.string().uuid("Invalid game ID").openapi({
-      description: "Game ID to sync achievements for",
+    game_id: z.string().uuid("Invalid game ID").optional().openapi({
+      description: "Game ID to sync achievements for (optional, uses path parameter if omitted)",
       example: "550e8400-e29b-41d4-a716-446655440000",
     }),
     source: ACHIEVEMENT_SOURCE_SCHEMA.openapi({

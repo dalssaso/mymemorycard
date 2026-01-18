@@ -14,119 +14,13 @@ import { NotFoundError, ValidationError } from "@/shared/errors/base";
 import { STEAM_CREDENTIALS_FIXTURE } from "@/tests/helpers/steam.fixtures";
 import {
   createMockEncryptionService,
+  createMockGameRepository,
   createMockLogger,
+  createMockPlatformRepository,
+  createMockStoreRepository,
   createMockUserCredentialRepository,
+  createMockUserGameRepository,
 } from "@/tests/helpers/repository.mocks";
-
-/**
- * Create a mock game repository with default implementations.
- */
-function createMockGameRepository(): IGameRepository {
-  return {
-    findById: mock().mockResolvedValue(null),
-    findByIgdbId: mock().mockResolvedValue(null),
-    findByRawgId: mock().mockResolvedValue(null),
-    findBySteamAppId: mock().mockResolvedValue(null),
-    findByRetroGameId: mock().mockResolvedValue(null),
-    create: mock().mockResolvedValue({
-      id: "game-uuid-001",
-      name: "Test Game",
-      metadata_source: "manual",
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    update: mock().mockResolvedValue({
-      id: "game-uuid-001",
-      name: "Test Game",
-      metadata_source: "manual",
-      steam_app_id: 730,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    delete: mock().mockResolvedValue(true),
-    search: mock().mockResolvedValue([]),
-    list: mock().mockResolvedValue([]),
-    count: mock().mockResolvedValue(0),
-  };
-}
-
-/**
- * Create a mock user game repository with default implementations.
- */
-function createMockUserGameRepository(): IUserGameRepository {
-  return {
-    findById: mock().mockResolvedValue(null),
-    findByIdWithRelations: mock().mockResolvedValue(null),
-    listByUserWithRelations: mock().mockResolvedValue([]),
-    findByUserGamePlatform: mock().mockResolvedValue(null),
-    create: mock().mockResolvedValue({
-      id: "user-game-uuid-001",
-      user_id: "user-uuid-001",
-      game_id: "game-uuid-001",
-      platform_id: "platform-uuid-001",
-      owned: true,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    update: mock().mockResolvedValue({
-      id: "user-game-uuid-001",
-      user_id: "user-uuid-001",
-      game_id: "game-uuid-001",
-      platform_id: "platform-uuid-001",
-      owned: true,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    delete: mock().mockResolvedValue(true),
-    listByUser: mock().mockResolvedValue([]),
-    getByGameForUser: mock().mockResolvedValue([]),
-    deleteAllByUser: mock().mockResolvedValue(0),
-    countByUser: mock().mockResolvedValue(0),
-  };
-}
-
-/**
- * Create a mock platform repository with default implementations.
- */
-function createMockPlatformRepository(): IPlatformRepository {
-  return {
-    list: mock().mockResolvedValue([]),
-    getById: mock().mockResolvedValue(null),
-    getByIgdbId: mock().mockResolvedValue({
-      id: "platform-uuid-001",
-      name: "PC (Microsoft Windows)",
-      igdb_platform_id: 6,
-      slug: "pc",
-      abbreviation: "PC",
-      platform_family: "PC",
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    getByFamily: mock().mockResolvedValue([]),
-  };
-}
-
-/**
- * Create a mock store repository with default implementations.
- */
-function createMockStoreRepository(): IStoreRepository {
-  return {
-    findById: mock().mockResolvedValue(null),
-    findBySlug: mock().mockResolvedValue({
-      id: "store-uuid-001",
-      name: "Steam",
-      slug: "steam",
-      url: "https://store.steampowered.com",
-      platform_family: "PC",
-      has_achievements: true,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    list: mock().mockResolvedValue([]),
-    listByPlatformFamily: mock().mockResolvedValue([]),
-    listWithAchievements: mock().mockResolvedValue([]),
-  };
-}
 
 describe("SteamService", () => {
   let service: ISteamService;

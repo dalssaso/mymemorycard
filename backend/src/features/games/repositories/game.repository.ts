@@ -82,6 +82,8 @@ export class GameRepository implements IGameRepository {
   async create(data: {
     igdb_id?: number;
     rawg_id?: number;
+    steam_app_id?: number;
+    retro_game_id?: number;
     name: string;
     slug?: string;
     release_date?: Date;
@@ -101,6 +103,8 @@ export class GameRepository implements IGameRepository {
         .values({
           igdbId: data.igdb_id,
           rawgId: data.rawg_id,
+          steamAppId: data.steam_app_id,
+          retroGameId: data.retro_game_id,
           name: data.name,
           slug: data.slug,
           releaseDate: data.release_date ? this.formatDateForDb(data.release_date) : null,
@@ -150,6 +154,8 @@ export class GameRepository implements IGameRepository {
         .set({
           ...(data.igdb_id !== undefined && { igdbId: data.igdb_id }),
           ...(data.rawg_id !== undefined && { rawgId: data.rawg_id }),
+          ...(data.steam_app_id !== undefined && { steamAppId: data.steam_app_id }),
+          ...(data.retro_game_id !== undefined && { retroGameId: data.retro_game_id }),
           ...(data.name !== undefined && { name: data.name }),
           ...(data.slug !== undefined && { slug: data.slug }),
           ...(data.release_date !== undefined && {

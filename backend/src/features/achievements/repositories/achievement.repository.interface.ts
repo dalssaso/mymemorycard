@@ -24,7 +24,7 @@ export interface AchievementWithStatus extends Achievement {
   /** Whether the user has unlocked this achievement */
   unlocked: boolean;
   /** Date when the achievement was unlocked, if unlocked */
-  unlock_date: Date | null;
+  unlockDate: Date | null;
 }
 
 export interface IAchievementRepository {

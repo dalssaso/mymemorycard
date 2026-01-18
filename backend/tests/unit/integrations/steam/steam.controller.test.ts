@@ -3,13 +3,17 @@ import "reflect-metadata";
 
 import { SteamController } from "@/integrations/steam/steam.controller";
 import { createMockLogger, createMockSteamService } from "@/tests/helpers/repository.mocks";
+import type { ISteamService } from "@/integrations/steam/steam.service.interface";
+import type { Logger } from "@/infrastructure/logging/logger";
 
 describe("SteamController", () => {
   let controller: SteamController;
+  let mockService: ISteamService;
+  let mockLogger: Logger;
 
   beforeEach(() => {
-    const mockService = createMockSteamService();
-    const mockLogger = createMockLogger();
+    mockService = createMockSteamService();
+    mockLogger = createMockLogger();
     controller = new SteamController(mockService, mockLogger);
   });
 
@@ -43,25 +47,37 @@ describe("SteamController", () => {
     });
   });
 
-  describe("service wiring", () => {
-    it("has getLoginUrl wired to service", () => {
-      const mockService = createMockSteamService();
-      expect(mockService.getLoginUrl).toBeDefined();
+  describe("service delegation", () => {
+    it("delegates getLoginUrl to service", () => {
+      // Verify the service method is available for delegation
+      const loginUrl = mockService.getLoginUrl("http://test.com/callback");
+      expect(loginUrl).toBe("https://steamcommunity.com/openid/login?...");
+      expect(mockService.getLoginUrl).toHaveBeenCalledWith("http://test.com/callback");
     });
 
-    it("has validateCallback wired to service", () => {
-      const mockService = createMockSteamService();
-      expect(mockService.validateCallback).toBeDefined();
+    it("delegates validateCallback to service", async () => {
+      const params = { mode: "id_res" };
+      const result = await mockService.validateCallback(params);
+      expect(result).toBe("76561198012345678");
+      expect(mockService.validateCallback).toHaveBeenCalledWith(params);
     });
 
-    it("has importLibrary wired to service", () => {
-      const mockService = createMockSteamService();
-      expect(mockService.importLibrary).toBeDefined();
+    it("delegates importLibrary to service", async () => {
+      const result = await mockService.importLibrary("user-id");
+      expect(result).toEqual({ imported: 0, skipped: 0, errors: [] });
+      expect(mockService.importLibrary).toHaveBeenCalledWith("user-id");
     });
 
-    it("has syncAchievements wired to service", () => {
-      const mockService = createMockSteamService();
-      expect(mockService.syncAchievements).toBeDefined();
+    it("delegates syncAchievements to service", async () => {
+      const result = await mockService.syncAchievements("user-id", "game-id");
+      expect(result).toEqual({ synced: 0, unlocked: 0, total: 0 });
+      expect(mockService.syncAchievements).toHaveBeenCalledWith("user-id", "game-id");
+    });
+
+    it("delegates linkAccount to service", async () => {
+      const result = await mockService.linkAccount("user-id", "steam-id");
+      expect(result.steam_id).toBeDefined();
+      expect(mockService.linkAccount).toHaveBeenCalledWith("user-id", "steam-id");
     });
   });
 });

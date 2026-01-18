@@ -11,7 +11,7 @@ import type { IGameRepository } from "@/features/games/repositories/game.reposit
 import type { IPlatformRepository } from "@/features/games/repositories/platform.repository.interface";
 import type { IRetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service.interface";
 import type { ISteamService } from "@/integrations/steam/steam.service.interface";
-import type { NormalizedAchievement } from "@/integrations/steam/steam.types";
+import type { NormalizedAchievement } from "../types";
 import { Logger } from "@/infrastructure/logging/logger";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 
@@ -134,15 +134,12 @@ export class AchievementService implements IAchievementService {
         }
         platformId = pcPlatform.id;
 
-        // Get achievements from Steam - syncAchievements will throw if credentials missing
-        const syncResult = await this.steamService.syncAchievements(userId, gameId);
-        this.logger.debug("Steam sync result", syncResult);
-
-        // Fetch the normalized achievements separately for storage
-        // The syncAchievements method internally calls getAchievements, but we need
-        // to get them again with user's Steam ID for storage
-        const steamAchievements = await this.fetchSteamAchievements(userId, game.steam_app_id);
-        normalizedAchievements = steamAchievements;
+        // Get achievements from Steam using the new method that resolves credentials internally
+        normalizedAchievements = await this.steamService.getAchievementsForUser(
+          userId,
+          game.steam_app_id
+        );
+        this.logger.debug("Steam achievements fetched", { count: normalizedAchievements.length });
         break;
       }
 
@@ -250,39 +247,6 @@ export class AchievementService implements IAchievementService {
     const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
 
     return { unlocked, total, percentage };
-  }
-
-  /**
-   * Fetch Steam achievements with user's Steam ID.
-   * @param userId - User ID for credential lookup
-   * @param steamAppId - Steam App ID
-   * @returns Normalized achievements
-   */
-  private async fetchSteamAchievements(
-    userId: string,
-    steamAppId: number
-  ): Promise<NormalizedAchievement[]> {
-    // The Steam service will get the user's Steam ID from their credentials
-    // and fetch achievements with unlock status
-    try {
-      // We need to call getAchievements with the user's Steam ID
-      // The syncAchievements method in SteamService already does this internally
-      // For now, we'll call the service's getAchievements which requires Steam ID
-      // This is a bit circular, but the Steam service handles credential lookup
-      const game = await this.gameRepository.findBySteamAppId(steamAppId);
-      if (game) {
-        // Use the sync result which internally fetches achievements
-        const result = await this.steamService.syncAchievements(userId, game.id);
-        this.logger.debug("Fetched Steam achievements via sync", { count: result.total });
-      }
-      // Return empty - the achievements were synced but we don't have direct access here
-      // In a real implementation, the Steam service would expose a method to get achievements
-      // with just the user ID, looking up their Steam ID internally
-      return [];
-    } catch (error) {
-      this.logger.error("Failed to fetch Steam achievements", { error });
-      return [];
-    }
   }
 
   /**
@@ -433,7 +397,7 @@ export class AchievementService implements IAchievementService {
       rarityPercentage: number | null;
       points: number | null;
       unlocked: boolean;
-      unlock_date: Date | null;
+      unlockDate: Date | null;
     }>
   ): AchievementResponse {
     const unlocked = achievements.filter((a) => a.unlocked).length;
@@ -448,7 +412,7 @@ export class AchievementService implements IAchievementService {
         rarity_percentage: ach.rarityPercentage,
         points: ach.points,
         unlocked: ach.unlocked,
-        unlock_date: ach.unlock_date?.toISOString() ?? null,
+        unlock_date: ach.unlockDate?.toISOString() ?? null,
       })),
       total: achievements.length,
       unlocked,

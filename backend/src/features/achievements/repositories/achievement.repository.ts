@@ -4,6 +4,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { DATABASE_TOKEN } from "@/container/tokens";
 import type { DrizzleDB } from "@/infrastructure/database/connection";
 import { achievements, userAchievements } from "@/db/schema";
+import { ConflictError, ValidationError } from "@/shared/errors/base";
 import type {
   Achievement,
   AchievementSourceApi,
@@ -60,23 +61,38 @@ export class AchievementRepository implements IAchievementRepository {
       return [];
     }
 
-    return this.db
-      .insert(achievements)
-      .values(achievementsData)
-      .onConflictDoUpdate({
-        target: [achievements.gameId, achievements.platformId, achievements.achievementId],
-        set: {
-          name: sql`excluded.name`,
-          description: sql`excluded.description`,
-          iconUrl: sql`excluded.icon_url`,
-          rarityPercentage: sql`excluded.rarity_percentage`,
-          points: sql`excluded.points`,
-          sourceApi: sql`excluded.source_api`,
-          externalId: sql`excluded.external_id`,
-          updatedAt: sql`now()`,
-        },
-      })
-      .returning();
+    try {
+      return await this.db
+        .insert(achievements)
+        .values(achievementsData)
+        .onConflictDoUpdate({
+          target: [achievements.gameId, achievements.platformId, achievements.achievementId],
+          set: {
+            name: sql`excluded.name`,
+            description: sql`excluded.description`,
+            iconUrl: sql`excluded.icon_url`,
+            rarityPercentage: sql`excluded.rarity_percentage`,
+            points: sql`excluded.points`,
+            sourceApi: sql`excluded.source_api`,
+            externalId: sql`excluded.external_id`,
+            updatedAt: sql`now()`,
+          },
+        })
+        .returning();
+    } catch (error) {
+      const err = error as { code?: string; cause?: { code?: string }; message?: string };
+      const isUniqueViolation =
+        err.code === "23505" || err.cause?.code === "23505" || err.message?.includes("23505");
+      if (isUniqueViolation) {
+        throw new ConflictError("Achievement already exists");
+      }
+      const isValidationError =
+        err.code === "23502" || err.cause?.code === "23502" || err.message?.includes("23502");
+      if (isValidationError) {
+        throw new ValidationError("Invalid achievement data");
+      }
+      throw error;
+    }
   }
 
   /**
@@ -134,7 +150,7 @@ export class AchievementRepository implements IAchievementRepository {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       unlocked: row.unlocked ?? false,
-      unlock_date: row.unlockDate ?? null,
+      unlockDate: row.unlockDate ?? null,
     }));
   }
 
@@ -144,19 +160,29 @@ export class AchievementRepository implements IAchievementRepository {
    * @returns Upserted user achievement
    */
   async upsertUserAchievement(data: NewUserAchievement): Promise<UserAchievement> {
-    const [result] = await this.db
-      .insert(userAchievements)
-      .values(data)
-      .onConflictDoUpdate({
-        target: [userAchievements.userId, userAchievements.achievementId],
-        set: {
-          unlocked: sql`excluded.unlocked`,
-          unlockDate: sql`excluded.unlock_date`,
-        },
-      })
-      .returning();
+    try {
+      const [result] = await this.db
+        .insert(userAchievements)
+        .values(data)
+        .onConflictDoUpdate({
+          target: [userAchievements.userId, userAchievements.achievementId],
+          set: {
+            unlocked: sql`excluded.unlocked`,
+            unlockDate: sql`excluded.unlock_date`,
+          },
+        })
+        .returning();
 
-    return result;
+      return result;
+    } catch (error) {
+      const err = error as { code?: string; cause?: { code?: string }; message?: string };
+      const isUniqueViolation =
+        err.code === "23505" || err.cause?.code === "23505" || err.message?.includes("23505");
+      if (isUniqueViolation) {
+        throw new ConflictError("User achievement already exists");
+      }
+      throw error;
+    }
   }
 
   /**
@@ -169,17 +195,27 @@ export class AchievementRepository implements IAchievementRepository {
       return [];
     }
 
-    return this.db
-      .insert(userAchievements)
-      .values(data)
-      .onConflictDoUpdate({
-        target: [userAchievements.userId, userAchievements.achievementId],
-        set: {
-          unlocked: sql`excluded.unlocked`,
-          unlockDate: sql`excluded.unlock_date`,
-        },
-      })
-      .returning();
+    try {
+      return await this.db
+        .insert(userAchievements)
+        .values(data)
+        .onConflictDoUpdate({
+          target: [userAchievements.userId, userAchievements.achievementId],
+          set: {
+            unlocked: sql`excluded.unlocked`,
+            unlockDate: sql`excluded.unlock_date`,
+          },
+        })
+        .returning();
+    } catch (error) {
+      const err = error as { code?: string; cause?: { code?: string }; message?: string };
+      const isUniqueViolation =
+        err.code === "23505" || err.cause?.code === "23505" || err.message?.includes("23505");
+      if (isUniqueViolation) {
+        throw new ConflictError("User achievement already exists");
+      }
+      throw error;
+    }
   }
 
   /**

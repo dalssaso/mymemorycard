@@ -90,9 +90,9 @@ user_achievements (
 
 ### Steam
 
-| Variable        | Description                                     |
-| --------------- | ----------------------------------------------- |
-| `STEAM_API_KEY` | Steam Web API key (required for library import) |
+| Variable        | Default  | Description                                     |
+| --------------- | -------- | ----------------------------------------------- |
+| `STEAM_API_KEY` | required | Steam Web API key (required for library import) |
 
 ### RetroAchievements
 
@@ -114,7 +114,7 @@ All external API credentials are:
 
 ### Steam Integration
 
-```
+```text
 backend/src/integrations/steam/
   steam.types.ts              # Steam API types
   steam.service.interface.ts  # Service interface
@@ -126,7 +126,7 @@ backend/src/integrations/steam/
 
 ### RetroAchievements Integration
 
-```
+```text
 backend/src/integrations/retroachievements/
   retroachievements.types.ts              # RA API types
   retroachievements.service.interface.ts  # Service interface
@@ -138,8 +138,9 @@ backend/src/integrations/retroachievements/
 
 ### Achievements Feature
 
-```
+```text
 backend/src/features/achievements/
+  types.ts                                # Shared NormalizedAchievement type
   repositories/
     achievement.repository.interface.ts   # Repository interface
     achievement.repository.ts             # Repository implementation

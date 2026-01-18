@@ -45,6 +45,8 @@ export interface IGameRepository {
   create(data: {
     igdb_id?: number;
     rawg_id?: number;
+    steam_app_id?: number;
+    retro_game_id?: number;
     name: string;
     slug?: string;
     release_date?: Date;

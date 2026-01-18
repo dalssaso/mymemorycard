@@ -14,7 +14,7 @@ import type { IUserCredentialRepository } from "@/features/credentials/repositor
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
 import { Logger } from "@/infrastructure/logging/logger";
-import type { NormalizedAchievement } from "@/integrations/steam/steam.types";
+import type { NormalizedAchievement } from "@/features/achievements/types";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 
 import type { IRetroAchievementsService } from "./retroachievements.service.interface";
@@ -168,14 +168,14 @@ export class RetroAchievementsService implements IRetroAchievementsService {
       }
 
       const achievements = Object.values(gameProgress.achievements);
-      const totalPlayers = gameProgress.numDistinctPlayersCasual || 1;
+      const totalPlayers = gameProgress.numDistinctPlayersCasual;
 
       return achievements.map((ach) => ({
         achievement_id: String(ach.id),
         name: ach.title,
         description: ach.description ?? "",
         icon_url: `https://media.retroachievements.org/Badge/${ach.badgeName}.png`,
-        rarity_percentage: totalPlayers > 0 ? (ach.numAwarded / totalPlayers) * 100 : null,
+        rarity_percentage: totalPlayers ? (ach.numAwarded / totalPlayers) * 100 : null,
         unlocked: ach.dateEarned !== null || ach.dateEarnedHardcore !== null,
         unlock_time: ach.dateEarned ? new Date(ach.dateEarned) : null,
       }));

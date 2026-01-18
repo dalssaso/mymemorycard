@@ -131,11 +131,13 @@ export class SteamController implements ISteamController {
       const steamId = await this.steamService.validateCallback(params);
 
       if (!steamId) {
+        this.logger.warn("Steam OpenID validation failed - invalid callback parameters");
         return c.json(
           {
-            status: "failed" as const,
+            error: "Invalid Steam OpenID callback parameters",
+            code: "STEAM_CALLBACK_INVALID",
           },
-          200
+          400
         );
       }
 

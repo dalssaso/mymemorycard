@@ -18,6 +18,10 @@ import type {
 } from "@/features/credentials/repositories/user-credential.repository.interface";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { ApiService, UserApiCredential } from "@/features/credentials/types";
+import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
+import type { IStoreRepository } from "@/features/games/repositories/store.repository.interface";
+import type { IUserGameRepository } from "@/features/games/repositories/user-game.repository.interface";
+import type { IPlatformRepository } from "@/features/platforms/repositories/platform.repository.interface";
 import type { IPreferencesRepository } from "@/features/preferences/repositories/preferences.repository.interface";
 import type { UserPreference } from "@/features/preferences/types";
 import type { Logger } from "@/infrastructure/logging/logger";
@@ -445,6 +449,7 @@ export function createMockSteamService(overrides?: Partial<ISteamService>): ISte
     importLibrary: mock().mockResolvedValue({ imported: 0, skipped: 0, errors: [] }),
     syncAchievements: mock().mockResolvedValue({ synced: 0, unlocked: 0, total: 0 }),
     getAchievements: mock().mockResolvedValue([]),
+    getAchievementsForUser: mock().mockResolvedValue([]),
     linkAccount: mock().mockResolvedValue(STEAM_CREDENTIALS_FIXTURE),
     unlinkAccount: mock().mockResolvedValue(undefined),
     ...overrides,
@@ -482,6 +487,136 @@ export function createMockRetroAchievementsService(
     getAchievements: mock().mockResolvedValue([]),
     syncAchievements: mock().mockResolvedValue({ synced: 0, unlocked: 0, total: 0 }),
     deleteCredentials: mock().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock game repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IGameRepository.
+ */
+export function createMockGameRepository(overrides?: Partial<IGameRepository>): IGameRepository {
+  return {
+    findById: mock().mockResolvedValue(null),
+    findByIgdbId: mock().mockResolvedValue(null),
+    findByRawgId: mock().mockResolvedValue(null),
+    findBySteamAppId: mock().mockResolvedValue(null),
+    findByRetroGameId: mock().mockResolvedValue(null),
+    create: mock().mockResolvedValue({
+      id: "game-uuid-001",
+      name: "Test Game",
+      metadata_source: "manual",
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+    update: mock().mockResolvedValue({
+      id: "game-uuid-001",
+      name: "Test Game",
+      metadata_source: "manual",
+      steam_app_id: 730,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+    delete: mock().mockResolvedValue(true),
+    search: mock().mockResolvedValue([]),
+    list: mock().mockResolvedValue([]),
+    count: mock().mockResolvedValue(0),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock user game repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IUserGameRepository.
+ */
+export function createMockUserGameRepository(
+  overrides?: Partial<IUserGameRepository>
+): IUserGameRepository {
+  return {
+    findById: mock().mockResolvedValue(null),
+    findByIdWithRelations: mock().mockResolvedValue(null),
+    listByUserWithRelations: mock().mockResolvedValue([]),
+    findByUserGamePlatform: mock().mockResolvedValue(null),
+    create: mock().mockResolvedValue({
+      id: "user-game-uuid-001",
+      user_id: "user-uuid-001",
+      game_id: "game-uuid-001",
+      platform_id: "platform-uuid-001",
+      owned: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+    update: mock().mockResolvedValue({
+      id: "user-game-uuid-001",
+      user_id: "user-uuid-001",
+      game_id: "game-uuid-001",
+      platform_id: "platform-uuid-001",
+      owned: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+    delete: mock().mockResolvedValue(true),
+    listByUser: mock().mockResolvedValue([]),
+    getByGameForUser: mock().mockResolvedValue([]),
+    deleteAllByUser: mock().mockResolvedValue(0),
+    countByUser: mock().mockResolvedValue(0),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock platform repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IPlatformRepository.
+ */
+export function createMockPlatformRepository(
+  overrides?: Partial<IPlatformRepository>
+): IPlatformRepository {
+  return {
+    list: mock().mockResolvedValue([]),
+    getById: mock().mockResolvedValue(null),
+    getByIgdbId: mock().mockResolvedValue({
+      id: "platform-uuid-001",
+      name: "PC (Microsoft Windows)",
+      igdb_platform_id: 6,
+      slug: "pc",
+      abbreviation: "PC",
+      platform_family: "PC",
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+    getByFamily: mock().mockResolvedValue([]),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock store repository with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IStoreRepository.
+ */
+export function createMockStoreRepository(overrides?: Partial<IStoreRepository>): IStoreRepository {
+  return {
+    findById: mock().mockResolvedValue(null),
+    findBySlug: mock().mockResolvedValue({
+      id: "store-uuid-001",
+      name: "Steam",
+      slug: "steam",
+      url: "https://store.steampowered.com",
+      platform_family: "PC",
+      has_achievements: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+    list: mock().mockResolvedValue([]),
+    listByPlatformFamily: mock().mockResolvedValue([]),
+    listWithAchievements: mock().mockResolvedValue([]),
     ...overrides,
   };
 }

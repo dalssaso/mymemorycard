@@ -19,9 +19,10 @@ import type { IPlatformRepository } from "@/features/platforms/repositories/plat
 import { Logger } from "@/infrastructure/logging/logger";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
 
+import type { NormalizedAchievement } from "@/features/achievements/types";
+
 import type { ISteamService } from "./steam.service.interface";
 import type {
-  NormalizedAchievement,
   SteamAchievementSyncResult,
   SteamCredentials,
   SteamLibraryImportResult,
@@ -115,6 +116,10 @@ export class SteamService implements ISteamService {
     }
     verifyParams.set("openid.mode", "check_authentication");
 
+    // Create AbortController with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const response = await fetch(STEAM_OPENID_URL, {
         method: "POST",
@@ -122,7 +127,18 @@ export class SteamService implements ISteamService {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: verifyParams.toString(),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        this.logger.warn("Steam OpenID request failed", {
+          status: response.status,
+          statusText: response.statusText,
+        });
+        return null;
+      }
 
       const text = await response.text();
 
@@ -145,6 +161,11 @@ export class SteamService implements ISteamService {
       this.logger.info("Steam OpenID validation successful", { steamId });
       return steamId;
     } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        this.logger.warn("Steam OpenID validation timed out");
+        return null;
+      }
       this.logger.error("Steam OpenID validation error", error);
       return null;
     }
@@ -263,15 +284,11 @@ export class SteamService implements ISteamService {
         let game = await this.gameRepository.findBySteamAppId(steamGame.appid);
 
         if (!game) {
-          // Create a basic game entry
+          // Create a basic game entry with Steam App ID
           game = await this.gameRepository.create({
             name: steamGame.name,
-            metadata_source: "manual",
-          });
-
-          // Update with Steam App ID (repository create doesn't support steam_app_id)
-          await this.gameRepository.update(game.id, {
             steam_app_id: steamGame.appid,
+            metadata_source: "manual",
           });
         }
 
@@ -417,6 +434,20 @@ export class SteamService implements ISteamService {
       this.logger.error("Failed to get achievements", { steamAppId, error });
       return [];
     }
+  }
+
+  /**
+   * Get achievements for a user (resolves credentials internally).
+   * @param userId - User ID in our system
+   * @param steamAppId - Steam App ID
+   * @returns Normalized achievements with unlock status
+   */
+  async getAchievementsForUser(
+    userId: string,
+    steamAppId: number
+  ): Promise<NormalizedAchievement[]> {
+    const credentials = await this.getCredentials(userId);
+    return this.getAchievements(steamAppId, credentials.steam_id);
   }
 
   /**

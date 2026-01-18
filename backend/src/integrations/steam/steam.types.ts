@@ -106,15 +106,5 @@ export interface SteamAchievementSyncResult {
   total: number;
 }
 
-/**
- * Normalized achievement for storage
- */
-export interface NormalizedAchievement {
-  achievement_id: string;
-  name: string;
-  description: string;
-  icon_url: string;
-  rarity_percentage: number | null;
-  unlocked: boolean;
-  unlock_time: Date | null;
-}
+// NormalizedAchievement is now exported from @/features/achievements/types
+export type { NormalizedAchievement } from "@/features/achievements/types";

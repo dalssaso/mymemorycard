@@ -1,10 +1,11 @@
+import type { NormalizedAchievement } from "@/features/achievements/types";
+
 import type {
   SteamPlayerSummary,
   SteamOwnedGame,
   SteamCredentials,
   SteamLibraryImportResult,
   SteamAchievementSyncResult,
-  NormalizedAchievement,
 } from "./steam.types";
 
 /**
@@ -61,6 +62,14 @@ export interface ISteamService {
    * @returns Normalized achievements with unlock status
    */
   getAchievements(steamAppId: number, steamId: string): Promise<NormalizedAchievement[]>;
+
+  /**
+   * Get achievements for a user (resolves credentials internally)
+   * @param userId - User ID in our system
+   * @param steamAppId - Steam App ID
+   * @returns Normalized achievements with unlock status
+   */
+  getAchievementsForUser(userId: string, steamAppId: number): Promise<NormalizedAchievement[]>;
 
   /**
    * Link Steam account to user (save credentials)

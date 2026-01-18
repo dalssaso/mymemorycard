@@ -104,10 +104,10 @@ export class RetroAchievementsController implements IRetroAchievementsController
       if (!isValid) {
         return c.json(
           {
-            is_valid: false,
-            message: "Invalid credentials",
+            error: "Invalid RetroAchievements credentials",
+            code: "INVALID_CREDENTIALS",
           },
-          201
+          400
         );
       }
 
