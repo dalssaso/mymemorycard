@@ -26,6 +26,8 @@ import {
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
   REDIS_CONNECTION_TOKEN,
+  STEAM_CONTROLLER_TOKEN,
+  STEAM_SERVICE_TOKEN,
   STORE_CONTROLLER_TOKEN,
   STORE_REPOSITORY_TOKEN,
   STORE_SERVICE_TOKEN,
@@ -158,6 +160,12 @@ import type { IStoreService } from "@/features/stores/services/store.service.int
 // Stores - Controllers
 import { StoreController } from "@/features/stores/controllers/store.controller";
 import type { IStoreController } from "@/features/stores/controllers/store.controller.interface";
+
+// Steam Integration
+import { SteamController } from "@/integrations/steam/steam.controller";
+import type { ISteamController } from "@/integrations/steam/steam.controller.interface";
+import { SteamService } from "@/integrations/steam/steam.service";
+import type { ISteamService } from "@/integrations/steam/steam.service.interface";
 
 /**
  * Register all dependencies for the application.
@@ -305,6 +313,12 @@ export function registerDependencies(): void {
 
   // Stores Domain - Controllers
   container.registerSingleton<IStoreController>(STORE_CONTROLLER_TOKEN, StoreController);
+
+  // Steam Integration - Services
+  container.registerSingleton<ISteamService>(STEAM_SERVICE_TOKEN, SteamService);
+
+  // Steam Integration - Controllers
+  container.registerSingleton<ISteamController>(STEAM_CONTROLLER_TOKEN, SteamController);
 }
 
 /**
