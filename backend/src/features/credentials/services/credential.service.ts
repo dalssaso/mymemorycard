@@ -23,6 +23,14 @@ import type {
 } from "./credential.service.interface";
 
 /**
+ * Validation result including optional token expiry.
+ */
+interface ValidationResult {
+  isValid: boolean;
+  expiresIn?: number;
+}
+
+/**
  * Service for managing user API credentials with encryption.
  */
 @injectable()
@@ -117,20 +125,27 @@ export class CredentialService implements ICredentialService {
     const decrypted = this.decryptCredentials(credential);
 
     // Perform actual API validation for the service
-    const isValid = await this.performValidation(service, decrypted);
+    const validationResult = await this.performValidation(service, decrypted);
 
-    // Calculate token expiry for OAuth-based services only when validation succeeds
-    // Twitch tokens expire in ~60 days
-    const tokenExpiresAt = isValid && service === "igdb" ? this.calculateTokenExpiry() : null;
+    // Calculate token expiry using OAuth response expires_in when available
+    const tokenExpiresAt =
+      validationResult.isValid && validationResult.expiresIn
+        ? this.calculateTokenExpiry(validationResult.expiresIn)
+        : null;
 
-    await this.repository.updateValidationStatus(userId, service, isValid, tokenExpiresAt);
+    await this.repository.updateValidationStatus(
+      userId,
+      service,
+      validationResult.isValid,
+      tokenExpiresAt
+    );
 
     return {
       service,
-      valid: isValid,
-      has_valid_token: isValid,
+      valid: validationResult.isValid,
+      has_valid_token: validationResult.isValid,
       token_expires_at: tokenExpiresAt?.toISOString() ?? null,
-      message: isValid
+      message: validationResult.isValid
         ? `Credentials for ${service} validated successfully.`
         : `Credentials for ${service} could not be validated.`,
     };
@@ -221,39 +236,42 @@ export class CredentialService implements ICredentialService {
    *
    * @param service - API service to validate
    * @param decrypted - Decrypted credential data
-   * @returns True if credentials are valid
+   * @returns Validation result with validity status and optional token expiry
    */
-  private async performValidation(service: ApiService, decrypted: unknown): Promise<boolean> {
+  private async performValidation(
+    service: ApiService,
+    decrypted: unknown
+  ): Promise<ValidationResult> {
     if (service === "igdb") {
       try {
         const creds = decrypted as TwitchOAuthCredentials;
-        await this.igdbService.authenticate({
+        const tokenResult = await this.igdbService.authenticate({
           client_id: creds.client_id,
           client_secret: creds.client_secret,
         });
-        return true;
+        return { isValid: true, expiresIn: tokenResult.expires_in };
       } catch (error) {
         this.logger.debug(`IGDB credential validation failed: ${error}`);
-        return false;
+        return { isValid: false };
       }
     }
 
     // Other services validated in future phases (B7)
     if (!decrypted || typeof decrypted !== "object") {
-      return false;
+      return { isValid: false };
     }
-    return true;
+    return { isValid: true };
   }
 
   /**
-   * Calculate token expiry for OAuth services.
-   * Twitch tokens typically expire in 60 days.
+   * Calculate token expiry from OAuth response.
    *
+   * @param expiresIn - Token expiry in seconds from OAuth response
    * @returns Date representing token expiration
    */
-  private calculateTokenExpiry(): Date {
+  private calculateTokenExpiry(expiresIn: number): Date {
     const expiry = new Date();
-    expiry.setDate(expiry.getDate() + 60);
+    expiry.setSeconds(expiry.getSeconds() + expiresIn);
     return expiry;
   }
 }

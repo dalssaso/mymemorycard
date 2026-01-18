@@ -76,6 +76,7 @@ function createMockUserGameWithRelations(
       id: GAME_ID,
       name: "The Legend of Zelda: Breath of the Wild",
       cover_art_url: "https://images.igdb.com/igdb/image/upload/...",
+      igdb_id: 7346,
     },
     platform: {
       id: PLATFORM_ID,

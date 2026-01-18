@@ -436,6 +436,10 @@ export type UserGameResponse = {
          * URL to cover art image
          */
         cover_art_url: string | null;
+        /**
+         * IGDB game identifier
+         */
+        igdb_id: number | null;
     };
     /**
      * Platform information

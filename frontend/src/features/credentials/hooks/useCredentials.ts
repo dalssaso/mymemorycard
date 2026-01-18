@@ -7,7 +7,7 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { CredentialsService } from "@/shared/api/services";
-import { useCredentialsStore } from "@/shared/stores/credentialsStore";
+import { useCredentialsStore, type CredentialsStore } from "@/shared/stores/credentialsStore";
 import type { CredentialService, CredentialStatus } from "@/shared/types/games";
 import type {
   CredentialListResponse,
@@ -22,7 +22,7 @@ import type {
  * @returns TanStack Query result with credentials data
  */
 export function useCredentials(): UseQueryResult<CredentialListResponse> {
-  const setCredentials = useCredentialsStore((s) => s.setCredentials);
+  const setCredentials = useCredentialsStore((s: CredentialsStore) => s.setCredentials);
 
   const query = useQuery({
     queryKey: ["credentials"],
@@ -47,7 +47,7 @@ export function useCredentials(): UseQueryResult<CredentialListResponse> {
  * @returns Credential status or undefined
  */
 export function useCredentialStatus(service: CredentialService): CredentialStatus | undefined {
-  const credentials = useCredentialsStore((s) => s.credentials);
+  const credentials = useCredentialsStore((s: CredentialsStore) => s.credentials);
   return credentials.find((c) => c.service === service);
 }
 
