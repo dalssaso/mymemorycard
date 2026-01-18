@@ -10,6 +10,7 @@ import type { IPreferencesController } from "@/features/preferences/controllers/
 import type { IStoreController } from "@/features/stores/controllers/store.controller.interface";
 import type { IUserPlatformsController } from "@/features/user-platforms/controllers/user-platforms.controller.interface";
 import type { ISteamController } from "@/integrations/steam/steam.controller.interface";
+import type { IRetroAchievementsController } from "@/integrations/retroachievements/retroachievements.controller.interface";
 import {
   ADMIN_CONTROLLER_TOKEN,
   AUTH_CONTROLLER_TOKEN,
@@ -17,6 +18,7 @@ import {
   GAMES_CONTROLLER_TOKEN,
   PLATFORM_CONTROLLER_TOKEN,
   PREFERENCES_CONTROLLER_TOKEN,
+  RETROACHIEVEMENTS_CONTROLLER_TOKEN,
   STEAM_CONTROLLER_TOKEN,
   STORE_CONTROLLER_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
@@ -128,6 +130,12 @@ export function createHonoApp(): OpenAPIHono<{ Variables: Variables }> {
   // Steam integration routes (DI-based)
   const steamController = container.resolve<ISteamController>(STEAM_CONTROLLER_TOKEN);
   app.route("/api/v1/steam", steamController.router);
+
+  // RetroAchievements integration routes (DI-based)
+  const raController = container.resolve<IRetroAchievementsController>(
+    RETROACHIEVEMENTS_CONTROLLER_TOKEN
+  );
+  app.route("/api/v1/retroachievements", raController.router);
 
   // Legacy routes proxy (for gradual migration)
   // Forward unhandled /api/* routes to the old custom router (cached at module load)
