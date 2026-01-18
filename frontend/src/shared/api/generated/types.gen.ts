@@ -189,6 +189,478 @@ export type UpdateAdminSettingsRequest = {
     };
 };
 
+/**
+ * List of all credential statuses for the user
+ */
+export type CredentialListResponse = {
+    services: Array<CredentialStatus>;
+};
+
+/**
+ * Status of a single API credential
+ */
+export type CredentialStatus = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    is_active: boolean;
+    has_valid_token: boolean;
+    token_expires_at: string | null;
+    last_validated_at: string | null;
+};
+
+/**
+ * Response after saving credentials
+ */
+export type CredentialSaveResponse = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    credential_type: 'twitch_oauth' | 'steam_openid' | 'api_key';
+    is_active: boolean;
+    message: string;
+};
+
+/**
+ * Request to save API credentials for a service
+ */
+export type SaveCredentialRequest = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+} & ({
+    credential_type: 'twitch_oauth';
+    credentials: {
+        client_id: string;
+        client_secret: string;
+    };
+} | {
+    credential_type: 'api_key';
+    credentials: {
+        username?: string;
+        api_key: string;
+    };
+} | {
+    credential_type: 'steam_openid';
+    credentials: {
+        steam_id: string;
+        display_name?: string;
+    };
+});
+
+/**
+ * Response after validating credentials
+ */
+export type CredentialValidateResponse = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    valid: boolean;
+    has_valid_token: boolean;
+    token_expires_at: string | null;
+    message: string;
+};
+
+/**
+ * Request to validate stored credentials
+ */
+export type ValidateCredentialRequest = {
+    service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+};
+
+/**
+ * Game search results
+ */
+export type GameSearchResultsResponse = {
+    results: Array<GameSearchResult>;
+};
+
+/**
+ * Game search result from IGDB
+ */
+export type GameSearchResult = {
+    /**
+     * IGDB game identifier
+     */
+    igdb_id: number;
+    /**
+     * Game title
+     */
+    name: string;
+    /**
+     * URL to cover art image
+     */
+    cover_url: string | null;
+    /**
+     * Available platforms for this game
+     */
+    platforms: Array<{
+        /**
+         * IGDB platform identifier
+         */
+        igdb_platform_id: number;
+        /**
+         * Platform name
+         */
+        name: string;
+        /**
+         * Platform abbreviation
+         */
+        abbreviation: string | null;
+    }>;
+    /**
+     * Game franchise name
+     */
+    franchise: string | null;
+    /**
+     * Digital stores where game is available
+     */
+    stores: Array<{
+        /**
+         * Store slug
+         */
+        slug: string;
+        /**
+         * Store URL for the game
+         */
+        url: string;
+    }>;
+};
+
+/**
+ * Request to search for games
+ */
+export type GameSearchRequest = {
+    query: string;
+    limit?: number;
+};
+
+/**
+ * Full game response
+ */
+export type GameResponse = {
+    game: GameDetails;
+};
+
+/**
+ * Complete game details with metadata
+ */
+export type GameDetails = {
+    /**
+     * Game unique identifier
+     */
+    id: string;
+    /**
+     * IGDB game identifier
+     */
+    igdb_id: number | null;
+    /**
+     * RAWG game identifier
+     */
+    rawg_id: number | null;
+    /**
+     * Game title
+     */
+    name: string;
+    /**
+     * URL-friendly game identifier
+     */
+    slug: string | null;
+    /**
+     * Game release date
+     */
+    release_date: string | null;
+    /**
+     * Full game description or synopsis
+     */
+    description: string | null;
+    /**
+     * URL to cover art image
+     */
+    cover_art_url: string | null;
+    /**
+     * URL to background image
+     */
+    background_image_url: string | null;
+    /**
+     * Metacritic score
+     */
+    metacritic_score: number | null;
+    /**
+     * OpenCritic score
+     */
+    opencritic_score: number | null;
+    /**
+     * ESRB rating (E, E10+, T, M, AO)
+     */
+    esrb_rating: string | null;
+    /**
+     * Name of game series
+     */
+    series_name: string | null;
+    /**
+     * Expected playtime in hours
+     */
+    expected_playtime: number | null;
+    /**
+     * Source of metadata
+     */
+    metadata_source: 'igdb' | 'rawg' | 'manual';
+    /**
+     * Timestamp when game was added
+     */
+    created_at: string;
+    /**
+     * Timestamp when game was last updated
+     */
+    updated_at: string;
+};
+
+/**
+ * User game library entry with related game, platform, and store info
+ */
+export type UserGameResponse = {
+    /**
+     * User game entry unique identifier
+     */
+    id: string;
+    /**
+     * User unique identifier
+     */
+    user_id: string;
+    /**
+     * Game information
+     */
+    game: {
+        /**
+         * Game unique identifier
+         */
+        id: string;
+        /**
+         * Game title
+         */
+        name: string;
+        /**
+         * URL to cover art image
+         */
+        cover_art_url: string | null;
+    };
+    /**
+     * Platform information
+     */
+    platform: {
+        /**
+         * Platform unique identifier
+         */
+        id: string;
+        /**
+         * Platform name
+         */
+        name: string;
+        /**
+         * Platform abbreviation
+         */
+        abbreviation: string | null;
+    };
+    /**
+     * Store information (null if not purchased from a store)
+     */
+    store: {
+        /**
+         * Store unique identifier
+         */
+        id: string;
+        /**
+         * Store slug
+         */
+        slug: string;
+        /**
+         * Store display name
+         */
+        display_name: string;
+    } | null;
+    /**
+     * Platform-specific game identifier (e.g., Steam App ID)
+     */
+    platform_game_id: string | null;
+    /**
+     * Whether the user owns this game on this platform
+     */
+    owned: boolean;
+    /**
+     * Date when user purchased the game
+     */
+    purchased_date: string | null;
+    /**
+     * Source of import if applicable (steam, rawg, etc.)
+     */
+    import_source: string | null;
+    /**
+     * Timestamp when entry was created
+     */
+    created_at: string;
+};
+
+/**
+ * Request to import a game from IGDB
+ */
+export type GameImportRequest = {
+    igdb_id: number;
+    platform_id: string;
+    store_id?: string;
+};
+
+/**
+ * Request to refresh game metadata from IGDB
+ */
+export type GameUpdateRequest = {
+    [key: string]: never;
+};
+
+/**
+ * Request to add a game to user library on a platform
+ */
+export type UserGameCreateRequest = {
+    game_id: string;
+    platform_id: string;
+    store_id?: string;
+};
+
+/**
+ * List of user game library entries
+ */
+export type UserGameListResponse = {
+    user_games: Array<UserGameResponse>;
+};
+
+/**
+ * Request to update a user game entry
+ */
+export type UserGameUpdateRequest = {
+    owned?: boolean;
+    purchased_date?: string;
+};
+
+/**
+ * Response for progress update operations
+ */
+export type ProgressUpdateResponse = {
+    /**
+     * Whether the update was successful
+     */
+    success: boolean;
+};
+
+/**
+ * Request to update game status
+ */
+export type UpdateStatusRequest = {
+    status: 'backlog' | 'playing' | 'finished' | 'dropped' | 'completed';
+};
+
+/**
+ * Request to update game rating (1-10 scale)
+ */
+export type UpdateRatingRequest = {
+    rating: number;
+};
+
+/**
+ * Request to update game notes
+ */
+export type UpdateNotesRequest = {
+    notes: string;
+};
+
+/**
+ * Request to update game favorite status
+ */
+export type UpdateFavoriteRequest = {
+    is_favorite: boolean;
+};
+
+/**
+ * Response containing custom progress fields
+ */
+export type CustomFieldsResponse = {
+    /**
+     * Custom progress fields
+     */
+    custom_fields: {
+        /**
+         * Completion percentage (0-100)
+         */
+        completion_percentage: number | null;
+        /**
+         * User-defined difficulty rating (1-10)
+         */
+        difficulty_rating: number | null;
+    };
+};
+
+/**
+ * Request body for updating custom progress fields
+ */
+export type UpdateCustomFieldsBody = {
+    completion_percentage?: number;
+    difficulty_rating?: number;
+};
+
+export type StoreListResponse = {
+    stores: Array<Store>;
+};
+
+export type Store = {
+    /**
+     * Store unique identifier
+     */
+    id: string;
+    /**
+     * URL-friendly store identifier
+     */
+    slug: string;
+    /**
+     * Human-readable store name
+     */
+    display_name: string;
+    /**
+     * Store type classification
+     */
+    store_type: 'digital' | 'physical';
+    /**
+     * Associated platform family
+     */
+    platform_family: string | null;
+    /**
+     * Brand color in hex format
+     */
+    color_primary: string;
+    /**
+     * Official website URL
+     */
+    website_url: string | null;
+    /**
+     * Store icon/logo URL
+     */
+    icon_url: string | null;
+    /**
+     * Whether store supports achievement tracking
+     */
+    supports_achievements: boolean;
+    /**
+     * Whether store supports library sync
+     */
+    supports_library_sync: boolean;
+    /**
+     * IGDB website category identifier
+     */
+    igdb_website_category: number | null;
+    /**
+     * Display order in UI lists
+     */
+    sort_order: number;
+    /**
+     * Creation timestamp
+     */
+    created_at: string | null;
+};
+
+export type StoreResponse = {
+    store: Store;
+};
+
 export type PostApiV1AuthRegisterData = {
     body?: RegisterRequest;
     path?: never;
@@ -558,3 +1030,722 @@ export type PatchApiV1AdminSettingsResponses = {
 };
 
 export type PatchApiV1AdminSettingsResponse = PatchApiV1AdminSettingsResponses[keyof PatchApiV1AdminSettingsResponses];
+
+export type GetApiV1CredentialsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/credentials';
+};
+
+export type GetApiV1CredentialsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1CredentialsError = GetApiV1CredentialsErrors[keyof GetApiV1CredentialsErrors];
+
+export type GetApiV1CredentialsResponses = {
+    /**
+     * List of credential statuses
+     */
+    200: CredentialListResponse;
+};
+
+export type GetApiV1CredentialsResponse = GetApiV1CredentialsResponses[keyof GetApiV1CredentialsResponses];
+
+export type PostApiV1CredentialsData = {
+    body?: SaveCredentialRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/credentials';
+};
+
+export type PostApiV1CredentialsErrors = {
+    /**
+     * Bad Request - validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type PostApiV1CredentialsError = PostApiV1CredentialsErrors[keyof PostApiV1CredentialsErrors];
+
+export type PostApiV1CredentialsResponses = {
+    /**
+     * Credentials saved successfully
+     */
+    201: CredentialSaveResponse;
+};
+
+export type PostApiV1CredentialsResponse = PostApiV1CredentialsResponses[keyof PostApiV1CredentialsResponses];
+
+export type PostApiV1CredentialsValidateData = {
+    body?: ValidateCredentialRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/credentials/validate';
+};
+
+export type PostApiV1CredentialsValidateErrors = {
+    /**
+     * Bad Request - validation error
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Credentials not found
+     */
+    404: ErrorResponse;
+};
+
+export type PostApiV1CredentialsValidateError = PostApiV1CredentialsValidateErrors[keyof PostApiV1CredentialsValidateErrors];
+
+export type PostApiV1CredentialsValidateResponses = {
+    /**
+     * Validation result
+     */
+    200: CredentialValidateResponse;
+};
+
+export type PostApiV1CredentialsValidateResponse = PostApiV1CredentialsValidateResponses[keyof PostApiV1CredentialsValidateResponses];
+
+export type DeleteApiV1CredentialsByServiceData = {
+    body?: never;
+    path: {
+        service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
+    };
+    query?: never;
+    url: '/api/v1/credentials/{service}';
+};
+
+export type DeleteApiV1CredentialsByServiceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Credentials not found
+     */
+    404: ErrorResponse;
+};
+
+export type DeleteApiV1CredentialsByServiceError = DeleteApiV1CredentialsByServiceErrors[keyof DeleteApiV1CredentialsByServiceErrors];
+
+export type DeleteApiV1CredentialsByServiceResponses = {
+    /**
+     * Credentials deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiV1CredentialsByServiceResponse = DeleteApiV1CredentialsByServiceResponses[keyof DeleteApiV1CredentialsByServiceResponses];
+
+export type PostApiV1GamesSearchData = {
+    body?: GameSearchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/games/search';
+};
+
+export type PostApiV1GamesSearchErrors = {
+    /**
+     * Validation error in search parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * IGDB credentials not configured for user
+     */
+    422: ErrorResponse;
+};
+
+export type PostApiV1GamesSearchError = PostApiV1GamesSearchErrors[keyof PostApiV1GamesSearchErrors];
+
+export type PostApiV1GamesSearchResponses = {
+    /**
+     * Game search results returned successfully
+     */
+    200: GameSearchResultsResponse;
+};
+
+export type PostApiV1GamesSearchResponse = PostApiV1GamesSearchResponses[keyof PostApiV1GamesSearchResponses];
+
+export type GetApiV1GamesByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/games/{id}';
+};
+
+export type GetApiV1GamesByIdErrors = {
+    /**
+     * Invalid game ID format
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1GamesByIdError = GetApiV1GamesByIdErrors[keyof GetApiV1GamesByIdErrors];
+
+export type GetApiV1GamesByIdResponses = {
+    /**
+     * Game details retrieved successfully
+     */
+    200: GameResponse;
+};
+
+export type GetApiV1GamesByIdResponse = GetApiV1GamesByIdResponses[keyof GetApiV1GamesByIdResponses];
+
+export type PostApiV1GamesByIdImportData = {
+    body?: GameImportRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/games/{id}/import';
+};
+
+export type PostApiV1GamesByIdImportErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Platform or store not found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict - user already owns this game on this platform
+     */
+    409: ErrorResponse;
+    /**
+     * IGDB credentials not configured for user
+     */
+    422: ErrorResponse;
+};
+
+export type PostApiV1GamesByIdImportError = PostApiV1GamesByIdImportErrors[keyof PostApiV1GamesByIdImportErrors];
+
+export type PostApiV1GamesByIdImportResponses = {
+    /**
+     * Game imported to user library successfully
+     */
+    200: UserGameResponse;
+};
+
+export type PostApiV1GamesByIdImportResponse = PostApiV1GamesByIdImportResponses[keyof PostApiV1GamesByIdImportResponses];
+
+export type PostApiV1GamesByIdMetadataData = {
+    body?: GameUpdateRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/games/{id}/metadata';
+};
+
+export type PostApiV1GamesByIdMetadataErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found
+     */
+    404: ErrorResponse;
+    /**
+     * IGDB credentials not configured for user
+     */
+    422: ErrorResponse;
+};
+
+export type PostApiV1GamesByIdMetadataError = PostApiV1GamesByIdMetadataErrors[keyof PostApiV1GamesByIdMetadataErrors];
+
+export type PostApiV1GamesByIdMetadataResponses = {
+    /**
+     * Game metadata updated successfully
+     */
+    200: GameResponse;
+};
+
+export type PostApiV1GamesByIdMetadataResponse = PostApiV1GamesByIdMetadataResponses[keyof PostApiV1GamesByIdMetadataResponses];
+
+export type GetApiV1UserGamesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number | null;
+    };
+    url: '/api/v1/user-games';
+};
+
+export type GetApiV1UserGamesErrors = {
+    /**
+     * Invalid pagination parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1UserGamesError = GetApiV1UserGamesErrors[keyof GetApiV1UserGamesErrors];
+
+export type GetApiV1UserGamesResponses = {
+    /**
+     * User games retrieved successfully
+     */
+    200: UserGameListResponse;
+};
+
+export type GetApiV1UserGamesResponse = GetApiV1UserGamesResponses[keyof GetApiV1UserGamesResponses];
+
+export type PostApiV1UserGamesData = {
+    body?: UserGameCreateRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/user-games';
+};
+
+export type PostApiV1UserGamesErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Platform or store not found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict - user already owns this game on this platform
+     */
+    409: ErrorResponse;
+};
+
+export type PostApiV1UserGamesError = PostApiV1UserGamesErrors[keyof PostApiV1UserGamesErrors];
+
+export type PostApiV1UserGamesResponses = {
+    /**
+     * Game added to user library successfully
+     */
+    200: UserGameResponse;
+};
+
+export type PostApiV1UserGamesResponse = PostApiV1UserGamesResponses[keyof PostApiV1UserGamesResponses];
+
+export type DeleteApiV1UserGamesByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{id}';
+};
+
+export type DeleteApiV1UserGamesByIdErrors = {
+    /**
+     * Invalid user game ID format
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * User game entry not found
+     */
+    404: ErrorResponse;
+};
+
+export type DeleteApiV1UserGamesByIdError = DeleteApiV1UserGamesByIdErrors[keyof DeleteApiV1UserGamesByIdErrors];
+
+export type DeleteApiV1UserGamesByIdResponses = {
+    /**
+     * User game entry deleted successfully
+     */
+    204: void;
+};
+
+export type DeleteApiV1UserGamesByIdResponse = DeleteApiV1UserGamesByIdResponses[keyof DeleteApiV1UserGamesByIdResponses];
+
+export type GetApiV1UserGamesByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{id}';
+};
+
+export type GetApiV1UserGamesByIdErrors = {
+    /**
+     * Invalid user game ID format
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * User game entry not found
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1UserGamesByIdError = GetApiV1UserGamesByIdErrors[keyof GetApiV1UserGamesByIdErrors];
+
+export type GetApiV1UserGamesByIdResponses = {
+    /**
+     * User game entry retrieved successfully
+     */
+    200: UserGameResponse;
+};
+
+export type GetApiV1UserGamesByIdResponse = GetApiV1UserGamesByIdResponses[keyof GetApiV1UserGamesByIdResponses];
+
+export type PatchApiV1UserGamesByIdData = {
+    body?: UserGameUpdateRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{id}';
+};
+
+export type PatchApiV1UserGamesByIdErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * User game entry not found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict - operation failed due to data inconsistency
+     */
+    409: ErrorResponse;
+};
+
+export type PatchApiV1UserGamesByIdError = PatchApiV1UserGamesByIdErrors[keyof PatchApiV1UserGamesByIdErrors];
+
+export type PatchApiV1UserGamesByIdResponses = {
+    /**
+     * User game updated successfully
+     */
+    200: UserGameResponse;
+};
+
+export type PatchApiV1UserGamesByIdResponse = PatchApiV1UserGamesByIdResponses[keyof PatchApiV1UserGamesByIdResponses];
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusData = {
+    body?: UpdateStatusRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/status';
+};
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusError = PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusErrors[keyof PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusErrors];
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponses = {
+    /**
+     * Game status updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponse = PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponses[keyof PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponses];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingData = {
+    body?: UpdateRatingRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/rating';
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingError = PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingErrors[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingErrors];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponses = {
+    /**
+     * Game rating updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponse = PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponses[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponses];
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesData = {
+    body?: UpdateNotesRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/notes';
+};
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesError = PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesErrors[keyof PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesErrors];
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponses = {
+    /**
+     * Game notes updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponse = PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponses[keyof PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponses];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteData = {
+    body?: UpdateFavoriteRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/favorite';
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteError = PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteErrors[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteErrors];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponses = {
+    /**
+     * Game favorite status updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponse = PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponses[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponses];
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsData = {
+    body?: never;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/custom-fields';
+};
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsError = GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors[keyof GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors];
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses = {
+    /**
+     * Custom fields retrieved successfully
+     */
+    200: CustomFieldsResponse;
+};
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponse = GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses[keyof GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsData = {
+    body?: UpdateCustomFieldsBody;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/custom-fields';
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsError = PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses = {
+    /**
+     * Custom fields updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponse = PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses];
+
+export type GetApiV1StoresData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/stores';
+};
+
+export type GetApiV1StoresErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1StoresError = GetApiV1StoresErrors[keyof GetApiV1StoresErrors];
+
+export type GetApiV1StoresResponses = {
+    /**
+     * List stores
+     */
+    200: StoreListResponse;
+};
+
+export type GetApiV1StoresResponse = GetApiV1StoresResponses[keyof GetApiV1StoresResponses];
+
+export type GetApiV1StoresByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Store unique identifier
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/stores/{id}';
+};
+
+export type GetApiV1StoresByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Store not found
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1StoresByIdError = GetApiV1StoresByIdErrors[keyof GetApiV1StoresByIdErrors];
+
+export type GetApiV1StoresByIdResponses = {
+    /**
+     * Get store
+     */
+    200: StoreResponse;
+};
+
+export type GetApiV1StoresByIdResponse = GetApiV1StoresByIdResponses[keyof GetApiV1StoresByIdResponses];

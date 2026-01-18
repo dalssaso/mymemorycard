@@ -1,0 +1,1 @@
+export { IGDBCredentialsForm } from "./IGDBCredentialsForm";

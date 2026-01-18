@@ -12,8 +12,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application (skip prebuild since generated API files are committed)
+RUN npm run typecheck && npx vite build
 
 # Stage 2: Production
 FROM nginx:alpine AS production

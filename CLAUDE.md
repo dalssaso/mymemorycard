@@ -32,6 +32,8 @@ Query these libraries:
 - OpenAPI is generated from the DI app and used for frontend codegen.
 - Reference: `docs/architecture/guidelines.md`.
 
+**Frontend API Calls**: Always use the generated SDK from `@/shared/api/generated` instead of raw `apiClient` calls. The SDK provides type safety and stays synchronized with backend changes. Reserve `apiClient` only for endpoints the SDK does not yet cover.
+
 ## Quick Start
 
 ```bash
