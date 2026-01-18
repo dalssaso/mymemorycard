@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSaveCredentials } from "../hooks/useCredentials";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,30 +13,53 @@ export function IGDBCredentialsForm(): JSX.Element {
   const [clientSecret, setClientSecret] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
 
+  // Track submitted values to avoid clearing edits made during save
+  const submittedValuesRef = useRef<{ clientId: string; clientSecret: string } | null>(null);
+
   const saveCredentials = useSaveCredentials();
 
   const isValid = clientId.trim().length > 0 && clientSecret.trim().length > 0;
+  const isPending = saveCredentials.isPending;
 
   const handleSave = (): void => {
     if (!isValid) return;
+
+    const trimmedClientId = clientId.trim();
+    const trimmedClientSecret = clientSecret.trim();
+
+    // Capture submitted values for comparison on success
+    submittedValuesRef.current = {
+      clientId: trimmedClientId,
+      clientSecret: trimmedClientSecret,
+    };
 
     saveCredentials.mutate(
       {
         service: "igdb" as const,
         credential_type: "twitch_oauth" as const,
         credentials: {
-          client_id: clientId.trim(),
-          client_secret: clientSecret.trim(),
+          client_id: trimmedClientId,
+          client_secret: trimmedClientSecret,
         },
       },
       {
         onSuccess: () => {
           setSaveStatus("success");
-          setClientId("");
-          setClientSecret("");
+          // Only clear if values haven't changed during save
+          const submitted = submittedValuesRef.current;
+          if (submitted) {
+            if (clientId.trim() === submitted.clientId) {
+              setClientId("");
+            }
+            if (clientSecret.trim() === submitted.clientSecret) {
+              setClientSecret("");
+            }
+          }
+          submittedValuesRef.current = null;
         },
         onError: () => {
           setSaveStatus("error");
+          submittedValuesRef.current = null;
         },
       }
     );
@@ -72,6 +95,7 @@ export function IGDBCredentialsForm(): JSX.Element {
               setClientId(e.target.value);
               setSaveStatus("idle");
             }}
+            disabled={isPending}
             placeholder="your-client-id"
             className="mt-2 bg-base text-text-primary placeholder:text-text-muted"
             autoComplete="off"
@@ -90,6 +114,7 @@ export function IGDBCredentialsForm(): JSX.Element {
               setClientSecret(e.target.value);
               setSaveStatus("idle");
             }}
+            disabled={isPending}
             placeholder="your-client-secret"
             className="mt-2 bg-base text-text-primary placeholder:text-text-muted"
             autoComplete="off"
@@ -111,10 +136,10 @@ export function IGDBCredentialsForm(): JSX.Element {
 
       <Button
         onClick={handleSave}
-        disabled={!isValid || saveCredentials.isPending}
+        disabled={!isValid || isPending}
         className="w-full"
       >
-        {saveCredentials.isPending ? "Saving..." : "Save Credentials"}
+        {isPending ? "Saving..." : "Save Credentials"}
       </Button>
     </div>
   );

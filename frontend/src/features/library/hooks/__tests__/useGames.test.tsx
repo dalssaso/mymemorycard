@@ -301,6 +301,7 @@ describe("useSearchGames", () => {
         await vi.runAllTimersAsync();
       });
 
+      // Restore real timers before waitFor (which needs real timers to work)
       vi.useRealTimers();
 
       await waitFor(() => {

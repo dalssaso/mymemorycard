@@ -260,6 +260,12 @@ describe("API Services", () => {
         expect(mockGetApiV1Credentials).toHaveBeenCalledWith({ throwOnError: true });
         expect(result).toEqual(mockData);
       });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1Credentials.mockRejectedValue(new Error("Credentials fetch failed"));
+
+        await expect(CredentialsService.list()).rejects.toThrow("Credentials fetch failed");
+      });
     });
 
     describe("create", () => {
@@ -283,6 +289,17 @@ describe("API Services", () => {
         });
         expect(result).toEqual(mockData);
       });
+
+      it("should propagate errors from SDK", async () => {
+        const payload = {
+          service: "igdb" as const,
+          credential_type: "twitch_oauth" as const,
+          credentials: { client_id: "test", client_secret: "test" },
+        };
+        mockPostApiV1Credentials.mockRejectedValue(new Error("Save failed"));
+
+        await expect(CredentialsService.create(payload)).rejects.toThrow("Save failed");
+      });
     });
 
     describe("validate", () => {
@@ -298,6 +315,12 @@ describe("API Services", () => {
         });
         expect(result).toEqual(mockData);
       });
+
+      it("should propagate errors from SDK", async () => {
+        mockPostApiV1CredentialsValidate.mockRejectedValue(new Error("Validation failed"));
+
+        await expect(CredentialsService.validate("igdb")).rejects.toThrow("Validation failed");
+      });
     });
 
     describe("delete", () => {
@@ -310,6 +333,12 @@ describe("API Services", () => {
           path: { service: "igdb" },
           throwOnError: true,
         });
+      });
+
+      it("should propagate errors from SDK", async () => {
+        mockDeleteApiV1CredentialsByService.mockRejectedValue(new Error("Delete failed"));
+
+        await expect(CredentialsService.delete("igdb")).rejects.toThrow("Delete failed");
       });
     });
   });
