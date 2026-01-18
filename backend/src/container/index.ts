@@ -26,6 +26,8 @@ import {
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
   REDIS_CONNECTION_TOKEN,
+  RETROACHIEVEMENTS_CONTROLLER_TOKEN,
+  RETROACHIEVEMENTS_SERVICE_TOKEN,
   STEAM_CONTROLLER_TOKEN,
   STEAM_SERVICE_TOKEN,
   STORE_CONTROLLER_TOKEN,
@@ -166,6 +168,12 @@ import { SteamController } from "@/integrations/steam/steam.controller";
 import type { ISteamController } from "@/integrations/steam/steam.controller.interface";
 import { SteamService } from "@/integrations/steam/steam.service";
 import type { ISteamService } from "@/integrations/steam/steam.service.interface";
+
+// RetroAchievements Integration
+import { RetroAchievementsController } from "@/integrations/retroachievements/retroachievements.controller";
+import type { IRetroAchievementsController } from "@/integrations/retroachievements/retroachievements.controller.interface";
+import { RetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service";
+import type { IRetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service.interface";
 
 /**
  * Register all dependencies for the application.
@@ -319,6 +327,18 @@ export function registerDependencies(): void {
 
   // Steam Integration - Controllers
   container.registerSingleton<ISteamController>(STEAM_CONTROLLER_TOKEN, SteamController);
+
+  // RetroAchievements Integration - Services
+  container.registerSingleton<IRetroAchievementsService>(
+    RETROACHIEVEMENTS_SERVICE_TOKEN,
+    RetroAchievementsService
+  );
+
+  // RetroAchievements Integration - Controllers
+  container.registerSingleton<IRetroAchievementsController>(
+    RETROACHIEVEMENTS_CONTROLLER_TOKEN,
+    RetroAchievementsController
+  );
 }
 
 /**
