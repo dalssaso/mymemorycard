@@ -490,6 +490,13 @@ export const userGameProgress = pgTable(
 // ACHIEVEMENTS
 // ============================================================================
 
+export const achievementSourceApiEnum = pgEnum("achievement_source_api", [
+  "steam",
+  "retroachievements",
+  "rawg",
+  "manual",
+]);
+
 export const achievements = pgTable(
   "achievements",
   {
@@ -506,10 +513,15 @@ export const achievements = pgTable(
     iconUrl: text("icon_url"),
     rarityPercentage: real("rarity_percentage"),
     points: integer("points"),
+    sourceApi: achievementSourceApiEnum("source_api").default("manual"),
+    externalId: text("external_id"), // Steam achievement API name or RA ID
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   },
   (table) => [
     unique().on(table.gameId, table.platformId, table.achievementId),
     index("idx_achievements_game_platform").on(table.gameId, table.platformId),
+    index("idx_achievements_source").on(table.sourceApi),
   ]
 );
 
