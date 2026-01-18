@@ -6,6 +6,8 @@ import {
   mockGetApiV1Credentials,
   mockGetApiV1Platforms,
   mockGetApiV1PlatformsById,
+  mockGetApiV1Stores,
+  mockGetApiV1StoresById,
   mockGetApiV1UserGames,
   mockGetApiV1UserGamesById,
   mockPatchApiV1UserGamesById,
@@ -344,14 +346,78 @@ describe("API Services", () => {
 
   describe("StoresService", () => {
     describe("list", () => {
-      it("should call GET /stores", async () => {
-        const mockResponse = { data: { stores: [] } };
-        vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+      it("should call getApiV1Stores SDK function", async () => {
+        const mockData = {
+          stores: [
+            {
+              id: "store-1",
+              slug: "steam",
+              display_name: "Steam",
+              store_type: "digital",
+              platform_family: "PC",
+              color_primary: "#1b2838",
+              website_url: "https://store.steampowered.com",
+              icon_url: "https://example.com/steam.png",
+              supports_achievements: true,
+              supports_library_sync: true,
+              igdb_website_category: 13,
+              sort_order: 1,
+              created_at: "2026-01-01T00:00:00Z",
+            },
+          ],
+        };
+        mockGetApiV1Stores.mockResolvedValue({ data: mockData });
 
         const result = await StoresService.list();
 
-        expect(apiClient.get).toHaveBeenCalledWith("/stores");
-        expect(result).toEqual(mockResponse.data);
+        expect(mockGetApiV1Stores).toHaveBeenCalledWith({ throwOnError: true });
+        expect(result.stores).toHaveLength(1);
+        expect(result.stores[0].id).toBe("store-1");
+        expect(result.stores[0].name).toBe("Steam");
+      });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1Stores.mockRejectedValue(new Error("Stores fetch failed"));
+
+        await expect(StoresService.list()).rejects.toThrow("Stores fetch failed");
+      });
+    });
+
+    describe("getOne", () => {
+      it("should call getApiV1StoresById SDK function", async () => {
+        const mockData = {
+          store: {
+            id: "store-1",
+            slug: "steam",
+            display_name: "Steam",
+            store_type: "digital",
+            platform_family: "PC",
+            color_primary: "#1b2838",
+            website_url: "https://store.steampowered.com",
+            icon_url: "https://example.com/steam.png",
+            supports_achievements: true,
+            supports_library_sync: true,
+            igdb_website_category: 13,
+            sort_order: 1,
+            created_at: "2026-01-01T00:00:00Z",
+          },
+        };
+        mockGetApiV1StoresById.mockResolvedValue({ data: mockData });
+
+        const result = await StoresService.getOne("store-1");
+
+        expect(mockGetApiV1StoresById).toHaveBeenCalledWith({
+          path: { id: "store-1" },
+          throwOnError: true,
+        });
+        expect(result.id).toBe("store-1");
+        expect(result.name).toBe("Steam");
+      });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1StoresById.mockRejectedValue(new Error("Store not found"));
+
+        await expect(StoresService.getOne("nonexistent")).rejects.toThrow("Store not found");
       });
     });
   });
