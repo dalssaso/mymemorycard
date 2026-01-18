@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   useQuery,
   useMutation,
@@ -23,15 +24,20 @@ import type {
 export function useCredentials(): UseQueryResult<CredentialListResponse> {
   const setCredentials = useCredentialsStore((s) => s.setCredentials);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ["credentials"],
-    queryFn: async () => {
-      const data = await CredentialsService.list();
-      setCredentials(data.services);
-      return data;
-    },
+    queryFn: () => CredentialsService.list(),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  // Sync credentials to store whenever data changes (including cached data)
+  useEffect(() => {
+    if (query.data?.services) {
+      setCredentials(query.data.services);
+    }
+  }, [query.data, setCredentials]);
+
+  return query;
 }
 
 /**

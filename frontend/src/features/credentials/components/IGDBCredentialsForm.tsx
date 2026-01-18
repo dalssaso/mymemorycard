@@ -66,7 +66,7 @@ export function IGDBCredentialsForm(): JSX.Element {
           </Label>
           <Input
             id="client-id"
-            type="password"
+            type="text"
             value={clientId}
             onChange={(e) => {
               setClientId(e.target.value);

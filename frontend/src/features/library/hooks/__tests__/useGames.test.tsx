@@ -87,6 +87,7 @@ describe("useGames", () => {
     });
 
     expect(result.current).toBeDefined();
+    expect(mockList).toHaveBeenCalledWith(filters);
   });
 });
 
@@ -277,35 +278,39 @@ describe("useSearchGames", () => {
   it("should search after debounce delay elapses", async () => {
     vi.useFakeTimers();
 
-    const mockSearchResults = {
-      games: [
-        { igdb_id: 1234, name: "The Legend of Zelda", cover_art_url: null },
-        { igdb_id: 5678, name: "Zelda II", cover_art_url: null },
-      ],
-    };
-    mockSearch.mockResolvedValue(mockSearchResults);
+    try {
+      const mockSearchResults = {
+        games: [
+          { igdb_id: 1234, name: "The Legend of Zelda", cover_art_url: null },
+          { igdb_id: 5678, name: "Zelda II", cover_art_url: null },
+        ],
+      };
+      mockSearch.mockResolvedValue(mockSearchResults);
 
-    const { result } = renderHook(() => useSearchGames("zelda", 50), {
-      wrapper: createWrapper(queryClient),
-    });
+      const { result } = renderHook(() => useSearchGames("zelda", 50), {
+        wrapper: createWrapper(queryClient),
+      });
 
-    // Advance timers to trigger debounce and flush pending promises
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(50);
-    });
+      // Advance timers to trigger debounce and flush pending promises
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(50);
+      });
 
-    // Wait for search to complete (React Query async)
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
+      // Wait for search to complete (React Query async)
+      await act(async () => {
+        await vi.runAllTimersAsync();
+      });
 
-    vi.useRealTimers();
+      vi.useRealTimers();
 
-    await waitFor(() => {
-      expect(result.current.results).toHaveLength(2);
-    });
+      await waitFor(() => {
+        expect(result.current.results).toHaveLength(2);
+      });
 
-    expect(mockSearch).toHaveBeenCalledWith(expect.objectContaining({ query: "zelda" }));
-    expect(result.current.results[0].name).toBe("The Legend of Zelda");
+      expect(mockSearch).toHaveBeenCalledWith(expect.objectContaining({ query: "zelda" }));
+      expect(result.current.results[0].name).toBe("The Legend of Zelda");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

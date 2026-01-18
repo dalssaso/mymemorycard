@@ -54,13 +54,11 @@ export interface GameSearchResult {
 
 /**
  * Payload for importing a game.
+ * Re-exported from services for backwards compatibility.
+ * @see ImportGameRequest in shared/api/services.ts for the canonical type.
+ * @deprecated Use ImportGameRequest from @/shared/api/services instead.
  */
-export interface GameImportPayload {
-  igdb_id: number;
-  platform_id: string;
-  store_id: string;
-  metadata_source: "igdb";
-}
+export type { ImportGameRequest as GameImportPayload } from "@/shared/api/services";
 
 /**
  * Platform type aligned to IGDB schema.
@@ -76,7 +74,10 @@ export interface Platform {
 }
 
 /**
- * Store type (digital/physical).
+ * Store domain type with extended fields for UI display.
+ * Note: This differs from the API Store type in services.ts which has
+ * fewer fields (id, name, slug, display_name, platform_family, icon_url).
+ * Use this type for domain logic; use the services.ts Store for API responses.
  */
 export interface Store {
   id: string;

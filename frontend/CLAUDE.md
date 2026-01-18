@@ -103,12 +103,14 @@ Wrap SDK calls in service methods within `@/shared/api/services.ts`. Keep API ac
 
 Use semantic design tokens from `tailwind.config.js`. Map status states to tokens:
 
-| State | Token Pattern |
-|-------|---------------|
-| Error | `bg-destructive/30 border-destructive text-destructive` |
-| Warning | `bg-status-completed/30 border-status-completed text-status-completed` |
-| Success | `bg-status-playing/30 border-status-playing text-status-playing` |
-| Info | `bg-accent/30 border-accent text-accent` |
+| State | Token Name | Token Pattern |
+|-------|------------|---------------|
+| Error | `destructive` | `bg-destructive/30 border-destructive text-destructive` |
+| Warning | `status-completed` | `bg-status-completed/30 border-status-completed text-status-completed` |
+| Success | `status-playing` | `bg-status-playing/30 border-status-playing text-status-playing` |
+| Info | `accent` | `bg-accent/30 border-accent text-accent` |
+
+Note: Token names like `status-completed` and `status-playing` originate from game status tracking but serve as generic warning/success colors throughout the UI. Use them for their semantic meaning (warning/success) regardless of the name.
 
 Raw Tailwind color classes (`bg-red-900`, `text-blue-300`) violate the design system. Replace them with semantic tokens.
 

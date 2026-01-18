@@ -55,17 +55,26 @@ describe("Game Types", () => {
   });
 
   describe("GameImportPayload type", () => {
-    it("should require igdb_id, platform_id, store_id", () => {
+    it("should require igdb_id with optional platform_id and store_id", () => {
+      // GameImportPayload is now an alias for ImportGameRequest
       const payload: GameImportPayload = {
         igdb_id: 12345,
         platform_id: "platform-1",
         store_id: "store-1",
-        metadata_source: "igdb",
       };
 
       expect(payload.igdb_id).toBeDefined();
       expect(payload.platform_id).toBeDefined();
       expect(payload.store_id).toBeDefined();
+    });
+
+    it("should allow omitting optional fields", () => {
+      const minimalPayload: GameImportPayload = {
+        igdb_id: 12345,
+      };
+
+      expect(minimalPayload.igdb_id).toBe(12345);
+      expect(minimalPayload.platform_id).toBeUndefined();
     });
   });
 });

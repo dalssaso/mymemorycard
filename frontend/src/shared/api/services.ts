@@ -176,7 +176,10 @@ export interface StoresListResponse {
 }
 
 /**
- * Store entity
+ * Store entity from API response.
+ * Note: This is the API response type adapted from SDK. For the domain type
+ * with extended fields (store_type, supports_achievements, etc.), see
+ * shared/types/games.ts Store interface.
  */
 export interface Store {
   id: string;
