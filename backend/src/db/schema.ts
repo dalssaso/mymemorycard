@@ -78,6 +78,8 @@ export const games = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     rawgId: integer("rawg_id").unique(),
     igdbId: integer("igdb_id").unique(),
+    steamAppId: integer("steam_app_id").unique(),
+    retroGameId: integer("retro_game_id").unique(),
     metadataSource: metadataSourceEnum("metadata_source").default("igdb"),
     name: text("name").notNull(),
     slug: text("slug"),
@@ -97,6 +99,8 @@ export const games = pgTable(
     index("idx_games_name").on(table.name),
     index("idx_games_rawg").on(table.rawgId),
     index("idx_games_igdb").on(table.igdbId),
+    index("idx_games_steam").on(table.steamAppId),
+    index("idx_games_retro").on(table.retroGameId),
     index("idx_games_slug").on(table.slug),
     index("idx_games_series").on(table.seriesName),
   ]
