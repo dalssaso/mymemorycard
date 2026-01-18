@@ -134,11 +134,7 @@ export function IGDBCredentialsForm(): JSX.Element {
         </div>
       )}
 
-      <Button
-        onClick={handleSave}
-        disabled={!isValid || isPending}
-        className="w-full"
-      >
+      <Button onClick={handleSave} disabled={!isValid || isPending} className="w-full">
         {isPending ? "Saving..." : "Save Credentials"}
       </Button>
     </div>
