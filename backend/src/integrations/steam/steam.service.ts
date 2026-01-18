@@ -17,7 +17,7 @@ import type { IStoreRepository } from "@/features/games/repositories/store.repos
 import type { IUserGameRepository } from "@/features/games/repositories/user-game.repository.interface";
 import type { IPlatformRepository } from "@/features/platforms/repositories/platform.repository.interface";
 import { Logger } from "@/infrastructure/logging/logger";
-import { NotFoundError, ValidationError } from "@/shared/errors/base";
+import { ConflictError, NotFoundError, ValidationError } from "@/shared/errors/base";
 
 import type { NormalizedAchievement } from "@/features/achievements/types";
 
@@ -285,11 +285,23 @@ export class SteamService implements ISteamService {
 
         if (!game) {
           // Create a basic game entry with Steam App ID
-          game = await this.gameRepository.create({
-            name: steamGame.name,
-            steam_app_id: steamGame.appid,
-            metadata_source: "manual",
-          });
+          try {
+            game = await this.gameRepository.create({
+              name: steamGame.name,
+              steam_app_id: steamGame.appid,
+              metadata_source: "manual",
+            });
+          } catch (createError) {
+            // Handle race condition: another request may have created the game
+            if (createError instanceof ConflictError) {
+              game = await this.gameRepository.findBySteamAppId(steamGame.appid);
+              if (!game) {
+                throw createError;
+              }
+            } else {
+              throw createError;
+            }
+          }
         }
 
         // Check if user already has this game
@@ -317,16 +329,23 @@ export class SteamService implements ISteamService {
 
         result.imported++;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        // Log full error internally for debugging
         this.logger.warn("Failed to import game", {
           appid: steamGame.appid,
           name: steamGame.name,
-          error: errorMessage,
+          error: error instanceof Error ? error.stack : String(error),
         });
+        // Push sanitized, user-facing message
+        const safeMessage =
+          error instanceof ValidationError
+            ? error.message
+            : error instanceof NotFoundError
+              ? error.message
+              : "Failed to import game";
         result.errors.push({
           appid: steamGame.appid,
           name: steamGame.name,
-          error: errorMessage,
+          error: safeMessage,
         });
       }
     }
@@ -426,6 +445,7 @@ export class SteamService implements ISteamService {
           description: ach.description || "",
           icon_url: ach.icon || "",
           rarity_percentage: percentages.get(ach.name) ?? null,
+          points: null, // Steam doesn't have achievement points
           unlocked: userAch?.unlocked ?? false,
           unlock_time: userAch?.unlockTime ?? null,
         };

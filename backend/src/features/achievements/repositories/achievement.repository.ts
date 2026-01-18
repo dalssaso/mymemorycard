@@ -181,6 +181,11 @@ export class AchievementRepository implements IAchievementRepository {
       if (isUniqueViolation) {
         throw new ConflictError("User achievement already exists");
       }
+      const isNotNullViolation =
+        err.code === "23502" || err.cause?.code === "23502" || err.message?.includes("23502");
+      if (isNotNullViolation) {
+        throw new ValidationError("Missing required user achievement field");
+      }
       throw error;
     }
   }
@@ -213,6 +218,11 @@ export class AchievementRepository implements IAchievementRepository {
         err.code === "23505" || err.cause?.code === "23505" || err.message?.includes("23505");
       if (isUniqueViolation) {
         throw new ConflictError("User achievement already exists");
+      }
+      const isNotNullViolation =
+        err.code === "23502" || err.cause?.code === "23502" || err.message?.includes("23502");
+      if (isNotNullViolation) {
+        throw new ValidationError("Missing required achievement field");
       }
       throw error;
     }

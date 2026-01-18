@@ -56,6 +56,7 @@ export const STEAM_ACHIEVEMENT_FIXTURE: NormalizedAchievement = {
   icon_url:
     "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/730/achievement_icon.jpg",
   rarity_percentage: 45.2,
+  points: null, // Steam doesn't have achievement points
   unlocked: true,
   unlock_time: new Date("2026-01-15T10:30:00.000Z"),
 };

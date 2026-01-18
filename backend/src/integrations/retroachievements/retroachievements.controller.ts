@@ -150,6 +150,14 @@ export class RetroAchievementsController implements IRetroAchievementsController
           },
           description: "Validation result",
         },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request body",
+        },
         401: {
           content: {
             "application/json": {

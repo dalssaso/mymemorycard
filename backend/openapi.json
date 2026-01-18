@@ -1974,6 +1974,8 @@
           "rarity_percentage": {
             "type": "number",
             "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
             "description": "Global unlock percentage",
             "example": 15.5
           },
@@ -2014,7 +2016,7 @@
           "game_id": {
             "type": "string",
             "format": "uuid",
-            "description": "Game ID to sync achievements for",
+            "description": "Game ID to sync achievements for (optional, uses path parameter if omitted)",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
           "source": {
@@ -2030,7 +2032,6 @@
           }
         },
         "required": [
-          "game_id",
           "source"
         ],
         "description": "Request to sync achievements from a specific source"
@@ -4370,6 +4371,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RAValidateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import "reflect-metadata";
-import { inArray, eq } from "drizzle-orm";
+import { inArray, eq, or } from "drizzle-orm";
 import { registerDependencies, resetContainer, container } from "@/container";
 import {
   IGDB_SERVICE_TOKEN,
@@ -55,6 +55,7 @@ describe("Achievements Integration Tests", () => {
             description: "First test achievement",
             icon_url: "https://example.com/icon1.png",
             rarity_percentage: 50.5,
+            points: null,
             unlocked: true,
             unlock_time: new Date("2024-01-15T10:00:00Z"),
           },
@@ -64,6 +65,7 @@ describe("Achievements Integration Tests", () => {
             description: "Second test achievement",
             icon_url: "https://example.com/icon2.png",
             rarity_percentage: 25.3,
+            points: null,
             unlocked: false,
             unlock_time: null,
           },
@@ -254,12 +256,21 @@ describe("Achievements Integration Tests", () => {
   afterAll(async () => {
     try {
       // Clean up in reverse order of dependencies
-      // 1. User achievements
-      if (createdAchievementIds.length > 0) {
-        await dbConnection.db
-          .delete(userAchievements)
-          .where(inArray(userAchievements.achievementId, createdAchievementIds))
-          .execute();
+      // 1. User achievements - delete by achievementId OR userId to catch sync-created rows
+      if (createdAchievementIds.length > 0 || createdUserIds.length > 0) {
+        const conditions = [];
+        if (createdAchievementIds.length > 0) {
+          conditions.push(inArray(userAchievements.achievementId, createdAchievementIds));
+        }
+        if (createdUserIds.length > 0) {
+          conditions.push(inArray(userAchievements.userId, createdUserIds));
+        }
+        if (conditions.length > 0) {
+          await dbConnection.db
+            .delete(userAchievements)
+            .where(or(...conditions))
+            .execute();
+        }
       }
 
       // 2. Achievements

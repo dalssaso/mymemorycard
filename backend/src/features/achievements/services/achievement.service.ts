@@ -148,7 +148,7 @@ export class AchievementService implements IAchievementService {
           throw new ValidationError("Game does not have a RetroAchievements game ID");
         }
         // RetroAchievements games can be on various platforms, but we'll use a generic approach
-        // For now, use the first available platform or create a generic one
+        // First check if we have existing achievements for this game
         const existingAchievements = await this.achievementRepository.findByGameAndSource(
           gameId,
           "retroachievements"
@@ -156,13 +156,10 @@ export class AchievementService implements IAchievementService {
         if (existingAchievements.length > 0) {
           platformId = existingAchievements[0].platformId;
         } else {
-          // For new RetroAchievements, we need to determine the platform
-          // This could be improved with a platform mapping table
-          const platforms = await this.platformRepository.list();
-          const retroPlatform = platforms.find(
-            (p) => p.platform_family === "retro" || p.name.toLowerCase().includes("retro")
-          );
-          platformId = retroPlatform?.id ?? platforms[0]?.id;
+          // For new RetroAchievements, try to find a retro family platform
+          const retroPlatforms = await this.platformRepository.findByFamily("retro");
+          const retroPlatform = retroPlatforms[0];
+          platformId = retroPlatform?.id ?? (await this.platformRepository.list())[0]?.id;
           if (!platformId) {
             throw new ValidationError("No platform available for RetroAchievements");
           }
@@ -371,7 +368,7 @@ export class AchievementService implements IAchievementService {
         description: ach.description,
         icon_url: ach.icon_url || null,
         rarity_percentage: ach.rarity_percentage,
-        points: null,
+        points: ach.points,
         unlocked: ach.unlocked,
         unlock_date: ach.unlock_time?.toISOString() ?? null,
       })),

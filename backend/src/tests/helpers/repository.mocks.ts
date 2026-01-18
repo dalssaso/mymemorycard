@@ -498,27 +498,29 @@ export function createMockRetroAchievementsService(
  * @returns Mocked IGameRepository.
  */
 export function createMockGameRepository(overrides?: Partial<IGameRepository>): IGameRepository {
+  const mockGame = {
+    id: "game-uuid-001",
+    name: "Test Game",
+    slug: "test-game",
+    igdb_id: null,
+    rawg_id: null,
+    steam_app_id: null,
+    retro_game_id: null,
+    release_date: null,
+    description: null,
+    cover_art_url: null,
+    metadata_source: "manual" as const,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
   return {
     findById: mock().mockResolvedValue(null),
     findByIgdbId: mock().mockResolvedValue(null),
     findByRawgId: mock().mockResolvedValue(null),
     findBySteamAppId: mock().mockResolvedValue(null),
     findByRetroGameId: mock().mockResolvedValue(null),
-    create: mock().mockResolvedValue({
-      id: "game-uuid-001",
-      name: "Test Game",
-      metadata_source: "manual",
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
-    update: mock().mockResolvedValue({
-      id: "game-uuid-001",
-      name: "Test Game",
-      metadata_source: "manual",
-      steam_app_id: 730,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }),
+    create: mock().mockResolvedValue(mockGame),
+    update: mock().mockResolvedValue({ ...mockGame, steam_app_id: 730 }),
     delete: mock().mockResolvedValue(true),
     search: mock().mockResolvedValue([]),
     list: mock().mockResolvedValue([]),

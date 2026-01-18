@@ -14,8 +14,9 @@ export type NewUserAchievement = typeof userAchievements.$inferInsert;
 
 /**
  * Achievement source API types.
+ * Derived from the Achievement schema to ensure type consistency.
  */
-export type AchievementSourceApi = "steam" | "retroachievements" | "rawg" | "manual";
+export type AchievementSourceApi = NonNullable<Achievement["sourceApi"]>;
 
 /**
  * Achievement with user unlock status.

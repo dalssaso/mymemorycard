@@ -170,15 +170,19 @@ export class RetroAchievementsService implements IRetroAchievementsService {
       const achievements = Object.values(gameProgress.achievements);
       const totalPlayers = gameProgress.numDistinctPlayersCasual;
 
-      return achievements.map((ach) => ({
-        achievement_id: String(ach.id),
-        name: ach.title,
-        description: ach.description ?? "",
-        icon_url: `https://media.retroachievements.org/Badge/${ach.badgeName}.png`,
-        rarity_percentage: totalPlayers ? (ach.numAwarded / totalPlayers) * 100 : null,
-        unlocked: ach.dateEarned !== null || ach.dateEarnedHardcore !== null,
-        unlock_time: ach.dateEarned ? new Date(ach.dateEarned) : null,
-      }));
+      return achievements.map((ach) => {
+        const earnedDate = ach.dateEarned || ach.dateEarnedHardcore;
+        return {
+          achievement_id: String(ach.id),
+          name: ach.title,
+          description: ach.description ?? "",
+          icon_url: `https://media.retroachievements.org/Badge/${ach.badgeName}.png`,
+          rarity_percentage: totalPlayers ? (ach.numAwarded / totalPlayers) * 100 : null,
+          points: ach.points ?? null,
+          unlocked: ach.dateEarned !== null || ach.dateEarnedHardcore !== null,
+          unlock_time: earnedDate ? new Date(earnedDate) : null,
+        };
+      });
     } catch (error) {
       this.logger.error("Failed to get RetroAchievements achievements", { retroGameId, error });
       return [];
@@ -242,9 +246,12 @@ export class RetroAchievementsService implements IRetroAchievementsService {
       throw new NotFoundError("Credential", "retroachievements");
     }
 
-    const credentials = this.encryptionService.decrypt<RACredentials>(
-      credential.encryptedCredentials
-    );
+    let credentials: RACredentials;
+    try {
+      credentials = this.encryptionService.decrypt<RACredentials>(credential.encryptedCredentials);
+    } catch {
+      throw new ValidationError("Unable to decrypt RetroAchievements credentials");
+    }
 
     const authorization = buildAuthorization({
       username: credentials.username,
