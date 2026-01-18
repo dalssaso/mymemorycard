@@ -38,6 +38,8 @@ describe("GameMetadataService", () => {
     id: testGameId,
     igdb_id: 1296,
     rawg_id: null,
+    steam_app_id: null,
+    retro_game_id: null,
     name: "The Witcher 3: Wild Hunt",
     slug: "the-witcher-3-wild-hunt",
     release_date: new Date("2015-05-19"),

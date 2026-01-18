@@ -231,6 +231,8 @@ export class GameRepository implements IGameRepository {
       id: row.id as string,
       igdb_id: (row.igdbId as number) || null,
       rawg_id: (row.rawgId as number) || null,
+      steam_app_id: (row.steamAppId as number) || null,
+      retro_game_id: (row.retroGameId as number) || null,
       name: row.name as string,
       slug: (row.slug as string) || null,
       release_date: this.ensureDate(row.releaseDate),

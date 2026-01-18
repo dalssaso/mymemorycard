@@ -9,6 +9,10 @@ export interface Game {
   igdb_id: number | null;
   /** RAWG platform identifier, null if not synced from RAWG */
   rawg_id: number | null;
+  /** Steam App ID, null if not a Steam game */
+  steam_app_id: number | null;
+  /** RetroAchievements game ID, null if not a retro game */
+  retro_game_id: number | null;
   /** Game title */
   name: string;
   /** URL-friendly slug for the game */
@@ -77,6 +81,8 @@ export interface UserGameWithRelations extends UserGame {
     name: string;
     cover_art_url: string | null;
     igdb_id: number | null;
+    steam_app_id: number | null;
+    retro_game_id: number | null;
   };
   /** Platform information */
   platform: {
