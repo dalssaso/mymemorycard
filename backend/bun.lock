@@ -6,6 +6,7 @@
       "name": "mymemorycard-backend",
       "dependencies": {
         "@hono/zod-openapi": "^1.2.0",
+        "@retroachievements/api": "^2.9.1",
         "@simplewebauthn/server": "^13.2.2",
         "bcryptjs": "^3.0.3",
         "cheerio": "^1.1.2",
@@ -249,6 +250,8 @@
     "@redis/search": ["@redis/search@5.10.0", "", { "peerDependencies": { "@redis/client": "^5.10.0" } }, "sha512-3SVcPswoSfp2HnmWbAGUzlbUPn7fOohVu2weUQ0S+EMiQi8jwjL+aN2p6V3TI65eNfVsJ8vyPvqWklm6H6esmg=="],
 
     "@redis/time-series": ["@redis/time-series@5.10.0", "", { "peerDependencies": { "@redis/client": "^5.10.0" } }, "sha512-cPkpddXH5kc/SdRhF0YG0qtjL+noqFT0AcHbQ6axhsPsO7iqPi1cjxgdkE9TNeKiBUUdCaU1DbqkR/LzbzPBhg=="],
+
+    "@retroachievements/api": ["@retroachievements/api@2.9.1", "", {}, "sha512-gIcQYXZ5axM5Jtsk9qR/zgdgrnmr+CWJqjXdaVpvhPuBEX6dLjv/kdfHxxfElNfMNtALHceswNq5mj+Pfkbp5w=="],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.55.1", "", { "os": "android", "cpu": "arm" }, "sha512-9R0DM/ykwfGIlNu6+2U09ga0WXeZ9MRC2Ter8jnz8415VbuIykVuc6bhdrbORFZANDmTDvq26mJrEVTl8TdnDg=="],
 
