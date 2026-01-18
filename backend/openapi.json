@@ -1032,6 +1032,18 @@
             "description": "RAWG game identifier",
             "example": 3328
           },
+          "steam_app_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Steam App ID",
+            "example": 292030
+          },
+          "retro_game_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "RetroAchievements game ID",
+            "example": 1234
+          },
           "name": {
             "type": "string",
             "description": "Game title",
@@ -1126,6 +1138,8 @@
           "id",
           "igdb_id",
           "rawg_id",
+          "steam_app_id",
+          "retro_game_id",
           "name",
           "slug",
           "release_date",
@@ -1183,13 +1197,27 @@
                 "nullable": true,
                 "description": "IGDB game identifier",
                 "example": 7346
+              },
+              "steam_app_id": {
+                "type": "integer",
+                "nullable": true,
+                "description": "Steam App ID",
+                "example": 292030
+              },
+              "retro_game_id": {
+                "type": "integer",
+                "nullable": true,
+                "description": "RetroAchievements game ID",
+                "example": 1234
               }
             },
             "required": [
               "id",
               "name",
               "cover_art_url",
-              "igdb_id"
+              "igdb_id",
+              "steam_app_id",
+              "retro_game_id"
             ],
             "description": "Game information"
           },
