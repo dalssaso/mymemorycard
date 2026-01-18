@@ -223,7 +223,7 @@ describe("API Services", () => {
       it("should propagate errors from SDK", async () => {
         mockPatchApiV1UserGamesById.mockRejectedValue(new Error("Update failed"));
 
-        await expect(GamesService.update("game-123", { status: "completed" })).rejects.toThrow(
+        await expect(GamesService.update("game-123", { owned: false })).rejects.toThrow(
           "Update failed"
         );
       });

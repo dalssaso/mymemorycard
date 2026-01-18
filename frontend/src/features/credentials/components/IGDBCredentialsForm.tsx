@@ -25,8 +25,8 @@ export function IGDBCredentialsForm(): JSX.Element {
         service: "igdb" as const,
         credential_type: "twitch_oauth" as const,
         credentials: {
-          client_id: clientId,
-          client_secret: clientSecret,
+          client_id: clientId.trim(),
+          client_secret: clientSecret.trim(),
         },
       },
       {

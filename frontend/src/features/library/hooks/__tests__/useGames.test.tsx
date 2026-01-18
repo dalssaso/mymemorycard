@@ -145,13 +145,13 @@ describe("useUpdateGame", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    result.current.mutate({ id: "game-1", payload: { status: "completed" } });
+    result.current.mutate({ id: "game-1", payload: { owned: true } });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(mockUpdate).toHaveBeenCalledWith("game-1", { status: "completed" });
+    expect(mockUpdate).toHaveBeenCalledWith("game-1", { owned: true });
   });
 });
 

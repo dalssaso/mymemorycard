@@ -24,7 +24,6 @@ import type {
   PlatformListResponse,
   PlatformResponse,
   SaveCredentialRequest,
-  UserGameUpdateRequest,
 } from "./generated";
 import type {
   CredentialService,
@@ -132,15 +131,10 @@ export interface ImportGameRequest {
 }
 
 /**
- * Request to update a game (frontend-facing interface).
- * Note: Currently the backend only supports owned and purchased_date fields.
+ * Request to update a game.
+ * Only includes fields currently supported by the backend API.
  */
 export interface UpdateGameRequest {
-  status?: string;
-  rating?: number;
-  notes?: string;
-  platform_id?: string;
-  store_id?: string;
   owned?: boolean;
   purchased_date?: string;
 }
@@ -149,24 +143,6 @@ export interface UpdateGameRequest {
  * Query parameters for listing games.
  */
 export type GamesListQueryParams = Record<string, string | number | boolean | undefined>;
-
-/**
- * Maps frontend UpdateGameRequest to SDK UserGameUpdateRequest.
- * Only includes fields supported by the backend API.
- *
- * @param request - Frontend update request
- * @returns SDK-compatible update request
- */
-function mapUpdateGameRequest(request: UpdateGameRequest): UserGameUpdateRequest {
-  const mapped: UserGameUpdateRequest = {};
-  if (request.owned !== undefined) {
-    mapped.owned = request.owned;
-  }
-  if (request.purchased_date !== undefined) {
-    mapped.purchased_date = request.purchased_date;
-  }
-  return mapped;
-}
 
 /**
  * Response from stores list endpoint
@@ -285,10 +261,10 @@ export const GamesService = {
   },
 
   /**
-   * Update game status, rating, or other fields.
+   * Update game ownership and purchase date.
    *
    * @param id - Game unique identifier
-   * @param payload - Fields to update
+   * @param payload - Fields to update (owned, purchased_date)
    * @returns Promise resolving to updated game
    * @throws {NormalizedApiError} When the API request fails
    */
@@ -296,7 +272,7 @@ export const GamesService = {
     try {
       const response = await patchApiV1UserGamesById({
         path: { id },
-        body: mapUpdateGameRequest(payload),
+        body: payload,
         throwOnError: true,
       });
       return adaptUserGame(response.data);
