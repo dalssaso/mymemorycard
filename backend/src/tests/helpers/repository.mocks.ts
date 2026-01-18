@@ -28,6 +28,7 @@ import {
   mapIgdbGameToGameDetails,
   mapIgdbPlatformToPlatform,
 } from "@/integrations/igdb";
+import type { IRetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service.interface";
 import type { ISteamService } from "@/integrations/steam/steam.service.interface";
 import {
   IGDB_TOKEN_FIXTURE,
@@ -448,4 +449,39 @@ export function createMockSteamService(overrides?: Partial<ISteamService>): ISte
     unlinkAccount: mock().mockResolvedValue(undefined),
     ...overrides,
   };
+}
+
+/**
+ * Create a mock RetroAchievements service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked IRetroAchievementsService.
+ *
+ * @example
+ * ```typescript
+ * import { createMockRetroAchievementsService } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockRA = createMockRetroAchievementsService()
+ * const profile = await mockRA.getUserProfile("user-id")
+ * // returns null by default
+ *
+ * // Override specific methods:
+ * const customMock = createMockRetroAchievementsService({
+ *   validateCredentials: mock().mockResolvedValue(true),
+ * })
+ * ```
+ */
+export function createMockRetroAchievementsService(
+  overrides?: Partial<IRetroAchievementsService>
+): IRetroAchievementsService {
+  return {
+    validateCredentials: mock().mockResolvedValue(false),
+    saveCredentials: mock().mockResolvedValue(undefined),
+    getUserProfile: mock().mockResolvedValue(null),
+    searchGames: mock().mockResolvedValue([]),
+    getAchievements: mock().mockResolvedValue([]),
+    syncAchievements: mock().mockResolvedValue({ synced: 0, unlocked: 0, total: 0 }),
+    deleteCredentials: mock().mockResolvedValue(undefined),
+    ...overrides,
+  }
 }
