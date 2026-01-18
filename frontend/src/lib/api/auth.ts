@@ -17,7 +17,7 @@ const resolveAuthToken = (_auth: Auth): string => getToken() ?? "";
 
 client.setConfig({
   auth: resolveAuthToken,
-  baseURL: "/",
+  baseURL: "",
   withCredentials: true,
 });
 
