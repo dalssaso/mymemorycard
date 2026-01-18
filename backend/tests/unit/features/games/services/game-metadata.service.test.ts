@@ -146,6 +146,8 @@ describe("GameMetadataService", () => {
       findById: mock().mockResolvedValue(null),
       findByIgdbId: mock().mockResolvedValue(null),
       findByRawgId: mock().mockResolvedValue(null),
+      findBySteamAppId: mock().mockResolvedValue(null),
+      findByRetroGameId: mock().mockResolvedValue(null),
       create: mock().mockResolvedValue(mockGame),
       update: mock().mockResolvedValue(mockGame),
       delete: mock().mockResolvedValue(true),

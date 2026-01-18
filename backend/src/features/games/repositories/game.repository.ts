@@ -50,6 +50,30 @@ export class GameRepository implements IGameRepository {
   }
 
   /**
+   * Find a game by Steam App ID.
+   * @param steamAppId - Steam application ID
+   * @returns Game or null if not found
+   */
+  async findBySteamAppId(steamAppId: number): Promise<Game | null> {
+    const result = await this.db.query.games.findFirst({
+      where: eq(games.steamAppId, steamAppId),
+    });
+    return result ? this.mapToGame(result) : null;
+  }
+
+  /**
+   * Find a game by RetroAchievements game ID.
+   * @param retroGameId - RetroAchievements game ID
+   * @returns Game or null if not found
+   */
+  async findByRetroGameId(retroGameId: number): Promise<Game | null> {
+    const result = await this.db.query.games.findFirst({
+      where: eq(games.retroGameId, retroGameId),
+    });
+    return result ? this.mapToGame(result) : null;
+  }
+
+  /**
    * Create a new game.
    * @param data - Game creation data
    * @returns Created game

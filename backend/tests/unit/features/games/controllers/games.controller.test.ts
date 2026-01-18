@@ -149,6 +149,8 @@ describe("GamesController", () => {
       findById: mock().mockResolvedValue(createMockGame()),
       findByIgdbId: mock().mockResolvedValue(null),
       findByRawgId: mock().mockResolvedValue(null),
+      findBySteamAppId: mock().mockResolvedValue(null),
+      findByRetroGameId: mock().mockResolvedValue(null),
       create: mock().mockResolvedValue(createMockGame()),
       update: mock().mockResolvedValue(createMockGame()),
       delete: mock().mockResolvedValue(true),
