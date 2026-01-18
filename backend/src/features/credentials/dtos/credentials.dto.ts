@@ -172,7 +172,7 @@ export type CredentialSaveResponse = z.infer<typeof CredentialSaveResponseSchema
 export const CredentialValidateResponseSchema = z
   .object({
     service: ApiServiceSchema,
-    valid: z.boolean(),
+    is_valid: z.boolean(),
     has_valid_token: z.boolean(),
     token_expires_at: z.string().datetime().nullable(),
     message: z.string(),
@@ -181,7 +181,7 @@ export const CredentialValidateResponseSchema = z
     description: "Response after validating credentials",
     example: {
       service: "igdb",
-      valid: true,
+      is_valid: true,
       has_valid_token: true,
       token_expires_at: "2026-03-16T12:00:00.000Z",
       message: "Credentials for igdb validated successfully.",

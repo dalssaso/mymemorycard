@@ -304,7 +304,7 @@ describe("API Services", () => {
 
     describe("validate", () => {
       it("should call postApiV1CredentialsValidate SDK function with service", async () => {
-        const mockData = { valid: true };
+        const mockData = { is_valid: true };
         mockPostApiV1CredentialsValidate.mockResolvedValue({ data: mockData });
 
         const result = await CredentialsService.validate("igdb");

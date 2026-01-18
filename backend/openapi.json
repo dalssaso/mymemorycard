@@ -814,7 +814,7 @@
               "rawg"
             ]
           },
-          "valid": {
+          "is_valid": {
             "type": "boolean"
           },
           "has_valid_token": {
@@ -831,7 +831,7 @@
         },
         "required": [
           "service",
-          "valid",
+          "is_valid",
           "has_valid_token",
           "token_expires_at",
           "message"
@@ -839,7 +839,7 @@
         "description": "Response after validating credentials",
         "example": {
           "service": "igdb",
-          "valid": true,
+          "is_valid": true,
           "has_valid_token": true,
           "token_expires_at": "2026-03-16T12:00:00.000Z",
           "message": "Credentials for igdb validated successfully."

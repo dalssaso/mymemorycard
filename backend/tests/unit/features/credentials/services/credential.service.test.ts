@@ -246,7 +246,7 @@ describe("CredentialService", () => {
       const result = await service.validateCredentials(testUserId, "igdb");
 
       expect(result.service).toBe("igdb");
-      expect(result.valid).toBe(true);
+      expect(result.is_valid).toBe(true);
       expect(result.has_valid_token).toBe(true);
       expect(mockRepository.updateValidationStatus).toHaveBeenCalled();
     });
@@ -271,7 +271,7 @@ describe("CredentialService", () => {
 
       const result = await service.validateCredentials(testUserId, "igdb");
 
-      expect(result.valid).toBe(true);
+      expect(result.is_valid).toBe(true);
       expect(mockIgdbService.authenticate).toHaveBeenCalled();
     });
 
@@ -285,7 +285,7 @@ describe("CredentialService", () => {
 
       const result = await service.validateCredentials(testUserId, "igdb");
 
-      expect(result.valid).toBe(false);
+      expect(result.is_valid).toBe(false);
     });
   });
 

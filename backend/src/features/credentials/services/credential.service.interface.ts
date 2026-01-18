@@ -91,7 +91,7 @@ export interface CredentialSaveResponse {
  */
 export interface CredentialValidateResponse {
   service: ApiService;
-  valid: boolean;
+  is_valid: boolean;
   has_valid_token: boolean;
   token_expires_at: string | null;
   message: string;

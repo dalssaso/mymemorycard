@@ -142,7 +142,7 @@ export class CredentialService implements ICredentialService {
 
     return {
       service,
-      valid: validationResult.isValid,
+      is_valid: validationResult.isValid,
       has_valid_token: validationResult.isValid,
       token_expires_at: tokenExpiresAt?.toISOString() ?? null,
       message: validationResult.isValid

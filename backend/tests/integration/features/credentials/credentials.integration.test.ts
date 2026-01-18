@@ -200,12 +200,12 @@ describe("Credentials Integration Tests", () => {
 
       const data = (await response.json()) as {
         service: string;
-        valid: boolean;
+        is_valid: boolean;
         has_valid_token: boolean;
         message: string;
       };
       expect(data.service).toBe("igdb");
-      expect(data.valid).toBe(true);
+      expect(data.is_valid).toBe(true);
     });
 
     it("should return 404 for non-existent credentials", async () => {
