@@ -533,6 +533,134 @@ export type UserGameUpdateRequest = {
     purchased_date?: string;
 };
 
+/**
+ * Response for progress update operations
+ */
+export type ProgressUpdateResponse = {
+    /**
+     * Whether the update was successful
+     */
+    success: boolean;
+};
+
+/**
+ * Request to update game status
+ */
+export type UpdateStatusRequest = {
+    status: 'backlog' | 'playing' | 'finished' | 'dropped' | 'completed';
+};
+
+/**
+ * Request to update game rating (1-10 scale)
+ */
+export type UpdateRatingRequest = {
+    rating: number;
+};
+
+/**
+ * Request to update game notes
+ */
+export type UpdateNotesRequest = {
+    notes: string;
+};
+
+/**
+ * Request to update game favorite status
+ */
+export type UpdateFavoriteRequest = {
+    is_favorite: boolean;
+};
+
+/**
+ * Response containing custom progress fields
+ */
+export type CustomFieldsResponse = {
+    /**
+     * Custom progress fields
+     */
+    custom_fields: {
+        /**
+         * Completion percentage (0-100)
+         */
+        completion_percentage: number | null;
+        /**
+         * User-defined difficulty rating (1-10)
+         */
+        difficulty_rating: number | null;
+    };
+};
+
+/**
+ * Request body for updating custom progress fields
+ */
+export type UpdateCustomFieldsBody = {
+    completion_percentage?: number;
+    difficulty_rating?: number;
+};
+
+export type StoreListResponse = {
+    stores: Array<Store>;
+};
+
+export type Store = {
+    /**
+     * Store unique identifier
+     */
+    id: string;
+    /**
+     * URL-friendly store identifier
+     */
+    slug: string;
+    /**
+     * Human-readable store name
+     */
+    display_name: string;
+    /**
+     * Store type classification
+     */
+    store_type: 'digital' | 'physical';
+    /**
+     * Associated platform family
+     */
+    platform_family: string | null;
+    /**
+     * Brand color in hex format
+     */
+    color_primary: string;
+    /**
+     * Official website URL
+     */
+    website_url: string | null;
+    /**
+     * Store icon/logo URL
+     */
+    icon_url: string | null;
+    /**
+     * Whether store supports achievement tracking
+     */
+    supports_achievements: boolean;
+    /**
+     * Whether store supports library sync
+     */
+    supports_library_sync: boolean;
+    /**
+     * IGDB website category identifier
+     */
+    igdb_website_category: number | null;
+    /**
+     * Display order in UI lists
+     */
+    sort_order: number;
+    /**
+     * Creation timestamp
+     */
+    created_at: string | null;
+};
+
+export type StoreResponse = {
+    store: Store;
+};
+
 export type PostApiV1AuthRegisterData = {
     body?: RegisterRequest;
     path?: never;
@@ -1346,3 +1474,278 @@ export type PatchApiV1UserGamesByIdResponses = {
 };
 
 export type PatchApiV1UserGamesByIdResponse = PatchApiV1UserGamesByIdResponses[keyof PatchApiV1UserGamesByIdResponses];
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusData = {
+    body?: UpdateStatusRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/status';
+};
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusError = PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusErrors[keyof PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusErrors];
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponses = {
+    /**
+     * Game status updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponse = PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponses[keyof PatchApiV1UserGamesByGameIdPlatformsByPlatformIdStatusResponses];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingData = {
+    body?: UpdateRatingRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/rating';
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingError = PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingErrors[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingErrors];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponses = {
+    /**
+     * Game rating updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponse = PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponses[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdRatingResponses];
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesData = {
+    body?: UpdateNotesRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/notes';
+};
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesError = PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesErrors[keyof PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesErrors];
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponses = {
+    /**
+     * Game notes updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponse = PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponses[keyof PostApiV1UserGamesByGameIdPlatformsByPlatformIdNotesResponses];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteData = {
+    body?: UpdateFavoriteRequest;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/favorite';
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteError = PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteErrors[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteErrors];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponses = {
+    /**
+     * Game favorite status updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponse = PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponses[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdFavoriteResponses];
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsData = {
+    body?: never;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/custom-fields';
+};
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsError = GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors[keyof GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors];
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses = {
+    /**
+     * Custom fields retrieved successfully
+     */
+    200: CustomFieldsResponse;
+};
+
+export type GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponse = GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses[keyof GetApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsData = {
+    body?: UpdateCustomFieldsBody;
+    path: {
+        game_id: string;
+        platform_id: string;
+    };
+    query?: never;
+    url: '/api/v1/user-games/{game_id}/platforms/{platform_id}/custom-fields';
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors = {
+    /**
+     * Invalid request parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Unauthorized - invalid or missing token
+     */
+    401: ErrorResponse;
+    /**
+     * Game not found in user library
+     */
+    404: ErrorResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsError = PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsErrors];
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses = {
+    /**
+     * Custom fields updated successfully
+     */
+    200: ProgressUpdateResponse;
+};
+
+export type PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponse = PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses[keyof PutApiV1UserGamesByGameIdPlatformsByPlatformIdCustomFieldsResponses];
+
+export type GetApiV1StoresData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/stores';
+};
+
+export type GetApiV1StoresErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+};
+
+export type GetApiV1StoresError = GetApiV1StoresErrors[keyof GetApiV1StoresErrors];
+
+export type GetApiV1StoresResponses = {
+    /**
+     * List stores
+     */
+    200: StoreListResponse;
+};
+
+export type GetApiV1StoresResponse = GetApiV1StoresResponses[keyof GetApiV1StoresResponses];
+
+export type GetApiV1StoresByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Store unique identifier
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/stores/{id}';
+};
+
+export type GetApiV1StoresByIdErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ErrorResponse;
+    /**
+     * Store not found
+     */
+    404: ErrorResponse;
+};
+
+export type GetApiV1StoresByIdError = GetApiV1StoresByIdErrors[keyof GetApiV1StoresByIdErrors];
+
+export type GetApiV1StoresByIdResponses = {
+    /**
+     * Get store
+     */
+    200: StoreResponse;
+};
+
+export type GetApiV1StoresByIdResponse = GetApiV1StoresByIdResponses[keyof GetApiV1StoresByIdResponses];
