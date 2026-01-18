@@ -1,1 +1,6 @@
 export type { Store } from "./types";
+export type { StoreDto, StoreListResponse, StoreResponse } from "./dtos/store.dto";
+export type { IStoreService } from "./services/store.service.interface";
+export type { IStoreController } from "./controllers/store.controller.interface";
+export { StoreService } from "./services/store.service";
+export { StoreController } from "./controllers/store.controller";

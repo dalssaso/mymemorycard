@@ -1,6 +1,14 @@
 /**
- * @deprecated This module uses legacy Redis import.
- * Should be migrated to DI when these routes are migrated.
+ * RAWG API Service
+ *
+ * Provides RAWG API integration for:
+ * - Achievements: getGameAchievements
+ * - Game Series: getGameSeries, getGameSeriesMembers
+ * - Game Additions (DLC/Editions): getGameAdditions, classifyAddition
+ * - Game Search/Details: searchGames, getGameDetails (legacy routes only)
+ *
+ * Note: Primary game metadata now comes from IGDB. These functions are maintained
+ * for legacy routes (import, admin, editions, franchises, additions) until migration.
  */
 interface RAWGGame {
   id: number;
@@ -282,51 +290,6 @@ export async function getGameDetails(gameId: number, useCache = true): Promise<R
   });
 }
 
-export async function getGameDetailsBySlug(
-  slug: string,
-  useCache = true
-): Promise<RAWGGame | null> {
-  if (!RAWG_API_KEY) {
-    console.warn("RAWG API key not configured");
-    return null;
-  }
-
-  // Check cache first (using slug as key)
-  if (useCache) {
-    const cached = await getCachedGameDetailsBySlug(slug);
-    if (cached) {
-      console.log(`Cache hit for game details by slug: ${slug}`);
-      return cached;
-    }
-  }
-
-  return rateLimiter.schedule(async () => {
-    const url = new URL(`${RAWG_BASE_URL}/games/${slug}`);
-    url.searchParams.set("key", RAWG_API_KEY!);
-
-    console.log(`RAWG API request: game details by slug ${slug}`);
-    await incrementRAWGRequestCount();
-    const response = await fetch(url.toString());
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`RAWG API error: ${response.status}`);
-    }
-
-    const game = (await response.json()) as RAWGGame;
-
-    // Cache the results by both slug and ID
-    if (useCache) {
-      await cacheGameDetailsBySlug(slug, game);
-      await cacheGameDetails(game.id, game);
-    }
-
-    return game;
-  });
-}
-
 export async function getGameAchievements(
   gameId: number,
   useCache = true
@@ -599,26 +562,6 @@ async function getCachedGameDetails(gameId: number): Promise<RAWGGame | null> {
 async function cacheGameDetails(gameId: number, game: RAWGGame): Promise<void> {
   try {
     const key = `rawg:game:${gameId}`;
-    await redisClient.setEx(key, CACHE_TTL_DETAILS, JSON.stringify(game));
-  } catch (error) {
-    console.error("Redis cache set error:", error);
-  }
-}
-
-async function getCachedGameDetailsBySlug(slug: string): Promise<RAWGGame | null> {
-  try {
-    const key = `rawg:game:slug:${slug.toLowerCase()}`;
-    const cached = await redisClient.get(key);
-    return cached ? JSON.parse(cached) : null;
-  } catch (error) {
-    console.error("Redis cache get error:", error);
-    return null;
-  }
-}
-
-async function cacheGameDetailsBySlug(slug: string, game: RAWGGame): Promise<void> {
-  try {
-    const key = `rawg:game:slug:${slug.toLowerCase()}`;
     await redisClient.setEx(key, CACHE_TTL_DETAILS, JSON.stringify(game));
   } catch (error) {
     console.error("Redis cache set error:", error);

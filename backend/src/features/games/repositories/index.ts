@@ -9,3 +9,10 @@ export { PlatformRepository } from "./platform.repository";
 
 export type { IStoreRepository } from "./store.repository.interface";
 export { StoreRepository } from "./store.repository";
+
+export type { IUserGameProgressRepository } from "./user-game-progress.repository.interface";
+export type {
+  UserGameProgress,
+  UserGameCustomFields,
+} from "./user-game-progress.repository.interface";
+export { UserGameProgressRepository } from "./user-game-progress.repository";

@@ -11,7 +11,6 @@ import { CONFIG_TOKEN, REDIS_CONNECTION_TOKEN } from "@/container/tokens";
 
 // Import legacy routes (registers them with the old router)
 import "@/routes/import";
-import "@/routes/games";
 import "@/routes/collections";
 import "@/routes/api-stats";
 import "@/routes/admin";
@@ -24,7 +23,6 @@ import "@/routes/ownership";
 import "@/routes/stats";
 import "@/routes/editions";
 import "@/routes/franchises";
-import "@/routes/user-platforms";
 
 async function startServer(): Promise<void> {
   // Run migrations and seed data
