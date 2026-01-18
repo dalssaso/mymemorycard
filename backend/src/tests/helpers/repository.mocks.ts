@@ -28,6 +28,7 @@ import {
   mapIgdbGameToGameDetails,
   mapIgdbPlatformToPlatform,
 } from "@/integrations/igdb";
+import type { ISteamService } from "@/integrations/steam/steam.service.interface";
 import {
   IGDB_TOKEN_FIXTURE,
   IGDB_SEARCH_RESULTS_FIXTURE,
@@ -35,6 +36,10 @@ import {
   IGDB_PLATFORM_FIXTURE,
   IGDB_FRANCHISE_FIXTURE,
 } from "@/tests/helpers/igdb.fixtures";
+import {
+  STEAM_PLAYER_SUMMARY_FIXTURE,
+  STEAM_CREDENTIALS_FIXTURE,
+} from "@/tests/helpers/steam.fixtures";
 
 type User = InferSelectModel<typeof users>;
 
@@ -406,6 +411,41 @@ export function createMockConfig(overrides?: Partial<IConfig>): IConfig {
     bcrypt: { saltRounds: 10 },
     isProduction: false,
     skipRedisConnect: false,
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock Steam service with default implementations.
+ *
+ * @param overrides - Optional partial overrides for specific methods.
+ * @returns Mocked ISteamService.
+ *
+ * @example
+ * ```typescript
+ * import { createMockSteamService } from "@/tests/helpers/repository.mocks"
+ *
+ * const mockSteam = createMockSteamService()
+ * const summary = await mockSteam.getPlayerSummary("76561198012345678")
+ * // returns STEAM_PLAYER_SUMMARY_FIXTURE
+ *
+ * // Override specific methods:
+ * const customMock = createMockSteamService({
+ *   getOwnedGames: mock().mockResolvedValue([{ appid: 123, name: "Test" }]),
+ * })
+ * ```
+ */
+export function createMockSteamService(overrides?: Partial<ISteamService>): ISteamService {
+  return {
+    getLoginUrl: mock().mockReturnValue("https://steamcommunity.com/openid/login?..."),
+    validateCallback: mock().mockResolvedValue("76561198012345678"),
+    getPlayerSummary: mock().mockResolvedValue(STEAM_PLAYER_SUMMARY_FIXTURE),
+    getOwnedGames: mock().mockResolvedValue([]),
+    importLibrary: mock().mockResolvedValue({ imported: 0, skipped: 0, errors: [] }),
+    syncAchievements: mock().mockResolvedValue({ synced: 0, unlocked: 0, total: 0 }),
+    getAchievements: mock().mockResolvedValue([]),
+    linkAccount: mock().mockResolvedValue(STEAM_CREDENTIALS_FIXTURE),
+    unlinkAccount: mock().mockResolvedValue(undefined),
     ...overrides,
   };
 }
