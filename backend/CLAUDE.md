@@ -156,6 +156,7 @@ Copy `.env.example` to `.env` and customize for your environment.
 | ENCRYPTION_SECRET   | -                                              | AES-256 encryption key (>= 32ch)  |
 | ENCRYPTION_SALT     | -                                              | Encryption salt (>= 16ch)         |
 | RAWG_API_KEY        | -                                              | RAWG API for game metadata        |
+| STEAM_API_KEY       | -                                              | Steam Web API key (optional)      |
 | PORT                | `3000`                                         | Server port                       |
 | ORIGIN              | -                                              | Additional CORS origin            |
 | TEST_DATABASE_URL   | Same as DATABASE_URL                           | PostgreSQL for integration tests  |

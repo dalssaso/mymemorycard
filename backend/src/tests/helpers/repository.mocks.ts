@@ -483,5 +483,5 @@ export function createMockRetroAchievementsService(
     syncAchievements: mock().mockResolvedValue({ synced: 0, unlocked: 0, total: 0 }),
     deleteCredentials: mock().mockResolvedValue(undefined),
     ...overrides,
-  }
+  };
 }

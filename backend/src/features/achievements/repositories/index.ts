@@ -6,5 +6,5 @@ export type {
   NewAchievement,
   NewUserAchievement,
   UserAchievement,
-} from "./achievement.repository.interface"
-export { AchievementRepository } from "./achievement.repository"
+} from "./achievement.repository.interface";
+export { AchievementRepository } from "./achievement.repository";

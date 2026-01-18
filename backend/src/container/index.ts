@@ -1,6 +1,9 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
 import {
+  ACHIEVEMENT_CONTROLLER_TOKEN,
+  ACHIEVEMENT_REPOSITORY_TOKEN,
+  ACHIEVEMENT_SERVICE_TOKEN,
   ADMIN_CONTROLLER_TOKEN,
   ADMIN_REPOSITORY_TOKEN,
   ADMIN_SERVICE_TOKEN,
@@ -175,6 +178,18 @@ import type { IRetroAchievementsController } from "@/integrations/retroachieveme
 import { RetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service";
 import type { IRetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service.interface";
 
+// Achievements Domain - Repositories
+import { AchievementRepository } from "@/features/achievements/repositories/achievement.repository";
+import type { IAchievementRepository } from "@/features/achievements/repositories/achievement.repository.interface";
+
+// Achievements Domain - Services
+import { AchievementService } from "@/features/achievements/services/achievement.service";
+import type { IAchievementService } from "@/features/achievements/services/achievement.service.interface";
+
+// Achievements Domain - Controllers
+import { AchievementController } from "@/features/achievements/controllers/achievement.controller";
+import type { IAchievementController } from "@/features/achievements/controllers/achievement.controller.interface";
+
 /**
  * Register all dependencies for the application.
  * Called once at application startup.
@@ -338,6 +353,21 @@ export function registerDependencies(): void {
   container.registerSingleton<IRetroAchievementsController>(
     RETROACHIEVEMENTS_CONTROLLER_TOKEN,
     RetroAchievementsController
+  );
+
+  // Achievements Domain - Repositories
+  container.registerSingleton<IAchievementRepository>(
+    ACHIEVEMENT_REPOSITORY_TOKEN,
+    AchievementRepository
+  );
+
+  // Achievements Domain - Services
+  container.registerSingleton<IAchievementService>(ACHIEVEMENT_SERVICE_TOKEN, AchievementService);
+
+  // Achievements Domain - Controllers
+  container.registerSingleton<IAchievementController>(
+    ACHIEVEMENT_CONTROLLER_TOKEN,
+    AchievementController
   );
 }
 

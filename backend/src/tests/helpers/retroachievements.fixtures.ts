@@ -5,7 +5,7 @@ import type {
   RASyncResult,
   RAUserAchievement,
   RAUserProfile,
-} from "@/integrations/retroachievements/retroachievements.types"
+} from "@/integrations/retroachievements/retroachievements.types";
 
 /**
  * RetroAchievements user profile fixture.
@@ -26,7 +26,7 @@ export const RA_USER_PROFILE_FIXTURE: RAUserProfile = {
   id: 12345,
   userWallActive: true,
   motto: "Retro gaming enthusiast",
-}
+};
 
 /**
  * RetroAchievements game info fixture.
@@ -51,7 +51,7 @@ export const RA_GAME_INFO_FIXTURE: RAGameInfo = {
   numAchievements: 96,
   numDistinctPlayersCasual: 50000,
   numDistinctPlayersHardcore: 25000,
-}
+};
 
 /**
  * RetroAchievements achievement fixture.
@@ -71,7 +71,7 @@ export const RA_ACHIEVEMENT_FIXTURE: RAAchievement = {
   displayOrder: 1,
   memAddr: "0xabcd==1",
   type: "progression",
-}
+};
 
 /**
  * RetroAchievements user achievement fixture.
@@ -85,7 +85,7 @@ export const RA_USER_ACHIEVEMENT_FIXTURE: RAUserAchievement = {
   dateEarned: "2026-01-10 14:30:00",
   dateEarnedHardcore: "2026-01-10 14:30:00",
   hardcoreAchieved: true,
-}
+};
 
 /**
  * RetroAchievements credentials fixture.
@@ -93,7 +93,7 @@ export const RA_USER_ACHIEVEMENT_FIXTURE: RAUserAchievement = {
 export const RA_CREDENTIALS_FIXTURE: RACredentials = {
   username: "TestRetroPlayer",
   api_key: "RA_TEST_API_KEY_12345",
-}
+};
 
 /**
  * RetroAchievements sync result fixture.
@@ -102,7 +102,7 @@ export const RA_SYNC_RESULT_FIXTURE: RASyncResult = {
   synced: 10,
   unlocked: 25,
   total: 96,
-}
+};
 
 /**
  * Create RetroAchievements user profile with overrides.
@@ -111,7 +111,7 @@ export const RA_SYNC_RESULT_FIXTURE: RASyncResult = {
  * @returns New RAUserProfile with overrides applied
  */
 export function createRAUserProfileFixture(overrides?: Partial<RAUserProfile>): RAUserProfile {
-  return { ...RA_USER_PROFILE_FIXTURE, ...overrides }
+  return { ...RA_USER_PROFILE_FIXTURE, ...overrides };
 }
 
 /**
@@ -121,7 +121,7 @@ export function createRAUserProfileFixture(overrides?: Partial<RAUserProfile>): 
  * @returns New RAGameInfo with overrides applied
  */
 export function createRAGameInfoFixture(overrides?: Partial<RAGameInfo>): RAGameInfo {
-  return { ...RA_GAME_INFO_FIXTURE, ...overrides }
+  return { ...RA_GAME_INFO_FIXTURE, ...overrides };
 }
 
 /**
@@ -131,7 +131,7 @@ export function createRAGameInfoFixture(overrides?: Partial<RAGameInfo>): RAGame
  * @returns New RAAchievement with overrides applied
  */
 export function createRAAchievementFixture(overrides?: Partial<RAAchievement>): RAAchievement {
-  return { ...RA_ACHIEVEMENT_FIXTURE, ...overrides }
+  return { ...RA_ACHIEVEMENT_FIXTURE, ...overrides };
 }
 
 /**
@@ -143,7 +143,7 @@ export function createRAAchievementFixture(overrides?: Partial<RAAchievement>): 
 export function createRAUserAchievementFixture(
   overrides?: Partial<RAUserAchievement>
 ): RAUserAchievement {
-  return { ...RA_USER_ACHIEVEMENT_FIXTURE, ...overrides }
+  return { ...RA_USER_ACHIEVEMENT_FIXTURE, ...overrides };
 }
 
 /**
@@ -153,7 +153,7 @@ export function createRAUserAchievementFixture(
  * @returns New RACredentials with overrides applied
  */
 export function createRACredentialsFixture(overrides?: Partial<RACredentials>): RACredentials {
-  return { ...RA_CREDENTIALS_FIXTURE, ...overrides }
+  return { ...RA_CREDENTIALS_FIXTURE, ...overrides };
 }
 
 /**
@@ -163,5 +163,5 @@ export function createRACredentialsFixture(overrides?: Partial<RACredentials>): 
  * @returns New RASyncResult with overrides applied
  */
 export function createRASyncResultFixture(overrides?: Partial<RASyncResult>): RASyncResult {
-  return { ...RA_SYNC_RESULT_FIXTURE, ...overrides }
+  return { ...RA_SYNC_RESULT_FIXTURE, ...overrides };
 }

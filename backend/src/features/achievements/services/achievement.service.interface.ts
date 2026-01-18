@@ -1,22 +1,22 @@
-import type { AchievementSourceApi } from "../repositories/achievement.repository.interface"
+import type { AchievementSourceApi } from "../repositories/achievement.repository.interface";
 
 /**
  * Achievement response with source info
  */
 export interface AchievementResponse {
-  source: AchievementSourceApi
+  source: AchievementSourceApi;
   achievements: Array<{
-    id: string
-    name: string
-    description: string
-    icon_url: string | null
-    rarity_percentage: number | null
-    points: number | null
-    unlocked: boolean
-    unlock_date: string | null
-  }>
-  total: number
-  unlocked: number
+    id: string;
+    name: string;
+    description: string;
+    icon_url: string | null;
+    rarity_percentage: number | null;
+    points: number | null;
+    unlocked: boolean;
+    unlock_date: string | null;
+  }>;
+  total: number;
+  unlocked: number;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface IAchievementService {
    * @returns Achievement response with source and achievement list
    * @throws {NotFoundError} If game not found
    */
-  getAchievements(userId: string, gameId: string): Promise<AchievementResponse>
+  getAchievements(userId: string, gameId: string): Promise<AchievementResponse>;
 
   /**
    * Sync achievements from external source.
@@ -48,7 +48,7 @@ export interface IAchievementService {
     userId: string,
     gameId: string,
     source: AchievementSourceApi
-  ): Promise<AchievementResponse>
+  ): Promise<AchievementResponse>;
 
   /**
    * Get achievement progress summary.
@@ -61,5 +61,5 @@ export interface IAchievementService {
   getProgress(
     userId: string,
     gameId: string
-  ): Promise<{ unlocked: number; total: number; percentage: number }>
+  ): Promise<{ unlocked: number; total: number; percentage: number }>;
 }

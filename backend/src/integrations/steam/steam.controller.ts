@@ -1,10 +1,10 @@
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi"
-import { injectable, inject } from "tsyringe"
+import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
+import { injectable, inject } from "tsyringe";
 
-import { STEAM_SERVICE_TOKEN } from "@/container/tokens"
-import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto"
-import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware"
-import { Logger } from "@/infrastructure/logging/logger"
+import { STEAM_SERVICE_TOKEN } from "@/container/tokens";
+import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
+import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
+import { Logger } from "@/infrastructure/logging/logger";
 
 import {
   STEAM_CONNECT_RESPONSE_SCHEMA,
@@ -13,39 +13,39 @@ import {
   STEAM_SYNC_REQUEST_SCHEMA,
   STEAM_SYNC_RESPONSE_SCHEMA,
   type SteamSyncRequestDto,
-} from "./steam.dto"
-import type { ISteamService } from "./steam.service.interface"
-import type { ISteamController, SteamEnv } from "./steam.controller.interface"
+} from "./steam.dto";
+import type { ISteamService } from "./steam.service.interface";
+import type { ISteamController, SteamEnv } from "./steam.controller.interface";
 
 /**
  * Controller for Steam integration endpoints
  */
 @injectable()
 export class SteamController implements ISteamController {
-  readonly router: OpenAPIHono<SteamEnv>
+  readonly router: OpenAPIHono<SteamEnv>;
 
-  private logger: Logger
+  private logger: Logger;
 
   constructor(
     @inject(STEAM_SERVICE_TOKEN)
     private steamService: ISteamService,
     @inject(Logger) parentLogger: Logger
   ) {
-    this.logger = parentLogger.child("SteamController")
-    this.router = new OpenAPIHono<SteamEnv>()
+    this.logger = parentLogger.child("SteamController");
+    this.router = new OpenAPIHono<SteamEnv>();
 
-    this.registerRoutes()
+    this.registerRoutes();
   }
 
   private registerRoutes(): void {
-    const authMiddleware = createAuthMiddleware()
+    const authMiddleware = createAuthMiddleware();
 
     // Register auth middleware on ALL paths explicitly
-    this.router.use("/", authMiddleware)
-    this.router.use("/connect", authMiddleware)
-    this.router.use("/callback", authMiddleware)
-    this.router.use("/library", authMiddleware)
-    this.router.use("/sync", authMiddleware)
+    this.router.use("/", authMiddleware);
+    this.router.use("/connect", authMiddleware);
+    this.router.use("/callback", authMiddleware);
+    this.router.use("/library", authMiddleware);
+    this.router.use("/sync", authMiddleware);
 
     // GET /connect - Get Steam OpenID login URL
     const connectRoute = createRoute({
@@ -71,19 +71,19 @@ export class SteamController implements ISteamController {
           description: "Unauthorized - invalid or missing token",
         },
       },
-    })
+    });
 
     this.router.openapi(connectRoute, (c) => {
-      this.logger.debug("GET /steam/connect")
+      this.logger.debug("GET /steam/connect");
 
       // Build return URL based on request using URL parsing
-      const requestUrl = new URL(c.req.url)
-      requestUrl.pathname = requestUrl.pathname.replace(/\/connect$/, "/callback")
-      const returnUrl = requestUrl.toString()
-      const redirectUrl = this.steamService.getLoginUrl(returnUrl)
+      const requestUrl = new URL(c.req.url);
+      requestUrl.pathname = requestUrl.pathname.replace(/\/connect$/, "/callback");
+      const returnUrl = requestUrl.toString();
+      const redirectUrl = this.steamService.getLoginUrl(returnUrl);
 
-      return c.json({ redirect_url: redirectUrl }, 200)
-    })
+      return c.json({ redirect_url: redirectUrl }, 200);
+    });
 
     // GET /callback - Handle Steam OpenID callback
     const callbackRoute = createRoute({
@@ -117,18 +117,18 @@ export class SteamController implements ISteamController {
           description: "Unauthorized - invalid or missing token",
         },
       },
-    })
+    });
 
     this.router.openapi(callbackRoute, async (c) => {
-      this.logger.debug("GET /steam/callback")
+      this.logger.debug("GET /steam/callback");
 
-      const userId = c.get("user").id
+      const userId = c.get("user").id;
 
       // Get all query parameters for OpenID validation
-      const params: Record<string, string> = { ...c.req.query() }
+      const params: Record<string, string> = { ...c.req.query() };
 
       // Validate OpenID response
-      const steamId = await this.steamService.validateCallback(params)
+      const steamId = await this.steamService.validateCallback(params);
 
       if (!steamId) {
         return c.json(
@@ -136,11 +136,11 @@ export class SteamController implements ISteamController {
             status: "failed" as const,
           },
           200
-        )
+        );
       }
 
       // Link account and get player info
-      const credentials = await this.steamService.linkAccount(userId, steamId)
+      const credentials = await this.steamService.linkAccount(userId, steamId);
 
       return c.json(
         {
@@ -150,8 +150,8 @@ export class SteamController implements ISteamController {
           avatar_url: credentials.avatar_url,
         },
         200
-      )
-    })
+      );
+    });
 
     // GET /library - Import Steam library
     const libraryRoute = createRoute({
@@ -185,13 +185,13 @@ export class SteamController implements ISteamController {
           description: "Steam account not linked",
         },
       },
-    })
+    });
 
     this.router.openapi(libraryRoute, async (c) => {
-      this.logger.debug("GET /steam/library")
+      this.logger.debug("GET /steam/library");
 
-      const userId = c.get("user").id
-      const result = await this.steamService.importLibrary(userId)
+      const userId = c.get("user").id;
+      const result = await this.steamService.importLibrary(userId);
 
       return c.json(
         {
@@ -200,8 +200,8 @@ export class SteamController implements ISteamController {
           errors: result.errors,
         },
         200
-      )
-    })
+      );
+    });
 
     // POST /sync - Sync achievements for a game
     const syncRoute = createRoute({
@@ -260,15 +260,15 @@ export class SteamController implements ISteamController {
           description: "Steam account not linked",
         },
       },
-    })
+    });
 
     this.router.openapi(syncRoute, async (c) => {
-      this.logger.debug("POST /steam/sync")
+      this.logger.debug("POST /steam/sync");
 
-      const userId = c.get("user").id
-      const body = c.req.valid("json") as SteamSyncRequestDto
+      const userId = c.get("user").id;
+      const body = c.req.valid("json") as SteamSyncRequestDto;
 
-      const result = await this.steamService.syncAchievements(userId, body.game_id)
+      const result = await this.steamService.syncAchievements(userId, body.game_id);
 
       return c.json(
         {
@@ -277,7 +277,7 @@ export class SteamController implements ISteamController {
           total: result.total,
         },
         200
-      )
-    })
+      );
+    });
   }
 }

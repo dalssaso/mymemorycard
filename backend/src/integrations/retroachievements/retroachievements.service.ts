@@ -2,28 +2,28 @@ import {
   buildAuthorization,
   getGameInfoAndUserProgress,
   getUserProfile as raGetUserProfile,
-} from "@retroachievements/api"
-import { inject, injectable } from "tsyringe"
+} from "@retroachievements/api";
+import { inject, injectable } from "tsyringe";
 
 import {
   ENCRYPTION_SERVICE_TOKEN,
   GAME_REPOSITORY_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
-} from "@/container/tokens"
-import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface"
-import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface"
-import type { IGameRepository } from "@/features/games/repositories/game.repository.interface"
-import { Logger } from "@/infrastructure/logging/logger"
-import type { NormalizedAchievement } from "@/integrations/steam/steam.types"
-import { NotFoundError, ValidationError } from "@/shared/errors/base"
+} from "@/container/tokens";
+import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface";
+import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
+import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
+import { Logger } from "@/infrastructure/logging/logger";
+import type { NormalizedAchievement } from "@/integrations/steam/steam.types";
+import { NotFoundError, ValidationError } from "@/shared/errors/base";
 
-import type { IRetroAchievementsService } from "./retroachievements.service.interface"
+import type { IRetroAchievementsService } from "./retroachievements.service.interface";
 import type {
   RACredentials,
   RAGameInfo,
   RASyncResult,
   RAUserProfile,
-} from "./retroachievements.types"
+} from "./retroachievements.types";
 
 /**
  * RetroAchievements service implementation.
@@ -31,7 +31,7 @@ import type {
  */
 @injectable()
 export class RetroAchievementsService implements IRetroAchievementsService {
-  private readonly logger: Logger
+  private readonly logger: Logger;
 
   constructor(
     @inject(USER_CREDENTIAL_REPOSITORY_TOKEN)
@@ -42,7 +42,7 @@ export class RetroAchievementsService implements IRetroAchievementsService {
     private readonly gameRepository: IGameRepository,
     @inject(Logger) parentLogger: Logger
   ) {
-    this.logger = parentLogger.child("RetroAchievementsService")
+    this.logger = parentLogger.child("RetroAchievementsService");
   }
 
   /**
@@ -55,16 +55,16 @@ export class RetroAchievementsService implements IRetroAchievementsService {
       const authorization = buildAuthorization({
         username: credentials.username,
         webApiKey: credentials.api_key,
-      })
+      });
 
       const profile = await raGetUserProfile(authorization, {
         username: credentials.username,
-      })
+      });
 
-      return profile !== null && profile.user === credentials.username
+      return profile !== null && profile.user === credentials.username;
     } catch (error) {
-      this.logger.warn("RetroAchievements credential validation failed", { error })
-      return false
+      this.logger.warn("RetroAchievements credential validation failed", { error });
+      return false;
     }
   }
 
@@ -75,21 +75,21 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @throws ValidationError if credentials are invalid
    */
   async saveCredentials(userId: string, credentials: RACredentials): Promise<void> {
-    const isValid = await this.validateCredentials(credentials)
+    const isValid = await this.validateCredentials(credentials);
     if (!isValid) {
-      throw new ValidationError("Invalid RetroAchievements credentials")
+      throw new ValidationError("Invalid RetroAchievements credentials");
     }
 
-    const encrypted = this.encryptionService.encrypt(credentials)
+    const encrypted = this.encryptionService.encrypt(credentials);
     await this.credentialRepository.upsert(userId, {
       service: "retroachievements",
       credentialType: "api_key",
       encryptedCredentials: encrypted,
       isActive: true,
       hasValidToken: true,
-    })
+    });
 
-    this.logger.info("RetroAchievements credentials saved", { userId })
+    this.logger.info("RetroAchievements credentials saved", { userId });
   }
 
   /**
@@ -98,15 +98,15 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @returns User profile or null if unavailable
    */
   async getUserProfile(userId: string): Promise<RAUserProfile | null> {
-    const { authorization, credentials } = await this.getAuthAndCredentials(userId)
+    const { authorization, credentials } = await this.getAuthAndCredentials(userId);
 
     try {
       const profile = await raGetUserProfile(authorization, {
         username: credentials.username,
-      })
+      });
 
       if (!profile) {
-        return null
+        return null;
       }
 
       // Map the camelCase API response to our RAUserProfile type
@@ -126,10 +126,10 @@ export class RetroAchievementsService implements IRetroAchievementsService {
         id: profile.id,
         userWallActive: profile.userWallActive,
         motto: profile.motto,
-      }
+      };
     } catch (error) {
-      this.logger.error("Failed to get RetroAchievements profile", { userId, error })
-      return null
+      this.logger.error("Failed to get RetroAchievements profile", { userId, error });
+      return null;
     }
   }
 
@@ -144,8 +144,8 @@ export class RetroAchievementsService implements IRetroAchievementsService {
   async searchGames(_gameName: string, _consoleId?: number): Promise<RAGameInfo[]> {
     // Note: RetroAchievements API doesn't have a direct search endpoint
     // A full implementation would require getGameList with console filtering
-    this.logger.warn("Game search not fully implemented - requires console-specific lookup")
-    return []
+    this.logger.warn("Game search not fully implemented - requires console-specific lookup");
+    return [];
   }
 
   /**
@@ -155,20 +155,20 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @returns Normalized achievements with unlock status
    */
   async getAchievements(retroGameId: number, userId: string): Promise<NormalizedAchievement[]> {
-    const { authorization, credentials } = await this.getAuthAndCredentials(userId)
+    const { authorization, credentials } = await this.getAuthAndCredentials(userId);
 
     try {
       const gameProgress = await getGameInfoAndUserProgress(authorization, {
         username: credentials.username,
         gameId: retroGameId,
-      })
+      });
 
       if (!gameProgress || !gameProgress.achievements) {
-        return []
+        return [];
       }
 
-      const achievements = Object.values(gameProgress.achievements)
-      const totalPlayers = gameProgress.numDistinctPlayersCasual || 1
+      const achievements = Object.values(gameProgress.achievements);
+      const totalPlayers = gameProgress.numDistinctPlayersCasual || 1;
 
       return achievements.map((ach) => ({
         achievement_id: String(ach.id),
@@ -178,10 +178,10 @@ export class RetroAchievementsService implements IRetroAchievementsService {
         rarity_percentage: totalPlayers > 0 ? (ach.numAwarded / totalPlayers) * 100 : null,
         unlocked: ach.dateEarned !== null || ach.dateEarnedHardcore !== null,
         unlock_time: ach.dateEarned ? new Date(ach.dateEarned) : null,
-      }))
+      }));
     } catch (error) {
-      this.logger.error("Failed to get RetroAchievements achievements", { retroGameId, error })
-      return []
+      this.logger.error("Failed to get RetroAchievements achievements", { retroGameId, error });
+      return [];
     }
   }
 
@@ -194,16 +194,16 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @throws ValidationError if game lacks RetroAchievements ID
    */
   async syncAchievements(userId: string, gameId: string): Promise<RASyncResult> {
-    const game = await this.gameRepository.findById(gameId)
+    const game = await this.gameRepository.findById(gameId);
     if (!game) {
-      throw new NotFoundError("Game", gameId)
+      throw new NotFoundError("Game", gameId);
     }
 
     if (!game.retro_game_id) {
-      throw new ValidationError("Game does not have a RetroAchievements ID")
+      throw new ValidationError("Game does not have a RetroAchievements ID");
     }
 
-    const achievements = await this.getAchievements(game.retro_game_id, userId)
+    const achievements = await this.getAchievements(game.retro_game_id, userId);
 
     // TODO: Store achievements in database with source_api = 'retroachievements'
     // This will be implemented in a future task with unified achievement storage
@@ -212,7 +212,7 @@ export class RetroAchievementsService implements IRetroAchievementsService {
       synced: achievements.length,
       unlocked: achievements.filter((a) => a.unlocked).length,
       total: achievements.length,
-    }
+    };
   }
 
   /**
@@ -220,8 +220,8 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @param userId - User ID
    */
   async deleteCredentials(userId: string): Promise<void> {
-    await this.credentialRepository.delete(userId, "retroachievements")
-    this.logger.info("RetroAchievements credentials deleted", { userId })
+    await this.credentialRepository.delete(userId, "retroachievements");
+    this.logger.info("RetroAchievements credentials deleted", { userId });
   }
 
   /**
@@ -231,26 +231,26 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @throws NotFoundError if credentials not found
    */
   private async getAuthAndCredentials(userId: string): Promise<{
-    authorization: ReturnType<typeof buildAuthorization>
-    credentials: RACredentials
+    authorization: ReturnType<typeof buildAuthorization>;
+    credentials: RACredentials;
   }> {
     const credential = await this.credentialRepository.findByUserAndService(
       userId,
       "retroachievements"
-    )
+    );
     if (!credential) {
-      throw new NotFoundError("Credential", "retroachievements")
+      throw new NotFoundError("Credential", "retroachievements");
     }
 
     const credentials = this.encryptionService.decrypt<RACredentials>(
       credential.encryptedCredentials
-    )
+    );
 
     const authorization = buildAuthorization({
       username: credentials.username,
       webApiKey: credentials.api_key,
-    })
+    });
 
-    return { authorization, credentials }
+    return { authorization, credentials };
   }
 }

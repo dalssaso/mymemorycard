@@ -1,9 +1,9 @@
-import { injectable, inject } from "tsyringe"
-import { and, eq, sql } from "drizzle-orm"
+import { injectable, inject } from "tsyringe";
+import { and, eq, sql } from "drizzle-orm";
 
-import { DATABASE_TOKEN } from "@/container/tokens"
-import type { DrizzleDB } from "@/infrastructure/database/connection"
-import { achievements, userAchievements } from "@/db/schema"
+import { DATABASE_TOKEN } from "@/container/tokens";
+import type { DrizzleDB } from "@/infrastructure/database/connection";
+import { achievements, userAchievements } from "@/db/schema";
 import type {
   Achievement,
   AchievementSourceApi,
@@ -12,7 +12,7 @@ import type {
   NewAchievement,
   NewUserAchievement,
   UserAchievement,
-} from "./achievement.repository.interface"
+} from "./achievement.repository.interface";
 
 /**
  * PostgreSQL implementation of the AchievementRepository interface using Drizzle ORM.
@@ -31,7 +31,7 @@ export class AchievementRepository implements IAchievementRepository {
   async findByGameAndPlatform(gameId: string, platformId: string): Promise<Achievement[]> {
     return this.db.query.achievements.findMany({
       where: and(eq(achievements.gameId, gameId), eq(achievements.platformId, platformId)),
-    })
+    });
   }
 
   /**
@@ -40,10 +40,13 @@ export class AchievementRepository implements IAchievementRepository {
    * @param sourceApi - Source API (steam, retroachievements, rawg, manual)
    * @returns Array of achievements
    */
-  async findByGameAndSource(gameId: string, sourceApi: AchievementSourceApi): Promise<Achievement[]> {
+  async findByGameAndSource(
+    gameId: string,
+    sourceApi: AchievementSourceApi
+  ): Promise<Achievement[]> {
     return this.db.query.achievements.findMany({
       where: and(eq(achievements.gameId, gameId), eq(achievements.sourceApi, sourceApi)),
-    })
+    });
   }
 
   /**
@@ -54,7 +57,7 @@ export class AchievementRepository implements IAchievementRepository {
    */
   async upsertMany(achievementsData: NewAchievement[]): Promise<Achievement[]> {
     if (achievementsData.length === 0) {
-      return []
+      return [];
     }
 
     return this.db
@@ -73,7 +76,7 @@ export class AchievementRepository implements IAchievementRepository {
           updatedAt: sql`now()`,
         },
       })
-      .returning()
+      .returning();
   }
 
   /**
@@ -114,7 +117,7 @@ export class AchievementRepository implements IAchievementRepository {
           eq(userAchievements.userId, userId)
         )
       )
-      .where(and(eq(achievements.gameId, gameId), eq(achievements.platformId, platformId)))
+      .where(and(eq(achievements.gameId, gameId), eq(achievements.platformId, platformId)));
 
     return results.map((row) => ({
       id: row.id,
@@ -132,7 +135,7 @@ export class AchievementRepository implements IAchievementRepository {
       updatedAt: row.updatedAt,
       unlocked: row.unlocked ?? false,
       unlock_date: row.unlockDate ?? null,
-    }))
+    }));
   }
 
   /**
@@ -151,9 +154,9 @@ export class AchievementRepository implements IAchievementRepository {
           unlockDate: sql`excluded.unlock_date`,
         },
       })
-      .returning()
+      .returning();
 
-    return result
+    return result;
   }
 
   /**
@@ -163,7 +166,7 @@ export class AchievementRepository implements IAchievementRepository {
    */
   async upsertUserAchievementsMany(data: NewUserAchievement[]): Promise<UserAchievement[]> {
     if (data.length === 0) {
-      return []
+      return [];
     }
 
     return this.db
@@ -176,7 +179,7 @@ export class AchievementRepository implements IAchievementRepository {
           unlockDate: sql`excluded.unlock_date`,
         },
       })
-      .returning()
+      .returning();
   }
 
   /**
@@ -198,9 +201,9 @@ export class AchievementRepository implements IAchievementRepository {
           eq(achievements.platformId, platformId),
           eq(userAchievements.unlocked, true)
         )
-      )
+      );
 
-    return result[0]?.count ?? 0
+    return result[0]?.count ?? 0;
   }
 
   /**
@@ -213,8 +216,8 @@ export class AchievementRepository implements IAchievementRepository {
     const result = await this.db
       .select({ count: sql<number>`cast(count(*) as integer)` })
       .from(achievements)
-      .where(and(eq(achievements.gameId, gameId), eq(achievements.platformId, platformId)))
+      .where(and(eq(achievements.gameId, gameId), eq(achievements.platformId, platformId)));
 
-    return result[0]?.count ?? 0
+    return result[0]?.count ?? 0;
   }
 }
