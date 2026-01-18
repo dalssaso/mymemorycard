@@ -63,6 +63,7 @@ export class UserGameRepository implements IUserGameRepository {
         createdAt: userGames.createdAt,
         gameName: games.name,
         gameCoverArtUrl: games.coverArtUrl,
+        gameIgdbId: games.igdbId,
         platformName: platforms.name,
         platformAbbreviation: platforms.abbreviation,
         storeSlug: stores.slug,
@@ -106,6 +107,7 @@ export class UserGameRepository implements IUserGameRepository {
         createdAt: userGames.createdAt,
         gameName: games.name,
         gameCoverArtUrl: games.coverArtUrl,
+        gameIgdbId: games.igdbId,
         platformName: platforms.name,
         platformAbbreviation: platforms.abbreviation,
         storeSlug: stores.slug,
@@ -479,6 +481,7 @@ export class UserGameRepository implements IUserGameRepository {
         id: row.gameId as string,
         name: row.gameName as string,
         cover_art_url: (row.gameCoverArtUrl as string) || null,
+        igdb_id: (row.gameIgdbId as number) || null,
       },
       platform: {
         id: row.platformId as string,

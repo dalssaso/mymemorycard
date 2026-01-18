@@ -1177,12 +1177,19 @@
                 "nullable": true,
                 "format": "uri",
                 "description": "URL to cover art image"
+              },
+              "igdb_id": {
+                "type": "integer",
+                "nullable": true,
+                "description": "IGDB game identifier",
+                "example": 7346
               }
             },
             "required": [
               "id",
               "name",
-              "cover_art_url"
+              "cover_art_url",
+              "igdb_id"
             ],
             "description": "Game information"
           },

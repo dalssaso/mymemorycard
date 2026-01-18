@@ -146,7 +146,7 @@ export function adaptUserGame(sdk: UserGameResponse): Game {
     cover_art_url: sdk.game.cover_art_url,
     platform_id: sdk.platform.id,
     store_id: sdk.store?.id ?? null,
-    igdb_id: null, // SDK doesn't expose igdb_id in UserGameResponse
+    igdb_id: sdk.game.igdb_id ?? null,
     status: null, // SDK uses owned/purchased_date instead of status
     rating: null, // Not in current SDK response
     notes: null, // Not in current SDK response

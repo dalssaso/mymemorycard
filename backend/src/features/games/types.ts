@@ -76,6 +76,7 @@ export interface UserGameWithRelations extends UserGame {
     id: string;
     name: string;
     cover_art_url: string | null;
+    igdb_id: number | null;
   };
   /** Platform information */
   platform: {

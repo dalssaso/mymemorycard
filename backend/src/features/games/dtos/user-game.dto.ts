@@ -100,6 +100,10 @@ const GameInfoSchema = z.object({
   cover_art_url: z.string().url().nullable().openapi({
     description: "URL to cover art image",
   }),
+  igdb_id: z.number().int().nullable().openapi({
+    description: "IGDB game identifier",
+    example: 7346,
+  }),
 });
 
 /**
