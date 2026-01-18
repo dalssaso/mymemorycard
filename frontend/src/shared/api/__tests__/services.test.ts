@@ -31,7 +31,6 @@ vi.mock("../client", () => ({
 vi.mock("../generated", () => createGeneratedApiMocks());
 
 import { AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { apiClient } from "../client";
 import {
   CredentialsService,
   GamesService,
