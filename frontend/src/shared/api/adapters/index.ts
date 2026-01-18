@@ -7,3 +7,4 @@ export {
   adaptUserGamesListResponse,
   type AdaptedGame,
 } from "./games";
+export { adaptStore, adaptStoreListResponse } from "./stores";
