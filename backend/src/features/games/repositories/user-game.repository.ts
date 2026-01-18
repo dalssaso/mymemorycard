@@ -411,6 +411,7 @@ export class UserGameRepository implements IUserGameRepository {
   async listByUser(userId: string, skip = 0, take = 50): Promise<UserGame[]> {
     const results = await this.db.query.userGames.findMany({
       where: eq(userGames.userId, userId),
+      orderBy: (userGames, { desc }) => desc(userGames.createdAt),
       offset: skip,
       limit: take,
     });
