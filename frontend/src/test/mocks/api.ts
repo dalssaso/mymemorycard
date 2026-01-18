@@ -23,6 +23,8 @@ export const mockGetApiV1UserGamesById: SdkMockFn = vi.fn();
 export const mockPatchApiV1UserGamesById: SdkMockFn = vi.fn();
 export const mockDeleteApiV1UserGamesById: SdkMockFn = vi.fn();
 export const mockGetApiV1GamesById: SdkMockFn = vi.fn();
+export const mockGetApiV1Stores: SdkMockFn = vi.fn();
+export const mockGetApiV1StoresById: SdkMockFn = vi.fn();
 
 /**
  * Single source of truth mapping SDK function names to mock functions.
@@ -42,6 +44,8 @@ const ALL_API_MOCKS: Record<string, SdkMockFn> = {
   patchApiV1UserGamesById: mockPatchApiV1UserGamesById,
   deleteApiV1UserGamesById: mockDeleteApiV1UserGamesById,
   getApiV1GamesById: mockGetApiV1GamesById,
+  getApiV1Stores: mockGetApiV1Stores,
+  getApiV1StoresById: mockGetApiV1StoresById,
 };
 
 /**
