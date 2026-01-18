@@ -354,6 +354,13 @@ describe("API Services", () => {
         expect(mockGetApiV1Platforms).toHaveBeenCalledWith({ throwOnError: true });
         expect(result).toEqual(mockData);
       });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1Platforms.mockRejectedValue(new Error("Platforms fetch failed"));
+
+        await expect(PlatformsService.list()).rejects.toThrow("Platforms fetch failed");
+        expect(mockGetApiV1Platforms).toHaveBeenCalledWith({ throwOnError: true });
+      });
     });
 
     describe("getOne", () => {
@@ -368,6 +375,18 @@ describe("API Services", () => {
           throwOnError: true,
         });
         expect(result).toEqual(mockData);
+      });
+
+      it("should propagate errors from SDK", async () => {
+        mockGetApiV1PlatformsById.mockRejectedValue(new Error("Platform fetch failed"));
+
+        await expect(PlatformsService.getOne("platform-1")).rejects.toThrow(
+          "Platform fetch failed"
+        );
+        expect(mockGetApiV1PlatformsById).toHaveBeenCalledWith({
+          path: { id: "platform-1" },
+          throwOnError: true,
+        });
       });
     });
   });
