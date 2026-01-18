@@ -39,3 +39,4 @@ export const STEAM_CONTROLLER_TOKEN = "ISteamController";
 export const RETROACHIEVEMENTS_SERVICE_TOKEN = "IRetroAchievementsService";
 export const RETROACHIEVEMENTS_CONTROLLER_TOKEN = "IRetroAchievementsController";
 export const ACHIEVEMENT_REPOSITORY_TOKEN = "IAchievementRepository";
+export const ACHIEVEMENT_SERVICE_TOKEN = "IAchievementService";
