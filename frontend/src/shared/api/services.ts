@@ -1,12 +1,13 @@
 import axios from "axios";
-import type { AxiosResponse } from "axios";
-import { apiClient } from "./client";
+
 import {
   deleteApiV1CredentialsByService,
   deleteApiV1UserGamesById,
   getApiV1Credentials,
   getApiV1Platforms,
   getApiV1PlatformsById,
+  getApiV1Stores,
+  getApiV1StoresById,
   getApiV1UserGames,
   getApiV1UserGamesById,
   patchApiV1UserGamesById,
@@ -32,6 +33,7 @@ import type {
   IgdbStoreInfo,
 } from "@/shared/types";
 import { adaptSearchResponse, adaptUserGame, adaptUserGamesListResponse } from "./adapters/games";
+import { adaptStore, adaptStoreListResponse } from "./adapters/stores";
 
 // Re-export canonical types for backwards compatibility
 export type { GameSearchResult, IgdbPlatformInfo, IgdbStoreInfo };
@@ -432,7 +434,7 @@ export const PlatformsService = {
 
 /**
  * Stores API service.
- * Provides methods for listing available digital stores.
+ * Provides methods for listing and retrieving store information.
  */
 export const StoresService = {
   /**
@@ -443,8 +445,24 @@ export const StoresService = {
    */
   async list(): Promise<StoresListResponse> {
     try {
-      const response: AxiosResponse<StoresListResponse> = await apiClient.get("/stores");
-      return response.data;
+      const response = await getApiV1Stores({ throwOnError: true });
+      return adaptStoreListResponse(response.data);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
+  },
+
+  /**
+   * Get store by ID.
+   *
+   * @param id - Store unique identifier
+   * @returns Promise resolving to store details
+   * @throws {NormalizedApiError} When the API request fails
+   */
+  async getOne(id: string): Promise<Store> {
+    try {
+      const response = await getApiV1StoresById({ path: { id }, throwOnError: true });
+      return adaptStore(response.data.store);
     } catch (error) {
       throw normalizeApiError(error);
     }
