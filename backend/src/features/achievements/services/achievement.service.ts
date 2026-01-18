@@ -19,7 +19,6 @@ import type {
   AchievementSourceApi,
   IAchievementRepository,
   NewAchievement,
-  NewUserAchievement,
 } from "../repositories/achievement.repository.interface";
 import type { AchievementResponse, IAchievementService } from "./achievement.service.interface";
 
@@ -282,31 +281,25 @@ export class AchievementService implements IAchievementService {
       externalId: ach.achievement_id,
     }));
 
-    // Upsert achievements
-    const storedAchievements = await this.achievementRepository.upsertMany(achievementRecords);
+    // Build status map for user achievements (external achievement_id -> unlock status)
+    const achievementStatus = new Map(
+      achievements.map((ach) => [
+        ach.achievement_id,
+        { unlocked: ach.unlocked, unlockDate: ach.unlock_time ?? null },
+      ])
+    );
 
-    // Create a map of achievement_id to stored record ID
-    const achievementIdMap = new Map(storedAchievements.map((a) => [a.achievementId, a.id]));
-
-    // Prepare user achievement records for unlocked achievements
-    const userAchievementRecords: NewUserAchievement[] = achievements
-      .filter((ach) => achievementIdMap.has(ach.achievement_id))
-      .map((ach) => ({
-        userId,
-        achievementId: achievementIdMap.get(ach.achievement_id)!,
-        unlocked: ach.unlocked,
-        unlockDate: ach.unlock_time ?? null,
-      }));
-
-    // Upsert user achievements
-    if (userAchievementRecords.length > 0) {
-      await this.achievementRepository.upsertUserAchievementsMany(userAchievementRecords);
-    }
+    // Upsert achievements and user achievements in a single transaction
+    await this.achievementRepository.upsertAchievementsWithProgress(
+      achievementRecords,
+      userId,
+      achievementStatus
+    );
 
     this.logger.info("Achievements stored successfully", {
       gameId,
-      stored: storedAchievements.length,
-      userUnlocks: userAchievementRecords.filter((r) => r.unlocked).length,
+      stored: achievementRecords.length,
+      userUnlocks: achievements.filter((a) => a.unlocked).length,
     });
   }
 

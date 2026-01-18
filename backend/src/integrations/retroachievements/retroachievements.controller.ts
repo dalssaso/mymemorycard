@@ -5,6 +5,7 @@ import { RETROACHIEVEMENTS_SERVICE_TOKEN } from "@/container/tokens";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 import { Logger } from "@/infrastructure/logging/logger";
+import { ValidationError } from "@/shared/errors/base";
 
 import {
   RA_CREDENTIALS_REQUEST_SCHEMA,
@@ -95,27 +96,24 @@ export class RetroAchievementsController implements IRetroAchievementsController
       const userId = c.get("user").id;
       const body = c.req.valid("json") as RACredentialsRequestDto;
 
-      // Validate credentials first
-      const isValid = await this.raService.validateCredentials({
-        username: body.username,
-        api_key: body.api_key,
-      });
-
-      if (!isValid) {
-        return c.json(
-          {
-            error: "Invalid RetroAchievements credentials",
-            code: "INVALID_CREDENTIALS",
-          },
-          400
-        );
+      // saveCredentials validates internally and throws ValidationError if invalid
+      try {
+        await this.raService.saveCredentials(userId, {
+          username: body.username,
+          api_key: body.api_key,
+        });
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          return c.json(
+            {
+              error: error.message,
+              code: "INVALID_CREDENTIALS",
+            },
+            400
+          );
+        }
+        throw error;
       }
-
-      // Save valid credentials
-      await this.raService.saveCredentials(userId, {
-        username: body.username,
-        api_key: body.api_key,
-      });
 
       return c.json(
         {

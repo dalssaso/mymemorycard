@@ -96,4 +96,18 @@ export interface IAchievementRepository {
    * @returns Total number of achievements
    */
   countTotal(gameId: string, platformId: string): Promise<number>;
+
+  /**
+   * Upsert achievements and user achievements in a single transaction.
+   * Ensures atomicity: either all records are stored or none are.
+   * @param achievements - Array of achievement data to upsert
+   * @param userId - User ID for progress tracking
+   * @param achievementStatus - Map of external achievement_id to unlock status
+   * @returns Array of upserted achievements
+   */
+  upsertAchievementsWithProgress(
+    achievements: NewAchievement[],
+    userId: string,
+    achievementStatus: Map<string, { unlocked: boolean; unlockDate: Date | null }>
+  ): Promise<Achievement[]>;
 }

@@ -266,4 +266,103 @@ export class AchievementRepository implements IAchievementRepository {
 
     return result[0]?.count ?? 0;
   }
+
+  /**
+   * Upsert achievements and user achievements in a single transaction.
+   * Ensures atomicity: either all records are stored or none are.
+   * @param achievementsData - Array of achievement data to upsert
+   * @param userId - User ID for progress tracking
+   * @param achievementStatus - Map of external achievement_id to unlock status
+   * @returns Array of upserted achievements
+   */
+  async upsertAchievementsWithProgress(
+    achievementsData: NewAchievement[],
+    userId: string,
+    achievementStatus: Map<string, { unlocked: boolean; unlockDate: Date | null }>
+  ): Promise<Achievement[]> {
+    if (achievementsData.length === 0) {
+      return [];
+    }
+
+    return this.db.transaction(async (tx) => {
+      // Upsert achievements
+      let storedAchievements: Achievement[];
+      try {
+        storedAchievements = await tx
+          .insert(achievements)
+          .values(achievementsData)
+          .onConflictDoUpdate({
+            target: [achievements.gameId, achievements.platformId, achievements.achievementId],
+            set: {
+              name: sql`excluded.name`,
+              description: sql`excluded.description`,
+              iconUrl: sql`excluded.icon_url`,
+              rarityPercentage: sql`excluded.rarity_percentage`,
+              points: sql`excluded.points`,
+              sourceApi: sql`excluded.source_api`,
+              externalId: sql`excluded.external_id`,
+              updatedAt: sql`now()`,
+            },
+          })
+          .returning();
+      } catch (error) {
+        const err = error as { code?: string; cause?: { code?: string }; message?: string };
+        const isUniqueViolation =
+          err.code === "23505" || err.cause?.code === "23505" || err.message?.includes("23505");
+        if (isUniqueViolation) {
+          throw new ConflictError("Achievement already exists");
+        }
+        const isValidationError =
+          err.code === "23502" || err.cause?.code === "23502" || err.message?.includes("23502");
+        if (isValidationError) {
+          throw new ValidationError("Invalid achievement data");
+        }
+        throw error;
+      }
+
+      // Build user achievement records from stored achievements and status map
+      const userAchievementRecords: NewUserAchievement[] = storedAchievements
+        .filter((ach) => achievementStatus.has(ach.achievementId))
+        .map((ach) => {
+          const status = achievementStatus.get(ach.achievementId)!;
+          return {
+            userId,
+            achievementId: ach.id,
+            unlocked: status.unlocked,
+            unlockDate: status.unlockDate,
+          };
+        });
+
+      // Upsert user achievements if there are any
+      if (userAchievementRecords.length > 0) {
+        try {
+          await tx
+            .insert(userAchievements)
+            .values(userAchievementRecords)
+            .onConflictDoUpdate({
+              target: [userAchievements.userId, userAchievements.achievementId],
+              set: {
+                unlocked: sql`excluded.unlocked`,
+                unlockDate: sql`excluded.unlock_date`,
+              },
+            });
+        } catch (error) {
+          const err = error as { code?: string; cause?: { code?: string }; message?: string };
+          const isUniqueViolation =
+            err.code === "23505" || err.cause?.code === "23505" || err.message?.includes("23505");
+          if (isUniqueViolation) {
+            throw new ConflictError("User achievement already exists");
+          }
+          const isNotNullViolation =
+            err.code === "23502" || err.cause?.code === "23502" || err.message?.includes("23502");
+          if (isNotNullViolation) {
+            throw new ValidationError("Missing required user achievement field");
+          }
+          throw error;
+        }
+      }
+
+      return storedAchievements;
+    });
+  }
 }
