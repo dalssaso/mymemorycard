@@ -12,7 +12,7 @@ import {
 } from "@/features/credentials/hooks";
 import { useUserPreferences, type UserPreferences } from "@/hooks/useUserPreferences";
 import { preferencesAPI } from "@/lib/api";
-import { useCredentialsStore } from "@/shared/stores/credentialsStore";
+import { useCredentialsStore, type CredentialsStore } from "@/shared/stores/credentialsStore";
 
 type Theme = "light" | "dark" | "auto";
 
@@ -39,8 +39,8 @@ export function Settings(): JSX.Element {
   useCredentials();
   const deleteCredentials = useDeleteCredentials();
   const validateCredentials = useValidateCredentials();
-  const hasIgdbCredentialsFn = useCredentialsStore((s) => s.hasIgdbCredentials);
-  const isIgdbTokenExpiredFn = useCredentialsStore((s) => s.isIgdbTokenExpired);
+  const hasIgdbCredentialsFn = useCredentialsStore((s: CredentialsStore) => s.hasIgdbCredentials);
+  const isIgdbTokenExpiredFn = useCredentialsStore((s: CredentialsStore) => s.isIgdbTokenExpired);
   const hasIgdbCredentials = hasIgdbCredentialsFn();
   const isIgdbTokenExpired = isIgdbTokenExpiredFn();
 

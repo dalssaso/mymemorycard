@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CredentialStatus } from "@/shared/types/games";
 
-interface CredentialsStore {
+export interface CredentialsStore {
   /** List of configured credential statuses. */
   credentials: CredentialStatus[];
 

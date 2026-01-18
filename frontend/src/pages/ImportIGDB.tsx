@@ -5,7 +5,7 @@ import { useCredentials } from "@/features/credentials/hooks/useCredentials";
 import { useCreateGame } from "@/features/library/hooks/useGames";
 import { GameSearchInput } from "@/features/import/components/GameSearchInput";
 import { PlatformStoreSelector } from "@/features/import/components/PlatformStoreSelector";
-import { useCredentialsStore } from "@/shared/stores/credentialsStore";
+import { useCredentialsStore, type CredentialsStore } from "@/shared/stores/credentialsStore";
 import type { GameSearchResult } from "@/shared/api/services";
 
 /**
@@ -22,8 +22,8 @@ export function ImportIGDB(): JSX.Element {
     error: credentialsError,
     refetch: refetchCredentials,
   } = useCredentials();
-  const hasIgdbCredentialsFn = useCredentialsStore((s) => s.hasIgdbCredentials);
-  const isIgdbTokenExpiredFn = useCredentialsStore((s) => s.isIgdbTokenExpired);
+  const hasIgdbCredentialsFn = useCredentialsStore((s: CredentialsStore) => s.hasIgdbCredentials);
+  const isIgdbTokenExpiredFn = useCredentialsStore((s: CredentialsStore) => s.isIgdbTokenExpired);
   const hasIgdbCredentials = hasIgdbCredentialsFn();
   const isIgdbTokenExpired = isIgdbTokenExpiredFn();
   const navigate = useNavigate();
