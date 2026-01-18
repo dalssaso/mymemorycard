@@ -31,7 +31,7 @@ vi.mock("@/shared/api/services", () => ({
     }),
     validate: vi.fn().mockResolvedValue({
       service: "igdb",
-      valid: true,
+      is_valid: true,
       has_valid_token: true,
       token_expires_at: null,
       message: "Credentials are valid",

@@ -121,12 +121,12 @@ describe("IGDB Integration Tests", () => {
 
       const data = (await response.json()) as {
         service: string;
-        valid: boolean;
+        is_valid: boolean;
         message: string;
       };
       expect(data.service).toBe("igdb");
       // With fake credentials, this will be false
-      expect(typeof data.valid).toBe("boolean");
+      expect(typeof data.is_valid).toBe("boolean");
     });
   });
 

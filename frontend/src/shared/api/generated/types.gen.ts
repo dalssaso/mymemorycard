@@ -247,7 +247,7 @@ export type SaveCredentialRequest = {
  */
 export type CredentialValidateResponse = {
     service: 'igdb' | 'steam' | 'retroachievements' | 'rawg';
-    valid: boolean;
+    is_valid: boolean;
     has_valid_token: boolean;
     token_expires_at: string | null;
     message: string;
