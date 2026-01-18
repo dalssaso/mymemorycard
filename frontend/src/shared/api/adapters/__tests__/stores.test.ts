@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, it, expect } from "vitest";
 
 import { adaptStore, adaptStoreListResponse } from "../stores";
 
@@ -82,8 +82,22 @@ describe("Store Adapters", () => {
       const result = adaptStoreListResponse(sdkResponse);
 
       expect(result.stores).toHaveLength(1);
-      expect(result.stores[0].id).toBe("store-1");
-      expect(result.stores[0].name).toBe("Steam");
+      expect(result.stores[0]).toEqual({
+        id: "store-1",
+        name: "Steam",
+        slug: "steam",
+        display_name: "Steam",
+        platform_family: "PC",
+        icon_url: "https://example.com/steam.png",
+      });
+    });
+
+    it("should handle empty stores array", () => {
+      const sdkResponse = { stores: [] };
+
+      const result = adaptStoreListResponse(sdkResponse);
+
+      expect(result.stores).toEqual([]);
     });
   });
 });
