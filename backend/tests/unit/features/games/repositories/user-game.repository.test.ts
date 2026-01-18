@@ -10,6 +10,7 @@ import {
   mockInsertError,
   mockInsertResult,
   mockSelectJoinResult,
+  mockTransaction,
   mockUpdateResult,
 } from "@/tests/helpers/drizzle.mocks";
 
@@ -473,7 +474,7 @@ describe("UserGameRepository", () => {
 
   describe("delete", () => {
     it("successfully deletes user game for authorized user", async () => {
-      const deletedEntry = {
+      const userGameEntry = {
         id: "ug-del-1",
         userId: "user-del",
         gameId: "game-del",
@@ -486,8 +487,23 @@ describe("UserGameRepository", () => {
         createdAt: new Date(),
       };
 
-      // Delete returns the deleted row when successful
-      mockDeleteResult(mockDb, [deletedEntry]);
+      // Set up query mock for findFirst and findMany calls inside transaction
+      const mockQuery = {
+        userGames: {
+          findFirst: async () => userGameEntry,
+          findMany: async () => [], // No remaining platforms after delete
+        },
+        collections: {
+          findMany: async () => [], // No collections to clean up
+        },
+      };
+      Object.defineProperty(mockDb, "query", { value: mockQuery, writable: true });
+
+      // Set up delete mock for cascade deletes
+      mockDeleteResult(mockDb, [userGameEntry]);
+
+      // Set up transaction mock
+      mockTransaction(mockDb);
 
       const result = await repository.delete("ug-del-1", "user-del");
 
@@ -495,8 +511,16 @@ describe("UserGameRepository", () => {
     });
 
     it("throws NotFoundError when entry does not exist", async () => {
-      // Delete with non-existent id returns empty array
-      mockDeleteResult(mockDb, []);
+      // findFirst returns null for non-existent entry
+      const mockQuery = {
+        userGames: {
+          findFirst: async () => null,
+        },
+      };
+      Object.defineProperty(mockDb, "query", { value: mockQuery, writable: true });
+
+      // Set up transaction mock
+      mockTransaction(mockDb);
 
       await expect(repository.delete("ug-nonexistent-del", "user-del")).rejects.toThrow(
         NotFoundError
@@ -504,8 +528,16 @@ describe("UserGameRepository", () => {
     });
 
     it("throws NotFoundError on cross-user delete attempt", async () => {
-      // Delete with wrong userId in WHERE clause returns empty array (no row matched)
-      mockDeleteResult(mockDb, []);
+      // findFirst returns null when userId doesn't match (wrong user)
+      const mockQuery = {
+        userGames: {
+          findFirst: async () => null,
+        },
+      };
+      Object.defineProperty(mockDb, "query", { value: mockQuery, writable: true });
+
+      // Set up transaction mock
+      mockTransaction(mockDb);
 
       await expect(repository.delete("ug-cross-del", "user-attacker")).rejects.toThrow(
         NotFoundError

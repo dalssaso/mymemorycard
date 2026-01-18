@@ -6,6 +6,7 @@ import {
   GAME_METADATA_SERVICE_TOKEN,
   GAME_REPOSITORY_TOKEN,
   USER_GAME_REPOSITORY_TOKEN,
+  USER_GAME_PROGRESS_REPOSITORY_TOKEN,
 } from "@/container/tokens";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
@@ -33,9 +34,26 @@ import {
   type UserGameUpdateRequestDto,
   type UserGameIdParamsDto,
 } from "../dtos/user-game.dto";
+import {
+  GAME_PROGRESS_PARAMS_SCHEMA,
+  UPDATE_STATUS_REQUEST_SCHEMA,
+  UPDATE_RATING_REQUEST_SCHEMA,
+  UPDATE_NOTES_REQUEST_SCHEMA,
+  UPDATE_FAVORITE_REQUEST_SCHEMA,
+  UPDATE_CUSTOM_FIELDS_BODY_SCHEMA,
+  CUSTOM_FIELDS_RESPONSE_SCHEMA,
+  PROGRESS_UPDATE_RESPONSE_SCHEMA,
+  type GameProgressParamsDto,
+  type UpdateStatusRequestDto,
+  type UpdateRatingRequestDto,
+  type UpdateNotesRequestDto,
+  type UpdateFavoriteRequestDto,
+  type UpdateCustomFieldsBodyDto,
+} from "../dtos/user-game-progress.dto";
 import type { IGameMetadataService } from "../services/game-metadata.service.interface";
 import type { IGameRepository } from "../repositories/game.repository.interface";
 import type { IUserGameRepository } from "../repositories/user-game.repository.interface";
+import type { IUserGameProgressRepository } from "../repositories/user-game-progress.repository.interface";
 import type { GamesEnv, IGamesController } from "./games.controller.interface";
 
 /**
@@ -55,6 +73,8 @@ export class GamesController implements IGamesController {
     private gameRepository: IGameRepository,
     @inject(USER_GAME_REPOSITORY_TOKEN)
     private userGameRepository: IUserGameRepository,
+    @inject(USER_GAME_PROGRESS_REPOSITORY_TOKEN)
+    private userGameProgressRepository: IUserGameProgressRepository,
     @inject(Logger) parentLogger: Logger
   ) {
     this.logger = parentLogger.child("GamesController");
@@ -696,6 +716,482 @@ export class GamesController implements IGamesController {
       await this.userGameRepository.delete(params.id, userId);
 
       return c.body(null, 204);
+    });
+
+    // PATCH /:game_id/platforms/:platform_id/status - Update game status
+    const updateStatusRoute = createRoute({
+      method: "patch",
+      path: "/:game_id/platforms/:platform_id/status",
+      tags: ["user-games"],
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: GAME_PROGRESS_PARAMS_SCHEMA,
+        body: {
+          content: {
+            "application/json": {
+              schema: UPDATE_STATUS_REQUEST_SCHEMA,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: PROGRESS_UPDATE_RESPONSE_SCHEMA,
+            },
+          },
+          description: "Game status updated successfully",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request parameters",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized - invalid or missing token",
+        },
+        404: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Game not found in user library",
+        },
+      },
+    });
+
+    this.userGamesRouter.use("/:game_id/platforms/:platform_id/status", authMiddleware);
+    this.userGamesRouter.openapi(updateStatusRoute, async (c) => {
+      this.logger.debug("PATCH /user-games/:game_id/platforms/:platform_id/status");
+      const params = c.req.valid("param") as GameProgressParamsDto;
+      const body = c.req.valid("json") as UpdateStatusRequestDto;
+      const userId = c.get("user").id;
+
+      // Verify user owns this game on this platform
+      const userGame = await this.userGameRepository.findByUserGamePlatform(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+      if (!userGame) {
+        throw new NotFoundError("Game not found in library");
+      }
+
+      await this.userGameProgressRepository.updateStatus(
+        userId,
+        params.game_id,
+        params.platform_id,
+        body.status
+      );
+
+      return c.json({ success: true }, 200);
+    });
+
+    // PUT /:game_id/platforms/:platform_id/rating - Update game rating
+    const updateRatingRoute = createRoute({
+      method: "put",
+      path: "/:game_id/platforms/:platform_id/rating",
+      tags: ["user-games"],
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: GAME_PROGRESS_PARAMS_SCHEMA,
+        body: {
+          content: {
+            "application/json": {
+              schema: UPDATE_RATING_REQUEST_SCHEMA,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: PROGRESS_UPDATE_RESPONSE_SCHEMA,
+            },
+          },
+          description: "Game rating updated successfully",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request parameters",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized - invalid or missing token",
+        },
+        404: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Game not found in user library",
+        },
+      },
+    });
+
+    this.userGamesRouter.use("/:game_id/platforms/:platform_id/rating", authMiddleware);
+    this.userGamesRouter.openapi(updateRatingRoute, async (c) => {
+      this.logger.debug("PUT /user-games/:game_id/platforms/:platform_id/rating");
+      const params = c.req.valid("param") as GameProgressParamsDto;
+      const body = c.req.valid("json") as UpdateRatingRequestDto;
+      const userId = c.get("user").id;
+
+      // Verify user owns this game on this platform
+      const userGame = await this.userGameRepository.findByUserGamePlatform(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+      if (!userGame) {
+        throw new NotFoundError("Game not found in library");
+      }
+
+      await this.userGameProgressRepository.updateRating(
+        userId,
+        params.game_id,
+        params.platform_id,
+        body.rating
+      );
+
+      return c.json({ success: true }, 200);
+    });
+
+    // POST /:game_id/platforms/:platform_id/notes - Update game notes
+    const updateNotesRoute = createRoute({
+      method: "post",
+      path: "/:game_id/platforms/:platform_id/notes",
+      tags: ["user-games"],
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: GAME_PROGRESS_PARAMS_SCHEMA,
+        body: {
+          content: {
+            "application/json": {
+              schema: UPDATE_NOTES_REQUEST_SCHEMA,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: PROGRESS_UPDATE_RESPONSE_SCHEMA,
+            },
+          },
+          description: "Game notes updated successfully",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request parameters",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized - invalid or missing token",
+        },
+        404: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Game not found in user library",
+        },
+      },
+    });
+
+    this.userGamesRouter.use("/:game_id/platforms/:platform_id/notes", authMiddleware);
+    this.userGamesRouter.openapi(updateNotesRoute, async (c) => {
+      this.logger.debug("POST /user-games/:game_id/platforms/:platform_id/notes");
+      const params = c.req.valid("param") as GameProgressParamsDto;
+      const body = c.req.valid("json") as UpdateNotesRequestDto;
+      const userId = c.get("user").id;
+
+      // Verify user owns this game on this platform
+      const userGame = await this.userGameRepository.findByUserGamePlatform(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+      if (!userGame) {
+        throw new NotFoundError("Game not found in library");
+      }
+
+      await this.userGameProgressRepository.updateNotes(
+        userId,
+        params.game_id,
+        params.platform_id,
+        body.notes
+      );
+
+      return c.json({ success: true }, 200);
+    });
+
+    // PUT /:game_id/platforms/:platform_id/favorite - Toggle favorite status
+    const updateFavoriteRoute = createRoute({
+      method: "put",
+      path: "/:game_id/platforms/:platform_id/favorite",
+      tags: ["user-games"],
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: GAME_PROGRESS_PARAMS_SCHEMA,
+        body: {
+          content: {
+            "application/json": {
+              schema: UPDATE_FAVORITE_REQUEST_SCHEMA,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: PROGRESS_UPDATE_RESPONSE_SCHEMA,
+            },
+          },
+          description: "Game favorite status updated successfully",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request parameters",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized - invalid or missing token",
+        },
+        404: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Game not found in user library",
+        },
+      },
+    });
+
+    this.userGamesRouter.use("/:game_id/platforms/:platform_id/favorite", authMiddleware);
+    this.userGamesRouter.openapi(updateFavoriteRoute, async (c) => {
+      this.logger.debug("PUT /user-games/:game_id/platforms/:platform_id/favorite");
+      const params = c.req.valid("param") as GameProgressParamsDto;
+      const body = c.req.valid("json") as UpdateFavoriteRequestDto;
+      const userId = c.get("user").id;
+
+      // Verify user owns this game on this platform
+      const userGame = await this.userGameRepository.findByUserGamePlatform(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+      if (!userGame) {
+        throw new NotFoundError("Game not found in library");
+      }
+
+      await this.userGameProgressRepository.updateFavorite(
+        userId,
+        params.game_id,
+        params.platform_id,
+        body.is_favorite
+      );
+
+      return c.json({ success: true }, 200);
+    });
+
+    // GET /:game_id/platforms/:platform_id/custom-fields - Get custom fields
+    const getCustomFieldsRoute = createRoute({
+      method: "get",
+      path: "/:game_id/platforms/:platform_id/custom-fields",
+      tags: ["user-games"],
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: GAME_PROGRESS_PARAMS_SCHEMA,
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: CUSTOM_FIELDS_RESPONSE_SCHEMA,
+            },
+          },
+          description: "Custom fields retrieved successfully",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request parameters",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized - invalid or missing token",
+        },
+        404: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Game not found in user library",
+        },
+      },
+    });
+
+    this.userGamesRouter.use("/:game_id/platforms/:platform_id/custom-fields", authMiddleware);
+    this.userGamesRouter.openapi(getCustomFieldsRoute, async (c) => {
+      this.logger.debug("GET /user-games/:game_id/platforms/:platform_id/custom-fields");
+      const params = c.req.valid("param") as GameProgressParamsDto;
+      const userId = c.get("user").id;
+
+      // Verify user owns this game on this platform
+      const userGame = await this.userGameRepository.findByUserGamePlatform(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+      if (!userGame) {
+        throw new NotFoundError("Game not found in library");
+      }
+
+      const customFields = await this.userGameProgressRepository.getCustomFields(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+
+      return c.json(
+        {
+          custom_fields: {
+            completion_percentage: customFields?.completion_percentage ?? null,
+            difficulty_rating: customFields?.difficulty_rating ?? null,
+          },
+        },
+        200
+      );
+    });
+
+    // PUT /:game_id/platforms/:platform_id/custom-fields - Update custom fields
+    const updateCustomFieldsRoute = createRoute({
+      method: "put",
+      path: "/:game_id/platforms/:platform_id/custom-fields",
+      tags: ["user-games"],
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: GAME_PROGRESS_PARAMS_SCHEMA,
+        body: {
+          content: {
+            "application/json": {
+              schema: UPDATE_CUSTOM_FIELDS_BODY_SCHEMA,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: PROGRESS_UPDATE_RESPONSE_SCHEMA,
+            },
+          },
+          description: "Custom fields updated successfully",
+        },
+        400: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Invalid request parameters",
+        },
+        401: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Unauthorized - invalid or missing token",
+        },
+        404: {
+          content: {
+            "application/json": {
+              schema: ErrorResponseSchema,
+            },
+          },
+          description: "Game not found in user library",
+        },
+      },
+    });
+
+    this.userGamesRouter.use("/:game_id/platforms/:platform_id/custom-fields", authMiddleware);
+    this.userGamesRouter.openapi(updateCustomFieldsRoute, async (c) => {
+      this.logger.debug("PUT /user-games/:game_id/platforms/:platform_id/custom-fields");
+      const params = c.req.valid("param") as GameProgressParamsDto;
+      const body = c.req.valid("json") as UpdateCustomFieldsBodyDto;
+      const userId = c.get("user").id;
+
+      // Verify user owns this game on this platform
+      const userGame = await this.userGameRepository.findByUserGamePlatform(
+        userId,
+        params.game_id,
+        params.platform_id
+      );
+      if (!userGame) {
+        throw new NotFoundError("Game not found in library");
+      }
+
+      await this.userGameProgressRepository.updateCustomFields(
+        userId,
+        params.game_id,
+        params.platform_id,
+        {
+          completion_percentage: body.completion_percentage,
+          difficulty_rating: body.difficulty_rating,
+        }
+      );
+
+      return c.json({ success: true }, 200);
     });
   }
 }

@@ -5,6 +5,7 @@ import { GamesController } from "@/features/games/controllers/games.controller";
 import type { IGameMetadataService } from "@/features/games/services/game-metadata.service.interface";
 import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
 import type { IUserGameRepository } from "@/features/games/repositories/user-game.repository.interface";
+import type { IUserGameProgressRepository } from "@/features/games/repositories/user-game-progress.repository.interface";
 import type { Game, UserGame, UserGameWithRelations } from "@/features/games/types";
 import { createMockLogger } from "@/tests/helpers/repository.mocks";
 import { container, resetContainer } from "@/container";
@@ -14,6 +15,7 @@ import {
   GAME_METADATA_SERVICE_TOKEN,
   GAME_REPOSITORY_TOKEN,
   USER_GAME_REPOSITORY_TOKEN,
+  USER_GAME_PROGRESS_REPOSITORY_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_REPOSITORY_TOKEN,
 } from "@/container/tokens";
@@ -94,6 +96,7 @@ describe("GamesController", () => {
   let gameMetadataService: IGameMetadataService;
   let gameRepository: IGameRepository;
   let userGameRepository: IUserGameRepository;
+  let userGameProgressRepository: IUserGameProgressRepository;
 
   beforeEach(() => {
     resetContainer();
@@ -163,18 +166,33 @@ describe("GamesController", () => {
       countByUser: mock().mockResolvedValue(0),
     };
 
+    userGameProgressRepository = {
+      findByGameAndPlatform: mock().mockResolvedValue(null),
+      updateStatus: mock().mockResolvedValue(undefined),
+      updateRating: mock().mockResolvedValue(undefined),
+      updateNotes: mock().mockResolvedValue(undefined),
+      updateFavorite: mock().mockResolvedValue(undefined),
+      getCustomFields: mock().mockResolvedValue(null),
+      updateCustomFields: mock().mockResolvedValue(undefined),
+    };
+
     container.registerInstance<IGameMetadataService>(
       GAME_METADATA_SERVICE_TOKEN,
       gameMetadataService
     );
     container.registerInstance<IGameRepository>(GAME_REPOSITORY_TOKEN, gameRepository);
     container.registerInstance<IUserGameRepository>(USER_GAME_REPOSITORY_TOKEN, userGameRepository);
+    container.registerInstance<IUserGameProgressRepository>(
+      USER_GAME_PROGRESS_REPOSITORY_TOKEN,
+      userGameProgressRepository
+    );
 
     const logger = createMockLogger();
     controller = new GamesController(
       gameMetadataService,
       gameRepository,
       userGameRepository,
+      userGameProgressRepository,
       logger
     );
     controller.router.onError(createErrorHandler(logger));

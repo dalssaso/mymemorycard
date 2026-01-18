@@ -26,9 +26,12 @@ import {
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
   REDIS_CONNECTION_TOKEN,
+  STORE_CONTROLLER_TOKEN,
   STORE_REPOSITORY_TOKEN,
+  STORE_SERVICE_TOKEN,
   TOKEN_SERVICE_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
+  USER_GAME_PROGRESS_REPOSITORY_TOKEN,
   USER_GAME_REPOSITORY_TOKEN,
   USER_PLATFORMS_CONTROLLER_TOKEN,
   USER_PLATFORMS_REPOSITORY_TOKEN,
@@ -137,6 +140,8 @@ import { PlatformRepository as GamesPlatformRepository } from "@/features/games/
 import type { IPlatformRepository as IGamesPlatformRepository } from "@/features/games/repositories/platform.repository.interface";
 import { StoreRepository } from "@/features/games/repositories/store.repository";
 import type { IStoreRepository } from "@/features/games/repositories/store.repository.interface";
+import { UserGameProgressRepository } from "@/features/games/repositories/user-game-progress.repository";
+import type { IUserGameProgressRepository } from "@/features/games/repositories/user-game-progress.repository.interface";
 
 // Games - Services
 import { GameMetadataService } from "@/features/games/services/game-metadata.service";
@@ -145,6 +150,14 @@ import type { IGameMetadataService } from "@/features/games/services/game-metada
 // Games - Controllers
 import { GamesController } from "@/features/games/controllers/games.controller";
 import type { IGamesController } from "@/features/games/controllers/games.controller.interface";
+
+// Stores - Services
+import { StoreService } from "@/features/stores/services/store.service";
+import type { IStoreService } from "@/features/stores/services/store.service.interface";
+
+// Stores - Controllers
+import { StoreController } from "@/features/stores/controllers/store.controller";
+import type { IStoreController } from "@/features/stores/controllers/store.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -273,6 +286,10 @@ export function registerDependencies(): void {
     GamesPlatformRepository
   );
   container.registerSingleton<IStoreRepository>(STORE_REPOSITORY_TOKEN, StoreRepository);
+  container.registerSingleton<IUserGameProgressRepository>(
+    USER_GAME_PROGRESS_REPOSITORY_TOKEN,
+    UserGameProgressRepository
+  );
 
   // Games Domain - Services
   container.registerSingleton<IGameMetadataService>(
@@ -282,6 +299,12 @@ export function registerDependencies(): void {
 
   // Games Domain - Controllers
   container.registerSingleton<IGamesController>(GAMES_CONTROLLER_TOKEN, GamesController);
+
+  // Stores Domain - Services
+  container.registerSingleton<IStoreService>(STORE_SERVICE_TOKEN, StoreService);
+
+  // Stores Domain - Controllers
+  container.registerSingleton<IStoreController>(STORE_CONTROLLER_TOKEN, StoreController);
 }
 
 /**
