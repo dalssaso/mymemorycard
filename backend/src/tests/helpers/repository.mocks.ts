@@ -3,6 +3,7 @@ import { mock } from "bun:test";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { type users } from "@/db/schema";
+import type { Config } from "@/infrastructure/config/config";
 import type { IConfig } from "@/infrastructure/config/config.interface";
 import { IgdbCache } from "@/integrations/igdb/igdb.cache";
 import type { IRateLimiter } from "@/integrations/igdb/igdb.rate-limiter";
@@ -388,7 +389,7 @@ export function createMockRateLimiter(): IRateLimiter {
  * Create a mock config object with sensible defaults.
  *
  * @param overrides - Optional partial overrides for specific fields.
- * @returns Mocked IConfig.
+ * @returns Mocked Config instance.
  *
  * @example
  * ```typescript
@@ -404,7 +405,9 @@ export function createMockRateLimiter(): IRateLimiter {
  * })
  * ```
  */
-export function createMockConfig(overrides?: Partial<IConfig>): IConfig {
+export function createMockConfig(overrides?: Partial<IConfig>): Config {
+  // Cast to Config to satisfy type requirements while avoiding
+  // instantiation of the real Config class (which reads env vars)
   return {
     database: { url: "postgresql://test:test@localhost:5432/test" },
     redis: { url: "redis://localhost:6379" },
@@ -417,7 +420,7 @@ export function createMockConfig(overrides?: Partial<IConfig>): IConfig {
     isProduction: false,
     skipRedisConnect: false,
     ...overrides,
-  };
+  } as Config;
 }
 
 /**

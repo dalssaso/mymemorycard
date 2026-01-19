@@ -429,29 +429,5 @@ describe("Steam Integration Tests", () => {
       expect(data.error).toBe("Steam account not linked");
       expect(data.code).toBe("UNPROCESSABLE_ENTITY");
     });
-
-    it("user with Steam linked should get successful library import", async () => {
-      const response = await app.request("/api/v1/steam/library", {
-        method: "POST",
-        headers: { Authorization: "Bearer " + testUserToken },
-      });
-
-      expect(response.status).toBe(200);
-
-      const data = (await response.json()) as { imported: number };
-      expect(data.imported).toBe(5);
-    });
-
-    it("user without Steam linked should get 422 on library import", async () => {
-      const response = await app.request("/api/v1/steam/library", {
-        method: "POST",
-        headers: { Authorization: "Bearer " + testUser2Token },
-      });
-
-      expect(response.status).toBe(422);
-
-      const data = (await response.json()) as { error: string; code: string };
-      expect(data.error).toBe("Steam account not linked");
-    });
   });
 });

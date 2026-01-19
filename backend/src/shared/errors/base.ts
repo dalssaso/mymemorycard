@@ -42,7 +42,19 @@ export class ConflictError extends DomainError {
   }
 }
 
+/**
+ * Represents a 422 Unprocessable Entity domain error.
+ * Used when the request is syntactically valid but semantically incorrect
+ * (e.g., missing required linked accounts or invalid business state).
+ *
+ * Error code: "UNPROCESSABLE_ENTITY"
+ * HTTP status: 422
+ */
 export class UnprocessableEntityError extends DomainError {
+  /**
+   * Creates a new UnprocessableEntityError.
+   * @param message - Human-readable error message describing the issue
+   */
   constructor(message: string) {
     super(message, "UNPROCESSABLE_ENTITY", 422);
   }

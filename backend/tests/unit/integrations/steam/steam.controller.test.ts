@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import "reflect-metadata";
 
 import { container, resetContainer } from "@/container";
@@ -6,9 +6,11 @@ import { TOKEN_SERVICE_TOKEN, USER_REPOSITORY_TOKEN } from "@/container/tokens";
 import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
 import type { ITokenService } from "@/features/auth/services/token.service.interface";
 import type { Config } from "@/infrastructure/config/config";
+import { createErrorHandler } from "@/infrastructure/http/middleware/error.middleware";
 import { SteamController } from "@/integrations/steam/steam.controller";
 import type { ISteamService } from "@/integrations/steam/steam.service.interface";
 import type { Logger } from "@/infrastructure/logging/logger";
+import { UnprocessableEntityError } from "@/shared/errors/base";
 import {
   createMockConfig,
   createMockLogger,
@@ -49,8 +51,9 @@ describe("SteamController", () => {
 
     mockService = createMockSteamService();
     mockLogger = createMockLogger();
-    mockConfig = createMockConfig() as Config;
+    mockConfig = createMockConfig();
     controller = new SteamController(mockService, mockLogger, mockConfig);
+    controller.router.onError(createErrorHandler(mockLogger));
   });
 
   afterEach(() => {
@@ -167,6 +170,11 @@ describe("SteamController", () => {
       expect(response.status).toBe(401);
     });
 
+    it("returns 401 for /callback without auth", async () => {
+      const response = await controller.router.request("/callback");
+      expect(response.status).toBe(401);
+    });
+
     it("returns 401 for /library without auth", async () => {
       const response = await controller.router.request("/library", { method: "POST" });
       expect(response.status).toBe(401);
@@ -179,6 +187,56 @@ describe("SteamController", () => {
         body: JSON.stringify({ game_id: "550e8400-e29b-41d4-a716-446655440000" }),
       });
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe("Steam not linked errors", () => {
+    it("returns 422 for /library when Steam not linked", async () => {
+      // Override mock to throw UnprocessableEntityError
+      const unlinkedMockService = createMockSteamService({
+        importLibrary: mock().mockRejectedValue(
+          new UnprocessableEntityError("Steam account not linked")
+        ),
+      });
+      const unlinkedController = new SteamController(unlinkedMockService, mockLogger, mockConfig);
+      unlinkedController.router.onError(createErrorHandler(mockLogger));
+
+      const response = await unlinkedController.router.request("/library", {
+        method: "POST",
+        headers: { Authorization: "Bearer token" },
+      });
+
+      expect(response.status).toBe(422);
+
+      const data = (await response.json()) as { error: string; code: string };
+      expect(data.error).toBe("Steam account not linked");
+      expect(data.code).toBe("UNPROCESSABLE_ENTITY");
+    });
+
+    it("returns 422 for /sync when Steam not linked", async () => {
+      // Override mock to throw UnprocessableEntityError
+      const unlinkedMockService = createMockSteamService({
+        syncAchievements: mock().mockRejectedValue(
+          new UnprocessableEntityError("Steam account not linked")
+        ),
+      });
+      const unlinkedController = new SteamController(unlinkedMockService, mockLogger, mockConfig);
+      unlinkedController.router.onError(createErrorHandler(mockLogger));
+
+      const response = await unlinkedController.router.request("/sync", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ game_id: "550e8400-e29b-41d4-a716-446655440000" }),
+      });
+
+      expect(response.status).toBe(422);
+
+      const data = (await response.json()) as { error: string; code: string };
+      expect(data.error).toBe("Steam account not linked");
+      expect(data.code).toBe("UNPROCESSABLE_ENTITY");
     });
   });
 });
