@@ -248,13 +248,15 @@ export class RetroAchievementsService implements IRetroAchievementsService {
       if (existingAchievements.length > 0) {
         platformId = existingAchievements[0].platformId;
       } else {
-        // For new RetroAchievements, try to find a retro family platform
+        // For new RetroAchievements, require a retro family platform
         const retroPlatforms = await this.platformRepository.findByFamily("retro");
         const retroPlatform = retroPlatforms[0];
-        platformId = retroPlatform?.id ?? (await this.platformRepository.list())[0]?.id;
-        if (!platformId) {
-          throw new ValidationError("No platform available for RetroAchievements");
+        if (!retroPlatform) {
+          throw new ValidationError(
+            "No retro family platform configured. Please create a platform with family 'retro' first."
+          );
         }
+        platformId = retroPlatform.id;
       }
 
       // Prepare achievement records
