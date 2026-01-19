@@ -3,8 +3,10 @@ import { injectable, inject } from "tsyringe";
 
 import { STEAM_SERVICE_TOKEN } from "@/container/tokens";
 import { ErrorResponseSchema } from "@/features/auth/dtos/auth.dto";
+import { Config } from "@/infrastructure/config/config";
 import { createAuthMiddleware } from "@/infrastructure/http/middleware/auth.middleware";
 import { Logger } from "@/infrastructure/logging/logger";
+import { ValidationError } from "@/shared/errors/base";
 
 import {
   STEAM_CONNECT_RESPONSE_SCHEMA,
@@ -28,7 +30,8 @@ export class SteamController implements ISteamController {
   constructor(
     @inject(STEAM_SERVICE_TOKEN)
     private steamService: ISteamService,
-    @inject(Logger) parentLogger: Logger
+    @inject(Logger) parentLogger: Logger,
+    @inject(Config) private config: Config
   ) {
     this.logger = parentLogger.child("SteamController");
     this.router = new OpenAPIHono<SteamEnv>();
@@ -74,11 +77,18 @@ export class SteamController implements ISteamController {
     this.router.openapi(connectRoute, (c) => {
       this.logger.debug("GET /steam/connect");
 
-      // Build return URL based on request using URL parsing
-      const requestUrl = new URL(c.req.url);
-      requestUrl.pathname = requestUrl.pathname.replace(/\/connect$/, "/callback");
-      const returnUrl = requestUrl.toString();
-      const redirectUrl = this.steamService.getLoginUrl(returnUrl);
+      // Build callback URL using configured origin, x-forwarded headers, or request URL
+      let origin: string;
+      if (this.config.cors.origin) {
+        origin = this.config.cors.origin;
+      } else if (c.req.header("x-forwarded-proto") && c.req.header("x-forwarded-host")) {
+        origin = `${c.req.header("x-forwarded-proto")}://${c.req.header("x-forwarded-host")}`;
+      } else {
+        origin = new URL(c.req.url).origin;
+      }
+
+      const callbackUrl = `${origin}/api/v1/steam/callback`;
+      const redirectUrl = this.steamService.getLoginUrl(callbackUrl);
 
       return c.json({ redirect_url: redirectUrl }, 200);
     });
@@ -130,13 +140,7 @@ export class SteamController implements ISteamController {
 
       if (!steamId) {
         this.logger.warn("Steam OpenID validation failed - invalid callback parameters");
-        return c.json(
-          {
-            error: "Invalid Steam OpenID callback parameters",
-            code: "STEAM_CALLBACK_INVALID",
-          },
-          400
-        );
+        throw new ValidationError("Invalid Steam OpenID callback parameters");
       }
 
       // Link account and get player info

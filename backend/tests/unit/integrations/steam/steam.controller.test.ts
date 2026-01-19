@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import "reflect-metadata";
 
+import type { Config } from "@/infrastructure/config/config";
 import { SteamController } from "@/integrations/steam/steam.controller";
-import { createMockLogger, createMockSteamService } from "@/tests/helpers/repository.mocks";
+import {
+  createMockConfig,
+  createMockLogger,
+  createMockSteamService,
+} from "@/tests/helpers/repository.mocks";
 import type { ISteamService } from "@/integrations/steam/steam.service.interface";
 import type { Logger } from "@/infrastructure/logging/logger";
 
@@ -10,11 +15,13 @@ describe("SteamController", () => {
   let controller: SteamController;
   let mockService: ISteamService;
   let mockLogger: Logger;
+  let mockConfig: Config;
 
   beforeEach(() => {
     mockService = createMockSteamService();
     mockLogger = createMockLogger();
-    controller = new SteamController(mockService, mockLogger);
+    mockConfig = createMockConfig() as Config;
+    controller = new SteamController(mockService, mockLogger, mockConfig);
   });
 
   describe("routes", () => {

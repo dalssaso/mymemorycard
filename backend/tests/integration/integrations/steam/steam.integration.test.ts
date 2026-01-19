@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect, beforeAll, afterAll, mock } from "bun:test";
 import "reflect-metadata";
 import { inArray } from "drizzle-orm";
-import { mock } from "bun:test";
 import { registerDependencies, resetContainer, container } from "@/container";
 import { IGDB_SERVICE_TOKEN, STEAM_SERVICE_TOKEN } from "@/container/tokens";
 import { createHonoApp } from "@/infrastructure/http/app";
@@ -273,7 +272,7 @@ describe("Steam Integration Tests", () => {
 
       const data = (await response.json()) as { error: string; code: string };
       expect(data.error).toContain("Invalid");
-      expect(data.code).toBe("STEAM_CALLBACK_INVALID");
+      expect(data.code).toBe("VALIDATION_ERROR");
     });
 
     it("should return 401 without token", async () => {
