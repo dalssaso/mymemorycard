@@ -10,10 +10,13 @@ import { createMockIgdbService, createMockSteamService } from "@/tests/helpers/r
 import { ENCRYPTION_SERVICE_TOKEN } from "@/container/tokens";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import { STEAM_CREDENTIALS_FIXTURE } from "@/tests/helpers/steam.fixtures";
-import { NotFoundError } from "@/shared/errors/base";
+import { NotFoundError, UnprocessableEntityError } from "@/shared/errors/base";
 
 /** Non-existent game UUID used for 404 testing */
 const NON_EXISTENT_GAME_ID = "00000000-0000-0000-0000-000000000000";
+
+/** User ID that has Steam credentials linked (set in beforeAll) */
+let linkedSteamUserId = "";
 
 describe("Steam Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -45,14 +48,22 @@ describe("Steam Integration Tests", () => {
         }),
         // Mock link account
         linkAccount: mock().mockResolvedValue(STEAM_CREDENTIALS_FIXTURE),
-        // Mock library import
-        importLibrary: mock().mockResolvedValue({
-          imported: 5,
-          skipped: 2,
-          errors: [],
+        // Mock library import - user-aware, throws 422 for users without Steam linked
+        importLibrary: mock().mockImplementation(async (userId: string) => {
+          if (userId !== linkedSteamUserId) {
+            throw new UnprocessableEntityError("Steam account not linked");
+          }
+          return {
+            imported: 5,
+            skipped: 2,
+            errors: [],
+          };
         }),
-        // Mock sync achievements - throws NotFoundError for non-existent games
-        syncAchievements: mock().mockImplementation(async (_userId: string, gameId: string) => {
+        // Mock sync achievements - user-aware, throws errors for various scenarios
+        syncAchievements: mock().mockImplementation(async (userId: string, gameId: string) => {
+          if (userId !== linkedSteamUserId) {
+            throw new UnprocessableEntityError("Steam account not linked");
+          }
           if (gameId === NON_EXISTENT_GAME_ID) {
             throw new NotFoundError("Game", gameId);
           }
@@ -96,6 +107,9 @@ describe("Steam Integration Tests", () => {
     testUserId = registerData1.user.id;
     testUserToken = registerData1.token;
     createdUserIds.push(testUserId);
+
+    // Track which user has Steam linked for user-aware mocks
+    linkedSteamUserId = testUserId;
 
     // Create second test user for cross-user tests
     const username2 = "steamtest2_" + timestamp;
@@ -312,6 +326,19 @@ describe("Steam Integration Tests", () => {
 
       expect(response.status).toBe(401);
     });
+
+    it("should return 422 for user without Steam linked", async () => {
+      const response = await app.request("/api/v1/steam/library", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + testUser2Token },
+      });
+
+      expect(response.status).toBe(422);
+
+      const data = (await response.json()) as { error: string; code: string };
+      expect(data.error).toBe("Steam account not linked");
+      expect(data.code).toBe("UNPROCESSABLE_ENTITY");
+    });
   });
 
   describe("POST /api/v1/steam/sync", () => {
@@ -384,13 +411,7 @@ describe("Steam Integration Tests", () => {
   });
 
   describe("Cross-user authorization tests", () => {
-    // TODO: This test is currently ineffective because the mock doesn't track
-    // which users have Steam credentials linked. In a real scenario, the service
-    // would throw NotFoundError for users without Steam credentials.
-    // To properly test this, we would need to:
-    // 1. Make the mock track user IDs and their credential status
-    // 2. Or use a partial integration test with real credential repository
-    it.skip("user without Steam linked should not access sync", async () => {
+    it("user without Steam linked should get 422 on sync", async () => {
       const response = await app.request("/api/v1/steam/sync", {
         method: "POST",
         headers: {
@@ -402,26 +423,35 @@ describe("Steam Integration Tests", () => {
         }),
       });
 
-      // Real service would return 404 (credentials not found) or 422 (not linked)
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(422);
+
+      const data = (await response.json()) as { error: string; code: string };
+      expect(data.error).toBe("Steam account not linked");
+      expect(data.code).toBe("UNPROCESSABLE_ENTITY");
     });
 
-    it("each user should get their own library import results", async () => {
-      // Both users importing should be isolated
-      const [response1, response2] = await Promise.all([
-        app.request("/api/v1/steam/library", {
-          method: "POST",
-          headers: { Authorization: "Bearer " + testUserToken },
-        }),
-        app.request("/api/v1/steam/library", {
-          method: "POST",
-          headers: { Authorization: "Bearer " + testUser2Token },
-        }),
-      ]);
+    it("user with Steam linked should get successful library import", async () => {
+      const response = await app.request("/api/v1/steam/library", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + testUserToken },
+      });
 
-      // Both should receive responses (mock returns same data for both)
-      expect(response1.status).toBe(200);
-      expect(response2.status).toBe(200);
+      expect(response.status).toBe(200);
+
+      const data = (await response.json()) as { imported: number };
+      expect(data.imported).toBe(5);
+    });
+
+    it("user without Steam linked should get 422 on library import", async () => {
+      const response = await app.request("/api/v1/steam/library", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + testUser2Token },
+      });
+
+      expect(response.status).toBe(422);
+
+      const data = (await response.json()) as { error: string; code: string };
+      expect(data.error).toBe("Steam account not linked");
     });
   });
 });

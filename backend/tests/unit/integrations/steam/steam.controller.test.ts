@@ -1,15 +1,19 @@
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import "reflect-metadata";
 
+import { container, resetContainer } from "@/container";
+import { TOKEN_SERVICE_TOKEN, USER_REPOSITORY_TOKEN } from "@/container/tokens";
+import type { IUserRepository } from "@/features/auth/repositories/user.repository.interface";
+import type { ITokenService } from "@/features/auth/services/token.service.interface";
 import type { Config } from "@/infrastructure/config/config";
 import { SteamController } from "@/integrations/steam/steam.controller";
+import type { ISteamService } from "@/integrations/steam/steam.service.interface";
+import type { Logger } from "@/infrastructure/logging/logger";
 import {
   createMockConfig,
   createMockLogger,
   createMockSteamService,
 } from "@/tests/helpers/repository.mocks";
-import type { ISteamService } from "@/integrations/steam/steam.service.interface";
-import type { Logger } from "@/infrastructure/logging/logger";
 
 describe("SteamController", () => {
   let controller: SteamController;
@@ -18,10 +22,39 @@ describe("SteamController", () => {
   let mockConfig: Config;
 
   beforeEach(() => {
+    resetContainer();
+
+    // Register mock auth dependencies for middleware
+    container.registerInstance<ITokenService>(TOKEN_SERVICE_TOKEN, {
+      generateToken: () => "token",
+      verifyToken: () => ({ userId: "user-1", username: "testuser" }),
+    });
+
+    container.registerInstance<IUserRepository>(USER_REPOSITORY_TOKEN, {
+      findById: async () => ({
+        id: "user-1",
+        username: "testuser",
+        email: "test@example.com",
+        passwordHash: "hash",
+        isAdmin: false,
+        createdAt: new Date(),
+        updatedAt: null,
+      }),
+      findByUsername: async () => null,
+      create: async () => {
+        throw new Error("not used");
+      },
+      exists: async () => false,
+    });
+
     mockService = createMockSteamService();
     mockLogger = createMockLogger();
     mockConfig = createMockConfig() as Config;
     controller = new SteamController(mockService, mockLogger, mockConfig);
+  });
+
+  afterEach(() => {
+    resetContainer();
   });
 
   describe("routes", () => {
@@ -54,37 +87,98 @@ describe("SteamController", () => {
     });
   });
 
-  describe("service delegation", () => {
-    it("delegates getLoginUrl to service", () => {
-      // Verify the service method is available for delegation
-      const loginUrl = mockService.getLoginUrl("http://test.com/callback");
-      expect(loginUrl).toBe("https://steamcommunity.com/openid/login?...");
-      expect(mockService.getLoginUrl).toHaveBeenCalledWith("http://test.com/callback");
+  describe("service delegation via route handlers", () => {
+    it("delegates getLoginUrl to service via /connect route", async () => {
+      const response = await controller.router.request("/connect", {
+        headers: { Authorization: "Bearer token" },
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockService.getLoginUrl).toHaveBeenCalled();
+
+      const data = (await response.json()) as { redirect_url: string };
+      expect(data.redirect_url).toContain("steamcommunity.com");
     });
 
-    it("delegates validateCallback to service", async () => {
-      const params = { mode: "id_res" };
-      const result = await mockService.validateCallback(params);
-      expect(result).toBe("76561198012345678");
-      expect(mockService.validateCallback).toHaveBeenCalledWith(params);
+    it("delegates importLibrary to service via /library route", async () => {
+      const response = await controller.router.request("/library", {
+        method: "POST",
+        headers: { Authorization: "Bearer token" },
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockService.importLibrary).toHaveBeenCalledWith("user-1");
+
+      const data = (await response.json()) as {
+        imported: number;
+        skipped: number;
+        errors: string[];
+      };
+      expect(data.imported).toBe(0);
+      expect(data.skipped).toBe(0);
     });
 
-    it("delegates importLibrary to service", async () => {
-      const result = await mockService.importLibrary("user-id");
-      expect(result).toEqual({ imported: 0, skipped: 0, errors: [] });
-      expect(mockService.importLibrary).toHaveBeenCalledWith("user-id");
+    it("delegates syncAchievements to service via /sync route", async () => {
+      const gameId = "550e8400-e29b-41d4-a716-446655440000";
+      const response = await controller.router.request("/sync", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ game_id: gameId }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockService.syncAchievements).toHaveBeenCalledWith("user-1", gameId);
+
+      const data = (await response.json()) as {
+        synced: number;
+        unlocked: number;
+        total: number;
+      };
+      expect(data.synced).toBe(0);
+      expect(data.unlocked).toBe(0);
+      expect(data.total).toBe(0);
     });
 
-    it("delegates syncAchievements to service", async () => {
-      const result = await mockService.syncAchievements("user-id", "game-id");
-      expect(result).toEqual({ synced: 0, unlocked: 0, total: 0 });
-      expect(mockService.syncAchievements).toHaveBeenCalledWith("user-id", "game-id");
+    it("delegates validateCallback and linkAccount via /callback route", async () => {
+      const params = new URLSearchParams();
+      params.set("openid.mode", "id_res");
+      params.set("openid.claimed_id", "https://steamcommunity.com/openid/id/76561198012345678");
+
+      const response = await controller.router.request("/callback?" + params.toString(), {
+        headers: { Authorization: "Bearer token" },
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockService.validateCallback).toHaveBeenCalled();
+      expect(mockService.linkAccount).toHaveBeenCalledWith("user-1", "76561198012345678");
+
+      const data = (await response.json()) as { status: string; steam_id: string };
+      expect(data.status).toBe("linked");
+      expect(data.steam_id).toBeDefined();
+    });
+  });
+
+  describe("authentication", () => {
+    it("returns 401 for /connect without auth", async () => {
+      const response = await controller.router.request("/connect");
+      expect(response.status).toBe(401);
     });
 
-    it("delegates linkAccount to service", async () => {
-      const result = await mockService.linkAccount("user-id", "steam-id");
-      expect(result.steam_id).toBeDefined();
-      expect(mockService.linkAccount).toHaveBeenCalledWith("user-id", "steam-id");
+    it("returns 401 for /library without auth", async () => {
+      const response = await controller.router.request("/library", { method: "POST" });
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 401 for /sync without auth", async () => {
+      const response = await controller.router.request("/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ game_id: "550e8400-e29b-41d4-a716-446655440000" }),
+      });
+      expect(response.status).toBe(401);
     });
   });
 });

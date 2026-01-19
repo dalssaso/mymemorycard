@@ -42,6 +42,12 @@ export class ConflictError extends DomainError {
   }
 }
 
+export class UnprocessableEntityError extends DomainError {
+  constructor(message: string) {
+    super(message, "UNPROCESSABLE_ENTITY", 422);
+  }
+}
+
 export class InternalError extends DomainError {
   constructor(message: string, details?: Record<string, unknown>) {
     super(message, "INTERNAL_ERROR", 500, details);
