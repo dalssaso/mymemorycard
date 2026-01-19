@@ -1,5 +1,41 @@
 # Changelog
 
+## [2.0.0](https://github.com/dalssaso/mymemorycard/compare/backend-v1.3.0...backend-v2.0.0) (2026-01-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* POST /api/v1/credentials/validate response now returns is_valid instead of valid.
+
+### Features
+
+* add embeddings infrastructure for ai features ([#27](https://github.com/dalssaso/mymemorycard/issues/27)) ([9d78fa2](https://github.com/dalssaso/mymemorycard/commit/9d78fa2862da90b7f06dcfafc65c571893bd8a61))
+* complete b0.5 user-platforms di migration ([#40](https://github.com/dalssaso/mymemorycard/issues/40)) ([fb6e8ff](https://github.com/dalssaso/mymemorycard/commit/fb6e8ff305c9e83df6b24c0807441843d8c612b6))
+* complete b0.6 preferences domain di migration ([#42](https://github.com/dalssaso/mymemorycard/issues/42)) ([dcf9d57](https://github.com/dalssaso/mymemorycard/commit/dcf9d57dcefa0ff2de6aae700bbaf96401174e99))
+* complete b0.7 admin domain di migration ([#43](https://github.com/dalssaso/mymemorycard/issues/43)) ([626b43e](https://github.com/dalssaso/mymemorycard/commit/626b43efded79ce67587951d5f0c76fa69454ede))
+* complete b1 schema infrastructure for igdb migration ([#44](https://github.com/dalssaso/mymemorycard/issues/44)) ([c3f6be1](https://github.com/dalssaso/mymemorycard/commit/c3f6be12f08a708af7f6fe5b22d2959d45303ea6))
+* implement B2 credentials feature ([#45](https://github.com/dalssaso/mymemorycard/issues/45)) ([e263c8a](https://github.com/dalssaso/mymemorycard/commit/e263c8a151d3e88eacb7fbc46a5f3c794a61a451))
+* implement B3 IGDB integration service ([#46](https://github.com/dalssaso/mymemorycard/issues/46)) ([d4c6dca](https://github.com/dalssaso/mymemorycard/commit/d4c6dca72859cb4a74feb7a015f71d65880c0baf))
+* implement B4 games domain with di architecture ([#47](https://github.com/dalssaso/mymemorycard/issues/47)) ([5f20ac8](https://github.com/dalssaso/mymemorycard/commit/5f20ac83758ba96a4c064734ac0632040e9bc132))
+* implement B5 cleanup and legacy removal ([#51](https://github.com/dalssaso/mymemorycard/issues/51)) ([e2886bf](https://github.com/dalssaso/mymemorycard/commit/e2886bf28a4759ad150441482c21871c206e1cd0))
+* implement B7 Steam and RetroAchievements integration ([#54](https://github.com/dalssaso/mymemorycard/issues/54)) ([1025c04](https://github.com/dalssaso/mymemorycard/commit/1025c045e5e6ece0e3012ba889fdccdd91dd95a5))
+* rag integration with semantic search ([#28](https://github.com/dalssaso/mymemorycard/issues/28)) ([6a6ed5a](https://github.com/dalssaso/mymemorycard/commit/6a6ed5af09b01b32eeeff101a81224128246a2bd))
+
+
+### Bug Fixes
+
+* address credential validation, type safety, and IGDB ID propagation issues ([#52](https://github.com/dalssaso/mymemorycard/issues/52)) ([cfb2613](https://github.com/dalssaso/mymemorycard/commit/cfb2613af500bff7e6c965d54f1767e07c6a3665))
+* standardize credentials validation response to use is_valid field ([#53](https://github.com/dalssaso/mymemorycard/issues/53)) ([4b006b9](https://github.com/dalssaso/mymemorycard/commit/4b006b988ee214a748ecfe184f266910e7ee1d12))
+
+
+### Code Refactoring
+
+* auth domain di migration ([#30](https://github.com/dalssaso/mymemorycard/issues/30)) ([d4eb273](https://github.com/dalssaso/mymemorycard/commit/d4eb2738ff22a915c29340264f0c28ed76a6ebf4))
+* frontend and backend refactor for auth and api handlers using openai ([#37](https://github.com/dalssaso/mymemorycard/issues/37)) ([2dea782](https://github.com/dalssaso/mymemorycard/commit/2dea782a9007dfe0a6b48d0700bdb9f45267dcc0))
+* migrate from openai sdk to vercel ai sdk ([#25](https://github.com/dalssaso/mymemorycard/issues/25)) ([bc62e1a](https://github.com/dalssaso/mymemorycard/commit/bc62e1aa8d65348b06c6687f62d1d1e30dcb41ad))
+* platforms feature into DI ([#39](https://github.com/dalssaso/mymemorycard/issues/39)) ([7430602](https://github.com/dalssaso/mymemorycard/commit/7430602f4bfe986137e357d65c58acd15967c3e8))
+* remove ai features from backend and apply test improvements ([#35](https://github.com/dalssaso/mymemorycard/issues/35)) ([42f1244](https://github.com/dalssaso/mymemorycard/commit/42f124412ef4fd42d263776e3945313c7866c2f7))
+
 ## [1.3.0](https://github.com/dalssaso/mymemorycard/compare/backend-v1.2.3...backend-v1.3.0) (2026-01-08)
 
 

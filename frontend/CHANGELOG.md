@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.0.0](https://github.com/dalssaso/mymemorycard/compare/frontend-v1.3.0...frontend-v2.0.0) (2026-01-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* POST /api/v1/credentials/validate response now returns is_valid instead of valid.
+
+### Features
+
+* complete b1 schema infrastructure for igdb migration ([#44](https://github.com/dalssaso/mymemorycard/issues/44)) ([c3f6be1](https://github.com/dalssaso/mymemorycard/commit/c3f6be12f08a708af7f6fe5b22d2959d45303ea6))
+* **frontend:** design system foundation ([#33](https://github.com/dalssaso/mymemorycard/issues/33)) ([2ce6b51](https://github.com/dalssaso/mymemorycard/commit/2ce6b5123239df6074b61363b455c7ebf75217ef))
+* implement F1-F3 frontend API integration ([#48](https://github.com/dalssaso/mymemorycard/issues/48)) ([d8c5ce0](https://github.com/dalssaso/mymemorycard/commit/d8c5ce03f45e32376169792d573cba08be0a8470))
+
+
+### Bug Fixes
+
+* address credential validation, type safety, and IGDB ID propagation issues ([#52](https://github.com/dalssaso/mymemorycard/issues/52)) ([cfb2613](https://github.com/dalssaso/mymemorycard/commit/cfb2613af500bff7e6c965d54f1767e07c6a3665))
+* standardize credentials validation response to use is_valid field ([#53](https://github.com/dalssaso/mymemorycard/issues/53)) ([4b006b9](https://github.com/dalssaso/mymemorycard/commit/4b006b988ee214a748ecfe184f266910e7ee1d12))
+
+
+### Code Refactoring
+
+* auth domain di migration ([#30](https://github.com/dalssaso/mymemorycard/issues/30)) ([d4eb273](https://github.com/dalssaso/mymemorycard/commit/d4eb2738ff22a915c29340264f0c28ed76a6ebf4))
+* frontend and backend refactor for auth and api handlers using openai ([#37](https://github.com/dalssaso/mymemorycard/issues/37)) ([2dea782](https://github.com/dalssaso/mymemorycard/commit/2dea782a9007dfe0a6b48d0700bdb9f45267dcc0))
+* **frontend:** migrate 1480+ ctp-* tokens to semantic design system ([#34](https://github.com/dalssaso/mymemorycard/issues/34)) ([bbd0919](https://github.com/dalssaso/mymemorycard/commit/bbd0919ab3e0279cba6f51232345352a2812126e))
+* platforms feature into DI ([#39](https://github.com/dalssaso/mymemorycard/issues/39)) ([7430602](https://github.com/dalssaso/mymemorycard/commit/7430602f4bfe986137e357d65c58acd15967c3e8))
+* remove ai features from backend and apply test improvements ([#35](https://github.com/dalssaso/mymemorycard/issues/35)) ([42f1244](https://github.com/dalssaso/mymemorycard/commit/42f124412ef4fd42d263776e3945313c7866c2f7))
+* remove ai frontend ([#36](https://github.com/dalssaso/mymemorycard/issues/36)) ([9d15ef7](https://github.com/dalssaso/mymemorycard/commit/9d15ef7b1928b5ba6caf109e04462cd02979289b))
+
 ## [1.3.0](https://github.com/dalssaso/mymemorycard/compare/frontend-v1.2.2...frontend-v1.3.0) (2026-01-08)
 
 

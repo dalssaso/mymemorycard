@@ -1,6 +1,6 @@
 {
   "name": "mymemorycard-backend",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "license": "PolyForm-Noncommercial-1.0.0",
   "description": "Game library management backend with Bun",
   "type": "module",
