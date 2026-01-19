@@ -36,7 +36,7 @@ describe("SteamController", () => {
 
     it("registers /library route", () => {
       const routes = controller.router.routes;
-      const libraryRoute = routes.find((r) => r.method === "GET" && r.path === "/library");
+      const libraryRoute = routes.find((r) => r.method === "POST" && r.path === "/library");
       expect(libraryRoute).toBeDefined();
     });
 

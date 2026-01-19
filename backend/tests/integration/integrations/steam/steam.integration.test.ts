@@ -277,9 +277,10 @@ describe("Steam Integration Tests", () => {
     });
   });
 
-  describe("GET /api/v1/steam/library", () => {
+  describe("POST /api/v1/steam/library", () => {
     it("should import Steam library for linked account", async () => {
       const response = await app.request("/api/v1/steam/library", {
+        method: "POST",
         headers: { Authorization: "Bearer " + testUserToken },
       });
 
@@ -297,7 +298,9 @@ describe("Steam Integration Tests", () => {
     });
 
     it("should return 401 without token", async () => {
-      const response = await app.request("/api/v1/steam/library");
+      const response = await app.request("/api/v1/steam/library", {
+        method: "POST",
+      });
 
       expect(response.status).toBe(401);
     });
@@ -383,9 +386,11 @@ describe("Steam Integration Tests", () => {
       // Both users importing should be isolated
       const [response1, response2] = await Promise.all([
         app.request("/api/v1/steam/library", {
+          method: "POST",
           headers: { Authorization: "Bearer " + testUserToken },
         }),
         app.request("/api/v1/steam/library", {
+          method: "POST",
           headers: { Authorization: "Bearer " + testUser2Token },
         }),
       ]);

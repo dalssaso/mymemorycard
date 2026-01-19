@@ -67,7 +67,7 @@ user_achievements (
 | ------ | ------------------------ | ---------------------------- |
 | GET    | `/api/v1/steam/connect`  | Get Steam OpenID login URL   |
 | GET    | `/api/v1/steam/callback` | Handle Steam OpenID callback |
-| GET    | `/api/v1/steam/library`  | Import Steam library games   |
+| POST   | `/api/v1/steam/library`  | Import Steam library games   |
 | POST   | `/api/v1/steam/sync`     | Sync achievements for a game |
 
 ### RetroAchievements Integration

@@ -2013,12 +2013,6 @@
       "AchievementSyncRequest": {
         "type": "object",
         "properties": {
-          "game_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Game ID to sync achievements for (optional, uses path parameter if omitted)",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
-          },
           "source": {
             "type": "string",
             "enum": [
@@ -2034,7 +2028,7 @@
         "required": [
           "source"
         ],
-        "description": "Request to sync achievements from a specific source"
+        "description": "Request to sync achievements from a specific source. The gameId is provided via the path parameter."
       },
       "AchievementProgress": {
         "type": "object",
@@ -4176,7 +4170,7 @@
       }
     },
     "/api/v1/steam/library": {
-      "get": {
+      "post": {
         "tags": [
           "steam"
         ],

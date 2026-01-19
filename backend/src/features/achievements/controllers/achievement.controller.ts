@@ -149,15 +149,6 @@ export class AchievementController implements IAchievementController {
       const userId = c.get("user").id;
       const body = c.req.valid("json") as AchievementSyncRequestDto;
 
-      // Validate that body game_id matches path gameId if provided
-      if (body.game_id && body.game_id !== gameId) {
-        this.logger.warn("Game ID mismatch between path and body", {
-          pathGameId: gameId,
-          bodyGameId: body.game_id,
-        });
-        return c.json({ error: "Game ID in request body does not match path parameter" }, 400);
-      }
-
       this.logger.debug("POST /achievements/:gameId/sync", { gameId, userId, source: body.source });
 
       const response = await this.achievementService.syncAchievements(

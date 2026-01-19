@@ -13,6 +13,7 @@ import {
 } from "@/tests/helpers/repository.mocks";
 import { ENCRYPTION_SERVICE_TOKEN } from "@/container/tokens";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
+import { ValidationError } from "@/shared/errors/base";
 
 describe("RetroAchievements Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -36,6 +37,15 @@ describe("RetroAchievements Integration Tests", () => {
           async (creds: { username: string; api_key: string }) => {
             // Simulate valid credentials for specific test values
             return creds.username === "validuser" && creds.api_key === "valid-api-key";
+          }
+        ),
+        // Mock saveCredentials that validates internally (like real service)
+        saveCredentials: mock().mockImplementation(
+          async (_userId: string, creds: { username: string; api_key: string }) => {
+            // Simulate validation logic from real service
+            if (creds.username !== "validuser" || creds.api_key !== "valid-api-key") {
+              throw new ValidationError("Invalid RetroAchievements credentials");
+            }
           }
         ),
         // Mock sync result

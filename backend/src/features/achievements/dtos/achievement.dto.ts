@@ -78,21 +78,19 @@ export const ACHIEVEMENT_RESPONSE_SCHEMA = z
 export type AchievementResponseDto = z.infer<typeof ACHIEVEMENT_RESPONSE_SCHEMA>;
 
 /**
- * Schema for achievement sync request
+ * Schema for achievement sync request.
+ * The gameId is provided via the path parameter, not the request body.
  */
 export const ACHIEVEMENT_SYNC_REQUEST_SCHEMA = z
   .object({
-    game_id: z.string().uuid("Invalid game ID").optional().openapi({
-      description: "Game ID to sync achievements for (optional, uses path parameter if omitted)",
-      example: "550e8400-e29b-41d4-a716-446655440000",
-    }),
     source: ACHIEVEMENT_SOURCE_SCHEMA.openapi({
       description: "Source API to sync from",
       example: "steam",
     }),
   })
   .openapi("AchievementSyncRequest", {
-    description: "Request to sync achievements from a specific source",
+    description:
+      "Request to sync achievements from a specific source. The gameId is provided via the path parameter.",
   });
 
 /**

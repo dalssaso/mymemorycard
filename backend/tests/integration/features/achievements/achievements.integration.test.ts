@@ -451,26 +451,6 @@ describe("Achievements Integration Tests", () => {
       expect(response.status).toBe(400);
     });
 
-    it("should return 400 for game_id mismatch between path and body", async () => {
-      const mismatchedId = randomUUID();
-      const response = await app.request("/api/v1/achievements/" + testGameId + "/sync", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + testUserToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "steam",
-          game_id: mismatchedId,
-        }),
-      });
-
-      expect(response.status).toBe(400);
-
-      const data = (await response.json()) as { error: string };
-      expect(data.error).toContain("does not match");
-    });
-
     it("should return 400 for unsupported sync source", async () => {
       const response = await app.request("/api/v1/achievements/" + testGameId + "/sync", {
         method: "POST",

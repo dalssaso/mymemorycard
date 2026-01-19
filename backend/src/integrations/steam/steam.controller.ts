@@ -155,9 +155,9 @@ export class SteamController implements ISteamController {
       );
     });
 
-    // GET /library - Import Steam library
+    // POST /library - Import Steam library (state-changing operation)
     const libraryRoute = createRoute({
-      method: "get",
+      method: "post",
       path: "/library",
       tags: ["steam"],
       security: [{ bearerAuth: [] }],
@@ -190,7 +190,7 @@ export class SteamController implements ISteamController {
     });
 
     this.router.openapi(libraryRoute, async (c) => {
-      this.logger.debug("GET /steam/library");
+      this.logger.debug("POST /steam/library");
 
       const userId = c.get("user").id;
       const result = await this.steamService.importLibrary(userId);
