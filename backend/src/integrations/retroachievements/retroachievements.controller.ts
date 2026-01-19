@@ -232,15 +232,7 @@ export class RetroAchievementsController implements IRetroAchievementsController
               schema: ErrorResponseSchema,
             },
           },
-          description: "Game or credentials not found",
-        },
-        422: {
-          content: {
-            "application/json": {
-              schema: ErrorResponseSchema,
-            },
-          },
-          description: "RetroAchievements credentials not linked",
+          description: "Game or RetroAchievements credentials not found",
         },
       },
     });

@@ -4449,17 +4449,7 @@
             }
           },
           "404": {
-            "description": "Game or credentials not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "RetroAchievements credentials not linked",
+            "description": "Game or RetroAchievements credentials not found",
             "content": {
               "application/json": {
                 "schema": {
