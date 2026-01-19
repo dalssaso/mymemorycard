@@ -151,6 +151,14 @@ export const GAME_DETAILS_SCHEMA = z
       description: "RAWG game identifier",
       example: 3328,
     }),
+    steam_app_id: z.number().int().nullable().openapi({
+      description: "Steam App ID",
+      example: 292030,
+    }),
+    retro_game_id: z.number().int().nullable().openapi({
+      description: "RetroAchievements game ID",
+      example: 1234,
+    }),
     name: z.string().openapi({
       description: "Game title",
       example: "The Legend of Zelda: Breath of the Wild",

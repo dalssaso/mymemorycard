@@ -1,6 +1,9 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
 import {
+  ACHIEVEMENT_CONTROLLER_TOKEN,
+  ACHIEVEMENT_REPOSITORY_TOKEN,
+  ACHIEVEMENT_SERVICE_TOKEN,
   ADMIN_CONTROLLER_TOKEN,
   ADMIN_REPOSITORY_TOKEN,
   ADMIN_SERVICE_TOKEN,
@@ -26,6 +29,10 @@ import {
   PREFERENCES_REPOSITORY_TOKEN,
   PREFERENCES_SERVICE_TOKEN,
   REDIS_CONNECTION_TOKEN,
+  RETROACHIEVEMENTS_CONTROLLER_TOKEN,
+  RETROACHIEVEMENTS_SERVICE_TOKEN,
+  STEAM_CONTROLLER_TOKEN,
+  STEAM_SERVICE_TOKEN,
   STORE_CONTROLLER_TOKEN,
   STORE_REPOSITORY_TOKEN,
   STORE_SERVICE_TOKEN,
@@ -158,6 +165,30 @@ import type { IStoreService } from "@/features/stores/services/store.service.int
 // Stores - Controllers
 import { StoreController } from "@/features/stores/controllers/store.controller";
 import type { IStoreController } from "@/features/stores/controllers/store.controller.interface";
+
+// Steam Integration
+import { SteamController } from "@/integrations/steam/steam.controller";
+import type { ISteamController } from "@/integrations/steam/steam.controller.interface";
+import { SteamService } from "@/integrations/steam/steam.service";
+import type { ISteamService } from "@/integrations/steam/steam.service.interface";
+
+// RetroAchievements Integration
+import { RetroAchievementsController } from "@/integrations/retroachievements/retroachievements.controller";
+import type { IRetroAchievementsController } from "@/integrations/retroachievements/retroachievements.controller.interface";
+import { RetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service";
+import type { IRetroAchievementsService } from "@/integrations/retroachievements/retroachievements.service.interface";
+
+// Achievements Domain - Repositories
+import { AchievementRepository } from "@/features/achievements/repositories/achievement.repository";
+import type { IAchievementRepository } from "@/features/achievements/repositories/achievement.repository.interface";
+
+// Achievements Domain - Services
+import { AchievementService } from "@/features/achievements/services/achievement.service";
+import type { IAchievementService } from "@/features/achievements/services/achievement.service.interface";
+
+// Achievements Domain - Controllers
+import { AchievementController } from "@/features/achievements/controllers/achievement.controller";
+import type { IAchievementController } from "@/features/achievements/controllers/achievement.controller.interface";
 
 /**
  * Register all dependencies for the application.
@@ -305,6 +336,39 @@ export function registerDependencies(): void {
 
   // Stores Domain - Controllers
   container.registerSingleton<IStoreController>(STORE_CONTROLLER_TOKEN, StoreController);
+
+  // Steam Integration - Services
+  container.registerSingleton<ISteamService>(STEAM_SERVICE_TOKEN, SteamService);
+
+  // Steam Integration - Controllers
+  container.registerSingleton<ISteamController>(STEAM_CONTROLLER_TOKEN, SteamController);
+
+  // RetroAchievements Integration - Services
+  container.registerSingleton<IRetroAchievementsService>(
+    RETROACHIEVEMENTS_SERVICE_TOKEN,
+    RetroAchievementsService
+  );
+
+  // RetroAchievements Integration - Controllers
+  container.registerSingleton<IRetroAchievementsController>(
+    RETROACHIEVEMENTS_CONTROLLER_TOKEN,
+    RetroAchievementsController
+  );
+
+  // Achievements Domain - Repositories
+  container.registerSingleton<IAchievementRepository>(
+    ACHIEVEMENT_REPOSITORY_TOKEN,
+    AchievementRepository
+  );
+
+  // Achievements Domain - Services
+  container.registerSingleton<IAchievementService>(ACHIEVEMENT_SERVICE_TOKEN, AchievementService);
+
+  // Achievements Domain - Controllers
+  container.registerSingleton<IAchievementController>(
+    ACHIEVEMENT_CONTROLLER_TOKEN,
+    AchievementController
+  );
 }
 
 /**

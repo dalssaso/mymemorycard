@@ -1032,6 +1032,18 @@
             "description": "RAWG game identifier",
             "example": 3328
           },
+          "steam_app_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Steam App ID",
+            "example": 292030
+          },
+          "retro_game_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "RetroAchievements game ID",
+            "example": 1234
+          },
           "name": {
             "type": "string",
             "description": "Game title",
@@ -1126,6 +1138,8 @@
           "id",
           "igdb_id",
           "rawg_id",
+          "steam_app_id",
+          "retro_game_id",
           "name",
           "slug",
           "release_date",
@@ -1183,13 +1197,27 @@
                 "nullable": true,
                 "description": "IGDB game identifier",
                 "example": 7346
+              },
+              "steam_app_id": {
+                "type": "integer",
+                "nullable": true,
+                "description": "Steam App ID",
+                "example": 292030
+              },
+              "retro_game_id": {
+                "type": "integer",
+                "nullable": true,
+                "description": "RetroAchievements game ID",
+                "example": 1234
               }
             },
             "required": [
               "id",
               "name",
               "cover_art_url",
-              "igdb_id"
+              "igdb_id",
+              "steam_app_id",
+              "retro_game_id"
             ],
             "description": "Game information"
           },
@@ -1656,6 +1684,379 @@
         "required": [
           "store"
         ]
+      },
+      "SteamConnectResponse": {
+        "type": "object",
+        "properties": {
+          "redirect_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Steam OpenID login URL",
+            "example": "https://steamcommunity.com/openid/login?..."
+          }
+        },
+        "required": [
+          "redirect_url"
+        ],
+        "description": "Steam OpenID authentication redirect URL"
+      },
+      "SteamCallbackResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "linked",
+              "failed"
+            ],
+            "description": "Link status",
+            "example": "linked"
+          },
+          "steam_id": {
+            "type": "string",
+            "description": "Steam 64-bit ID",
+            "example": "76561198012345678"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Steam display name",
+            "example": "PlayerOne"
+          },
+          "avatar_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Steam avatar URL",
+            "example": "https://avatars.steamstatic.com/abc123.jpg"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "description": "Steam account link result"
+      },
+      "SteamLibraryImportResponse": {
+        "type": "object",
+        "properties": {
+          "imported": {
+            "type": "integer",
+            "description": "Number of games imported",
+            "example": 42
+          },
+          "skipped": {
+            "type": "integer",
+            "description": "Number of games skipped (already in library)",
+            "example": 5
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "appid": {
+                  "type": "integer",
+                  "description": "Steam App ID",
+                  "example": 570
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Game name",
+                  "example": "Dota 2"
+                },
+                "error": {
+                  "type": "string",
+                  "description": "Error message",
+                  "example": "Failed to fetch game metadata"
+                }
+              },
+              "required": [
+                "appid",
+                "name",
+                "error"
+              ]
+            },
+            "maxItems": 100,
+            "description": "Games that failed to import"
+          }
+        },
+        "required": [
+          "imported",
+          "skipped",
+          "errors"
+        ],
+        "description": "Steam library import result"
+      },
+      "SteamSyncResponse": {
+        "type": "object",
+        "properties": {
+          "synced": {
+            "type": "integer",
+            "description": "Total achievements synced",
+            "example": 50
+          },
+          "unlocked": {
+            "type": "integer",
+            "description": "Achievements unlocked by user",
+            "example": 25
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total achievements for game",
+            "example": 50
+          }
+        },
+        "required": [
+          "synced",
+          "unlocked",
+          "total"
+        ],
+        "description": "Steam achievements sync result"
+      },
+      "SteamSyncRequest": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Game ID to sync achievements for",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "game_id"
+        ],
+        "description": "Request to sync Steam achievements for a game"
+      },
+      "RAValidateResponse": {
+        "type": "object",
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "description": "Whether credentials are valid"
+          },
+          "message": {
+            "type": "string",
+            "description": "Validation message"
+          }
+        },
+        "required": [
+          "is_valid"
+        ],
+        "description": "RetroAchievements credentials validation result"
+      },
+      "RACredentialsRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "description": "RetroAchievements username",
+            "example": "YourUsername"
+          },
+          "api_key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "RetroAchievements API key",
+            "example": "your-api-key-here"
+          }
+        },
+        "required": [
+          "username",
+          "api_key"
+        ],
+        "description": "RetroAchievements credentials for validation"
+      },
+      "RASyncResponse": {
+        "type": "object",
+        "properties": {
+          "synced": {
+            "type": "integer",
+            "description": "Total achievements synced",
+            "example": 25
+          },
+          "unlocked": {
+            "type": "integer",
+            "description": "Achievements unlocked by user",
+            "example": 10
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total achievements for game",
+            "example": 25
+          }
+        },
+        "required": [
+          "synced",
+          "unlocked",
+          "total"
+        ],
+        "description": "RetroAchievements sync result"
+      },
+      "RASyncRequest": {
+        "type": "object",
+        "properties": {
+          "game_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Game ID to sync achievements for",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "game_id"
+        ],
+        "description": "Request to sync RetroAchievements for a game"
+      },
+      "AchievementResponse": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "steam",
+              "retroachievements",
+              "rawg",
+              "manual"
+            ],
+            "description": "Source of achievement data",
+            "example": "steam"
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AchievementItem"
+            },
+            "description": "List of achievements"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total number of achievements",
+            "example": 50
+          },
+          "unlocked": {
+            "type": "integer",
+            "description": "Number of unlocked achievements",
+            "example": 25
+          }
+        },
+        "required": [
+          "source",
+          "achievements",
+          "total",
+          "unlocked"
+        ],
+        "description": "Achievement list with source and unlock stats"
+      },
+      "AchievementItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Achievement ID from source",
+            "example": "ACH_WIN_100_MATCHES"
+          },
+          "name": {
+            "type": "string",
+            "description": "Achievement name",
+            "example": "Century Victor"
+          },
+          "description": {
+            "type": "string",
+            "description": "Achievement description",
+            "example": "Win 100 multiplayer matches"
+          },
+          "icon_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "Achievement icon URL",
+            "example": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/570/ach.jpg"
+          },
+          "rarity_percentage": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Global unlock percentage",
+            "example": 15.5
+          },
+          "points": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Achievement points (RetroAchievements only)",
+            "example": 10
+          },
+          "unlocked": {
+            "type": "boolean",
+            "description": "Whether user has unlocked this achievement",
+            "example": true
+          },
+          "unlock_date": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "ISO 8601 datetime when achievement was unlocked",
+            "example": "2024-01-15T14:30:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "icon_url",
+          "rarity_percentage",
+          "points",
+          "unlocked",
+          "unlock_date"
+        ],
+        "description": "Single achievement with unlock status"
+      },
+      "AchievementSyncRequest": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "steam",
+              "retroachievements",
+              "rawg",
+              "manual"
+            ],
+            "description": "Source API to sync from",
+            "example": "steam"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "description": "Request to sync achievements from a specific source. The gameId is provided via the path parameter."
+      },
+      "AchievementProgress": {
+        "type": "object",
+        "properties": {
+          "unlocked": {
+            "type": "integer",
+            "description": "Number of unlocked achievements",
+            "example": 25
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total number of achievements",
+            "example": 50
+          },
+          "percentage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Completion percentage (0-100)",
+            "example": 50
+          }
+        },
+        "required": [
+          "unlocked",
+          "total",
+          "percentage"
+        ],
+        "description": "Achievement progress summary"
       }
     },
     "parameters": {},
@@ -3679,6 +4080,563 @@
           },
           "404": {
             "description": "Store not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/steam/connect": {
+      "get": {
+        "tags": [
+          "steam"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Steam OpenID login URL returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SteamConnectResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/steam/callback": {
+      "get": {
+        "tags": [
+          "steam"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Steam account linked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SteamCallbackResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid OpenID callback parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/steam/library": {
+      "post": {
+        "tags": [
+          "steam"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Steam library imported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SteamLibraryImportResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Steam account not linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/steam/sync": {
+      "post": {
+        "tags": [
+          "steam"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SteamSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Achievements synced successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SteamSyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found or not a Steam game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Steam account not linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/retroachievements/credentials": {
+      "post": {
+        "tags": [
+          "retroachievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RACredentialsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Credentials saved and validated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAValidateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/retroachievements/validate": {
+      "post": {
+        "tags": [
+          "retroachievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RACredentialsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAValidateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/retroachievements/sync": {
+      "post": {
+        "tags": [
+          "retroachievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RASyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Achievements synced successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RASyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or game has no RetroAchievements ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or RetroAchievements credentials not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/achievements/{gameId}": {
+      "get": {
+        "tags": [
+          "achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Game ID (UUID)",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "required": true,
+            "description": "Game ID (UUID)",
+            "name": "gameId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement list with source and stats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/achievements/{gameId}/sync": {
+      "post": {
+        "tags": [
+          "achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Game ID (UUID)",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "required": true,
+            "description": "Game ID (UUID)",
+            "name": "gameId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AchievementSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Achievements synced successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or sync not supported for source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found or credentials not linked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/achievements/{gameId}/progress": {
+      "get": {
+        "tags": [
+          "achievements"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Game ID (UUID)",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "required": true,
+            "description": "Game ID (UUID)",
+            "name": "gameId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Achievement progress summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementProgress"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
             "content": {
               "application/json": {
                 "schema": {

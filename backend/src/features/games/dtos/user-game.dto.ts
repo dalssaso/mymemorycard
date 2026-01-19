@@ -104,6 +104,14 @@ const GameInfoSchema = z.object({
     description: "IGDB game identifier",
     example: 7346,
   }),
+  steam_app_id: z.number().int().nullable().openapi({
+    description: "Steam App ID",
+    example: 292030,
+  }),
+  retro_game_id: z.number().int().nullable().openapi({
+    description: "RetroAchievements game ID",
+    example: 1234,
+  }),
 });
 
 /**

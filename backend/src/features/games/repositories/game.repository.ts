@@ -50,6 +50,30 @@ export class GameRepository implements IGameRepository {
   }
 
   /**
+   * Find a game by Steam App ID.
+   * @param steamAppId - Steam application ID
+   * @returns Game or null if not found
+   */
+  async findBySteamAppId(steamAppId: number): Promise<Game | null> {
+    const result = await this.db.query.games.findFirst({
+      where: eq(games.steamAppId, steamAppId),
+    });
+    return result ? this.mapToGame(result) : null;
+  }
+
+  /**
+   * Find a game by RetroAchievements game ID.
+   * @param retroGameId - RetroAchievements game ID
+   * @returns Game or null if not found
+   */
+  async findByRetroGameId(retroGameId: number): Promise<Game | null> {
+    const result = await this.db.query.games.findFirst({
+      where: eq(games.retroGameId, retroGameId),
+    });
+    return result ? this.mapToGame(result) : null;
+  }
+
+  /**
    * Create a new game.
    * @param data - Game creation data
    * @returns Created game
@@ -58,6 +82,8 @@ export class GameRepository implements IGameRepository {
   async create(data: {
     igdb_id?: number;
     rawg_id?: number;
+    steam_app_id?: number;
+    retro_game_id?: number;
     name: string;
     slug?: string;
     release_date?: Date;
@@ -77,6 +103,8 @@ export class GameRepository implements IGameRepository {
         .values({
           igdbId: data.igdb_id,
           rawgId: data.rawg_id,
+          steamAppId: data.steam_app_id,
+          retroGameId: data.retro_game_id,
           name: data.name,
           slug: data.slug,
           releaseDate: data.release_date ? this.formatDateForDb(data.release_date) : null,
@@ -126,6 +154,8 @@ export class GameRepository implements IGameRepository {
         .set({
           ...(data.igdb_id !== undefined && { igdbId: data.igdb_id }),
           ...(data.rawg_id !== undefined && { rawgId: data.rawg_id }),
+          ...(data.steam_app_id !== undefined && { steamAppId: data.steam_app_id }),
+          ...(data.retro_game_id !== undefined && { retroGameId: data.retro_game_id }),
           ...(data.name !== undefined && { name: data.name }),
           ...(data.slug !== undefined && { slug: data.slug }),
           ...(data.release_date !== undefined && {
@@ -231,6 +261,8 @@ export class GameRepository implements IGameRepository {
       id: row.id as string,
       igdb_id: (row.igdbId as number) || null,
       rawg_id: (row.rawgId as number) || null,
+      steam_app_id: (row.steamAppId as number) || null,
+      retro_game_id: (row.retroGameId as number) || null,
       name: row.name as string,
       slug: (row.slug as string) || null,
       release_date: this.ensureDate(row.releaseDate),

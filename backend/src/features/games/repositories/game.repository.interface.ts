@@ -23,6 +23,20 @@ export interface IGameRepository {
   findByRawgId(rawg_id: number): Promise<Game | null>;
 
   /**
+   * Find a game by Steam App ID.
+   * @param steamAppId - Steam application ID
+   * @returns Game or null if not found
+   */
+  findBySteamAppId(steamAppId: number): Promise<Game | null>;
+
+  /**
+   * Find a game by RetroAchievements game ID.
+   * @param retroGameId - RetroAchievements game ID
+   * @returns Game or null if not found
+   */
+  findByRetroGameId(retroGameId: number): Promise<Game | null>;
+
+  /**
    * Create a new game.
    * @param data - Game creation data
    * @returns Created game
@@ -31,6 +45,8 @@ export interface IGameRepository {
   create(data: {
     igdb_id?: number;
     rawg_id?: number;
+    steam_app_id?: number;
+    retro_game_id?: number;
     name: string;
     slug?: string;
     release_date?: Date;
