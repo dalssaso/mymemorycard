@@ -11,6 +11,7 @@ import {
   GAME_REPOSITORY_TOKEN,
   GAMES_PLATFORM_REPOSITORY_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
+  USER_GAME_REPOSITORY_TOKEN,
 } from "@/container/tokens";
 import type {
   IAchievementRepository,
@@ -20,6 +21,7 @@ import type { IUserCredentialRepository } from "@/features/credentials/repositor
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
 import type { IPlatformRepository } from "@/features/games/repositories/platform.repository.interface";
+import type { IUserGameRepository } from "@/features/games/repositories/user-game.repository.interface";
 import { Logger } from "@/infrastructure/logging/logger";
 import type { NormalizedAchievement } from "@/features/achievements/types";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
@@ -51,6 +53,8 @@ export class RetroAchievementsService implements IRetroAchievementsService {
     private readonly achievementRepository: IAchievementRepository,
     @inject(GAMES_PLATFORM_REPOSITORY_TOKEN)
     private readonly platformRepository: IPlatformRepository,
+    @inject(USER_GAME_REPOSITORY_TOKEN)
+    private readonly userGameRepository: IUserGameRepository,
     @inject(Logger) parentLogger: Logger
   ) {
     this.logger = parentLogger.child("RetroAchievementsService");
@@ -74,7 +78,8 @@ export class RetroAchievementsService implements IRetroAchievementsService {
 
       return profile !== null && profile.user === credentials.username;
     } catch (error) {
-      this.logger.warn("RetroAchievements credential validation failed", { error });
+      const errorInfo = error instanceof Error ? error.message : "unknown error";
+      this.logger.warn("RetroAchievements credential validation failed", { error: errorInfo });
       return false;
     }
   }
@@ -139,7 +144,8 @@ export class RetroAchievementsService implements IRetroAchievementsService {
         motto: profile.motto,
       };
     } catch (error) {
-      this.logger.error("Failed to get RetroAchievements profile", { userId, error });
+      const errorInfo = error instanceof Error ? error.message : "unknown error";
+      this.logger.error("Failed to get RetroAchievements profile", { userId, error: errorInfo });
       return null;
     }
   }
@@ -150,13 +156,11 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * This would require console-specific game list lookups.
    * @param _gameName - Game name to search (unused)
    * @param _consoleId - Optional console ID filter (unused)
-   * @returns Empty array - search not fully implemented
+   * @throws ValidationError - Game search is not supported for RetroAchievements API
    */
   async searchGames(_gameName: string, _consoleId?: number): Promise<RAGameInfo[]> {
-    // Note: RetroAchievements API doesn't have a direct search endpoint
-    // A full implementation would require getGameList with console filtering
-    this.logger.warn("Game search not fully implemented - requires console-specific lookup");
-    return [];
+    this.logger.warn("Game search attempted but not supported for RetroAchievements API");
+    throw new ValidationError("Game search not supported for RetroAchievements API");
   }
 
   /**
@@ -195,7 +199,11 @@ export class RetroAchievementsService implements IRetroAchievementsService {
         };
       });
     } catch (error) {
-      this.logger.error("Failed to get RetroAchievements achievements", { retroGameId, error });
+      const errorInfo = error instanceof Error ? error.message : "unknown error";
+      this.logger.error("Failed to get RetroAchievements achievements", {
+        retroGameId,
+        error: errorInfo,
+      });
       return [];
     }
   }
@@ -206,10 +214,16 @@ export class RetroAchievementsService implements IRetroAchievementsService {
    * @param userId - User ID
    * @param gameId - Game ID in our system (must have retro_game_id)
    * @returns Sync result with counts
-   * @throws NotFoundError if game not found
+   * @throws NotFoundError if game not found or user doesn't own it
    * @throws ValidationError if game lacks RetroAchievements ID
    */
   async syncAchievements(userId: string, gameId: string): Promise<RASyncResult> {
+    // Verify user owns the game before syncing achievements
+    const userGames = await this.userGameRepository.getByGameForUser(userId, gameId);
+    if (userGames.length === 0) {
+      throw new NotFoundError("Game", gameId);
+    }
+
     const game = await this.gameRepository.findById(gameId);
     if (!game) {
       throw new NotFoundError("Game", gameId);
