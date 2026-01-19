@@ -214,6 +214,14 @@ Return JSON with `snake_case` fields and include a `Content-Type` header.
 - Never catch and swallow errors in controllers - let them propagate
 - Add error checks for both direct code and wrapped error structures
 
+### External Integration Patterns
+
+- Verify user owns the resource before syncing external data (check via UserGameRepository)
+- Throw `ValidationError` for unsupported operations instead of returning empty results
+- Sanitize error logging: extract only `error.message`, never log full error objects containing request data
+- Require explicit platform family configuration; never fall back to arbitrary platforms
+- Platform assignment for external achievements must use family-specific platforms (e.g., `retro` family)
+
 ## Testing Rules
 
 ### Integration Tests
