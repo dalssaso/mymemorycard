@@ -4,7 +4,7 @@ import type {
   RACredentials,
   RASyncResult,
 } from "./retroachievements.types";
-import type { NormalizedAchievement } from "@/integrations/steam/steam.types";
+import type { NormalizedAchievement } from "@/features/achievements/types";
 
 /**
  * RetroAchievements service interface

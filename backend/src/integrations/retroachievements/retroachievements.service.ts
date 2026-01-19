@@ -6,13 +6,20 @@ import {
 import { inject, injectable } from "tsyringe";
 
 import {
+  ACHIEVEMENT_REPOSITORY_TOKEN,
   ENCRYPTION_SERVICE_TOKEN,
   GAME_REPOSITORY_TOKEN,
+  GAMES_PLATFORM_REPOSITORY_TOKEN,
   USER_CREDENTIAL_REPOSITORY_TOKEN,
 } from "@/container/tokens";
+import type {
+  IAchievementRepository,
+  NewAchievement,
+} from "@/features/achievements/repositories/achievement.repository.interface";
 import type { IUserCredentialRepository } from "@/features/credentials/repositories/user-credential.repository.interface";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import type { IGameRepository } from "@/features/games/repositories/game.repository.interface";
+import type { IPlatformRepository } from "@/features/games/repositories/platform.repository.interface";
 import { Logger } from "@/infrastructure/logging/logger";
 import type { NormalizedAchievement } from "@/features/achievements/types";
 import { NotFoundError, ValidationError } from "@/shared/errors/base";
@@ -40,6 +47,10 @@ export class RetroAchievementsService implements IRetroAchievementsService {
     private readonly encryptionService: IEncryptionService,
     @inject(GAME_REPOSITORY_TOKEN)
     private readonly gameRepository: IGameRepository,
+    @inject(ACHIEVEMENT_REPOSITORY_TOKEN)
+    private readonly achievementRepository: IAchievementRepository,
+    @inject(GAMES_PLATFORM_REPOSITORY_TOKEN)
+    private readonly platformRepository: IPlatformRepository,
     @inject(Logger) parentLogger: Logger
   ) {
     this.logger = parentLogger.child("RetroAchievementsService");
@@ -191,6 +202,7 @@ export class RetroAchievementsService implements IRetroAchievementsService {
 
   /**
    * Sync achievements for a game in user's library.
+   * Fetches achievements from RetroAchievements and stores them in the database.
    * @param userId - User ID
    * @param gameId - Game ID in our system (must have retro_game_id)
    * @returns Sync result with counts
@@ -209,8 +221,63 @@ export class RetroAchievementsService implements IRetroAchievementsService {
 
     const achievements = await this.getAchievements(game.retro_game_id, userId);
 
-    // TODO: Store achievements in database with source_api = 'retroachievements'
-    // This will be implemented in a future task with unified achievement storage
+    // Store achievements in database if there are any
+    if (achievements.length > 0) {
+      // Find or select a platform for these achievements
+      // Try to find existing achievements for this game first, otherwise use a retro family platform
+      let platformId: string;
+      const existingAchievements = await this.achievementRepository.findByGameAndSource(
+        gameId,
+        "retroachievements"
+      );
+
+      if (existingAchievements.length > 0) {
+        platformId = existingAchievements[0].platformId;
+      } else {
+        // For new RetroAchievements, try to find a retro family platform
+        const retroPlatforms = await this.platformRepository.findByFamily("retro");
+        const retroPlatform = retroPlatforms[0];
+        platformId = retroPlatform?.id ?? (await this.platformRepository.list())[0]?.id;
+        if (!platformId) {
+          throw new ValidationError("No platform available for RetroAchievements");
+        }
+      }
+
+      // Prepare achievement records
+      const achievementRecords: NewAchievement[] = achievements.map((ach) => ({
+        gameId,
+        platformId,
+        achievementId: ach.achievement_id,
+        name: ach.name,
+        description: ach.description,
+        iconUrl: ach.icon_url || null,
+        rarityPercentage: ach.rarity_percentage ?? null,
+        points: ach.points ?? null,
+        sourceApi: "retroachievements" as const,
+        externalId: ach.achievement_id,
+      }));
+
+      // Build status map for user achievements
+      const achievementStatus = new Map(
+        achievements.map((ach) => [
+          ach.achievement_id,
+          { unlocked: ach.unlocked, unlockDate: ach.unlock_time ?? null },
+        ])
+      );
+
+      // Upsert achievements and user achievements in a single transaction
+      await this.achievementRepository.upsertAchievementsWithProgress(
+        achievementRecords,
+        userId,
+        achievementStatus
+      );
+
+      this.logger.info("RetroAchievements synced and stored", {
+        gameId,
+        stored: achievements.length,
+        unlocked: achievements.filter((a) => a.unlocked).length,
+      });
+    }
 
     return {
       synced: achievements.length,
