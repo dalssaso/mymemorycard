@@ -11,6 +11,10 @@ import { createMockIgdbService, createMockSteamService } from "@/tests/helpers/r
 import { ENCRYPTION_SERVICE_TOKEN } from "@/container/tokens";
 import type { IEncryptionService } from "@/features/credentials/services/encryption.service.interface";
 import { STEAM_CREDENTIALS_FIXTURE } from "@/tests/helpers/steam.fixtures";
+import { NotFoundError } from "@/shared/errors/base";
+
+/** Non-existent game UUID used for 404 testing */
+const NON_EXISTENT_GAME_ID = "00000000-0000-0000-0000-000000000000";
 
 describe("Steam Integration Tests", () => {
   let app: ReturnType<typeof createHonoApp>;
@@ -48,11 +52,16 @@ describe("Steam Integration Tests", () => {
           skipped: 2,
           errors: [],
         }),
-        // Mock sync achievements
-        syncAchievements: mock().mockResolvedValue({
-          synced: 10,
-          unlocked: 7,
-          total: 15,
+        // Mock sync achievements - throws NotFoundError for non-existent games
+        syncAchievements: mock().mockImplementation(async (_userId: string, gameId: string) => {
+          if (gameId === NON_EXISTENT_GAME_ID) {
+            throw new NotFoundError("Game", gameId);
+          }
+          return {
+            synced: 10,
+            unlocked: 7,
+            total: 15,
+          };
         }),
       })
     );
@@ -358,14 +367,31 @@ describe("Steam Integration Tests", () => {
 
       expect(response.status).toBe(401);
     });
+
+    it("should return 404 for non-existent game", async () => {
+      const response = await app.request("/api/v1/steam/sync", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + testUserToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          game_id: NON_EXISTENT_GAME_ID,
+        }),
+      });
+
+      expect(response.status).toBe(404);
+    });
   });
 
   describe("Cross-user authorization tests", () => {
-    it("user without Steam linked should not access sync", async () => {
-      // Second user has no Steam credentials linked
-      // The mock should handle this by returning appropriate error
-      // For now, the mock returns success, but in real scenario it would fail
-      // This test verifies the endpoint is called with the correct user context
+    // TODO: This test is currently ineffective because the mock doesn't track
+    // which users have Steam credentials linked. In a real scenario, the service
+    // would throw NotFoundError for users without Steam credentials.
+    // To properly test this, we would need to:
+    // 1. Make the mock track user IDs and their credential status
+    // 2. Or use a partial integration test with real credential repository
+    it.skip("user without Steam linked should not access sync", async () => {
       const response = await app.request("/api/v1/steam/sync", {
         method: "POST",
         headers: {
@@ -377,9 +403,8 @@ describe("Steam Integration Tests", () => {
         }),
       });
 
-      // With mocked service, it returns 200, but real service would return 422
-      // This test ensures the endpoint handles the request properly
-      expect(response.status).toBeDefined();
+      // Real service would return 404 (credentials not found) or 422 (not linked)
+      expect(response.status).toBe(404);
     });
 
     it("each user should get their own library import results", async () => {

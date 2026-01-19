@@ -12,7 +12,6 @@ import {
   STEAM_LIBRARY_IMPORT_RESPONSE_SCHEMA,
   STEAM_SYNC_REQUEST_SCHEMA,
   STEAM_SYNC_RESPONSE_SCHEMA,
-  type SteamSyncRequestDto,
 } from "./steam.dto";
 import type { ISteamService } from "./steam.service.interface";
 import type { ISteamController, SteamEnv } from "./steam.controller.interface";
@@ -40,8 +39,7 @@ export class SteamController implements ISteamController {
   private registerRoutes(): void {
     const authMiddleware = createAuthMiddleware();
 
-    // Register auth middleware on ALL paths explicitly
-    this.router.use("/", authMiddleware);
+    // Register auth middleware on each route path
     this.router.use("/connect", authMiddleware);
     this.router.use("/callback", authMiddleware);
     this.router.use("/library", authMiddleware);
@@ -268,7 +266,7 @@ export class SteamController implements ISteamController {
       this.logger.debug("POST /steam/sync");
 
       const userId = c.get("user").id;
-      const body = c.req.valid("json") as SteamSyncRequestDto;
+      const body = c.req.valid("json");
 
       const result = await this.steamService.syncAchievements(userId, body.game_id);
 
